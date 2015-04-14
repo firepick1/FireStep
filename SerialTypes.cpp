@@ -1,4 +1,4 @@
-#include "WProgram.h"
+#include "Arduino.h"
 #include "SerialTypes.h"
 
 void sendHex(byte value) {

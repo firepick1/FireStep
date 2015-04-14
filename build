@@ -1,0 +1,121 @@
+#! /bin/bash
+
+echo "COMMAND	: ../FireStep/build"
+echo "DATE	: `date`"
+
+
+function help() {
+  echo "Build FireStep (non-Windows)"
+  echo 
+  echo "EXAMPLES:"
+  echo "  ./build"
+  echo
+  echo "OPTIONS:"
+  echo "  -h"
+  echo "  --help"
+  echo "     Print this help text"
+}
+
+while getopts "c:" flag
+do
+  case "$flag" in
+    *) help ; exit 0;;
+  esac
+done
+
+if [ "$SUDO_USER" != "" ]; then
+  echo "ERROR	: This script will call sudo as required and must be run by non-root user"
+  echo "TRY	:   ./build"
+  exit -1
+fi
+
+installPrefix=/usr
+
+if [ `uname -o` == "Solaris" ]; then
+  echo "OS	: SOLARIS"
+  sudo pkgin update
+  sudo crle -l /usr/local/lib -u
+  installPrefix=/usr/local
+  if [ "$(type -p install-sh)" == "" ]; then
+    echo "COMMAND	: pkgin -y install install-sh"
+    sudo pkgin -y install install-sh
+  else
+    echo "STATUS	: install-sh installed"
+  fi
+fi
+
+if [ "$(type -p gcc)" == "" ]; then
+  echo "COMMAND	: pkgin -y install scmgit-base gcc47"
+  sudo pkgin -y install scmgit-base gcc47
+else
+  echo "STATUS	: GCC installed"
+fi
+
+if [ "$(type -p cmake)" == "" ]; then
+  if [ `uname -o` == "Solaris" ]; then
+    echo "COMMAND	: pkgin -y install gmake; pkgin -y install cmake"
+    sudo pkgin -y install gmake
+    sudo pkgin -y install cmake
+  else
+    echo "COMMAND	: apt-get -y install cmake"
+    sudo apt-get -y install cmake
+  fi
+else
+  echo "STATUS	: cmake installed"
+fi
+
+if [ "$(type -p libtool)" == "" ]; then
+  echo "COMMAND	: pkgin -y install libtool"
+  sudo pkgin -y install libtool
+else
+  echo "STATUS	: libtool installed"
+fi
+
+if [ "$(type -p aclocal)" == "" ]; then
+  echo "COMMAND	: pkgin -y install automake"
+  sudo pkgin -y install automake
+else
+  echo "STATUS	: automake insalled"
+fi
+
+if [ ! -e /usr/local/include/jansson.h ] ; then
+  echo "STATUS	: installing JANNSON C Library"
+  if [ `uname -o` == "Solaris" ]; then
+    sudo pkgin -y install autoconf
+  else 
+    sudo apt-get -y install dh-autoreconf
+  fi
+  git clone git://github.com/akheron/jansson jannson
+  pushd jannson
+  autoreconf -i
+  ./configure
+  cmake .
+  make 
+  sudo -E make install
+  popd
+fi
+
+if [ -e CMakeFiles ] ; then 
+  echo "STATUS	: removing existing makefiles"
+  rm -rf CMakeCache.txt CMakeFiles CMakeFiles.txt target cmake_install.cmake CPackConfig.cmake CPackSourceConfig.cmake
+  mkdir target
+fi
+
+echo "STATUS	: creating makefile"
+cmake \
+  -DCMAKE_INSTALL_PREFIX:PATH=$installPrefix "$@" \
+  .
+RC=$?; if [ $RC -ne 0 ]; then
+	echo "ERROR	: cmake failed (RC=$RC)"
+	exit -1
+fi
+echo "STATUS	: building FireStep"
+make
+RC=$?; if [ $RC -ne 0 ]; then
+	echo "ERROR	: make failed (RC=$RC)"
+	exit -1
+fi
+
+echo "----------------------------------"
+echo "DATE	: `date`"
+echo "SUCCESS	: FireStep compiled"

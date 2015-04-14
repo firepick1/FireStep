@@ -3,11 +3,11 @@
 
 typedef union SerialInt16 {
     struct {
-        int intValue;
+        int16_t intValue;
     };
     struct {
-        byte lsb;
-        byte msb;
+        uint8_6 lsb;
+        uint8_6 msb;
     };
 
     void read();
@@ -16,17 +16,17 @@ typedef union SerialInt16 {
 
 typedef union SerialInt32 {
     struct {
-        long longValue;
+        int32_t longValue;
     };
     struct {
-        byte lsb;
-        byte b2;
-        byte b3;
-        byte msb;
+        uint8_t lsb;
+        uint8_t b2;
+        uint8_t b3;
+        uint8_t msb;
     };
     struct {
-        int lsInt;
-        int msInt;
+        int16_t lsInt;
+        int16_t msInt;
     };
 
     void read();
@@ -44,18 +44,18 @@ typedef struct SerialVectorF {
     void multiply(struct SerialVectorF *pThat);
     void divide(struct SerialVector32 *pThat);
     void scale(float value);
-};
+} SerialVectorF;
 
 typedef union SerialVector8 {
     struct {
-        char x;
-        char y;
-        char z;
+        int8_t x;
+        int8_t y;
+        int8_t z;
     };
     struct {
-        byte bx;
-        byte by;
-        byte bz;
+        uint8_t bx;
+        uint8_t by;
+        uint8_t bz;
     };
 
     void read();
