@@ -11,22 +11,22 @@
 #define PIN_Z		10
 
 #ifdef PRR
-	/* DIECIMILA */
-	#define PIN_X_LIM	14
-	#define PIN_Y_LIM	15
-	#define PIN_Z_LIM	16
+/* DIECIMILA */
+#define PIN_X_LIM	14
+#define PIN_Y_LIM	15
+#define PIN_Z_LIM	16
 #else
-	/* MEGA */
-	#define PIN_X_LIM	54
-	#define PIN_Y_LIM	55
-	#define PIN_Z_LIM	56
+/* MEGA */
+#define PIN_X_LIM	54
+#define PIN_Y_LIM	55
+#define PIN_Z_LIM	56
 #endif
 
 #define DELTA_COUNT 120
 
 typedef struct MachineThread : Thread {
-	void Setup();
-	void Heartbeat();
+    void Setup();
+    void Heartbeat();
 } MachineThread;
 
 #endif
