@@ -6,8 +6,8 @@ typedef union SerialInt16 {
         int16_t intValue;
     };
     struct {
-        uint8_6 lsb;
-        uint8_6 msb;
+        uint8_t lsb;
+        uint8_t msb;
     };
 
     void read();
