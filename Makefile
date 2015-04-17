@@ -128,77 +128,77 @@ test/fast:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
 .PHONY : test/fast
 
-Machine.o: Machine.cpp.o
-.PHONY : Machine.o
+src/Machine.o: src/Machine.cpp.o
+.PHONY : src/Machine.o
 
 # target to build an object file
-Machine.cpp.o:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/Machine.cpp.o
-.PHONY : Machine.cpp.o
+src/Machine.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Machine.cpp.o
+.PHONY : src/Machine.cpp.o
 
-Machine.i: Machine.cpp.i
-.PHONY : Machine.i
+src/Machine.i: src/Machine.cpp.i
+.PHONY : src/Machine.i
 
 # target to preprocess a source file
-Machine.cpp.i:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/Machine.cpp.i
-.PHONY : Machine.cpp.i
+src/Machine.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Machine.cpp.i
+.PHONY : src/Machine.cpp.i
 
-Machine.s: Machine.cpp.s
-.PHONY : Machine.s
+src/Machine.s: src/Machine.cpp.s
+.PHONY : src/Machine.s
 
 # target to generate assembly for a file
-Machine.cpp.s:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/Machine.cpp.s
-.PHONY : Machine.cpp.s
+src/Machine.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Machine.cpp.s
+.PHONY : src/Machine.cpp.s
 
-SerialTypes.o: SerialTypes.cpp.o
-.PHONY : SerialTypes.o
+src/SerialTypes.o: src/SerialTypes.cpp.o
+.PHONY : src/SerialTypes.o
 
 # target to build an object file
-SerialTypes.cpp.o:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/SerialTypes.cpp.o
-.PHONY : SerialTypes.cpp.o
+src/SerialTypes.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/SerialTypes.cpp.o
+.PHONY : src/SerialTypes.cpp.o
 
-SerialTypes.i: SerialTypes.cpp.i
-.PHONY : SerialTypes.i
+src/SerialTypes.i: src/SerialTypes.cpp.i
+.PHONY : src/SerialTypes.i
 
 # target to preprocess a source file
-SerialTypes.cpp.i:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/SerialTypes.cpp.i
-.PHONY : SerialTypes.cpp.i
+src/SerialTypes.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/SerialTypes.cpp.i
+.PHONY : src/SerialTypes.cpp.i
 
-SerialTypes.s: SerialTypes.cpp.s
-.PHONY : SerialTypes.s
+src/SerialTypes.s: src/SerialTypes.cpp.s
+.PHONY : src/SerialTypes.s
 
 # target to generate assembly for a file
-SerialTypes.cpp.s:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/SerialTypes.cpp.s
-.PHONY : SerialTypes.cpp.s
+src/SerialTypes.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/SerialTypes.cpp.s
+.PHONY : src/SerialTypes.cpp.s
 
-Thread.o: Thread.cpp.o
-.PHONY : Thread.o
+src/Thread.o: src/Thread.cpp.o
+.PHONY : src/Thread.o
 
 # target to build an object file
-Thread.cpp.o:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/Thread.cpp.o
-.PHONY : Thread.cpp.o
+src/Thread.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Thread.cpp.o
+.PHONY : src/Thread.cpp.o
 
-Thread.i: Thread.cpp.i
-.PHONY : Thread.i
+src/Thread.i: src/Thread.cpp.i
+.PHONY : src/Thread.i
 
 # target to preprocess a source file
-Thread.cpp.i:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/Thread.cpp.i
-.PHONY : Thread.cpp.i
+src/Thread.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Thread.cpp.i
+.PHONY : src/Thread.cpp.i
 
-Thread.s: Thread.cpp.s
-.PHONY : Thread.s
+src/Thread.s: src/Thread.cpp.s
+.PHONY : src/Thread.s
 
 # target to generate assembly for a file
-Thread.cpp.s:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/Thread.cpp.s
-.PHONY : Thread.cpp.s
+src/Thread.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Thread.cpp.s
+.PHONY : src/Thread.cpp.s
 
 test/FireLog.o: test/FireLog.cpp.o
 .PHONY : test/FireLog.o
@@ -283,15 +283,15 @@ help:
 	@echo "... package_source"
 	@echo "... rebuild_cache"
 	@echo "... test"
-	@echo "... Machine.o"
-	@echo "... Machine.i"
-	@echo "... Machine.s"
-	@echo "... SerialTypes.o"
-	@echo "... SerialTypes.i"
-	@echo "... SerialTypes.s"
-	@echo "... Thread.o"
-	@echo "... Thread.i"
-	@echo "... Thread.s"
+	@echo "... src/Machine.o"
+	@echo "... src/Machine.i"
+	@echo "... src/Machine.s"
+	@echo "... src/SerialTypes.o"
+	@echo "... src/SerialTypes.i"
+	@echo "... src/SerialTypes.s"
+	@echo "... src/Thread.o"
+	@echo "... src/Thread.i"
+	@echo "... src/Thread.s"
 	@echo "... test/FireLog.o"
 	@echo "... test/FireLog.i"
 	@echo "... test/FireLog.s"

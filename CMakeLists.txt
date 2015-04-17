@@ -7,7 +7,6 @@ SET(PROJECT_VERSION_MINOR 1)
 set(PROJECT_VERSION_PATCH 0)
 set(PROJECT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
 
-
 IF(WIN32)
   MESSAGE(STATUS "Detecting WINDOWS build")
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
@@ -35,9 +34,14 @@ SET(EXECUTABLE_OUTPUT_PATH "${BUILD_TARGET_DIR}")
 SET(RUNTIME_OUTPUT_NAME firestep)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-include_directories( ${PROJECT_SOURCE_DIR} ${BUILD_TARGET_DIR} test)
-include_directories( /usr/local/include )
-include_directories( /usr/include )
+include_directories( 
+	${PROJECT_SOURCE_DIR}/src
+	${BUILD_TARGET_DIR} 
+	test
+	ArduinoJson/include 
+	/usr/local/include 
+	/usr/include
+)
 
 include (InstallRequiredSystemLibraries)
 SET(CPACK_RESOURCE_FILE_LICENSE  
@@ -54,21 +58,34 @@ foreach(dir ${dirs})
 endforeach()
 
 configure_file (
-  "${PROJECT_SOURCE_DIR}/version.h.in"
+  "${PROJECT_SOURCE_DIR}/src/version.h.in"
   "${BUILD_TARGET_DIR}/version.h"
   )
 
 message("CMAKE_PREFIX_PATH:${CMAKE_PREFIX_PATH}")
 
-link_directories( ${BUILD_TARGET_DIR} /usr/lib /usr/local/lib )
+link_directories( 
+	${BUILD_TARGET_DIR} 
+	ArduinoJson/lib
+	/usr/lib 
+	/usr/local/lib 
+)
 
 add_executable(test 
-	Thread.cpp
-	Machine.cpp
-	SerialTypes.cpp
+	src/Thread.cpp
+	src/Machine.cpp
+	src/SerialTypes.cpp
 	test/FireLog.cpp
 	test/MockDuino.cpp
-	test/test.cpp)
+	test/test.cpp
+)
+
+add_dependencies(test
+	ArduinoJson
+)
+target_link_libraries(test
+	ArduinoJson
+)
 
 if(WIN32)
   add_custom_command(TARGET test POST_BUILD    
@@ -77,6 +94,3 @@ if(WIN32)
         "${PROJECT_SOURCE_DIR}/target/test.exe" 
         )
 endif(WIN32)
-
-
-

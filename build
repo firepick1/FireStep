@@ -23,25 +23,19 @@ do
   esac
 done
 
+if [ ! -e ArduinoJson ]; then
+	echo "GIT	: git clone https://github.com/bblanchon/ArduinoJson.git"
+	git clone https://github.com/bblanchon/ArduinoJson.git
+	pushd ArduinoJson
+	cmake .
+	make clean all
+	popd
+fi
+
 if [ "$SUDO_USER" != "" ]; then
   echo "ERROR	: This script will call sudo as required and must be run by non-root user"
   echo "TRY	:   ./build"
   exit -1
-fi
-
-installPrefix=/usr
-
-if [ `uname -o` == "Solaris" ]; then
-  echo "OS	: SOLARIS"
-  sudo pkgin update
-  sudo crle -l /usr/local/lib -u
-  installPrefix=/usr/local
-  if [ "$(type -p install-sh)" == "" ]; then
-    echo "COMMAND	: pkgin -y install install-sh"
-    sudo pkgin -y install install-sh
-  else
-    echo "STATUS	: install-sh installed"
-  fi
 fi
 
 if [ "$(type -p gcc)" == "" ]; then
@@ -76,23 +70,6 @@ if [ "$(type -p aclocal)" == "" ]; then
   sudo pkgin -y install automake
 else
   echo "STATUS	: automake insalled"
-fi
-
-if [ ! -e /usr/local/include/jansson.h ] ; then
-  echo "STATUS	: installing JANNSON C Library"
-  if [ `uname -o` == "Solaris" ]; then
-    sudo pkgin -y install autoconf
-  else 
-    sudo apt-get -y install dh-autoreconf
-  fi
-  git clone git://github.com/akheron/jansson jannson
-  pushd jannson
-  autoreconf -i
-  ./configure
-  cmake .
-  make 
-  sudo -E make install
-  popd
 fi
 
 if [ -e CMakeFiles ] ; then 

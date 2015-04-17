@@ -8,6 +8,7 @@
 #include "Arduino.h"
 #include "SerialTypes.h"
 #include "Machine.h"
+#include "ArduinoJson.h"
 
 byte lastByte;
 
@@ -297,6 +298,22 @@ void test_Machine() {
 	cout << "TEST	:=== test_Machine() OK " << endl;
 }
 
+void test_ArduinoJson() {
+    cout << "TEST	: test_ArduinoJson() BEGIN" << endl;
+	char json[] = "{\"sensor\":\"gps\",\"time\":1351824120,\"data\":[48.756080,2.302038]}";
+
+	StaticJsonBuffer<200> jsonBuffer;
+
+	JsonObject& root = jsonBuffer.parseObject(json);
+
+	ASSERTEQUALS("gps", root["sensor"]);
+	ASSERTEQUAL(1351824120L, (int32_t)root["time"]);
+	ASSERTEQUAL(48.756080, root["data"][0]);
+	ASSERTEQUAL(2.302038, root["data"][1]);
+
+	cout << "TEST	:=== test_ArduinoJson() OK " << endl;
+}
+
 int main(int argc, char *argv[]) {
     LOGINFO3("INFO	: FireStep test v%d.%d.%d",
 		VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -305,6 +322,7 @@ int main(int argc, char *argv[]) {
     test_Serial();
 	test_Thread();
 	test_Machine();
+	test_ArduinoJson();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }
