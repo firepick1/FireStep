@@ -10,15 +10,15 @@ void setup()										// run once, when the sketch starts
 	//Serial.begin(115200); // too fast
 	Serial.begin(57600);
 
-	mainThread.Setup();
+	mainThread.setup();
 
-	ThreadSetup(LED_PIN_RED, LED_PIN_GRN);
+	threadRunner.setup(LED_PIN_RED, LED_PIN_GRN);
 	monitor.verbose = false;
 }
 
 void loop()										 // run over and over again
 {
-	ThreadRunner();
+	threadRunner.run();
 }
 
 byte lastByte;

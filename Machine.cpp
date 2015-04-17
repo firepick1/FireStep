@@ -1,4 +1,4 @@
-#include "WProgram.h"
+#include "Arduino.h"
 #include "Machine.h"
 #include "AnalogRead.h"
 
@@ -23,132 +23,40 @@
 
 #define X_BACKLASH 120
 
-typedef struct CommandParser {
-    int cPeek;
-    byte peekAvail;
-
-    byte readCommand();
-    byte peek(byte c);
-    void reset();
-} CommandParser;
-
-typedef struct Slack {
-    byte maxSlack;
-    byte curSlack;
-    bool isPlusDelta;
-
-    void init(byte maxSlack);
-    int deltaWithBacklash(int delta);
-};
-
-typedef struct SlackVector {
-    Slack x;
-    Slack y;
-    Slack z;
-    void init(byte xMax, byte yMax, byte zMax);
-} SlackVector;
-
-typedef struct Machine {
-    float pathPosition;
-    SerialInt16 maxPulses;
-    SerialInt32 pulses;
-    SerialInt32 heartbeats;
-    SerialInt32 heartbeatMicros;
-    SerialInt32 actualMicros;
-    SerialVector32 unitLengthSteps;
-    SerialVector32 drivePos;
-    bool xReverse;
-    bool yReverse;
-    bool zReverse;
-    union {
-        struct {
-            SerialInt32 estimatedMicros;
-            SerialVector32 startPos;
-            SerialVector32 endPos;
-            SerialVector32 segmentStart;
-            SerialVector32 segmentStartPos;
-            SerialVector16 toolVelocity;
-        };
-        struct {
-            SerialVector16 jogDelta;
-            SerialInt32 jogFrequency;
-            SerialInt32 jogCount;
-            bool		jogOverride;
-        };
-        struct {
-            SerialVector32 backlash;
-        };
-    };
-    SerialVectorF drivePathScale;
-    SlackVector slack;
-    int segmentIndex;
-    SerialInt16 deltaCount;
-    SerialVector8 deltas[DELTA_COUNT];
-
-    void init();
-    bool doJog();
-    bool doAccelerationStroke();
-    bool pulseDrivePin(byte stepPin, byte dirPin, byte limitPin, int delta, bool reverse, char axis);
-    bool PulseLow(byte stepPin, byte limitPin);
-    void sendXYZResponse(struct SerialVector32 *pVector);
-    void sendBacklashResponse(struct SerialVector32 *pVector);
-} Machine;
-
-typedef struct Controller {
-    CommandParser	parser;
-    char			guardStart;
-    CLOCK			lastClock;
-    byte			cmd;
-    byte			speed;
-    Machine 		machine;
-    byte			guardEnd;
-
-    void init();
-    byte readCommand();
-    bool processCommand();
-    bool readAccelerationStroke();
-} Controller;
+#ifndef ASM
+#define ASM(op) asm(op)
+#endif
 
 Controller	controller;
-bool 		processCommand;
+bool 		isProcessing;
 
-void MachineThread::Setup() {
+void MachineThread::setup() {
     id = 'M';
-    ADC_LISTEN8(5);
-    Thread::Setup();
+#ifdef THROTTLE_SPEED
+    ADC_LISTEN8(ANALOG_SPEED_PIN);
+#endif
+    Thread::setup();
     controller.init();
-    processCommand = false;
+    isProcessing = false;
 }
 
 void MachineThread::Heartbeat() {
+#ifdef THROTTLE_SPEED
     controller.speed = ADCH;
     if (controller.speed <= 251) {
         ThreadEnable(false);
         for (byte iPause = controller.speed; iPause <= 247; iPause++) {
             for (byte iIdle = 0; iIdle < 10; iIdle++) {
-                asm("nop");
-                asm("nop");
-                asm("nop");
-                asm("nop");
-                asm("nop");
-                asm("nop");
-                asm("nop");
-                asm("nop"); // 0.5 microsecond @ 16MHz
-                asm("nop");
-                asm("nop");
-                asm("nop");
-                asm("nop");
-                asm("nop");
-                asm("nop");
-                asm("nop");
-                asm("nop"); // 0.5 microsecond @ 16MHz
+				DELAY500NS;
+				DELAY500NS;
             }
         }
         ThreadEnable(true);
     }
+#endif
 
-    monitor.blinkLED = processCommand ? LED_GREEN : LED_RED;
-    if (processCommand) {
+    monitor.blinkLED = isProcessing ? LED_GREEN : LED_RED;
+    if (isProcessing) {
         long hbDelta = 0;
         switch (controller.cmd) {
         case CMD_JOG:
@@ -160,7 +68,7 @@ void MachineThread::Heartbeat() {
             break;
         }
         if (controller.processCommand()) {
-            processCommand = false;
+            isProcessing = false;
             nextHeartbeat.Repeat();
         }
     } else if (Serial.available() > 0) {
@@ -174,7 +82,7 @@ void MachineThread::Heartbeat() {
             nextHeartbeat.clock = masterClock.clock + MS_CYCLES(10000);
             break;
         case COMMAND_RESULT_READ:
-            processCommand = true;
+            isProcessing = true;
             break;
         }
     } else {
@@ -424,48 +332,48 @@ bool Controller::processCommand() {
 
     switch (cmd) {
     default:
-        Serial.print('E');
-        Serial.print('c');
-        Serial.print('o');
-        Serial.print('C');
-        Serial.print('N');
-        Serial.print('C');
-        Serial.print('?');
+        Serial.write('E');
+        Serial.write('c');
+        Serial.write('o');
+        Serial.write('C');
+        Serial.write('N');
+        Serial.write('C');
+        Serial.write('?');
         Serial.println(cmd, HEX);
         break;
     case CMD_VERSION:
-        Serial.print('[');
-        Serial.print('v');
-        Serial.print('1');
-        Serial.print('.');
-        Serial.print('0');
-        Serial.println(']');
+        Serial.write('[');
+        Serial.write('v');
+        Serial.write('1');
+        Serial.write('.');
+        Serial.write('0');
+        Serial.println("]");
         break;
     case CMD_DIAG:
         sz = sizeof(Controller);
-        Serial.print('[');
-        Serial.print('D');
-        Serial.print('I');
-        Serial.print('A');
-        Serial.print('G');
+        Serial.write('[');
+        Serial.write('D');
+        Serial.write('I');
+        Serial.write('A');
+        Serial.write('G');
         Serial.print(sz);
-        Serial.print(' ');
+        Serial.write(' ');
         sz = DELTA_COUNT;
         Serial.print(sz);
-        Serial.print(' ');
-        sz = (byte*)&completed - (byte*)&guardEnd; // stack free
-        Serial.print(sz);
-        Serial.print(' ');
-        Serial.print('X');
+        //Serial.write(' ');
+        //sz = (byte*)&completed - (byte*)&guardEnd; // stack free
+        //Serial.print(sz);
+        Serial.write(' ');
+        Serial.write('X');
         sz = digitalRead(PIN_X_LIM);
         Serial.print(sz);
-        Serial.print('Y');
+        Serial.write('Y');
         sz = digitalRead(PIN_Y_LIM);
         Serial.print(sz);
-        Serial.print('Z');
+        Serial.write('Z');
         sz = digitalRead(PIN_Z_LIM);
         Serial.print(sz);
-        Serial.println(']');
+        Serial.println("]");
         break;
     case CMD_SET_BACKLASH:
         machine.backlash.x.longValue = machine.slack.x.maxSlack;
@@ -596,50 +504,50 @@ void Machine::sendXYZResponse(struct SerialVector32 *pVector) {
 
     Serial.print("[XYZ");
     pVector->x.send();
-    Serial.print(' ', BYTE);
+    Serial.write(' ');
     pVector->y.send();
-    Serial.print(' ', BYTE);
+    Serial.write(' ');
     pVector->z.send();
-    Serial.print(' ', BYTE);
-    Serial.print('X');
+    Serial.write(' ');
+    Serial.write('X');
     sz = digitalRead(PIN_X_LIM);
     Serial.print(sz);
-    Serial.print('Y');
+    Serial.write('Y');
     sz = digitalRead(PIN_Y_LIM);
     Serial.print(sz);
-    Serial.print('Z');
+    Serial.write('Z');
     sz = digitalRead(PIN_Z_LIM);
     Serial.print(sz);
-    Serial.print(' ', BYTE);
+    Serial.write(' ');
     actualMicros.send();
-    Serial.print(' ', BYTE);
+    Serial.write(' ');
     heartbeats.send();
-    Serial.print(' ', BYTE);
+    Serial.write(' ');
     heartbeatMicros.send();
-    Serial.print(' ', BYTE);
+    Serial.write(' ');
     pulses.send();
-    Serial.print(' ', BYTE);
+    Serial.write(' ');
     maxPulses.send();
-    Serial.print(']', BYTE);
+    Serial.write(']');
     Serial.println();
 }
 
 void Machine::sendBacklashResponse(struct SerialVector32 *pVector) {
     int sz;
 
-    Serial.print('[', BYTE);
-    Serial.print('S', BYTE);
-    Serial.print('B', BYTE);
-    Serial.print('A', BYTE);
-    Serial.print('K', BYTE);
-    Serial.print(' ', BYTE);
+    Serial.write('[');
+    Serial.write('S');
+    Serial.write('B');
+    Serial.write('A');
+    Serial.write('K');
+    Serial.write(' ');
     pVector->x.send();
-    Serial.print(' ', BYTE);
+    Serial.write(' ');
     pVector->y.send();
-    Serial.print(' ', BYTE);
+    Serial.write(' ');
     pVector->z.send();
-    Serial.print(' ', BYTE);
-    Serial.print(']', BYTE);
+    Serial.write(' ');
+    Serial.write(']');
     Serial.println();
 }
 
@@ -664,7 +572,7 @@ bool Machine::pulseDrivePin(byte stepPin, byte dirPin, byte limitPin, int delta,
             }
         }
         while (delta++ < 0 && limitCount < MAX_PULSE_LIMIT) {
-            limitCount += PulseLow(stepPin, limitPin);
+            limitCount += pulseLow(stepPin, limitPin);
         }
     } else if (delta > 0) {
         digitalWrite(dirPin, reverse ? LOW : HIGH);
@@ -679,7 +587,7 @@ bool Machine::pulseDrivePin(byte stepPin, byte dirPin, byte limitPin, int delta,
             }
         }
         while (delta-- > 0 && limitCount < MAX_PULSE_LIMIT) {
-            limitCount += PulseLow(stepPin, limitPin);
+            limitCount += pulseLow(stepPin, limitPin);
         }
     }
 
@@ -687,14 +595,13 @@ bool Machine::pulseDrivePin(byte stepPin, byte dirPin, byte limitPin, int delta,
 }
 
 // Send one pulse to motor. Return true if limit switch was tripped.
-bool Machine::PulseLow(byte stepPin, byte limitPin) {
+bool Machine::pulseLow(byte stepPin, byte limitPin) {
     bool atLimit;
 
     digitalWrite(stepPin, LOW);
 
-    // Some Gecko drives require 4 microsecond high pulse
-    // Reading the limit here chews up time (untested)
     atLimit = digitalRead(limitPin);
+	STEPPER_PULSE_DELAY;
 
     digitalWrite(stepPin, HIGH);
 

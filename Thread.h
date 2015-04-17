@@ -12,6 +12,9 @@ extern byte lastByte;		// declare this at end of program
 #define MS_CYCLES(ms) FREQ_CYCLES(1000.0 / (ms))
 #define GENERATION_CYCLES (CLOCK_HZ / 65536)
 #define MIDI_CYCLES(midi) (4 * (CLOCK) Midi4MHz(midi))
+#define MAX_GENERATIONS 50010
+#define GENERATION_RESET 50000
+
 		
 typedef unsigned long CLOCK;
 typedef long PERIOD;
@@ -72,7 +75,10 @@ extern ThreadClock masterClock;
 
 typedef struct Thread {
 	public:
-		virtual void Setup();
+		Thread() : tardies(0), id(0), pNext(NULL) {
+			nextHeartbeat.clock = 0;
+		}
+		virtual void setup();
 		virtual void Heartbeat(){}
 
 		struct Thread *pNext;
@@ -91,8 +97,8 @@ typedef void (*ValueDelegatePtr)(void *sender, int value);
 // Binary pulse with variable width
 typedef struct PulseThread : Thread
 {
-	void Setup(CLOCK period, CLOCK pulseWidth);
-	void Heartbeat();
+	virtual void setup(CLOCK period, CLOCK pulseWidth);
+	virtual void Heartbeat();
 
 	boolean isHigh;
 
@@ -114,20 +120,121 @@ typedef struct MonitorThread : PulseThread {
 
 	void 	LED(byte value);
 
-	/* PRIVATE */ void Setup(int pin1, int pin2);
-	/* PRIVATE */ void Error(char *msg, int value);
+	/* PRIVATE */ void setup(int pin1, int pin2);
+	/* PRIVATE */ void Error(const char *msg, int value);
 	/* PRIVATE */ unsigned int Free();
 	/* PRIVATE */ void Heartbeat();
 	/* PRIVATE */ int m_Pin1;
 	/* PRIVATE */ int m_Pin2;
 } MonitorThread;
 
-void Error(char *msg, int value);
-void ThreadSetup(int monitorPin1, int monitorPin2);
-void ThreadRunner();
+void Error(const char *msg, int value);
 void ThreadEnable(boolean enable);
 void PrintN(char c, byte n);
 long MicrosecondsSince(CLOCK lastClock);
 
 extern MonitorThread monitor;
+
+extern struct Thread *pThreadList;
+extern ThreadClock masterClock;
+extern int nThreads;
+extern long nHeartbeats;
+extern long nTardies;
+
+typedef class ThreadRunner {
+    private:
+        uint16_t 	generation;
+        uint16_t 	lastAge;
+        uint16_t 	age;
+        byte		testTardies;
+		int16_t		nHB;
+		byte		fast;
+    public:
+        uint16_t get_generation() {
+            return generation;
+        }
+        uint16_t get_lastAge() {
+            return lastAge;
+        }
+        uint16_t get_age() {
+            return age;
+        }
+        byte get_testTardies() {
+            return testTardies;
+        }
+	protected:
+		void resetGenerations();
+	public: 
+		ThreadRunner();
+	public:
+		void setup(int monitorPin1, int monitorPin2);
+    public:
+        void run() {
+            // outer loop: bookkeeping
+            for (;;) {
+				outerLoop();
+            }
+        }
+    public:
+		inline void outerLoop() {
+			if (fast-- && innerLoop()) {
+				// do nothing
+			} else {
+				nHeartbeats += nHB;
+				nHB = 0;
+				fast = 255;
+			}
+		}
+        inline byte innerLoop() {
+            cli();
+            masterClock.age = age = TCNT1;
+            if (age < lastAge) {
+                lastAge = age;
+                masterClock.generation = ++generation;
+                if (generation > MAX_GENERATIONS) {
+                    resetGenerations();
+                    sei();
+					const char *msg ="GOVFL";
+					Serial.println(msg);
+                    throw msg;
+                }
+                return 0;
+            }
+            lastAge = age;
+            sei();
+
+            // inner loop: run active Threads
+            for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
+                if (generation < pThread->nextHeartbeat.generation) {
+                    continue;
+                }
+                if (generation == pThread->nextHeartbeat.generation && age < pThread->nextHeartbeat.age) {
+                    continue;
+                }
+
+                pThread->Heartbeat();
+                nHB++;
+
+                if (testTardies-- == 0) {
+                    testTardies = 5;	// test intermittently for late Threads
+                    if (age <= pThread->nextHeartbeat.age) {
+                        continue;    // transient ASAP or future
+                    }
+                    if (generation < pThread->nextHeartbeat.generation) {
+                        continue;    // future
+                    }
+                    if (0 == pThread->nextHeartbeat.age) {
+                        continue;    // permanent ASAP
+                    }
+
+                    pThread->tardies++;
+                    nTardies++;
+                }
+            }
+			return 1;
+        }
+} ThreadRunner;
+
+extern ThreadRunner threadRunner;
+
 #endif

@@ -63,8 +63,11 @@ message("CMAKE_PREFIX_PATH:${CMAKE_PREFIX_PATH}")
 link_directories( ${BUILD_TARGET_DIR} /usr/lib /usr/local/lib )
 
 add_executable(test 
+	Thread.cpp
+	Machine.cpp
 	SerialTypes.cpp
 	test/FireLog.cpp
+	test/MockDuino.cpp
 	test/test.cpp)
 
 if(WIN32)

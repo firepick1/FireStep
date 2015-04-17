@@ -7,11 +7,17 @@
 #include "version.h"
 #include "Arduino.h"
 #include "SerialTypes.h"
+#include "Machine.h"
 
-SerialType Serial;
+byte lastByte;
+
+void test_tick(int ticks) {
+	arduino.timer1(ticks);
+	threadRunner.outerLoop();
+}
 
 void test_Serial() {
-    cout << "TEST	: test_Serial()" << endl;
+    cout << "TEST	: test_Serial() BEGIN" << endl;
 
 	ASSERTEQUAL(0, Serial.available());
 	Serial.bytes.clear();
@@ -21,6 +27,14 @@ void test_Serial() {
 	ASSERTEQUAL(0x01, Serial.read());
 	ASSERTEQUAL(0x02, Serial.read());
 	ASSERTEQUAL(0, Serial.available());
+
+	ASSERTEQUALS("", Serial.output().c_str());
+	Serial.write('x');
+	ASSERTEQUALS("x", Serial.output().c_str());
+	Serial.print("a");
+	ASSERTEQUALS("a", Serial.output().c_str());
+	Serial.println("xyz");
+	ASSERTEQUALS("xyz\n", Serial.output().c_str());
 
 	SerialInt16 si16;
 	Serial.bytes.clear();
@@ -181,7 +195,106 @@ void test_Serial() {
 	ASSERTEQUALT(-3, svf.y, epsilon);
 	ASSERTEQUALT(-3, svf.z, epsilon);
 
-	cout << "TEST	:   test_Serial() OK " << endl;
+	cout << "TEST	:=== test_Serial() OK " << endl;
+}
+
+void test_Thread() {
+    cout << "TEST	: test_Thread() BEGIN" << endl;
+	arduino.clear();
+
+	threadRunner.setup(LED_PIN_RED, LED_PIN_GRN);
+
+	arduino.dump();
+	ASSERTEQUALS(" CLKPR:0 nThreads:1\n", Serial.output().c_str());
+	ASSERTEQUAL(OUTPUT, arduino.pinMode[LED_PIN_RED]);
+	ASSERTEQUAL(LOW, digitalRead(LED_PIN_RED));
+	ASSERTEQUAL(OUTPUT, arduino.pinMode[LED_PIN_GRN]);
+	ASSERTEQUAL(LOW, digitalRead(LED_PIN_GRN));
+	ASSERTEQUAL(0x0000, TIMSK1); 	// Timer/Counter1 interrupt mask; no interrupts
+	ASSERTEQUAL(0x0000, TCCR1A);	// Timer/Counter1 normal port operation
+	ASSERTEQUAL(0x0001, TCCR1B);	// Timer/Counter1 active; no prescale
+	ASSERTEQUAL(NOVALUE, SREGI); 	// Global interrupts enabled
+	test_tick(MS_CYCLES(1));
+	ASSERTEQUALS(". S:0 G:0 H:0 T:0\n", Serial.output().c_str());
+	for (int i=0; i<6; i++) {
+		test_tick(MS_CYCLES(1));
+	}
+	ASSERTEQUALS(". S:0 G:1 H:1 H/G:1 T:0\n", Serial.output().c_str());
+
+	cout << "TEST	:=== test_Thread() OK " << endl;
+}
+
+void test_command(const char *cmd, const char* expected) {
+	Serial.push(cmd);
+	ASSERTEQUAL(strlen(cmd), Serial.available());
+	test_tick(MS_CYCLES(1));
+	test_tick(MS_CYCLES(1));
+	ASSERTEQUAL(0, Serial.available());
+	test_tick(MS_CYCLES(1));
+	test_tick(MS_CYCLES(1));
+	ASSERTEQUALS(expected, Serial.output().c_str());
+}
+
+void test_Machine() {
+    cout << "TEST	: test_Machine() BEGIN" << endl;
+	arduino.clear();
+
+	MachineThread machThread;
+	machThread.setup();
+	threadRunner.setup(LED_PIN_RED, LED_PIN_GRN);
+	monitor.verbose = false;
+
+	arduino.dump();
+	ASSERTEQUALS(" CLKPR:0 nThreads:2\n", Serial.output().c_str());
+	ASSERTEQUAL(OUTPUT, arduino.pinMode[PIN_X]);
+	ASSERTEQUAL(OUTPUT, arduino.pinMode[PIN_Y]);
+	ASSERTEQUAL(OUTPUT, arduino.pinMode[PIN_Z]);
+	ASSERTEQUAL(OUTPUT, arduino.pinMode[PIN_X_DIR]);
+	ASSERTEQUAL(OUTPUT, arduino.pinMode[PIN_Y_DIR]);
+	ASSERTEQUAL(OUTPUT, arduino.pinMode[PIN_Z_DIR]);
+	ASSERTEQUAL(INPUT, arduino.pinMode[PIN_X_LIM]);
+	ASSERTEQUAL(INPUT, arduino.pinMode[PIN_Y_LIM]);
+	ASSERTEQUAL(INPUT, arduino.pinMode[PIN_Z_LIM]);
+	ASSERTEQUAL(HIGH, digitalRead(PIN_X_LIM));	// pull-up enabled
+	ASSERTEQUAL(HIGH, digitalRead(PIN_Y_LIM));	// pull-up enabled
+	ASSERTEQUAL(HIGH, digitalRead(PIN_Z_LIM));	// pull-up enabled
+	ASSERTEQUAL(OUTPUT, arduino.pinMode[LED_PIN_RED]);
+	ASSERTEQUAL(LOW, digitalRead(LED_PIN_RED));
+	ASSERTEQUAL(OUTPUT, arduino.pinMode[LED_PIN_GRN]);
+	ASSERTEQUAL(LOW, digitalRead(LED_PIN_GRN));
+	ASSERTEQUAL(0x0000, TIMSK1); 	// Timer/Counter1 interrupt mask; no interrupts
+	ASSERTEQUAL(0x0000, TCCR1A);	// Timer/Counter1 normal port operation
+	ASSERTEQUAL(0x0001, TCCR1B);	// Timer/Counter1 active; no prescale
+#ifdef THROTTLE_SPEED
+	ASSERTEQUAL((1<<ADEN)|(1<<ADPS2), 
+		ADCSRA & ((1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)));	// ADC 1MHz prescale
+	ASSERTEQUAL(0x0000, ADCSRB);	// ADC Control/Status 
+	ASSERTEQUAL(0x0065, ADMUX);		// Timer/Counter1 active; no prescale
+	ASSERTEQUAL(1, DIDR0&(1<<ANALOG_SPEED_PIN) ? 1 : 0);	// digital pin disable
+	ASSERTEQUAL(0, PRR&PRADC);		// Power Reduction Register; ADC enabled
+#else
+	ASSERTEQUAL(0,
+		ADCSRA & ((1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)));	// ADC 1MHz prescale
+#endif
+	ASSERTEQUAL(NOVALUE, SREGI); 	// Global interrupts enabled
+
+	// Clock should increase with TCNT1
+	CLOCK lastClock = masterClock.clock;
+	test_tick(MS_CYCLES(1));
+	ASSERT(lastClock < masterClock.clock);
+	lastClock = masterClock.clock;
+	arduino.dump();
+
+	test_command("[DIAG]", "[DIAG536 120 X1Y1Z1]\n");
+	test_command("[V]", "[v1.0]\n");
+	stringstream sscmd;
+	sscmd << "[IDLE";
+	sscmd << "]";
+	test_command(sscmd.str(), "[XYZ00000000 00000000 00000000 X1Y1Z1 00000000 00000001 00000000 00000000 0000]\n");
+	test_command("[GULS]", "[XYZ00000000 00000000 00000000 X1Y1Z1 00000000 00000001 00000000 00000000 0000]\n");
+	test_command("[GXYZ]", "[XYZ00000000 00000000 00000000 X1Y1Z1 00000000 00000001 00000000 00000000 0000]\n");
+
+	cout << "TEST	:=== test_Machine() OK " << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -190,6 +303,8 @@ int main(int argc, char *argv[]) {
     firelog_level(FIRELOG_TRACE);
 
     test_Serial();
+	test_Thread();
+	test_Machine();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }

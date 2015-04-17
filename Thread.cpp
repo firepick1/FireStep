@@ -1,15 +1,16 @@
-#include "WProgram.h"
+#include "Arduino.h"
 #include "Thread.h"
 #include "SerialTypes.h"
 
-static struct Thread *pThreadList;
-ThreadClock masterClock;
+ThreadRunner threadRunner;
 
+struct Thread *pThreadList;
+ThreadClock masterClock;
 int nThreads;
 long nHeartbeats;
 long nTardies;
 
-void Thread::Setup() {
+void Thread::setup() {
     bool active = false;
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
         if (pThread == this) {
@@ -22,16 +23,17 @@ void Thread::Setup() {
         pNext = pThreadList;
         pThreadList = this;
         if (id == 0) {
-            id = 'a' + nThreads++;
+            id = 'a' + nThreads;
         }
+		nThreads++;
         if (nThreads >= MAX_ThreadS) {
             Error("SC", MAX_ThreadS);
         }
     }
 }
 
-void PulseThread::Setup(CLOCK period, CLOCK pulseWidth) {
-    Thread::Setup();
+void PulseThread::setup(CLOCK period, CLOCK pulseWidth) {
+    Thread::setup();
     if (pulseWidth == 0) {
         m_HighPeriod = period / 2;
     } else {
@@ -52,10 +54,10 @@ void PulseThread::Heartbeat() {
 
 unsigned long totalHeartbeats;
 
-void MonitorThread::Setup(int pin1, int pin2) {
+void MonitorThread::setup(int pin1, int pin2) {
     id = 'Z';
     // set monitor interval to not coincide with timer overflow
-    PulseThread::Setup(MS_CYCLES(1000), MS_CYCLES(250));
+    PulseThread::setup(MS_CYCLES(1000), MS_CYCLES(250));
     m_Pin1 = pin1;
     m_Pin2 = pin2;
     verbose = true;
@@ -76,7 +78,7 @@ void MonitorThread::LED(byte value) {
     digitalWrite(m_Pin2, (value == 3 || value == 2) ? HIGH : LOW);
 }
 
-void MonitorThread::Error(char *msg, int value) {
+void MonitorThread::Error(const char *msg, int value) {
     LED(3);
     for (int i = 0; i < 20; i++) {
         Serial.print('>');
@@ -85,6 +87,9 @@ void MonitorThread::Error(char *msg, int value) {
     Serial.println(value);
 }
 
+/**
+ * A dangerous way to find out how much memory is consumed
+ */
 unsigned int MonitorThread::Free() {
     unsigned int result;
     for (byte *pByte = &lastByte; *++pByte == 0x00; pByte++) {
@@ -129,7 +134,7 @@ void MonitorThread::Heartbeat() {
         totalHeartbeats += nHeartbeats;
         if (verbose) {
             Serial.print(".");
-            DEBUG_DEC("F", Free());
+            //DEBUG_DEC("F", Free());
             DEBUG_DEC("S", millis() / 1000);
             DEBUG_DEC("G", masterClock.generation);
             DEBUG_DEC("H", nHeartbeats);
@@ -148,12 +153,26 @@ void MonitorThread::Heartbeat() {
 
 MonitorThread monitor;
 
-void Error(char *msg, int value) {
+void Error(const char *msg, int value) {
     monitor.Error(msg, value);
 }
 
-void ThreadSetup(int monitorPin1, int monitorPin2) {
-    monitor.Setup(monitorPin1, monitorPin2);
+ThreadRunner::ThreadRunner() {
+	pThreadList = NULL;
+	masterClock.clock = 0;
+	nThreads = 0;
+	nHeartbeats = 0;
+	nTardies = 0;
+	generation = masterClock.generation;
+	lastAge = 0;
+	age = 0;
+	nHB = 0;
+	testTardies = 0;
+	fast = 255;
+}
+
+void ThreadRunner::setup(int monitorPin1, int monitorPin2) {
+    monitor.setup(monitorPin1, monitorPin2);
     DEBUG_DEC("CLKPR", CLKPR);
     DEBUG_DEC("nThreads", nThreads);
     DEBUG_EOL();
@@ -163,11 +182,8 @@ void ThreadSetup(int monitorPin1, int monitorPin2) {
     ThreadEnable(true);
 }
 
-#define MAX_GENERATIONS 50010
-#define GENERATION_RESET 50000
-
 /// We have exceeded generation maximum (~4m @ 16MHZ)
-void ResetGenerations() {
+void ThreadRunner::resetGenerations() {
     masterClock.generation -= GENERATION_RESET;
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
         if (pThread->nextHeartbeat.clock) {
@@ -207,66 +223,6 @@ long MicrosecondsSince(CLOCK lastClock) {
 
 // Make sure we come up for air sometimes
 #define MAX_ACTIVE_HEARTBEATS (255-MAX_ThreadS)
-
-void ThreadRunner() {									 // run over and over again
-    unsigned int generation = masterClock.generation;
-    unsigned int lastAge = 0;
-    unsigned int age;
-    byte testTardies = 0;
-    int nHB = 0;
-
-    // outer loop: bookkeeping
-    for (;;) {
-        for (byte fast = 255; fast--;) {
-            cli();
-            masterClock.age = age = TCNT1;
-            if (age < lastAge) {
-                lastAge = age;
-                masterClock.generation = ++generation;
-                if (generation > MAX_GENERATIONS) {
-                    ResetGenerations();
-                    sei();
-                    return;
-                }
-                break;
-            }
-            lastAge = age;
-            sei();
-
-            // inner loop: run active Threads
-            for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-                if (generation < pThread->nextHeartbeat.generation) {
-                    continue;
-                }
-                if (generation == pThread->nextHeartbeat.generation && age < pThread->nextHeartbeat.age) {
-                    continue;
-                }
-
-                pThread->Heartbeat();
-                nHB++;
-
-                if (testTardies-- == 0) {
-                    testTardies = 5;	// test intermittently for late Threads
-                    if (age <= pThread->nextHeartbeat.age) {
-                        continue;    // transient ASAP or future
-                    }
-                    if (generation < pThread->nextHeartbeat.generation) {
-                        continue;    // future
-                    }
-                    if (0 == pThread->nextHeartbeat.age) {
-                        continue;    // permanent ASAP
-                    }
-
-                    pThread->tardies++;
-                    nTardies++;
-                }
-            }
-        }
-
-        nHeartbeats += nHB;
-        nHB = 0;
-    }
-}
 
 void ThreadEnable(boolean enable) {
 #ifdef DEBUG_ThreadENABLE
