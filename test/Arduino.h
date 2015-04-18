@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iomanip>
 #include <stdint.h>
+#include "../ArduinoJson/include/ArduinoJson/Arduino/Print.hpp"
 
 using namespace std;
 
@@ -67,13 +68,19 @@ extern "C" {
     extern long millis();
 }
 
-typedef class SerialType {
+typedef class SerialType : public Print {
     private:
         string serialout;
 		string serialline;
+        vector<uint8_t> bytes;
 
     public:
-        vector<uint8_t> bytes;
+		void clear() {
+			bytes.clear();
+		}
+		void push(uint8_t value) {
+            bytes.push_back(value);
+		}
         void push(int16_t value) {
             uint8_t *pvalue = (uint8_t *) &value;
             bytes.push_back((uint8_t)((value >> 8) & 0xff));
@@ -120,7 +127,7 @@ typedef class SerialType {
             return c;
         }
 
-		void write(byte value) {
+		virtual size_t write(uint8_t value) {
             serialout.append(1, (char) value);
             if (value == '\n') {
                 cout << "Serial	: \"" << serialline << "\"" << endl;
@@ -128,6 +135,7 @@ typedef class SerialType {
             } else {
 				serialline.append(1, (char)value);
 			}
+			return 1;
 		}
         void print(const char *value) {
             serialout.append(value);
@@ -144,8 +152,9 @@ typedef class SerialType {
                 buf << value;
                 break;
             }
-			serialline.append(buf.str());
-            serialout.append(buf.str());
+			string bufVal = buf.str();
+			serialline.append(bufVal);
+            serialout.append(bufVal);
         }
         void println(const char value, int format = DEC) {
             print(value, format);
@@ -157,8 +166,6 @@ typedef class SerialType {
 			}
             write('\n');
         }
-
-
 } SerialType;
 
 

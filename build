@@ -25,7 +25,7 @@ done
 
 if [ ! -e ArduinoJson ]; then
 	echo "GIT	: git clone https://github.com/bblanchon/ArduinoJson.git"
-	git clone https://github.com/bblanchon/ArduinoJson.git
+	git clone git@github.com:firepick1/ArduinoJson.git
 	pushd ArduinoJson
 	cmake .
 	make clean all
@@ -87,6 +87,8 @@ RC=$?; if [ $RC -ne 0 ]; then
 	exit -1
 fi
 echo "STATUS	: building FireStep"
+git log --abbrev=10 --pretty=format:'#define BUILD "%h"' -n 1 > target/build.h
+echo "BUILD	: " `cat target/build.h`
 make
 RC=$?; if [ $RC -ne 0 ]; then
 	echo "ERROR	: make failed (RC=$RC)"

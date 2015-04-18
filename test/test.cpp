@@ -8,9 +8,12 @@
 #include "Arduino.h"
 #include "SerialTypes.h"
 #include "Machine.h"
-#include "ArduinoJson.h"
+#include "build.h"
+#include "JCommand.h"
 
 byte lastByte;
+
+using namespace firestep;
 
 void test_tick(int ticks) {
 	arduino.timer1(ticks);
@@ -21,9 +24,9 @@ void test_Serial() {
     cout << "TEST	: test_Serial() BEGIN" << endl;
 
 	ASSERTEQUAL(0, Serial.available());
-	Serial.bytes.clear();
-	Serial.bytes.push_back(0x01);
-	Serial.bytes.push_back(0x02);
+	Serial.clear();
+	Serial.push((uint8_t)0x01);
+	Serial.push((uint8_t)0x02);
 	ASSERTEQUAL(2, Serial.available());
 	ASSERTEQUAL(0x01, Serial.read());
 	ASSERTEQUAL(0x02, Serial.read());
@@ -38,19 +41,19 @@ void test_Serial() {
 	ASSERTEQUALS("xyz\n", Serial.output().c_str());
 
 	SerialInt16 si16;
-	Serial.bytes.clear();
-	Serial.bytes.push_back(0x01);
-	Serial.bytes.push_back(0x02);
+	Serial.clear();
+	Serial.push((uint8_t)0x01);
+	Serial.push((uint8_t)0x02);
 	si16.read();
 	ASSERTEQUAL(0x0102, si16.intValue);
 	ASSERTEQUAL(0, Serial.available());
 
 	SerialInt32 si32;
-	Serial.bytes.clear();
-	Serial.bytes.push_back(0x01);
-	Serial.bytes.push_back(0x02);
-	Serial.bytes.push_back(0x03);
-	Serial.bytes.push_back(0x04);
+	Serial.clear();
+	Serial.push((uint8_t)0x01);
+	Serial.push((uint8_t)0x02);
+	Serial.push((uint8_t)0x03);
+	Serial.push((uint8_t)0x04);
 	si32.read();
 	ASSERTEQUAL(0x0304, si32.lsInt);
 	ASSERTEQUAL(0x0102, si32.msInt);
@@ -58,10 +61,10 @@ void test_Serial() {
 	ASSERTEQUAL(0, Serial.available());
 
 	SerialVector8 sv8;
-	Serial.bytes.clear();
-	Serial.bytes.push_back(0x01);
-	Serial.bytes.push_back(0xFF);
-	Serial.bytes.push_back(0x7F);
+	Serial.clear();
+	Serial.push((uint8_t)0x01);
+	Serial.push((uint8_t)0xFF);
+	Serial.push((uint8_t)0x7F);
 	sv8.read();
 	ASSERTEQUAL(1, sv8.x);
 	ASSERTEQUAL(-1, sv8.y);
@@ -69,7 +72,7 @@ void test_Serial() {
 	ASSERTEQUAL(0, Serial.available());
 
 	SerialVector16 sv16;
-	Serial.bytes.clear();
+	Serial.clear();
 	Serial.push((int16_t) 123);
 	Serial.push((int16_t) -456);
 	Serial.push((int16_t) 789);
@@ -100,7 +103,7 @@ void test_Serial() {
 	ASSERTEQUAL(0, sv32.x.longValue);
 	ASSERTEQUAL(0, sv32.y.longValue);
 	ASSERTEQUAL(0, sv32.z.longValue);
-	Serial.bytes.clear();
+	Serial.clear();
 	Serial.push((int32_t) 12345);
 	Serial.push((int32_t) -45678);
 	Serial.push((int32_t) 67890);
@@ -111,7 +114,7 @@ void test_Serial() {
 	ASSERTEQUAL(-45678, sv32.y.longValue);
 	ASSERTEQUAL(67890, sv32.z.longValue);
 	SerialVector32 sv32b;
-	Serial.bytes.clear();
+	Serial.clear();
 	Serial.push((int32_t) 1);
 	Serial.push((int32_t) 2);
 	Serial.push((int32_t) 3);
@@ -302,7 +305,7 @@ void test_ArduinoJson() {
     cout << "TEST	: test_ArduinoJson() BEGIN" << endl;
 	char json[] = "{\"sensor\":\"gps\",\"time\":1351824120,\"data\":[48.756080,2.302038]}";
 
-	StaticJsonBuffer<200> jsonBuffer;
+	StaticJsonBuffer<500> jsonBuffer;
 
 	JsonObject& root = jsonBuffer.parseObject(json);
 
@@ -311,7 +314,92 @@ void test_ArduinoJson() {
 	ASSERTEQUAL(48.756080, root["data"][0]);
 	ASSERTEQUAL(2.302038, root["data"][1]);
 
+	JsonVariant& nothing = root["nothing"];
+	ASSERT(!nothing.success());
+	ASSERT(!nothing.is<double>());
+	ASSERT(!nothing.is<long>());
+	ASSERT(!nothing.is<const char *>());
+	ASSERT(NULL == (const char *) root["time"]);
+
+	// C string values MUST be invariant during JsonVariant lifetime
+	char buf[] = {'r','e','d',0};
+	ASSERT((root["color"] = buf).success());
+	ASSERTEQUALS("red", root["color"]);
+	buf[0] = 0;	// ----------- DANGER -----------
+	ASSERTEQUALS("", root["color"]);
+
 	cout << "TEST	:=== test_ArduinoJson() OK " << endl;
+}
+
+void test_JCommand() {
+    cout << "TEST	: test_JCommand() BEGIN" << endl;
+
+	JCommand cmd1;
+	ASSERT(!cmd1.root().success());
+	ASSERT(cmd1.parse("{\"sys\":\"\"}"));
+	ASSERTEQUAL(STATUS_JSON_PARSED, cmd1.getStatus());
+	ASSERT(cmd1.isValid());
+	JsonVariant& sys = cmd1.root()["sys"];
+	ASSERTEQUALS("", sys);
+	ASSERT(!sys.is<double>());
+	ASSERT(!sys.is<long>());
+	ASSERT(sys.is<const char *>());
+	
+	JCommand cmd2;
+	ASSERT(cmd2.parse("{\"x\":123,\"y\":2.3}"));
+	ASSERTEQUAL(STATUS_JSON_PARSED, cmd2.getStatus());
+	ASSERT(cmd2.isValid());
+	ASSERTEQUALT(2.3, cmd2.root()["y"], 0.001);
+	ASSERTEQUAL(123.0, cmd2.root()["x"]);
+	JsonVariant& y = cmd2.root()["y"];
+	ASSERTEQUALT(2.3, y, 0.001);
+	ASSERT(y.success());
+	ASSERT(y.is<double>());
+	ASSERT(!y.is<long>());
+	JsonVariant& x = cmd2.root()["x"];
+	ASSERT(x.is<long>());
+	ASSERT(!x.is<double>());
+
+	const char *json1 = "{\"x\":-0.1";
+	const char *json2 = "23}\n";
+	Serial.push(json1);
+	JCommand cmd3;
+	ASSERT(!cmd3.parse());
+	Serial.push(json2);
+	ASSERT(cmd3.parse());
+	ASSERTEQUAL(STATUS_JSON_PARSED, cmd3.getStatus());
+	ASSERT(cmd3.isValid());
+	ASSERT(cmd3.root().success());
+	x = cmd3.root()["x"];
+	ASSERTEQUAL(-0.123, x);
+
+	Serial.clear();
+	cmd3.root().printTo(Serial);
+	ASSERTEQUALS("{\"x\":-0.123}", Serial.output().c_str());
+
+	Serial.clear();
+	cmd3.response().printTo(Serial);
+	ASSERTEQUALS("{\"s\":-1,\"r\":{\"x\":-0.123}}", Serial.output().c_str());
+
+	cout << "TEST	:=== test_JCommand() OK " << endl;
+}
+
+void test_Machine_process() {
+    cout << "TEST	: test_Machine_process() BEGIN" << endl;
+
+	Machine machine;
+
+	Serial.clear();
+	JCommand jcmd1;
+	ASSERT(jcmd1.parse("{\"sys\":\"\"}"));
+	machine.process(jcmd1);
+	jcmd1.response().printTo(Serial);
+	char sysbuf[500];
+	snprintf(sysbuf, sizeof(sysbuf), "{\"s\":%d,\"r\":{\"sys\":{\"fb\":\"%s\",\"fv\":%.2f}}}",
+		STATUS_COMPLETED, BUILD, VERSION_MAJOR*100 + VERSION_MINOR + VERSION_PATCH/100.0);
+	ASSERTEQUALS(sysbuf, Serial.output().c_str());
+
+	cout << "TEST	:=== test_Machine_process() OK " << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -323,6 +411,8 @@ int main(int argc, char *argv[]) {
 	test_Thread();
 	test_Machine();
 	test_ArduinoJson();
+	test_JCommand();
+	test_Machine_process();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }

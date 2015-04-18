@@ -2,6 +2,9 @@
 #define MACHINE_H
 #include "SerialTypes.h"
 #include "Thread.h"
+#include "JCommand.h"
+
+namespace firestep {
 
 #define PIN_X_DIR	2
 #define PIN_X		3
@@ -107,6 +110,7 @@ typedef struct Machine {
     SerialVector8 deltas[DELTA_COUNT];
 
     void init();
+	void process(JCommand &jcmd);
     bool doJog();
     bool doAccelerationStroke();
     bool pulseDrivePin(byte stepPin, byte dirPin, byte limitPin, int delta, bool reverse, char axis);
@@ -129,5 +133,7 @@ typedef struct Controller {
     bool processCommand();
     bool readAccelerationStroke();
 } Controller;
+
+} // namespace firestep
 
 #endif

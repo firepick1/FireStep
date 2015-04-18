@@ -1,6 +1,10 @@
 #include "Arduino.h"
 #include "Machine.h"
 #include "AnalogRead.h"
+#include "version.h"
+#include "build.h"
+
+using namespace firestep;
 
 #define COMMAND_RESULT_NOP 0
 #define COMMAND_RESULT_READ 1
@@ -663,5 +667,19 @@ bool Machine::doAccelerationStroke() {
     pathPosition = newPathPosition;
 
     return completed;
+}
+
+static const char * processed = "processed";
+void Machine::process(JCommand& jcmd) {
+	const char *s;
+	JsonVariant& root = jcmd.root();
+	JsonVariant& node = root;
+
+	if ((s=root["sys"]) && *s==0) {
+		node = root["sys"] = jcmd.createJsonObject();
+		node["fb"] = BUILD;
+		node["fv"] = VERSION_MAJOR*100 + VERSION_MINOR + VERSION_PATCH/100.0;
+		jcmd.response()["s"] = STATUS_COMPLETED;
+	}
 }
 

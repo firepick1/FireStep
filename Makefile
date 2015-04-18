@@ -128,6 +128,30 @@ test/fast:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
 .PHONY : test/fast
 
+src/JCommand.o: src/JCommand.cpp.o
+.PHONY : src/JCommand.o
+
+# target to build an object file
+src/JCommand.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JCommand.cpp.o
+.PHONY : src/JCommand.cpp.o
+
+src/JCommand.i: src/JCommand.cpp.i
+.PHONY : src/JCommand.i
+
+# target to preprocess a source file
+src/JCommand.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JCommand.cpp.i
+.PHONY : src/JCommand.cpp.i
+
+src/JCommand.s: src/JCommand.cpp.s
+.PHONY : src/JCommand.s
+
+# target to generate assembly for a file
+src/JCommand.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JCommand.cpp.s
+.PHONY : src/JCommand.cpp.s
+
 src/Machine.o: src/Machine.cpp.o
 .PHONY : src/Machine.o
 
@@ -283,6 +307,9 @@ help:
 	@echo "... package_source"
 	@echo "... rebuild_cache"
 	@echo "... test"
+	@echo "... src/JCommand.o"
+	@echo "... src/JCommand.i"
+	@echo "... src/JCommand.s"
 	@echo "... src/Machine.o"
 	@echo "... src/Machine.i"
 	@echo "... src/Machine.s"
