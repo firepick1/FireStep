@@ -14,6 +14,7 @@
 byte lastByte;
 
 using namespace firestep;
+using namespace ArduinoJson;
 
 void test_tick(int ticks) {
 	arduino.timer1(ticks);
@@ -329,18 +330,21 @@ void test_ArduinoJson() {
 	ASSERTEQUALS("", root["color"]);
 
 	// Keys are ordered as created and iterable as created
-	JsonObject& obj = jsonBuffer.createObject();
-	obj["a"] = 1;
-	obj["c"] = 2;
-	obj["b"] = 3;
-	obj["e"] = 4;
-	obj["d"] = 5;
+	JsonObject& jobj = jsonBuffer.createObject();
+	jobj["a"] = 1;
+	jobj["c"] = 2;
+	jobj["b"] = 3;
+	jobj["e"] = 4;
+	jobj["d"] = 5;
 	Serial.clear();
-	obj.printTo(Serial);
+	jobj.printTo(Serial);
 	ASSERTEQUALS("{\"a\":1,\"c\":2,\"b\":3,\"e\":4,\"d\":5}", Serial.output().c_str());
-	ASSERTEQUAL(5, obj.size());
+	ASSERTEQUAL(5, jobj.size());
 	int i=0;
-	for (JsonObject::iterator it=obj.begin(); it!=obj.end(); ++it, i++) {
+	JsonVariant jv; // cannot combine with next line
+	jv = jobj;
+	JsonObject& jobj2 = static_cast<JsonObject&>(jv);
+	for (JsonObject::iterator it=jobj2.begin(); it!=jobj2.end(); ++it, i++) {
 		switch(i) {
 		case 0: ASSERTEQUALS("a", it->key); break;
 		case 1: ASSERTEQUALS("c", it->key); break;

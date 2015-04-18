@@ -678,14 +678,19 @@ bool Machine::doAccelerationStroke() {
 static const char * processed = "processed";
 void Machine::process(JCommand& jcmd) {
 	const char *s;
-	JsonVariant& root = jcmd.root();
-	JsonVariant& node = root;
+	JsonObject& root = jcmd.root();
+	JsonVariant node;
+	node = root;
 	Status status = STATUS_COMPLETED;
 
 	if ((s=root["sys"]) && *s==0) {
 		node = root["sys"] = jcmd.createJsonObject();
 		node["fb"] = BUILD;
 		node["fv"] = VERSION_MAJOR*100 + VERSION_MINOR + VERSION_PATCH/100.0;
+	} else {
+		int i = 0;
+		for (JsonObject::iterator it=root.begin(); it!=root.end(); ++it, i++) {
+		}
 	}
 
 	jcmd.setStatus(status);
