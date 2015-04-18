@@ -10,6 +10,7 @@
 #include "Machine.h"
 #include "build.h"
 #include "JCommand.h"
+#include "JController.h"
 
 byte lastByte;
 
@@ -410,15 +411,16 @@ void test_JCommand() {
 	cout << "TEST	:=== test_JCommand() OK " << endl;
 }
 
-void test_Machine_process() {
-    cout << "TEST	: test_Machine_process() BEGIN" << endl;
+void test_JController() {
+    cout << "TEST	: test_JController() BEGIN" << endl;
 
 	Machine machine;
+	JController jc(machine);
 
 	Serial.clear();
 	JCommand jcmd;
 	ASSERT(jcmd.parse("{\"sys\":\"\"}"));
-	machine.process(jcmd);
+	jc.process(jcmd);
 	jcmd.response().printTo(Serial);
 	char sysbuf[500];
 	snprintf(sysbuf, sizeof(sysbuf), "{\"s\":%d,\"r\":{\"sys\":{\"fb\":\"%s\",\"fv\":%.2f}}}",
@@ -428,12 +430,12 @@ void test_Machine_process() {
 	Serial.clear();
 	jcmd = JCommand(); // clear
 	ASSERT(jcmd.parse("{\"xtm\":\"\"}"));
-	machine.process(jcmd);
+	jc.process(jcmd);
 	jcmd.response().printTo(Serial);
 	snprintf(sysbuf, sizeof(sysbuf), "{\"s\":%d,\"r\":{\"xtm\":10000.00}}", STATUS_COMPLETED);
 	ASSERTEQUALS(sysbuf, Serial.output().c_str());
 
-	cout << "TEST	:=== test_Machine_process() OK " << endl;
+	cout << "TEST	:=== test_JController() OK " << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -446,7 +448,7 @@ int main(int argc, char *argv[]) {
 	test_Machine();
 	test_ArduinoJson();
 	test_JCommand();
-	test_Machine_process();
+	test_JController();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }

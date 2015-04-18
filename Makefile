@@ -152,6 +152,30 @@ src/JCommand.cpp.s:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JCommand.cpp.s
 .PHONY : src/JCommand.cpp.s
 
+src/JController.o: src/JController.cpp.o
+.PHONY : src/JController.o
+
+# target to build an object file
+src/JController.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JController.cpp.o
+.PHONY : src/JController.cpp.o
+
+src/JController.i: src/JController.cpp.i
+.PHONY : src/JController.i
+
+# target to preprocess a source file
+src/JController.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JController.cpp.i
+.PHONY : src/JController.cpp.i
+
+src/JController.s: src/JController.cpp.s
+.PHONY : src/JController.s
+
+# target to generate assembly for a file
+src/JController.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JController.cpp.s
+.PHONY : src/JController.cpp.s
+
 src/Machine.o: src/Machine.cpp.o
 .PHONY : src/Machine.o
 
@@ -310,6 +334,9 @@ help:
 	@echo "... src/JCommand.o"
 	@echo "... src/JCommand.i"
 	@echo "... src/JCommand.s"
+	@echo "... src/JController.o"
+	@echo "... src/JController.i"
+	@echo "... src/JController.s"
 	@echo "... src/Machine.o"
 	@echo "... src/Machine.i"
 	@echo "... src/Machine.s"

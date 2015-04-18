@@ -2,7 +2,6 @@
 #define MACHINE_H
 #include "SerialTypes.h"
 #include "Thread.h"
-#include "JCommand.h"
 
 namespace firestep {
 
@@ -101,6 +100,7 @@ typedef struct Axis {
 #define MOTOR_COUNT 4
 typedef class Machine {
 	friend class Controller;
+	friend class JController;
 	private:
         Motor motor[MOTOR_COUNT];
         Axis axis[6];
@@ -139,12 +139,10 @@ typedef class Machine {
         int segmentIndex;
         SerialInt16 deltaCount;
         SerialVector8 deltas[DELTA_COUNT];
-        Status processAxis(JCommand &jcmd, JsonObject& jobj, const char* key, char group);
 
     public:
         Machine();
         void init();
-        void process(JCommand &jcmd);
         bool doJog();
         bool doAccelerationStroke();
         bool pulseDrivePin(byte stepPin, byte dirPin, byte limitPin, int delta, bool reverse, char axis);

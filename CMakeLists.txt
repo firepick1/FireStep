@@ -73,6 +73,7 @@ link_directories(
 
 add_executable(test 
 	src/JCommand.cpp
+	src/JController.cpp
 	src/Thread.cpp
 	src/Machine.cpp
 	src/SerialTypes.cpp
