@@ -457,6 +457,12 @@ void SlackVector::init(byte xMax, byte yMax, byte zMax) {
     z.init(zMax);
 }
 
+Machine::Machine() {
+	for (int i=0; i<MOTOR_COUNT; i++) {
+		motor[i].axisMap = i;
+	}
+}
+
 void Machine::init() {
     xReverse = false;
     yReverse = false;
@@ -674,12 +680,14 @@ void Machine::process(JCommand& jcmd) {
 	const char *s;
 	JsonVariant& root = jcmd.root();
 	JsonVariant& node = root;
+	Status status = STATUS_COMPLETED;
 
 	if ((s=root["sys"]) && *s==0) {
 		node = root["sys"] = jcmd.createJsonObject();
 		node["fb"] = BUILD;
 		node["fv"] = VERSION_MAJOR*100 + VERSION_MINOR + VERSION_PATCH/100.0;
-		jcmd.response()["s"] = STATUS_COMPLETED;
 	}
+
+	jcmd.setStatus(status);
 }
 

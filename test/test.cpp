@@ -289,7 +289,7 @@ void test_Machine() {
 	lastClock = masterClock.clock;
 	arduino.dump();
 
-	test_command("[DIAG]", "[DIAG536 120 X1Y1Z1]\n");
+	test_command("[DIAG]", "[DIAG656 120 X1Y1Z1]\n");
 	test_command("[V]", "[v1.0]\n");
 	//stringstream sscmd;
 	//sscmd << "[IDLE";
@@ -327,6 +327,28 @@ void test_ArduinoJson() {
 	ASSERTEQUALS("red", root["color"]);
 	buf[0] = 0;	// ----------- DANGER -----------
 	ASSERTEQUALS("", root["color"]);
+
+	// Keys are ordered as created and iterable as created
+	JsonObject& obj = jsonBuffer.createObject();
+	obj["a"] = 1;
+	obj["c"] = 2;
+	obj["b"] = 3;
+	obj["e"] = 4;
+	obj["d"] = 5;
+	Serial.clear();
+	obj.printTo(Serial);
+	ASSERTEQUALS("{\"a\":1,\"c\":2,\"b\":3,\"e\":4,\"d\":5}", Serial.output().c_str());
+	ASSERTEQUAL(5, obj.size());
+	int i=0;
+	for (JsonObject::iterator it=obj.begin(); it!=obj.end(); ++it, i++) {
+		switch(i) {
+		case 0: ASSERTEQUALS("a", it->key); break;
+		case 1: ASSERTEQUALS("c", it->key); break;
+		case 2: ASSERTEQUALS("b", it->key); break;
+		case 3: ASSERTEQUALS("e", it->key); break;
+		case 4: ASSERTEQUALS("d", it->key); break;
+		}
+	}
 
 	cout << "TEST	:=== test_ArduinoJson() OK " << endl;
 }

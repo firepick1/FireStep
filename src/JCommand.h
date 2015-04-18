@@ -44,6 +44,8 @@ typedef class JCommand {
 		bool isValid();
 	public:
 		Status getStatus() { return (Status) (long) jsonResp["s"]; }
+	public:
+		void setStatus(Status status) { jsonResp["s"] = status; }
 } JCommand;
 
 } // namespace firestep

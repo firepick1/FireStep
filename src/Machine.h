@@ -72,7 +72,31 @@ typedef struct SlackVector {
     void init(byte xMax, byte yMax, byte zMax);
 } SlackVector;
 
+typedef struct Motor {
+	int		axisMap; 	// index into axis array
+    float	stepAngle;
+    uint8_t	microsteps;
+	uint8_t	polarity;
+	uint8_t powerManagementMode;
+
+	Motor() :
+		stepAngle(1.8),
+		microsteps(16),
+		polarity(0),			// 0:clockwise, 1:counter-clockwise
+		powerManagementMode(0) 	// 0:off, 1:on, 2:on in cycle, 3:on when moving
+	{}
+} Motor;
+
+typedef struct Axis {
+	float travelMin;
+	float travelMax;
+	float searchVelocity;
+} Axis;
+
+#define MOTOR_COUNT 4	
 typedef struct Machine {
+	Motor motor[MOTOR_COUNT];
+	Axis axis[6];
     float pathPosition;
     SerialInt16 maxPulses;
     SerialInt32 pulses;
@@ -109,8 +133,9 @@ typedef struct Machine {
     SerialInt16 deltaCount;
     SerialVector8 deltas[DELTA_COUNT];
 
+	Machine();
     void init();
-	void process(JCommand &jcmd);
+    void process(JCommand &jcmd);
     bool doJog();
     bool doAccelerationStroke();
     bool pulseDrivePin(byte stepPin, byte dirPin, byte limitPin, int delta, bool reverse, char axis);
