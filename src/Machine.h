@@ -99,69 +99,75 @@ typedef struct Axis {
 } Axis;
 
 #define MOTOR_COUNT 4
-typedef struct Machine {
-    Motor motor[MOTOR_COUNT];
-    Axis axis[6];
-    float pathPosition;
-    SerialInt16 maxPulses;
-    SerialInt32 pulses;
-    SerialInt32 heartbeats;
-    SerialInt32 heartbeatMicros;
-    SerialInt32 actualMicros;
-    SerialVector32 unitLengthSteps;
-    SerialVector32 drivePos;
-    bool xReverse;
-    bool yReverse;
-    bool zReverse;
-    union {
-        struct {
-            SerialInt32 estimatedMicros;
-            SerialVector32 startPos;
-            SerialVector32 endPos;
-            SerialVector32 segmentStart;
-            SerialVector32 segmentStartPos;
-            SerialVector16 toolVelocity;
+typedef class Machine {
+	friend class Controller;
+	private:
+        Motor motor[MOTOR_COUNT];
+        Axis axis[6];
+        float pathPosition;
+        SerialInt16 maxPulses;
+        SerialInt32 pulses;
+        SerialInt32 heartbeats;
+        SerialInt32 heartbeatMicros;
+        SerialInt32 actualMicros;
+        SerialVector32 unitLengthSteps;
+        SerialVector32 drivePos;
+        bool xReverse;
+        bool yReverse;
+        bool zReverse;
+        union {
+            struct {
+                SerialInt32 estimatedMicros;
+                SerialVector32 startPos;
+                SerialVector32 endPos;
+                SerialVector32 segmentStart;
+                SerialVector32 segmentStartPos;
+                SerialVector16 toolVelocity;
+            };
+            struct {
+                SerialVector16 jogDelta;
+                SerialInt32 jogFrequency;
+                SerialInt32 jogCount;
+                bool		jogOverride;
+            };
+            struct {
+                SerialVector32 backlash;
+            };
         };
-        struct {
-            SerialVector16 jogDelta;
-            SerialInt32 jogFrequency;
-            SerialInt32 jogCount;
-            bool		jogOverride;
-        };
-        struct {
-            SerialVector32 backlash;
-        };
-    };
-    SerialVectorF drivePathScale;
-    SlackVector slack;
-    int segmentIndex;
-    SerialInt16 deltaCount;
-    SerialVector8 deltas[DELTA_COUNT];
+        SerialVectorF drivePathScale;
+        SlackVector slack;
+        int segmentIndex;
+        SerialInt16 deltaCount;
+        SerialVector8 deltas[DELTA_COUNT];
+        Status processAxis(JCommand &jcmd, JsonObject& jobj, const char* key, char group);
 
-    Machine();
-    void init();
-    void process(JCommand &jcmd);
-    bool doJog();
-    bool doAccelerationStroke();
-    bool pulseDrivePin(byte stepPin, byte dirPin, byte limitPin, int delta, bool reverse, char axis);
-    bool pulseLow(byte stepPin, byte limitPin);
-    void sendXYZResponse(struct SerialVector32 *pVector);
-    void sendBacklashResponse(struct SerialVector32 *pVector);
+    public:
+        Machine();
+        void init();
+        void process(JCommand &jcmd);
+        bool doJog();
+        bool doAccelerationStroke();
+        bool pulseDrivePin(byte stepPin, byte dirPin, byte limitPin, int delta, bool reverse, char axis);
+        bool pulseLow(byte stepPin, byte limitPin);
+        void sendXYZResponse(struct SerialVector32 *pVector);
+        void sendBacklashResponse(struct SerialVector32 *pVector);
 } Machine;
 
-typedef struct Controller {
-    CommandParser	parser;
-    char			guardStart;
-    CLOCK			lastClock;
-    byte			cmd;
-    byte			speed;
-    Machine 		machine;
-    byte			guardEnd;
+typedef class Controller {
+	private:
+        CommandParser	parser;
+        char			guardStart;
+        CLOCK			lastClock;
+        byte			speed;
+        byte			guardEnd;
 
-    void init();
-    byte readCommand();
-    bool processCommand();
-    bool readAccelerationStroke();
+    public:
+        byte 			cmd; // TODO
+        Machine 		machine; // TODO
+        void init();
+        byte readCommand();
+        bool processCommand();
+        bool readAccelerationStroke();
 } Controller;
 
 } // namespace firestep

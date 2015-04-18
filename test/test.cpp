@@ -416,13 +416,21 @@ void test_Machine_process() {
 	Machine machine;
 
 	Serial.clear();
-	JCommand jcmd1;
-	ASSERT(jcmd1.parse("{\"sys\":\"\"}"));
-	machine.process(jcmd1);
-	jcmd1.response().printTo(Serial);
+	JCommand jcmd;
+	ASSERT(jcmd.parse("{\"sys\":\"\"}"));
+	machine.process(jcmd);
+	jcmd.response().printTo(Serial);
 	char sysbuf[500];
 	snprintf(sysbuf, sizeof(sysbuf), "{\"s\":%d,\"r\":{\"sys\":{\"fb\":\"%s\",\"fv\":%.2f}}}",
 		STATUS_COMPLETED, BUILD, VERSION_MAJOR*100 + VERSION_MINOR + VERSION_PATCH/100.0);
+	ASSERTEQUALS(sysbuf, Serial.output().c_str());
+
+	Serial.clear();
+	jcmd = JCommand(); // clear
+	ASSERT(jcmd.parse("{\"xtm\":\"\"}"));
+	machine.process(jcmd);
+	jcmd.response().printTo(Serial);
+	snprintf(sysbuf, sizeof(sysbuf), "{\"s\":%d,\"r\":{\"xtm\":10000.00}}", STATUS_COMPLETED);
 	ASSERTEQUALS(sysbuf, Serial.output().c_str());
 
 	cout << "TEST	:=== test_Machine_process() OK " << endl;
