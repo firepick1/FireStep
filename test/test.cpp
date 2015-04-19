@@ -417,14 +417,16 @@ void replaceChar(string &s, char cmatch, char creplace) {
 	}
 }
 
-void testJSON(JController &jc, char creplace, const char *jsonIn, const char* jsonOut) {
+void testJSON(JController &jc, string replace, const char *jsonIn, const char* jsonOut) {
 	Serial.clear();
 	string ji(jsonIn);
 	string jo(jsonOut);
-	replaceChar(ji, '\'', '"');
-	replaceChar(ji, '?', creplace);
-	replaceChar(jo, '\'', '"');
-	replaceChar(jo, '?', creplace);
+	for (int i=0; i<replace.size(); i+=2) {
+		char cmatch = replace[i];
+		char creplace = replace[i+1];
+		replaceChar(ji, cmatch, creplace);
+		replaceChar(jo, cmatch, creplace);
+	}
 	JCommand jcmd; 
 	ASSERT(jcmd.parse(ji.c_str()));
 	jc.process(jcmd);
@@ -432,20 +434,69 @@ void testJSON(JController &jc, char creplace, const char *jsonIn, const char* js
 	ASSERTEQUALS(jo.c_str(), Serial.output().c_str());
 }
 
+void test_JController_motor(JController &jc, char motor) {
+	string replace;
+	replace.push_back('\''); replace.push_back('"');
+	replace.push_back('?'); replace.push_back(motor);
+	replace.push_back('!'); replace.push_back(motor-1);
+	testJSON(jc, replace, "{'?':''}", "{'s':4,'r':{'?':{'ma':!,'sa':1.80,'mi':16,'po':0,'pm':0}}}");
+	testJSON(jc, replace, "{'?ma':''}", "{'s':4,'r':{'?ma':!}}");
+	testJSON(jc, replace, "{'?ma':4}", "{'s':4,'r':{'?ma':4}}");
+	testJSON(jc, replace, "{'?ma':''}", "{'s':4,'r':{'?ma':4}}");
+	testJSON(jc, replace, "{'?':{'ma':''}}", "{'s':4,'r':{'?':{'ma':4}}}");
+	testJSON(jc, replace, "{'?':{'ma':!}}", "{'s':4,'r':{'?':{'ma':!}}}");
+	testJSON(jc, replace, "{'?':{'ma':''}}", "{'s':4,'r':{'?':{'ma':!}}}");
+	testJSON(jc, replace, "{'?sa':''}", "{'s':4,'r':{'?sa':1.80}}");
+	testJSON(jc, replace, "{'?sa':0.90}", "{'s':4,'r':{'?sa':0.90}}");
+	testJSON(jc, replace, "{'?sa':''}", "{'s':4,'r':{'?sa':0.90}}");
+	testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':4,'r':{'?':{'sa':0.90}}}");
+	testJSON(jc, replace, "{'?':{'sa':1.80}}", "{'s':4,'r':{'?':{'sa':1.80}}}");
+	testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':4,'r':{'?':{'sa':1.80}}}");
+	testJSON(jc, replace, "{'?mi':''}", "{'s':4,'r':{'?mi':16}}");
+	testJSON(jc, replace, "{'?mi':33}", "{'s':4,'r':{'?mi':33}}");
+	testJSON(jc, replace, "{'?mi':''}", "{'s':4,'r':{'?mi':33}}");
+	testJSON(jc, replace, "{'?':{'mi':''}}", "{'s':4,'r':{'?':{'mi':33}}}");
+	testJSON(jc, replace, "{'?':{'mi':16}}", "{'s':4,'r':{'?':{'mi':16}}}");
+	testJSON(jc, replace, "{'?':{'mi':''}}", "{'s':4,'r':{'?':{'mi':16}}}");
+	testJSON(jc, replace, "{'?po':''}", "{'s':4,'r':{'?po':0}}");
+	testJSON(jc, replace, "{'?po':2}", "{'s':4,'r':{'?po':2}}");
+	testJSON(jc, replace, "{'?po':''}", "{'s':4,'r':{'?po':2}}");
+	testJSON(jc, replace, "{'?':{'po':''}}", "{'s':4,'r':{'?':{'po':2}}}");
+	testJSON(jc, replace, "{'?':{'po':0}}", "{'s':4,'r':{'?':{'po':0}}}");
+	testJSON(jc, replace, "{'?':{'po':''}}", "{'s':4,'r':{'?':{'po':0}}}");
+	testJSON(jc, replace, "{'?pm':''}", "{'s':4,'r':{'?pm':0}}");
+	testJSON(jc, replace, "{'?pm':2}", "{'s':4,'r':{'?pm':2}}");
+	testJSON(jc, replace, "{'?pm':''}", "{'s':4,'r':{'?pm':2}}");
+	testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':4,'r':{'?':{'pm':2}}}");
+	testJSON(jc, replace, "{'?':{'pm':0}}", "{'s':4,'r':{'?':{'pm':0}}}");
+	testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':4,'r':{'?':{'pm':0}}}");
+	testJSON(jc, replace, "{'?':''}", "{'s':4,'r':{'?':{'ma':!,'sa':1.80,'mi':16,'po':0,'pm':0}}}");
+}
+
 void test_JController_axis(JController &jc, char axis) {
-	testJSON(jc, axis, "{'?tn':''}", "{'s':4,'r':{'?tn':0}}");		// default
-	testJSON(jc, axis, "{'?tn':111}", "{'s':4,'r':{'?tn':111}}");	
-	testJSON(jc, axis, "{'?tn':''}", "{'s':4,'r':{'?tn':111}}");
-	testJSON(jc, axis, "{'?':{'tn':''}}", "{'s':4,'r':{'?':{'tn':111}}}");
-	testJSON(jc, axis, "{'?':{'tn':-111}}", "{'s':4,'r':{'?':{'tn':-111}}}");
-	testJSON(jc, axis, "{'?':{'tn':''}}", "{'s':4,'r':{'?':{'tn':-111}}}");
-	testJSON(jc, axis, "{'?tm':''}", "{'s':4,'r':{'?tm':10000}}");  	// default
-	testJSON(jc, axis, "{'?tm':222}", "{'s':4,'r':{'?tm':222}}");	
-	testJSON(jc, axis, "{'?tm':''}", "{'s':4,'r':{'?tm':222}}");	
-	testJSON(jc, axis, "{'?':{'tm':''}}", "{'s':4,'r':{'?':{'tm':222}}}");
-	testJSON(jc, axis, "{'?':{'tm':-222}}", "{'s':4,'r':{'?':{'tm':-222}}}");
-	testJSON(jc, axis, "{'?':{'tm':''}}", "{'s':4,'r':{'?':{'tm':-222}}}");
-	testJSON(jc, axis, "{'?':''}", "{'s':4,'r':{'?':{'am':1,'tn':-111,'tm':-222}}}");
+	string replace;
+	replace.push_back('\''); replace.push_back('"');
+	replace.push_back('?'); replace.push_back(axis);
+	testJSON(jc, replace, "{'?':''}", "{'s':4,'r':{'?':{'am':1,'tn':0,'tm':10000}}}");
+	testJSON(jc, replace, "{'?tn':''}", "{'s':4,'r':{'?tn':0}}");		// default
+	testJSON(jc, replace, "{'?tn':111}", "{'s':4,'r':{'?tn':111}}");	
+	testJSON(jc, replace, "{'?tn':''}", "{'s':4,'r':{'?tn':111}}");
+	testJSON(jc, replace, "{'?':{'tn':''}}", "{'s':4,'r':{'?':{'tn':111}}}");
+	testJSON(jc, replace, "{'?':{'tn':0}}", "{'s':4,'r':{'?':{'tn':0}}}");
+	testJSON(jc, replace, "{'?':{'tn':''}}", "{'s':4,'r':{'?':{'tn':0}}}");
+	testJSON(jc, replace, "{'?tm':''}", "{'s':4,'r':{'?tm':10000}}");  	// default
+	testJSON(jc, replace, "{'?tm':222}", "{'s':4,'r':{'?tm':222}}");	
+	testJSON(jc, replace, "{'?tm':''}", "{'s':4,'r':{'?tm':222}}");	
+	testJSON(jc, replace, "{'?':{'tm':''}}", "{'s':4,'r':{'?':{'tm':222}}}");
+	testJSON(jc, replace, "{'?':{'tm':10000}}", "{'s':4,'r':{'?':{'tm':10000}}}");
+	testJSON(jc, replace, "{'?':{'tm':''}}", "{'s':4,'r':{'?':{'tm':10000}}}");
+	testJSON(jc, replace, "{'?am':''}", "{'s':4,'r':{'?am':1}}");  	// default
+	testJSON(jc, replace, "{'?am':33}", "{'s':4,'r':{'?am':33}}");	
+	testJSON(jc, replace, "{'?am':''}", "{'s':4,'r':{'?am':33}}");	
+	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':4,'r':{'?':{'am':33}}}");
+	testJSON(jc, replace, "{'?':{'am':1}}", "{'s':4,'r':{'?':{'am':1}}}");
+	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':4,'r':{'?':{'am':1}}}");
+	testJSON(jc, replace, "{'?':''}", "{'s':4,'r':{'?':{'am':1,'tn':0,'tm':10000}}}");
 }
 
 void test_JController() {
@@ -470,6 +521,11 @@ void test_JController() {
 	test_JController_axis(jc, 'a');
 	test_JController_axis(jc, 'b');
 	test_JController_axis(jc, 'c');
+
+	test_JController_motor(jc, '1');
+	test_JController_motor(jc, '2');
+	test_JController_motor(jc, '3');
+	test_JController_motor(jc, '4');
 
 	cout << "TEST	:=== test_JController() OK " << endl;
 }

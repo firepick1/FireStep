@@ -22,6 +22,7 @@ typedef class JController {
 		Machine& machine;
 
 	protected:
+		Status processMotor(JCommand &jcmd, JsonObject& jobj, const char* key, char group);
 		Status processAxis(JCommand &jcmd, JsonObject& jobj, const char* key, char group);
 
     public:

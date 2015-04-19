@@ -19,9 +19,48 @@ Status processField(JsonObject& jobj, const char* key, TF& field) {
 	}
 	return status;
 }
+template Status processField<int16_t,long>(JsonObject& jobj, const char *key, int16_t& field);
+template Status processField<uint8_t,long>(JsonObject& jobj, const char *key, uint8_t& field);
+template Status processField<float,double>(JsonObject& jobj, const char *key, float& field);
 
-template
-Status processField<int16_t,long>(JsonObject& jobj, const char *key, int16_t& field);
+Status JController::processMotor(JCommand &jcmd, JsonObject& jobj, const char* key, char group) {
+	Status status = STATUS_COMPLETED;
+	const char *s;
+	int iMotor = group - '1';
+	ASSERT(0 <= iMotor);
+	ASSERT(iMotor < MOTOR_COUNT);
+	if (strlen(key) == 1) {
+		if ((s=jobj[key]) && *s==0) {
+			JsonObject& node = jcmd.createJsonObject();
+			jobj[key] = node;
+			node["ma"] = "";
+			node["sa"] = "";
+			node["mi"] = "";
+			node["po"] = "";
+			node["pm"] = "";
+		}
+		JsonObject& kidObj = jobj[key];
+		if (kidObj.success()) {
+			for (JsonObject::iterator it=kidObj.begin(); it!=kidObj.end(); ++it) {
+				status = processMotor(jcmd, kidObj, it->key, group);
+				if (status != STATUS_COMPLETED) {
+					return status;
+				}
+			}
+		} 
+	} else if (strcmp("ma",key)==0 || strcmp("ma",key+1)==0) {
+		status = processField<uint8_t,long>(jobj, key, machine.motor[iMotor].axisMap);
+	} else if (strcmp("sa",key)==0 || strcmp("sa",key+1)==0) {
+		status = processField<float,double>(jobj, key, machine.motor[iMotor].stepAngle);
+	} else if (strcmp("mi",key)==0 || strcmp("mi",key+1)==0) {
+		status = processField<uint8_t,long>(jobj, key, machine.motor[iMotor].microsteps);
+	} else if (strcmp("po",key)==0 || strcmp("po",key+1)==0) {
+		status = processField<uint8_t,long>(jobj, key, machine.motor[iMotor].polarity);
+	} else if (strcmp("pm",key)==0 || strcmp("pm",key+1)==0) {
+		status = processField<uint8_t,long>(jobj, key, machine.motor[iMotor].powerManagementMode);
+	}
+	return status;
+}
 
 Status JController::processAxis(JCommand &jcmd, JsonObject& jobj, const char* key, char group) {
 	Status status = STATUS_COMPLETED;
@@ -92,6 +131,12 @@ void JController::process(JCommand& jcmd) {
 			}
 		} else {
 			switch (it->key[0]) {
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+				status = processMotor(jcmd, root, it->key, it->key[0]);
+				break;
 			case 'x':
 			case 'y':
 			case 'z':

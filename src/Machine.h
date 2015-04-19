@@ -72,7 +72,7 @@ typedef struct SlackVector {
 } SlackVector;
 
 typedef struct Motor {
-    int		axisMap; 	// index into axis array
+    uint8_t	axisMap; 	// index into axis array
     float	stepAngle;
     uint8_t	microsteps;
     uint8_t	polarity;
