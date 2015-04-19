@@ -105,14 +105,29 @@ typedef class Axis {
         {};
 } Axis;
 
+template<class T>
+class Position {
+    public:
+        T x;
+        T y;
+        T z;
+        T a;
+        T b;
+        T c;
+		Position() :x(0),y(0),z(0),a(0),b(0),c(0) {}
+};
+
 #define MOTOR_COUNT 4
 #define AXIS_COUNT 6
+#define POSITION_TYPE int16_t
 typedef class Machine {
         friend class Controller;
         friend class JController;
     private:
         Motor motor[MOTOR_COUNT];
         Axis axis[AXIS_COUNT];
+		Position<POSITION_TYPE> machinePosition;
+
         float pathPosition;
         SerialInt16 maxPulses;
         SerialInt32 pulses;

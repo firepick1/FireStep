@@ -499,6 +499,43 @@ void test_JController_axis(JController &jc, char axis) {
 	testJSON(jc, replace, "{'?':''}", "{'s':4,'r':{'?':{'am':1,'tn':0,'tm':10000}}}");
 }
 
+void test_JController_machinePosition(JController &jc) {
+	string replace;
+	replace.push_back('\''); replace.push_back('"');
+	testJSON(jc, replace, "{'mpox':''}", "{'s':4,'r':{'mpox':0}}");
+	testJSON(jc, replace, "{'mpox':32760}", "{'s':4,'r':{'mpox':32760}}");
+	testJSON(jc, replace, "{'mpox':''}", "{'s':4,'r':{'mpox':32760}}");
+	testJSON(jc, replace, "{'mpox':-32760}", "{'s':4,'r':{'mpox':-32760}}");
+	testJSON(jc, replace, "{'mpox':''}", "{'s':4,'r':{'mpox':-32760}}");
+	testJSON(jc, replace, "{'mpoy':''}", "{'s':4,'r':{'mpoy':0}}");
+	testJSON(jc, replace, "{'mpoy':32761}", "{'s':4,'r':{'mpoy':32761}}");
+	testJSON(jc, replace, "{'mpoy':''}", "{'s':4,'r':{'mpoy':32761}}");
+	testJSON(jc, replace, "{'mpoy':-32761}", "{'s':4,'r':{'mpoy':-32761}}");
+	testJSON(jc, replace, "{'mpoy':''}", "{'s':4,'r':{'mpoy':-32761}}");
+	testJSON(jc, replace, "{'mpoz':''}", "{'s':4,'r':{'mpoz':0}}");
+	testJSON(jc, replace, "{'mpoz':32762}", "{'s':4,'r':{'mpoz':32762}}");
+	testJSON(jc, replace, "{'mpoz':''}", "{'s':4,'r':{'mpoz':32762}}");
+	testJSON(jc, replace, "{'mpoz':-32762}", "{'s':4,'r':{'mpoz':-32762}}");
+	testJSON(jc, replace, "{'mpoz':''}", "{'s':4,'r':{'mpoz':-32762}}");
+	testJSON(jc, replace, "{'mpoa':''}", "{'s':4,'r':{'mpoa':0}}");
+	testJSON(jc, replace, "{'mpoa':32763}", "{'s':4,'r':{'mpoa':32763}}");
+	testJSON(jc, replace, "{'mpoa':''}", "{'s':4,'r':{'mpoa':32763}}");
+	testJSON(jc, replace, "{'mpoa':-32763}", "{'s':4,'r':{'mpoa':-32763}}");
+	testJSON(jc, replace, "{'mpoa':''}", "{'s':4,'r':{'mpoa':-32763}}");
+	testJSON(jc, replace, "{'mpob':''}", "{'s':4,'r':{'mpob':0}}");
+	testJSON(jc, replace, "{'mpob':32764}", "{'s':4,'r':{'mpob':32764}}");
+	testJSON(jc, replace, "{'mpob':''}", "{'s':4,'r':{'mpob':32764}}");
+	testJSON(jc, replace, "{'mpob':-32764}", "{'s':4,'r':{'mpob':-32764}}");
+	testJSON(jc, replace, "{'mpob':''}", "{'s':4,'r':{'mpob':-32764}}");
+	testJSON(jc, replace, "{'mpoc':''}", "{'s':4,'r':{'mpoc':0}}");
+	testJSON(jc, replace, "{'mpoc':32765}", "{'s':4,'r':{'mpoc':32765}}");
+	testJSON(jc, replace, "{'mpoc':''}", "{'s':4,'r':{'mpoc':32765}}");
+	testJSON(jc, replace, "{'mpoc':-32765}", "{'s':4,'r':{'mpoc':-32765}}");
+	testJSON(jc, replace, "{'mpoc':''}", "{'s':4,'r':{'mpoc':-32765}}");
+	testJSON(jc, replace, "{'mpo':''}", 
+		"{'s':4,'r':{'mpo':{'x':-32760,'y':-32761,'z':-32762,'a':-32763,'b':-32764,'c':-32765}}}");
+}
+
 void test_JController() {
     cout << "TEST	: test_JController() BEGIN" << endl;
 
@@ -526,6 +563,8 @@ void test_JController() {
 	test_JController_motor(jc, '2');
 	test_JController_motor(jc, '3');
 	test_JController_motor(jc, '4');
+
+	test_JController_machinePosition(jc);
 
 	cout << "TEST	:=== test_JController() OK " << endl;
 }

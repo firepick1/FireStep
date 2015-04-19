@@ -23,6 +23,65 @@ template Status processField<int16_t,long>(JsonObject& jobj, const char *key, in
 template Status processField<uint8_t,long>(JsonObject& jobj, const char *key, uint8_t& field);
 template Status processField<float,double>(JsonObject& jobj, const char *key, float& field);
 
+int axisOf(char c) {
+	switch (c) {
+		default:
+			return -1;
+		case 'x':
+			return 0;
+		case 'y':
+			return 1;
+		case 'z':
+			return 2;
+		case 'a':
+			return 3;
+		case 'b':
+			return 4;
+		case 'c':
+			return 5;
+	}
+}
+
+Status JController::processMachinePosition(JCommand &jcmd, JsonObject& jobj, const char* key) {
+	Status status = STATUS_COMPLETED;
+	const char *s;
+	if (strlen(key) == 3) {
+		if ((s=jobj[key]) && *s==0) {
+			JsonObject& node = jcmd.createJsonObject();
+			jobj[key] = node;
+			node["x"] = "";
+			node["y"] = "";
+			node["z"] = "";
+			node["a"] = "";
+			node["b"] = "";
+			node["c"] = "";
+		}
+		JsonObject& kidObj = jobj[key];
+		if (!kidObj.success()) {
+			return STATUS_ERROR;
+		}
+		for (JsonObject::iterator it=kidObj.begin(); it!=kidObj.end(); ++it) {
+			status = processMachinePosition(jcmd, kidObj, it->key);
+			if (status != STATUS_COMPLETED) {
+				return status;
+			}
+		} 
+	} else if (strcmp("x",key)==0 || strcmp("mpox",key)==0) {
+		status = processField<POSITION_TYPE,long>(jobj, key, machine.machinePosition.x);
+	} else if (strcmp("y",key)==0 || strcmp("mpoy",key)==0) {
+		status = processField<POSITION_TYPE,long>(jobj, key, machine.machinePosition.y);
+	} else if (strcmp("z",key)==0 || strcmp("mpoz",key)==0) {
+		status = processField<POSITION_TYPE,long>(jobj, key, machine.machinePosition.z);
+	} else if (strcmp("a",key)==0 || strcmp("mpoa",key)==0) {
+		status = processField<POSITION_TYPE,long>(jobj, key, machine.machinePosition.a);
+	} else if (strcmp("b",key)==0 || strcmp("mpob",key)==0) {
+		status = processField<POSITION_TYPE,long>(jobj, key, machine.machinePosition.b);
+	} else if (strcmp("c",key)==0 || strcmp("mpoc",key)==0) {
+		status = processField<POSITION_TYPE,long>(jobj, key, machine.machinePosition.c);
+	}
+	return status;
+}
+
 Status JController::processMotor(JCommand &jcmd, JsonObject& jobj, const char* key, char group) {
 	Status status = STATUS_COMPLETED;
 	const char *s;
@@ -65,27 +124,9 @@ Status JController::processMotor(JCommand &jcmd, JsonObject& jobj, const char* k
 Status JController::processAxis(JCommand &jcmd, JsonObject& jobj, const char* key, char group) {
 	Status status = STATUS_COMPLETED;
 	const char *s;
-	int iAxis;
-	switch (group) {
-		default:
-		case 'x':
-			iAxis = 0;
-			break;
-		case 'y':
-			iAxis = 1;
-			break;
-		case 'z':
-			iAxis = 2;
-			break;
-		case 'a':
-			iAxis = 3;
-			break;
-		case 'b':
-			iAxis = 4;
-			break;
-		case 'c':
-			iAxis = 5;
-			break;
+	int iAxis = axisOf(group);
+	if (iAxis < 0) {
+		return STATUS_ERROR;
 	}
 	if (strlen(key) == 1) {
 		if ((s=jobj[key]) && *s==0) {
@@ -129,6 +170,8 @@ void JController::process(JCommand& jcmd) {
 				node["fv"] = VERSION_MAJOR*100 + VERSION_MINOR + VERSION_PATCH/100.0;
 				status = node.success() ? STATUS_COMPLETED : STATUS_ERROR;
 			}
+		} else if (strncmp("mpo", it->key, 3) == 0) {
+			status = processMachinePosition(jcmd, root, it->key);
 		} else {
 			switch (it->key[0]) {
 			case '1':
