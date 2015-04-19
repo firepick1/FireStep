@@ -119,7 +119,7 @@ class Position {
 
 typedef class StrokeSegment {
 	public:
-		int8_t d[4];
+		int8_t dv[4];	// change in velocity
 } StrokeSegment;
 
 typedef class Stroke {
@@ -135,11 +135,11 @@ typedef class Stroke {
             if (length + 1 >= SEGMENT_COUNT) {
                 return false;
             }
-            int8_t *pd = seg[length].d;
-            *pd++ = d1;
-            *pd++ = d2;
-            *pd++ = d3;
-            *pd++ = d4;
+            int8_t *pdv = seg[length].dv;
+            *pdv++ = d1;
+            *pdv++ = d2;
+            *pdv++ = d3;
+            *pdv++ = d4;
             length++;
             return true;
         }

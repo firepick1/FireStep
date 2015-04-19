@@ -501,9 +501,9 @@ void test_JsonController_axis(JsonController &jc, char axis) {
 	testJSON(jc, replace, "{'?':{'tm':10000}}", "{'s':0,'r':{'?':{'tm':10000}}}");
 	testJSON(jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':10000}}}");
 	testJSON(jc, replace, "{'?am':''}", "{'s':0,'r':{'?am':1}}");  	// default
-	testJSON(jc, replace, "{'?am':333}", "{'s':0,'r':{'?am':33}}");	
-	testJSON(jc, replace, "{'?am':''}", "{'s':0,'r':{'?am':33}}");	
-	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':33}}}");
+	testJSON(jc, replace, "{'?am':333}", "{'s':0,'r':{'?am':77}}");	// out of range
+	testJSON(jc, replace, "{'?am':''}", "{'s':0,'r':{'?am':77}}");	
+	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':77}}}");
 	testJSON(jc, replace, "{'?':{'am':1}}", "{'s':0,'r':{'?':{'am':1}}}");
 	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':1}}}");
 	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'am':1,'tn':0,'tm':10000}}}");

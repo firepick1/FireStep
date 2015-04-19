@@ -180,7 +180,7 @@ Status JsonController::processStroke(JsonCommand &jcmd, JsonObject& jobj, const 
                         if (*it < -127 || 127 < *it) {
                             return STATUS_S1_RANGE_ERROR;
                         }
-                        machine.stroke.seg[s1len++].d[0] = (int8_t) (long) * it;
+                        machine.stroke.seg[s1len++].dv[0] = (int8_t) (long) * it;
                     }
                 }
             } else if (strcmp("s2", it->key) == 0) {
@@ -190,7 +190,7 @@ Status JsonController::processStroke(JsonCommand &jcmd, JsonObject& jobj, const 
                         if (*it < -127 || 127 < *it) {
                             return STATUS_S2_RANGE_ERROR;
                         }
-                        machine.stroke.seg[s2len++].d[1] = (int8_t) (long) * it;
+                        machine.stroke.seg[s2len++].dv[1] = (int8_t) (long) * it;
                     }
                 }
             } else if (strcmp("s3", it->key) == 0) {
@@ -200,7 +200,7 @@ Status JsonController::processStroke(JsonCommand &jcmd, JsonObject& jobj, const 
                         if (*it < -127 || 127 < *it) {
                             return STATUS_S3_RANGE_ERROR;
                         }
-                        machine.stroke.seg[s3len++].d[2] = (int8_t) (long) * it;
+                        machine.stroke.seg[s3len++].dv[2] = (int8_t) (long) * it;
                     }
                 }
             } else if (strcmp("s4", it->key) == 0) {
@@ -210,7 +210,7 @@ Status JsonController::processStroke(JsonCommand &jcmd, JsonObject& jobj, const 
                         if (*it < -127 || 127 < *it) {
                             return STATUS_S4_RANGE_ERROR;
                         }
-                        machine.stroke.seg[s4len++].d[3] = (int8_t) (long) * it;
+                        machine.stroke.seg[s4len++].dv[3] = (int8_t) (long) * it;
                     }
                 }
             }
@@ -233,10 +233,10 @@ Status JsonController::processStroke(JsonCommand &jcmd, JsonObject& jobj, const 
     } else if (status == STATUS_PROCESSING) {
         if (machine.stroke.curSeg < machine.stroke.length) {
 			StrokeSegment &seg = machine.stroke.seg[machine.stroke.curSeg];
-			stroke["s1"] = seg.d[0];
-			stroke["s2"] = seg.d[1];
-			stroke["s3"] = seg.d[2];
-			stroke["s4"] = seg.d[3];
+			stroke["s1"] = seg.dv[0];
+			stroke["s2"] = seg.dv[1];
+			stroke["s3"] = seg.dv[2];
+			stroke["s4"] = seg.dv[3];
             machine.stroke.curSeg++;
         }
         if (machine.stroke.curSeg >= machine.stroke.length) {
