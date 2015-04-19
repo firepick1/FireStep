@@ -147,7 +147,7 @@ typedef class Stroke {
 
 typedef class Machine {
         friend class Controller;
-        friend class JController;
+        friend class JsonController;
     private:
         Motor motor[MOTOR_COUNT];
         Axis axis[AXIS_COUNT];

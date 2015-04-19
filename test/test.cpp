@@ -9,8 +9,7 @@
 #include "SerialTypes.h"
 #include "Machine.h"
 #include "build.h"
-#include "JCommand.h"
-#include "JController.h"
+#include "JsonController.h"
 
 byte lastByte;
 
@@ -356,10 +355,10 @@ void test_ArduinoJson() {
 	cout << "TEST	:=== test_ArduinoJson() OK " << endl;
 }
 
-void test_JCommand() {
-    cout << "TEST	: test_JCommand() BEGIN" << endl;
+void test_JsonCommand() {
+    cout << "TEST	: test_JsonCommand() BEGIN" << endl;
 
-	JCommand cmd1;
+	JsonCommand cmd1;
 	ASSERT(!cmd1.root().success());
 	ASSERT(cmd1.parse("{\"sys\":\"\"}"));
 	ASSERTEQUAL(STATUS_JSON_PARSED, cmd1.getStatus());
@@ -370,7 +369,7 @@ void test_JCommand() {
 	ASSERT(!sys.is<long>());
 	ASSERT(sys.is<const char *>());
 	
-	JCommand cmd2;
+	JsonCommand cmd2;
 	ASSERT(cmd2.parse("{\"x\":123,\"y\":2.3}"));
 	ASSERTEQUAL(STATUS_JSON_PARSED, cmd2.getStatus());
 	ASSERT(cmd2.isValid());
@@ -388,7 +387,7 @@ void test_JCommand() {
 	const char *json1 = "{\"x\":-0.1";
 	const char *json2 = "23}\n";
 	Serial.push(json1);
-	JCommand cmd3;
+	JsonCommand cmd3;
 	ASSERT(!cmd3.parse());
 	Serial.push(json2);
 	ASSERT(cmd3.parse());
@@ -406,7 +405,7 @@ void test_JCommand() {
 	cmd3.response().printTo(Serial);
 	ASSERTEQUALS("{\"s\":1,\"r\":{\"x\":-0.123}}", Serial.output().c_str());
 
-	cout << "TEST	:=== test_JCommand() OK " << endl;
+	cout << "TEST	:=== test_JsonCommand() OK " << endl;
 }
 
 void replaceChar(string &s, char cmatch, char creplace) {
@@ -417,7 +416,7 @@ void replaceChar(string &s, char cmatch, char creplace) {
 	}
 }
 
-void testJSON(JController &jc, string replace, const char *jsonIn, const char* jsonOut) {
+void testJSON(JsonController &jc, string replace, const char *jsonIn, const char* jsonOut) {
 	Serial.clear();
 	string ji(jsonIn);
 	string jo(jsonOut);
@@ -427,14 +426,14 @@ void testJSON(JController &jc, string replace, const char *jsonIn, const char* j
 		replaceChar(ji, cmatch, creplace);
 		replaceChar(jo, cmatch, creplace);
 	}
-	JCommand jcmd; 
+	JsonCommand jcmd; 
 	ASSERT(jcmd.parse(ji.c_str()));
 	jc.process(jcmd);
 	jcmd.response().printTo(Serial);
 	ASSERTEQUALS(jo.c_str(), Serial.output().c_str());
 }
 
-void test_JController_motor(JController &jc, char motor) {
+void test_JsonController_motor(JsonController &jc, char motor) {
 	string replace;
 	replace.push_back('\''); replace.push_back('"');
 	replace.push_back('?'); replace.push_back(motor);
@@ -473,7 +472,7 @@ void test_JController_motor(JController &jc, char motor) {
 	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!,'sa':1.80,'mi':16,'po':0,'pm':0}}}");
 }
 
-void test_JController_axis(JController &jc, char axis) {
+void test_JsonController_axis(JsonController &jc, char axis) {
 	string replace;
 	replace.push_back('\''); replace.push_back('"');
 	replace.push_back('?'); replace.push_back(axis);
@@ -499,7 +498,7 @@ void test_JController_axis(JController &jc, char axis) {
 	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'am':1,'tn':0,'tm':10000}}}");
 }
 
-void test_JController_machinePosition(JController &jc) {
+void test_JsonController_machinePosition(JsonController &jc) {
 	string replace;
 	replace.push_back('\''); replace.push_back('"');
 	testJSON(jc, replace, "{'spo':''}", "{'s':0,'r':{'spo':{'x':0,'y':0,'z':0,'a':0,'b':0,'c':0}}}");
@@ -537,14 +536,14 @@ void test_JController_machinePosition(JController &jc) {
 		"{'s':0,'r':{'spo':{'x':-32760,'y':-32761,'z':-32762,'a':-32763,'b':-32764,'c':-32765}}}");
 }
 
-void test_JController() {
-    cout << "TEST	: test_JController() BEGIN" << endl;
+void test_JsonController() {
+    cout << "TEST	: test_JsonController() BEGIN" << endl;
 
 	Machine machine;
-	JController jc(machine);
+	JsonController jc(machine);
 
 	Serial.clear();
-	JCommand jcmd;
+	JsonCommand jcmd;
 	ASSERT(jcmd.parse("{\"sys\":\"\"}"));
 	jc.process(jcmd);
 	jcmd.response().printTo(Serial);
@@ -553,21 +552,21 @@ void test_JController() {
 		STATUS_OK, BUILD, VERSION_MAJOR*100 + VERSION_MINOR + VERSION_PATCH/100.0);
 	ASSERTEQUALS(sysbuf, Serial.output().c_str());
 
-	test_JController_axis(jc, 'x');
-	test_JController_axis(jc, 'y');
-	test_JController_axis(jc, 'z');
-	test_JController_axis(jc, 'a');
-	test_JController_axis(jc, 'b');
-	test_JController_axis(jc, 'c');
+	test_JsonController_axis(jc, 'x');
+	test_JsonController_axis(jc, 'y');
+	test_JsonController_axis(jc, 'z');
+	test_JsonController_axis(jc, 'a');
+	test_JsonController_axis(jc, 'b');
+	test_JsonController_axis(jc, 'c');
 
-	test_JController_motor(jc, '1');
-	test_JController_motor(jc, '2');
-	test_JController_motor(jc, '3');
-	test_JController_motor(jc, '4');
+	test_JsonController_motor(jc, '1');
+	test_JsonController_motor(jc, '2');
+	test_JsonController_motor(jc, '3');
+	test_JsonController_motor(jc, '4');
 
-	test_JController_machinePosition(jc);
+	test_JsonController_machinePosition(jc);
 
-	cout << "TEST	:=== test_JController() OK " << endl;
+	cout << "TEST	:=== test_JsonController() OK " << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -579,8 +578,8 @@ int main(int argc, char *argv[]) {
 	test_Thread();
 	test_Machine();
 	test_ArduinoJson();
-	test_JCommand();
-	test_JController();
+	test_JsonCommand();
+	test_JsonController();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }

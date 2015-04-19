@@ -128,53 +128,29 @@ test/fast:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
 .PHONY : test/fast
 
-src/JCommand.o: src/JCommand.cpp.o
-.PHONY : src/JCommand.o
+src/JsonController.o: src/JsonController.cpp.o
+.PHONY : src/JsonController.o
 
 # target to build an object file
-src/JCommand.cpp.o:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JCommand.cpp.o
-.PHONY : src/JCommand.cpp.o
+src/JsonController.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JsonController.cpp.o
+.PHONY : src/JsonController.cpp.o
 
-src/JCommand.i: src/JCommand.cpp.i
-.PHONY : src/JCommand.i
-
-# target to preprocess a source file
-src/JCommand.cpp.i:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JCommand.cpp.i
-.PHONY : src/JCommand.cpp.i
-
-src/JCommand.s: src/JCommand.cpp.s
-.PHONY : src/JCommand.s
-
-# target to generate assembly for a file
-src/JCommand.cpp.s:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JCommand.cpp.s
-.PHONY : src/JCommand.cpp.s
-
-src/JController.o: src/JController.cpp.o
-.PHONY : src/JController.o
-
-# target to build an object file
-src/JController.cpp.o:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JController.cpp.o
-.PHONY : src/JController.cpp.o
-
-src/JController.i: src/JController.cpp.i
-.PHONY : src/JController.i
+src/JsonController.i: src/JsonController.cpp.i
+.PHONY : src/JsonController.i
 
 # target to preprocess a source file
-src/JController.cpp.i:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JController.cpp.i
-.PHONY : src/JController.cpp.i
+src/JsonController.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JsonController.cpp.i
+.PHONY : src/JsonController.cpp.i
 
-src/JController.s: src/JController.cpp.s
-.PHONY : src/JController.s
+src/JsonController.s: src/JsonController.cpp.s
+.PHONY : src/JsonController.s
 
 # target to generate assembly for a file
-src/JController.cpp.s:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JController.cpp.s
-.PHONY : src/JController.cpp.s
+src/JsonController.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JsonController.cpp.s
+.PHONY : src/JsonController.cpp.s
 
 src/Machine.o: src/Machine.cpp.o
 .PHONY : src/Machine.o
@@ -331,12 +307,9 @@ help:
 	@echo "... package_source"
 	@echo "... rebuild_cache"
 	@echo "... test"
-	@echo "... src/JCommand.o"
-	@echo "... src/JCommand.i"
-	@echo "... src/JCommand.s"
-	@echo "... src/JController.o"
-	@echo "... src/JController.i"
-	@echo "... src/JController.s"
+	@echo "... src/JsonController.o"
+	@echo "... src/JsonController.i"
+	@echo "... src/JsonController.s"
 	@echo "... src/Machine.o"
 	@echo "... src/Machine.i"
 	@echo "... src/Machine.s"
