@@ -502,6 +502,7 @@ void test_JController_axis(JController &jc, char axis) {
 void test_JController_machinePosition(JController &jc) {
 	string replace;
 	replace.push_back('\''); replace.push_back('"');
+	testJSON(jc, replace, "{'mpo':''}", "{'s':4,'r':{'mpo':{'x':0,'y':0,'z':0,'a':0,'b':0,'c':0}}}");
 	testJSON(jc, replace, "{'mpox':''}", "{'s':4,'r':{'mpox':0}}");
 	testJSON(jc, replace, "{'mpox':32760}", "{'s':4,'r':{'mpox':32760}}");
 	testJSON(jc, replace, "{'mpox':''}", "{'s':4,'r':{'mpox':32760}}");
