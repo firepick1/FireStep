@@ -416,21 +416,32 @@ void replaceChar(string &s, char cmatch, char creplace) {
 	}
 }
 
-void testJSON(JsonController &jc, string replace, const char *jsonIn, const char* jsonOut) {
+void testJSON_process(JsonController&jc, JsonCommand &jcmd, string replace, const char *jsonOut) {
 	Serial.clear();
-	string ji(jsonIn);
 	string jo(jsonOut);
 	for (int i=0; i<replace.size(); i+=2) {
 		char cmatch = replace[i];
 		char creplace = replace[i+1];
-		replaceChar(ji, cmatch, creplace);
 		replaceChar(jo, cmatch, creplace);
 	}
-	JsonCommand jcmd; 
-	ASSERT(jcmd.parse(ji.c_str()));
 	jc.process(jcmd);
 	jcmd.response().printTo(Serial);
 	ASSERTEQUALS(jo.c_str(), Serial.output().c_str());
+}
+
+JsonCommand testJSON(JsonController &jc, string replace, const char *jsonIn, const char* jsonOut) {
+	string ji(jsonIn);
+	for (int i=0; i<replace.size(); i+=2) {
+		char cmatch = replace[i];
+		char creplace = replace[i+1];
+		replaceChar(ji, cmatch, creplace);
+	}
+	JsonCommand jcmd; 
+	ASSERT(jcmd.parse(ji.c_str()));
+
+	testJSON_process(jc, jcmd, replace, jsonOut);
+
+	return jcmd;
 }
 
 void test_JsonController_motor(JsonController &jc, char motor) {
@@ -536,6 +547,22 @@ void test_JsonController_machinePosition(JsonController &jc) {
 		"{'s':0,'r':{'spo':{'x':-32760,'y':-32761,'z':-32762,'a':-32763,'b':-32764,'c':-32765}}}");
 }
 
+void test_JsonController_stroke(JsonController &jc) {
+	string replace;
+	replace.push_back('\''); replace.push_back('"');
+	JsonCommand jcmd = testJSON(jc, replace, 
+		"{'str':{'s1':[1,2,3],'s2':[4,5,6],'s3':[7,8,9],'s4':[-10,-11,-12]}}", 
+		"{'s':2,'r':{'str':{'s1':[1,2,3],'s2':[4,5,6],'s3':[7,8,9],'s4':[-10,-11,-12]}}}");
+	testJSON_process(jc, jcmd, replace, 
+		"{'s':2,'r':{'str':{'s1':1,'s2':4,'s3':7,'s4':-10}}}");
+	testJSON_process(jc, jcmd, replace, 
+		"{'s':2,'r':{'str':{'s1':2,'s2':5,'s3':8,'s4':-11}}}");
+	testJSON_process(jc, jcmd, replace, 
+		"{'s':0,'r':{'str':{'s1':3,'s2':6,'s3':9,'s4':-12}}}");
+	testJSON_process(jc, jcmd, replace, 
+		"{'s':0,'r':{'str':{'s1':3,'s2':6,'s3':9,'s4':-12}}}");
+}
+
 void test_JsonController() {
     cout << "TEST	: test_JsonController() BEGIN" << endl;
 
@@ -565,6 +592,8 @@ void test_JsonController() {
 	test_JsonController_motor(jc, '4');
 
 	test_JsonController_machinePosition(jc);
+
+	test_JsonController_stroke(jc);
 
 	cout << "TEST	:=== test_JsonController() OK " << endl;
 }
