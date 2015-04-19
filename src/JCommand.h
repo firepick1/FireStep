@@ -10,14 +10,16 @@
 namespace firestep {
 
 enum Status {
-	STATUS_JSON_PARSED = -1,		// json parsed
-	STATUS_EMPTY = -2,				// uninitialized JCommand
-	STATUS_OK = 0,					// generic acknowledgement
-	STATUS_ERROR = 1,				// generic error
-	STATUS_COMPLETED = 4,			// operation is complete
-	STATUS_UNRECOGNIZED_NAME = 100,	// parse did'nt recognize thecommand
-	STATUS_JSON_SYNTAX_ERROR = 111,	// JSON input string is not well formed
-	STATUS_JSON_TOO_LONG = 113,		// JSON exceeds buffer size
+	STATUS_OK = 0,					// operation completed successfully
+	STATUS_JSON_PARSED = 1,			// json parsed, awaiting processing
+	STATUS_EMPTY = -1,				// uninitialized JCommand
+	STATUS_UNRECOGNIZED_NAME = -3,	// parse did'nt recognize thecommand
+	STATUS_JSON_SYNTAX_ERROR = -4,	// JSON input string is not well formed
+	STATUS_JSON_TOO_LONG = -5,		// JSON exceeds buffer size
+	STATUS_FIELD_ERROR = -6,		// Internal error: could not process field
+	STATUS_POSITION_ERROR = -7,		// Internal error: could not process position
+	STATUS_AXIS_ERROR = -8,			// Internal error: could not process axis
+	STATUS_SYS_ERROR = -9,			// Internal error: could not process system configuration
 };
 
 typedef class JCommand {

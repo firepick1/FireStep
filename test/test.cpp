@@ -404,7 +404,7 @@ void test_JCommand() {
 
 	Serial.clear();
 	cmd3.response().printTo(Serial);
-	ASSERTEQUALS("{\"s\":-1,\"r\":{\"x\":-0.123}}", Serial.output().c_str());
+	ASSERTEQUALS("{\"s\":1,\"r\":{\"x\":-0.123}}", Serial.output().c_str());
 
 	cout << "TEST	:=== test_JCommand() OK " << endl;
 }
@@ -439,102 +439,102 @@ void test_JController_motor(JController &jc, char motor) {
 	replace.push_back('\''); replace.push_back('"');
 	replace.push_back('?'); replace.push_back(motor);
 	replace.push_back('!'); replace.push_back(motor-1);
-	testJSON(jc, replace, "{'?':''}", "{'s':4,'r':{'?':{'ma':!,'sa':1.80,'mi':16,'po':0,'pm':0}}}");
-	testJSON(jc, replace, "{'?ma':''}", "{'s':4,'r':{'?ma':!}}");
-	testJSON(jc, replace, "{'?ma':4}", "{'s':4,'r':{'?ma':4}}");
-	testJSON(jc, replace, "{'?ma':''}", "{'s':4,'r':{'?ma':4}}");
-	testJSON(jc, replace, "{'?':{'ma':''}}", "{'s':4,'r':{'?':{'ma':4}}}");
-	testJSON(jc, replace, "{'?':{'ma':!}}", "{'s':4,'r':{'?':{'ma':!}}}");
-	testJSON(jc, replace, "{'?':{'ma':''}}", "{'s':4,'r':{'?':{'ma':!}}}");
-	testJSON(jc, replace, "{'?sa':''}", "{'s':4,'r':{'?sa':1.80}}");
-	testJSON(jc, replace, "{'?sa':0.90}", "{'s':4,'r':{'?sa':0.90}}");
-	testJSON(jc, replace, "{'?sa':''}", "{'s':4,'r':{'?sa':0.90}}");
-	testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':4,'r':{'?':{'sa':0.90}}}");
-	testJSON(jc, replace, "{'?':{'sa':1.80}}", "{'s':4,'r':{'?':{'sa':1.80}}}");
-	testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':4,'r':{'?':{'sa':1.80}}}");
-	testJSON(jc, replace, "{'?mi':''}", "{'s':4,'r':{'?mi':16}}");
-	testJSON(jc, replace, "{'?mi':33}", "{'s':4,'r':{'?mi':33}}");
-	testJSON(jc, replace, "{'?mi':''}", "{'s':4,'r':{'?mi':33}}");
-	testJSON(jc, replace, "{'?':{'mi':''}}", "{'s':4,'r':{'?':{'mi':33}}}");
-	testJSON(jc, replace, "{'?':{'mi':16}}", "{'s':4,'r':{'?':{'mi':16}}}");
-	testJSON(jc, replace, "{'?':{'mi':''}}", "{'s':4,'r':{'?':{'mi':16}}}");
-	testJSON(jc, replace, "{'?po':''}", "{'s':4,'r':{'?po':0}}");
-	testJSON(jc, replace, "{'?po':2}", "{'s':4,'r':{'?po':2}}");
-	testJSON(jc, replace, "{'?po':''}", "{'s':4,'r':{'?po':2}}");
-	testJSON(jc, replace, "{'?':{'po':''}}", "{'s':4,'r':{'?':{'po':2}}}");
-	testJSON(jc, replace, "{'?':{'po':0}}", "{'s':4,'r':{'?':{'po':0}}}");
-	testJSON(jc, replace, "{'?':{'po':''}}", "{'s':4,'r':{'?':{'po':0}}}");
-	testJSON(jc, replace, "{'?pm':''}", "{'s':4,'r':{'?pm':0}}");
-	testJSON(jc, replace, "{'?pm':2}", "{'s':4,'r':{'?pm':2}}");
-	testJSON(jc, replace, "{'?pm':''}", "{'s':4,'r':{'?pm':2}}");
-	testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':4,'r':{'?':{'pm':2}}}");
-	testJSON(jc, replace, "{'?':{'pm':0}}", "{'s':4,'r':{'?':{'pm':0}}}");
-	testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':4,'r':{'?':{'pm':0}}}");
-	testJSON(jc, replace, "{'?':''}", "{'s':4,'r':{'?':{'ma':!,'sa':1.80,'mi':16,'po':0,'pm':0}}}");
+	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!,'sa':1.80,'mi':16,'po':0,'pm':0}}}");
+	testJSON(jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':!}}");
+	testJSON(jc, replace, "{'?ma':4}", "{'s':0,'r':{'?ma':4}}");
+	testJSON(jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':4}}");
+	testJSON(jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':4}}}");
+	testJSON(jc, replace, "{'?':{'ma':!}}", "{'s':0,'r':{'?':{'ma':!}}}");
+	testJSON(jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':!}}}");
+	testJSON(jc, replace, "{'?sa':''}", "{'s':0,'r':{'?sa':1.80}}");
+	testJSON(jc, replace, "{'?sa':0.90}", "{'s':0,'r':{'?sa':0.90}}");
+	testJSON(jc, replace, "{'?sa':''}", "{'s':0,'r':{'?sa':0.90}}");
+	testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':0.90}}}");
+	testJSON(jc, replace, "{'?':{'sa':1.80}}", "{'s':0,'r':{'?':{'sa':1.80}}}");
+	testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':1.80}}}");
+	testJSON(jc, replace, "{'?mi':''}", "{'s':0,'r':{'?mi':16}}");
+	testJSON(jc, replace, "{'?mi':33}", "{'s':0,'r':{'?mi':33}}");
+	testJSON(jc, replace, "{'?mi':''}", "{'s':0,'r':{'?mi':33}}");
+	testJSON(jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':33}}}");
+	testJSON(jc, replace, "{'?':{'mi':16}}", "{'s':0,'r':{'?':{'mi':16}}}");
+	testJSON(jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':16}}}");
+	testJSON(jc, replace, "{'?po':''}", "{'s':0,'r':{'?po':0}}");
+	testJSON(jc, replace, "{'?po':2}", "{'s':0,'r':{'?po':2}}");
+	testJSON(jc, replace, "{'?po':''}", "{'s':0,'r':{'?po':2}}");
+	testJSON(jc, replace, "{'?':{'po':''}}", "{'s':0,'r':{'?':{'po':2}}}");
+	testJSON(jc, replace, "{'?':{'po':0}}", "{'s':0,'r':{'?':{'po':0}}}");
+	testJSON(jc, replace, "{'?':{'po':''}}", "{'s':0,'r':{'?':{'po':0}}}");
+	testJSON(jc, replace, "{'?pm':''}", "{'s':0,'r':{'?pm':0}}");
+	testJSON(jc, replace, "{'?pm':2}", "{'s':0,'r':{'?pm':2}}");
+	testJSON(jc, replace, "{'?pm':''}", "{'s':0,'r':{'?pm':2}}");
+	testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':0,'r':{'?':{'pm':2}}}");
+	testJSON(jc, replace, "{'?':{'pm':0}}", "{'s':0,'r':{'?':{'pm':0}}}");
+	testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':0,'r':{'?':{'pm':0}}}");
+	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!,'sa':1.80,'mi':16,'po':0,'pm':0}}}");
 }
 
 void test_JController_axis(JController &jc, char axis) {
 	string replace;
 	replace.push_back('\''); replace.push_back('"');
 	replace.push_back('?'); replace.push_back(axis);
-	testJSON(jc, replace, "{'?':''}", "{'s':4,'r':{'?':{'am':1,'tn':0,'tm':10000}}}");
-	testJSON(jc, replace, "{'?tn':''}", "{'s':4,'r':{'?tn':0}}");		// default
-	testJSON(jc, replace, "{'?tn':111}", "{'s':4,'r':{'?tn':111}}");	
-	testJSON(jc, replace, "{'?tn':''}", "{'s':4,'r':{'?tn':111}}");
-	testJSON(jc, replace, "{'?':{'tn':''}}", "{'s':4,'r':{'?':{'tn':111}}}");
-	testJSON(jc, replace, "{'?':{'tn':0}}", "{'s':4,'r':{'?':{'tn':0}}}");
-	testJSON(jc, replace, "{'?':{'tn':''}}", "{'s':4,'r':{'?':{'tn':0}}}");
-	testJSON(jc, replace, "{'?tm':''}", "{'s':4,'r':{'?tm':10000}}");  	// default
-	testJSON(jc, replace, "{'?tm':222}", "{'s':4,'r':{'?tm':222}}");	
-	testJSON(jc, replace, "{'?tm':''}", "{'s':4,'r':{'?tm':222}}");	
-	testJSON(jc, replace, "{'?':{'tm':''}}", "{'s':4,'r':{'?':{'tm':222}}}");
-	testJSON(jc, replace, "{'?':{'tm':10000}}", "{'s':4,'r':{'?':{'tm':10000}}}");
-	testJSON(jc, replace, "{'?':{'tm':''}}", "{'s':4,'r':{'?':{'tm':10000}}}");
-	testJSON(jc, replace, "{'?am':''}", "{'s':4,'r':{'?am':1}}");  	// default
-	testJSON(jc, replace, "{'?am':33}", "{'s':4,'r':{'?am':33}}");	
-	testJSON(jc, replace, "{'?am':''}", "{'s':4,'r':{'?am':33}}");	
-	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':4,'r':{'?':{'am':33}}}");
-	testJSON(jc, replace, "{'?':{'am':1}}", "{'s':4,'r':{'?':{'am':1}}}");
-	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':4,'r':{'?':{'am':1}}}");
-	testJSON(jc, replace, "{'?':''}", "{'s':4,'r':{'?':{'am':1,'tn':0,'tm':10000}}}");
+	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'am':1,'tn':0,'tm':10000}}}");
+	testJSON(jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':0}}");		// default
+	testJSON(jc, replace, "{'?tn':111}", "{'s':0,'r':{'?tn':111}}");	
+	testJSON(jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':111}}");
+	testJSON(jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':111}}}");
+	testJSON(jc, replace, "{'?':{'tn':0}}", "{'s':0,'r':{'?':{'tn':0}}}");
+	testJSON(jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':0}}}");
+	testJSON(jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':10000}}");  	// default
+	testJSON(jc, replace, "{'?tm':222}", "{'s':0,'r':{'?tm':222}}");	
+	testJSON(jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':222}}");	
+	testJSON(jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':222}}}");
+	testJSON(jc, replace, "{'?':{'tm':10000}}", "{'s':0,'r':{'?':{'tm':10000}}}");
+	testJSON(jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':10000}}}");
+	testJSON(jc, replace, "{'?am':''}", "{'s':0,'r':{'?am':1}}");  	// default
+	testJSON(jc, replace, "{'?am':33}", "{'s':0,'r':{'?am':33}}");	
+	testJSON(jc, replace, "{'?am':''}", "{'s':0,'r':{'?am':33}}");	
+	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':33}}}");
+	testJSON(jc, replace, "{'?':{'am':1}}", "{'s':0,'r':{'?':{'am':1}}}");
+	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':1}}}");
+	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'am':1,'tn':0,'tm':10000}}}");
 }
 
 void test_JController_machinePosition(JController &jc) {
 	string replace;
 	replace.push_back('\''); replace.push_back('"');
-	testJSON(jc, replace, "{'spo':''}", "{'s':4,'r':{'spo':{'x':0,'y':0,'z':0,'a':0,'b':0,'c':0}}}");
-	testJSON(jc, replace, "{'spox':''}", "{'s':4,'r':{'spox':0}}");
-	testJSON(jc, replace, "{'spox':32760}", "{'s':4,'r':{'spox':32760}}");
-	testJSON(jc, replace, "{'spox':''}", "{'s':4,'r':{'spox':32760}}");
-	testJSON(jc, replace, "{'spox':-32760}", "{'s':4,'r':{'spox':-32760}}");
-	testJSON(jc, replace, "{'spox':''}", "{'s':4,'r':{'spox':-32760}}");
-	testJSON(jc, replace, "{'spoy':''}", "{'s':4,'r':{'spoy':0}}");
-	testJSON(jc, replace, "{'spoy':32761}", "{'s':4,'r':{'spoy':32761}}");
-	testJSON(jc, replace, "{'spoy':''}", "{'s':4,'r':{'spoy':32761}}");
-	testJSON(jc, replace, "{'spoy':-32761}", "{'s':4,'r':{'spoy':-32761}}");
-	testJSON(jc, replace, "{'spoy':''}", "{'s':4,'r':{'spoy':-32761}}");
-	testJSON(jc, replace, "{'spoz':''}", "{'s':4,'r':{'spoz':0}}");
-	testJSON(jc, replace, "{'spoz':32762}", "{'s':4,'r':{'spoz':32762}}");
-	testJSON(jc, replace, "{'spoz':''}", "{'s':4,'r':{'spoz':32762}}");
-	testJSON(jc, replace, "{'spoz':-32762}", "{'s':4,'r':{'spoz':-32762}}");
-	testJSON(jc, replace, "{'spoz':''}", "{'s':4,'r':{'spoz':-32762}}");
-	testJSON(jc, replace, "{'spoa':''}", "{'s':4,'r':{'spoa':0}}");
-	testJSON(jc, replace, "{'spoa':32763}", "{'s':4,'r':{'spoa':32763}}");
-	testJSON(jc, replace, "{'spoa':''}", "{'s':4,'r':{'spoa':32763}}");
-	testJSON(jc, replace, "{'spoa':-32763}", "{'s':4,'r':{'spoa':-32763}}");
-	testJSON(jc, replace, "{'spoa':''}", "{'s':4,'r':{'spoa':-32763}}");
-	testJSON(jc, replace, "{'spob':''}", "{'s':4,'r':{'spob':0}}");
-	testJSON(jc, replace, "{'spob':32764}", "{'s':4,'r':{'spob':32764}}");
-	testJSON(jc, replace, "{'spob':''}", "{'s':4,'r':{'spob':32764}}");
-	testJSON(jc, replace, "{'spob':-32764}", "{'s':4,'r':{'spob':-32764}}");
-	testJSON(jc, replace, "{'spob':''}", "{'s':4,'r':{'spob':-32764}}");
-	testJSON(jc, replace, "{'spoc':''}", "{'s':4,'r':{'spoc':0}}");
-	testJSON(jc, replace, "{'spoc':32765}", "{'s':4,'r':{'spoc':32765}}");
-	testJSON(jc, replace, "{'spoc':''}", "{'s':4,'r':{'spoc':32765}}");
-	testJSON(jc, replace, "{'spoc':-32765}", "{'s':4,'r':{'spoc':-32765}}");
-	testJSON(jc, replace, "{'spoc':''}", "{'s':4,'r':{'spoc':-32765}}");
+	testJSON(jc, replace, "{'spo':''}", "{'s':0,'r':{'spo':{'x':0,'y':0,'z':0,'a':0,'b':0,'c':0}}}");
+	testJSON(jc, replace, "{'spox':''}", "{'s':0,'r':{'spox':0}}");
+	testJSON(jc, replace, "{'spox':32760}", "{'s':0,'r':{'spox':32760}}");
+	testJSON(jc, replace, "{'spox':''}", "{'s':0,'r':{'spox':32760}}");
+	testJSON(jc, replace, "{'spox':-32760}", "{'s':0,'r':{'spox':-32760}}");
+	testJSON(jc, replace, "{'spox':''}", "{'s':0,'r':{'spox':-32760}}");
+	testJSON(jc, replace, "{'spoy':''}", "{'s':0,'r':{'spoy':0}}");
+	testJSON(jc, replace, "{'spoy':32761}", "{'s':0,'r':{'spoy':32761}}");
+	testJSON(jc, replace, "{'spoy':''}", "{'s':0,'r':{'spoy':32761}}");
+	testJSON(jc, replace, "{'spoy':-32761}", "{'s':0,'r':{'spoy':-32761}}");
+	testJSON(jc, replace, "{'spoy':''}", "{'s':0,'r':{'spoy':-32761}}");
+	testJSON(jc, replace, "{'spoz':''}", "{'s':0,'r':{'spoz':0}}");
+	testJSON(jc, replace, "{'spoz':32762}", "{'s':0,'r':{'spoz':32762}}");
+	testJSON(jc, replace, "{'spoz':''}", "{'s':0,'r':{'spoz':32762}}");
+	testJSON(jc, replace, "{'spoz':-32762}", "{'s':0,'r':{'spoz':-32762}}");
+	testJSON(jc, replace, "{'spoz':''}", "{'s':0,'r':{'spoz':-32762}}");
+	testJSON(jc, replace, "{'spoa':''}", "{'s':0,'r':{'spoa':0}}");
+	testJSON(jc, replace, "{'spoa':32763}", "{'s':0,'r':{'spoa':32763}}");
+	testJSON(jc, replace, "{'spoa':''}", "{'s':0,'r':{'spoa':32763}}");
+	testJSON(jc, replace, "{'spoa':-32763}", "{'s':0,'r':{'spoa':-32763}}");
+	testJSON(jc, replace, "{'spoa':''}", "{'s':0,'r':{'spoa':-32763}}");
+	testJSON(jc, replace, "{'spob':''}", "{'s':0,'r':{'spob':0}}");
+	testJSON(jc, replace, "{'spob':32764}", "{'s':0,'r':{'spob':32764}}");
+	testJSON(jc, replace, "{'spob':''}", "{'s':0,'r':{'spob':32764}}");
+	testJSON(jc, replace, "{'spob':-32764}", "{'s':0,'r':{'spob':-32764}}");
+	testJSON(jc, replace, "{'spob':''}", "{'s':0,'r':{'spob':-32764}}");
+	testJSON(jc, replace, "{'spoc':''}", "{'s':0,'r':{'spoc':0}}");
+	testJSON(jc, replace, "{'spoc':32765}", "{'s':0,'r':{'spoc':32765}}");
+	testJSON(jc, replace, "{'spoc':''}", "{'s':0,'r':{'spoc':32765}}");
+	testJSON(jc, replace, "{'spoc':-32765}", "{'s':0,'r':{'spoc':-32765}}");
+	testJSON(jc, replace, "{'spoc':''}", "{'s':0,'r':{'spoc':-32765}}");
 	testJSON(jc, replace, "{'spo':''}", 
-		"{'s':4,'r':{'spo':{'x':-32760,'y':-32761,'z':-32762,'a':-32763,'b':-32764,'c':-32765}}}");
+		"{'s':0,'r':{'spo':{'x':-32760,'y':-32761,'z':-32762,'a':-32763,'b':-32764,'c':-32765}}}");
 }
 
 void test_JController() {
@@ -550,7 +550,7 @@ void test_JController() {
 	jcmd.response().printTo(Serial);
 	char sysbuf[500];
 	snprintf(sysbuf, sizeof(sysbuf), "{\"s\":%d,\"r\":{\"sys\":{\"fb\":\"%s\",\"fv\":%.2f}}}",
-		STATUS_COMPLETED, BUILD, VERSION_MAJOR*100 + VERSION_MINOR + VERSION_PATCH/100.0);
+		STATUS_OK, BUILD, VERSION_MAJOR*100 + VERSION_MINOR + VERSION_PATCH/100.0);
 	ASSERTEQUALS(sysbuf, Serial.output().c_str());
 
 	test_JController_axis(jc, 'x');

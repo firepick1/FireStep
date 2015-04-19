@@ -25,16 +25,16 @@ namespace firestep {
 #define PIN_Z_LIM	56
 #endif
 
-// Throttles driver speed from high (255) to low (0)
-// #define THROTTLE_SPEED
+// #define THROTTLE_SPEED /* Throttles driver speed from high (255) to low (0) */
 
 #define A4988_PULSE_DELAY 	DELAY500NS;DELAY500NS
-
 #define DRV8825_PULSE_DELAY DELAY500NS;DELAY500NS;DELAY500NS;DELAY500NS
-
 #define STEPPER_PULSE_DELAY DRV8825_PULSE_DELAY
-
 #define DELTA_COUNT 120
+#define MOTOR_COUNT 4
+#define AXIS_COUNT 6
+#define POSITION_TYPE int16_t
+#define SEGMENT_COUNT 100
 
 #ifndef DELAY500NS
 #define DELAY500NS \
@@ -117,16 +117,42 @@ class Position {
 		Position() :x(0),y(0),z(0),a(0),b(0),c(0) {}
 };
 
-#define MOTOR_COUNT 4
-#define AXIS_COUNT 6
-#define POSITION_TYPE int16_t
+typedef class StrokeSegment {
+	public:
+		int8_t d[4];
+} StrokeSegment;
+
+typedef class Stroke {
+    public:
+        uint8_t 		length;			// number of segments
+        float 			scale;			// steps per segment
+        uint8_t 		curSeg;			// current segment index
+        uint32_t 		usPath;			// planned traversal time in microseconds
+        StrokeSegment 	seg[SEGMENT_COUNT];
+    public:
+        Stroke() : length(0), scale(1), curSeg(0), usPath(1000000) {}
+        inline bool add(int8_t d1 = 0, int8_t d2 = 0, int8_t d3 = 0, int8_t d4 = 0) {
+            if (length + 1 >= SEGMENT_COUNT) {
+                return false;
+            }
+            int8_t *pd = seg[length].d;
+            *pd++ = d1;
+            *pd++ = d2;
+            *pd++ = d3;
+            *pd++ = d4;
+            length++;
+            return true;
+        }
+} Stroke;
+
 typedef class Machine {
         friend class Controller;
         friend class JController;
     private:
         Motor motor[MOTOR_COUNT];
         Axis axis[AXIS_COUNT];
-		Position<POSITION_TYPE> machinePosition;
+        Position<POSITION_TYPE> machinePosition;
+        Stroke stroke;
 
         float pathPosition;
         SerialInt16 maxPulses;

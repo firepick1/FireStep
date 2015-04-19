@@ -10,10 +10,10 @@ JController::JController(Machine &machine) :
 
 template<class TF, class TJ>
 Status processField(JsonObject& jobj, const char* key, TF& field) {
-	Status status = STATUS_COMPLETED;
+	Status status = STATUS_OK;
 	const char *s;
 	if ((s=jobj[key]) && *s==0) { // query
-		status = (jobj[key] = (TJ) field).success() ? status : STATUS_ERROR;
+		status = (jobj[key] = (TJ) field).success() ? status : STATUS_FIELD_ERROR;
 	} else {
 		field = (TF)(TJ)jobj[key];
 	}
@@ -43,7 +43,7 @@ int axisOf(char c) {
 }
 
 Status JController::processMachinePosition(JCommand &jcmd, JsonObject& jobj, const char* key) {
-	Status status = STATUS_COMPLETED;
+	Status status = STATUS_OK;
 	const char *s;
 	if (strlen(key) == 3) {
 		if ((s=jobj[key]) && *s==0) {
@@ -58,11 +58,11 @@ Status JController::processMachinePosition(JCommand &jcmd, JsonObject& jobj, con
 		}
 		JsonObject& kidObj = jobj[key];
 		if (!kidObj.success()) {
-			return STATUS_ERROR;
+			return STATUS_POSITION_ERROR;
 		}
 		for (JsonObject::iterator it=kidObj.begin(); it!=kidObj.end(); ++it) {
 			status = processMachinePosition(jcmd, kidObj, it->key);
-			if (status != STATUS_COMPLETED) {
+			if (status != STATUS_OK) {
 				return status;
 			}
 		} 
@@ -82,8 +82,16 @@ Status JController::processMachinePosition(JCommand &jcmd, JsonObject& jobj, con
 	return status;
 }
 
+Status JController::processStroke(JCommand &jcmd, JsonObject& jobj, const char* key) {
+	Status status = STATUS_OK;
+
+	for (JsonObject::iterator it=jobj.begin(); it!=jobj.end(); ++it) {
+	}
+	return status;
+}
+
 Status JController::processMotor(JCommand &jcmd, JsonObject& jobj, const char* key, char group) {
-	Status status = STATUS_COMPLETED;
+	Status status = STATUS_OK;
 	const char *s;
 	int iMotor = group - '1';
 	ASSERT(0 <= iMotor);
@@ -102,7 +110,7 @@ Status JController::processMotor(JCommand &jcmd, JsonObject& jobj, const char* k
 		if (kidObj.success()) {
 			for (JsonObject::iterator it=kidObj.begin(); it!=kidObj.end(); ++it) {
 				status = processMotor(jcmd, kidObj, it->key, group);
-				if (status != STATUS_COMPLETED) {
+				if (status != STATUS_OK) {
 					return status;
 				}
 			}
@@ -122,11 +130,11 @@ Status JController::processMotor(JCommand &jcmd, JsonObject& jobj, const char* k
 }
 
 Status JController::processAxis(JCommand &jcmd, JsonObject& jobj, const char* key, char group) {
-	Status status = STATUS_COMPLETED;
+	Status status = STATUS_OK;
 	const char *s;
 	int iAxis = axisOf(group);
 	if (iAxis < 0) {
-		return STATUS_ERROR;
+		return STATUS_AXIS_ERROR;
 	}
 	if (strlen(key) == 1) {
 		if ((s=jobj[key]) && *s==0) {
@@ -140,7 +148,7 @@ Status JController::processAxis(JCommand &jcmd, JsonObject& jobj, const char* ke
 		if (kidObj.success()) {
 			for (JsonObject::iterator it=kidObj.begin(); it!=kidObj.end(); ++it) {
 				status = processAxis(jcmd, kidObj, it->key, group);
-				if (status != STATUS_COMPLETED) {
+				if (status != STATUS_OK) {
 					return status;
 				}
 			}
@@ -160,7 +168,7 @@ void JController::process(JCommand& jcmd) {
 	JsonObject& root = jcmd.root();
 	JsonVariant node;
 	node = root;
-	Status status = STATUS_COMPLETED;
+	Status status = STATUS_OK;
 
 	for (JsonObject::iterator it=root.begin(); it!=root.end(); ++it) {
 		if (strcmp("sys", it->key) == 0) {
@@ -168,10 +176,12 @@ void JController::process(JCommand& jcmd) {
 				node = root["sys"] = jcmd.createJsonObject();
 				node["fb"] = BUILD;
 				node["fv"] = VERSION_MAJOR*100 + VERSION_MINOR + VERSION_PATCH/100.0;
-				status = node.success() ? STATUS_COMPLETED : STATUS_ERROR;
+				status = node.success() ? STATUS_OK : STATUS_SYS_ERROR;
 			}
 		} else if (strncmp("spo", it->key, 3) == 0) {
 			status = processMachinePosition(jcmd, root, it->key);
+		} else if (strcmp("str", it->key) == 0) {
+			status = processStroke(jcmd, root, it->key);
 		} else {
 			switch (it->key[0]) {
 			case '1':
