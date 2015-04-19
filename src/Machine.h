@@ -86,24 +86,33 @@ typedef struct Motor {
     {}
 } Motor;
 
-typedef struct Axis {
-    float travelMin;
-    float travelMax;
-    float searchVelocity;
-    Axis() :
-        travelMin(0),
-        travelMax(10000),
-        searchVelocity(200)
-    {}
+enum AxisMode {
+	MODE_DISABLE = 0,
+	MODE_STANDARD = 1,
+};
+
+typedef class Axis {
+    public:
+        uint8_t mode;
+        int16_t travelMin;
+        int16_t travelMax;
+        int16_t searchVelocity;
+        Axis() :
+            mode((uint8_t)MODE_STANDARD),
+            travelMin(0),
+            travelMax(10000),
+            searchVelocity(200)
+        {};
 } Axis;
 
 #define MOTOR_COUNT 4
+#define AXIS_COUNT 6
 typedef class Machine {
-	friend class Controller;
-	friend class JController;
-	private:
+        friend class Controller;
+        friend class JController;
+    private:
         Motor motor[MOTOR_COUNT];
-        Axis axis[6];
+        Axis axis[AXIS_COUNT];
         float pathPosition;
         SerialInt16 maxPulses;
         SerialInt32 pulses;
@@ -152,7 +161,7 @@ typedef class Machine {
 } Machine;
 
 typedef class Controller {
-	private:
+    private:
         CommandParser	parser;
         char			guardStart;
         CLOCK			lastClock;

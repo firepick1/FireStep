@@ -15,6 +15,7 @@ enum Status {
 	STATUS_OK = 0,					// generic acknowledgement
 	STATUS_ERROR = 1,				// generic error
 	STATUS_COMPLETED = 4,			// operation is complete
+	STATUS_UNRECOGNIZED_NAME = 100,	// parse did'nt recognize thecommand
 	STATUS_JSON_SYNTAX_ERROR = 111,	// JSON input string is not well formed
 	STATUS_JSON_TOO_LONG = 113,		// JSON exceeds buffer size
 };

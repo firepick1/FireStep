@@ -96,7 +96,6 @@ void MachineThread::Heartbeat() {
 
 }
 
-
 void CommandParser::reset() {
     cPeek = 0x7f;
     peekAvail = false;
@@ -675,5 +674,4 @@ bool Machine::doAccelerationStroke() {
 
     return completed;
 }
-
 

@@ -291,12 +291,10 @@ void test_Machine() {
 	lastClock = masterClock.clock;
 	arduino.dump();
 
-	test_command("[DIAG]", "[DIAG656 120 X1Y1Z1]\n");
+	char buf[200];
+	snprintf(buf, sizeof(buf), "[DIAG%ld 120 X1Y1Z1]\n", (long) sizeof(Controller));
+	test_command("[DIAG]", buf);
 	test_command("[V]", "[v1.0]\n");
-	//stringstream sscmd;
-	//sscmd << "[IDLE";
-	//sscmd << "]";
-	//test_command(sscmd.str(), "[XYZ00000000 00000000 00000000 X1Y1Z1 00000000 00000001 00000000 00000000 0000]\n");
 	test_command("[GULS]", "[XYZ00000000 00000000 00000000 X1Y1Z1 00000000 00000001 00000000 00000000 0000]\n");
 	test_command("[GXYZ]", "[XYZ00000000 00000000 00000000 X1Y1Z1 00000000 00000001 00000000 00000000 0000]\n");
 
@@ -411,6 +409,45 @@ void test_JCommand() {
 	cout << "TEST	:=== test_JCommand() OK " << endl;
 }
 
+void replaceChar(string &s, char cmatch, char creplace) {
+	for (int i=0; i<s.size(); i++) { 
+		if (s[i] == cmatch) {
+			s[i] = creplace;
+		}
+	}
+}
+
+void testJSON(JController &jc, char creplace, const char *jsonIn, const char* jsonOut) {
+	Serial.clear();
+	string ji(jsonIn);
+	string jo(jsonOut);
+	replaceChar(ji, '\'', '"');
+	replaceChar(ji, '?', creplace);
+	replaceChar(jo, '\'', '"');
+	replaceChar(jo, '?', creplace);
+	JCommand jcmd; 
+	ASSERT(jcmd.parse(ji.c_str()));
+	jc.process(jcmd);
+	jcmd.response().printTo(Serial);
+	ASSERTEQUALS(jo.c_str(), Serial.output().c_str());
+}
+
+void test_JController_axis(JController &jc, char axis) {
+	testJSON(jc, axis, "{'?tn':''}", "{'s':4,'r':{'?tn':0}}");		// default
+	testJSON(jc, axis, "{'?tn':111}", "{'s':4,'r':{'?tn':111}}");	
+	testJSON(jc, axis, "{'?tn':''}", "{'s':4,'r':{'?tn':111}}");
+	testJSON(jc, axis, "{'?':{'tn':''}}", "{'s':4,'r':{'?':{'tn':111}}}");
+	testJSON(jc, axis, "{'?':{'tn':-111}}", "{'s':4,'r':{'?':{'tn':-111}}}");
+	testJSON(jc, axis, "{'?':{'tn':''}}", "{'s':4,'r':{'?':{'tn':-111}}}");
+	testJSON(jc, axis, "{'?tm':''}", "{'s':4,'r':{'?tm':10000}}");  	// default
+	testJSON(jc, axis, "{'?tm':222}", "{'s':4,'r':{'?tm':222}}");	
+	testJSON(jc, axis, "{'?tm':''}", "{'s':4,'r':{'?tm':222}}");	
+	testJSON(jc, axis, "{'?':{'tm':''}}", "{'s':4,'r':{'?':{'tm':222}}}");
+	testJSON(jc, axis, "{'?':{'tm':-222}}", "{'s':4,'r':{'?':{'tm':-222}}}");
+	testJSON(jc, axis, "{'?':{'tm':''}}", "{'s':4,'r':{'?':{'tm':-222}}}");
+	testJSON(jc, axis, "{'?':''}", "{'s':4,'r':{'?':{'am':1,'tn':-111,'tm':-222}}}");
+}
+
 void test_JController() {
     cout << "TEST	: test_JController() BEGIN" << endl;
 
@@ -427,13 +464,12 @@ void test_JController() {
 		STATUS_COMPLETED, BUILD, VERSION_MAJOR*100 + VERSION_MINOR + VERSION_PATCH/100.0);
 	ASSERTEQUALS(sysbuf, Serial.output().c_str());
 
-	Serial.clear();
-	jcmd = JCommand(); // clear
-	ASSERT(jcmd.parse("{\"xtm\":\"\"}"));
-	jc.process(jcmd);
-	jcmd.response().printTo(Serial);
-	snprintf(sysbuf, sizeof(sysbuf), "{\"s\":%d,\"r\":{\"xtm\":10000.00}}", STATUS_COMPLETED);
-	ASSERTEQUALS(sysbuf, Serial.output().c_str());
+	test_JController_axis(jc, 'x');
+	test_JController_axis(jc, 'y');
+	test_JController_axis(jc, 'z');
+	test_JController_axis(jc, 'a');
+	test_JController_axis(jc, 'b');
+	test_JController_axis(jc, 'c');
 
 	cout << "TEST	:=== test_JController() OK " << endl;
 }
