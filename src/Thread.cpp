@@ -126,7 +126,8 @@ void MonitorThread::Heartbeat() {
         verbose = true;
     }
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-        if (masterClock.generation > pThread->nextHeartbeat.generation + 1 && pThread->nextHeartbeat.generation > 0) {
+        if (masterClock.generation > pThread->nextHeartbeat.generation + 1 && 
+			pThread->nextHeartbeat.generation > 0) {
             Error("O@G", pThread->nextHeartbeat.generation);
         }
     }
@@ -182,7 +183,9 @@ void ThreadRunner::setup(int monitorPin1, int monitorPin2) {
     ThreadEnable(true);
 }
 
-/// We have exceeded generation maximum (~4m @ 16MHZ)
+/**
+ * The generation count has exceeded the maximum (~3.5minutes @ 16MHZ).
+ */ 
 void ThreadRunner::resetGenerations() {
     masterClock.generation -= GENERATION_RESET;
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {

@@ -6,7 +6,6 @@
 #define DEBUG_DEC(S,V) Serial.print(" " S ":");Serial.print(V,DEC);
 
 extern byte lastByte;		// declare this at end of program
-//#define CLOCK_HZ 62500	// cycles per second
 #define CLOCK_HZ 16000000	// cycles per second
 #define FREQ_CYCLES(freq) (CLOCK_HZ/(freq))
 #define MS_CYCLES(ms) FREQ_CYCLES(1000.0 / (ms))
@@ -37,7 +36,7 @@ typedef struct INotify {
 typedef union ThreadClock  {
 	CLOCK clock;
 	struct {
-		unsigned int age;
+		uint16_t age;
 		unsigned int generation;
 	};
 	struct {
@@ -149,19 +148,6 @@ typedef class ThreadRunner {
         byte		testTardies;
 		int16_t		nHB;
 		byte		fast;
-    public:
-        uint16_t get_generation() {
-            return generation;
-        }
-        uint16_t get_lastAge() {
-            return lastAge;
-        }
-        uint16_t get_age() {
-            return age;
-        }
-        byte get_testTardies() {
-            return testTardies;
-        }
 	protected:
 		void resetGenerations();
 	public: 
@@ -176,6 +162,22 @@ typedef class ThreadRunner {
             }
         }
     public:
+        inline uint16_t get_generation() {
+            return generation;
+        }
+    public:
+        inline uint16_t get_lastAge() {
+            return lastAge;
+        }
+    public:
+        inline uint16_t get_age() {
+            return age;
+        }
+    public:
+        inline byte get_testTardies() {
+            return testTardies;
+        }
+    public:
 		inline void outerLoop() {
 			if (fast-- && innerLoop()) {
 				// do nothing
@@ -185,19 +187,23 @@ typedef class ThreadRunner {
 				fast = 255;
 			}
 		}
+    public:
         inline byte innerLoop() {
             cli();
             masterClock.age = age = TCNT1;
-            if (age < lastAge) {
+            if (age < lastAge) {	
+				// timer overflow every ~4ms
+				// therefore innerLoop MUST complete within one generation (<4ms)
                 lastAge = age;
                 masterClock.generation = ++generation;
-                if (generation > MAX_GENERATIONS) {
+                if (generation > MAX_GENERATIONS) { 
+					// generation overflow every ~225seconds
                     resetGenerations();
-                    sei();
-					const char *msg ="GOVFL";
-					Serial.println(msg);
-                    throw msg;
+					//const char *msg ="GOVFL";
+					//Serial.println(msg);
+                    //throw msg;
                 }
+				sei();
                 return 0;
             }
             lastAge = age;
@@ -206,13 +212,13 @@ typedef class ThreadRunner {
             // inner loop: run active Threads
             for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
                 if (generation < pThread->nextHeartbeat.generation) {
-                    continue;
+                    continue; // not time yet for scheduled reactivation
                 }
                 if (generation == pThread->nextHeartbeat.generation && age < pThread->nextHeartbeat.age) {
-                    continue;
+                    continue; // not time yet for scheduled reactivation
                 }
 
-                pThread->Heartbeat();
+                pThread->Heartbeat();	// reactivate thread
                 nHB++;
 
                 if (testTardies-- == 0) {
@@ -227,8 +233,8 @@ typedef class ThreadRunner {
                         continue;    // permanent ASAP
                     }
 
-                    pThread->tardies++;
-                    nTardies++;
+                    pThread->tardies++;	// thread-specific tardy count
+                    nTardies++;			// global tardy count
                 }
             }
 			return 1;

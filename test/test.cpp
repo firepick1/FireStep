@@ -208,6 +208,7 @@ void test_Thread() {
 	arduino.clear();
 
 	threadRunner.setup(LED_PIN_RED, LED_PIN_GRN);
+	monitor.verbose = false;
 
 	arduino.dump();
 	ASSERTEQUALS(" CLKPR:0 nThreads:1\n", Serial.output().c_str());
@@ -219,12 +220,10 @@ void test_Thread() {
 	ASSERTEQUAL(0x0000, TCCR1A);	// Timer/Counter1 normal port operation
 	ASSERTEQUAL(0x0001, TCCR1B);	// Timer/Counter1 active; no prescale
 	ASSERTEQUAL(NOVALUE, SREGI); 	// Global interrupts enabled
-	test_tick(MS_CYCLES(1));
-	ASSERTEQUALS(". S:0 G:0 H:0 T:0\n", Serial.output().c_str());
-	for (int i=0; i<6; i++) {
-		test_tick(MS_CYCLES(1));
+	for (int i = 0; i<10; i++) {
+		test_tick(8000); // 500us
+		ASSERTEQUALS("", Serial.output().c_str());
 	}
-	ASSERTEQUALS(". S:0 G:1 H:1 H/G:1 T:0\n", Serial.output().c_str());
 
 	cout << "TEST	:=== test_Thread() OK " << endl;
 }
