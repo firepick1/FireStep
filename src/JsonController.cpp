@@ -166,6 +166,8 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
 	int s2len = 0;
 	int s3len = 0;
 	int s4len = 0;
+	bool us_ok = false;
+	bool po_ok = false;
 	for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
 		if (strcmp("us", it->key) == 0) {
 			Status status = processField<int32_t, long>(stroke, it->key, machine.stroke.planMicros);
@@ -173,50 +175,81 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
 				jcmd.setError(it->key);
 				return status;
 			}
+			us_ok = true;
+		} else if (strcmp("po", it->key) == 0) {
+			JsonArray &jarr = stroke[it->key];
+			if (!jarr.success()) {
+				jcmd.setError(it->key);
+				return STATUS_FIELD_ARRAY_ERROR;
+			}
+			if (!jarr[0].success()) {
+				jcmd.setError(it->key);
+				return STATUS_JSON_ARRAY_LEN;
+			}
+			po_ok = true;
+			for (int i=0; i<4 && jarr[i].success(); i++) {
+				machine.stroke.endPos.value[i] = jarr[i];
+			}
 		} else if (strcmp("s1", it->key) == 0) {
 			JsonArray &jarr = stroke[it->key];
-			if (jarr.success()) {
-				for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
-					if (*it < -127 || 127 < *it) {
-						return STATUS_S1_RANGE_ERROR;
-					}
-					machine.stroke.seg[s1len++].value[0] = (int8_t) (long) * it;
+			if (!jarr.success()) {
+				jcmd.setError(it->key);
+				return STATUS_FIELD_ARRAY_ERROR;
+			}
+			for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
+				if (*it < -127 || 127 < *it) {
+					return STATUS_S1_RANGE_ERROR;
 				}
+				machine.stroke.seg[s1len++].value[0] = (int8_t) (long) * it;
 			}
 		} else if (strcmp("s2", it->key) == 0) {
 			JsonArray &jarr = stroke[it->key];
-			if (jarr.success()) {
-				for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
-					if (*it < -127 || 127 < *it) {
-						return STATUS_S2_RANGE_ERROR;
-					}
-					machine.stroke.seg[s2len++].value[1] = (int8_t) (long) * it;
+			if (!jarr.success()) {
+				jcmd.setError(it->key);
+				return STATUS_FIELD_ARRAY_ERROR;
+			}
+			for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
+				if (*it < -127 || 127 < *it) {
+					return STATUS_S2_RANGE_ERROR;
 				}
+				machine.stroke.seg[s2len++].value[1] = (int8_t) (long) * it;
 			}
 		} else if (strcmp("s3", it->key) == 0) {
 			JsonArray &jarr = stroke[it->key];
-			if (jarr.success()) {
-				for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
-					if (*it < -127 || 127 < *it) {
-						return STATUS_S3_RANGE_ERROR;
-					}
-					machine.stroke.seg[s3len++].value[2] = (int8_t) (long) * it;
+			if (!jarr.success()) {
+				jcmd.setError(it->key);
+				return STATUS_FIELD_ARRAY_ERROR;
+			}
+			for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
+				if (*it < -127 || 127 < *it) {
+					return STATUS_S3_RANGE_ERROR;
 				}
+				machine.stroke.seg[s3len++].value[2] = (int8_t) (long) * it;
 			}
 		} else if (strcmp("s4", it->key) == 0) {
 			JsonArray &jarr = stroke[it->key];
-			if (jarr.success()) {
-				for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
-					if (*it < -127 || 127 < *it) {
-						return STATUS_S4_RANGE_ERROR;
-					}
-					machine.stroke.seg[s4len++].value[3] = (int8_t) (long) * it;
+			if (!jarr.success()) {
+				jcmd.setError(it->key);
+				return STATUS_FIELD_ARRAY_ERROR;
+			}
+			for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
+				if (*it < -127 || 127 < *it) {
+					return STATUS_S4_RANGE_ERROR;
 				}
+				machine.stroke.seg[s4len++].value[3] = (int8_t) (long) * it;
 			}
 		} else {
 			jcmd.setError(it->key);
 			return STATUS_UNRECOGNIZED_NAME;
 		}
+	}
+	if (!us_ok) {
+		jcmd.setError("us");
+		return STATUS_FIELD_REQUIRED;
+	}
+	if (!po_ok) {
+		jcmd.setError("po");
+		return STATUS_FIELD_REQUIRED;
 	}
 	if (s1len && s2len && s1len != s2len) {
 		return STATUS_S1S2LEN_ERROR;

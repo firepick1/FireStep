@@ -280,12 +280,13 @@ typedef class Axis {
 
 typedef class Stroke {
     public:
-        uint8_t 		length;			// number of segments
-        float 			scale;			// steps per segment
-        uint8_t 		curSeg;			// current segment index
-        int32_t 		planMicros;		// planned traversal time in microseconds
-        Quad<int8_t> 	seg[SEGMENT_COUNT];
-		Quad<int16_t>	velocity;
+        uint8_t 		length;				// number of segments
+        float 			scale;				// steps per segment
+        uint8_t 		curSeg;				// current segment index
+        int32_t 		planMicros;			// planned traversal time in microseconds
+        Quad<int8_t> 	seg[SEGMENT_COUNT];	// delta velocity
+		Quad<int16_t>	velocity;			// current velocity
+		Quad<int16_t>	endPos;				// end position
     public:
         Stroke() : length(0), scale(1), curSeg(0), planMicros(1000000) {}
 } Stroke;

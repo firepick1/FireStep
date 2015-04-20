@@ -47,6 +47,9 @@ enum Status {
 	STATUS_S4_ERROR = -106,			// Internal error: could not process segment 
 	STATUS_FIELD_ERROR = -107,		// Internal error: could not process field
 	STATUS_FIELD_RANGE_ERROR = -108,// Provided field value is out of range
+	STATUS_FIELD_ARRAY_ERROR = -109,// Expected JSON field array value
+	STATUS_FIELD_REQUIRED = -110,	// Expected JSON field value
+	STATUS_JSON_ARRAY_LEN = -111,	// JSON array is too short
 };
 
 typedef class JsonCommand {
