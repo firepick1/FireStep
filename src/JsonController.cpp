@@ -98,6 +98,7 @@ Status processField(JsonObject& jobj, const char* key, TF& field) {
 	return status;
 }
 template Status processField<int16_t,long>(JsonObject& jobj, const char *key, int16_t& field);
+template Status processField<int32_t,long>(JsonObject& jobj, const char *key, int32_t& field);
 template Status processField<uint8_t,long>(JsonObject& jobj, const char *key, uint8_t& field);
 template Status processField<float,double>(JsonObject& jobj, const char *key, float& field);
 
@@ -145,19 +146,159 @@ Status JsonController::processMachinePosition(JsonCommand &jcmd, JsonObject& job
 			}
 		} 
 	} else if (strcmp("x",key)==0 || strcmp("spox",key)==0) {
-		status = processField<POSITION_TYPE,long>(jobj, key, machine.machinePosition.x);
+		status = processField<int16_t,long>(jobj, key, machine.axis[0].position);
 	} else if (strcmp("y",key)==0 || strcmp("spoy",key)==0) {
-		status = processField<POSITION_TYPE,long>(jobj, key, machine.machinePosition.y);
+		status = processField<int16_t,long>(jobj, key, machine.axis[1].position);
 	} else if (strcmp("z",key)==0 || strcmp("spoz",key)==0) {
-		status = processField<POSITION_TYPE,long>(jobj, key, machine.machinePosition.z);
+		status = processField<int16_t,long>(jobj, key, machine.axis[2].position);
 	} else if (strcmp("a",key)==0 || strcmp("spoa",key)==0) {
-		status = processField<POSITION_TYPE,long>(jobj, key, machine.machinePosition.a);
+		status = processField<int16_t,long>(jobj, key, machine.axis[3].position);
 	} else if (strcmp("b",key)==0 || strcmp("spob",key)==0) {
-		status = processField<POSITION_TYPE,long>(jobj, key, machine.machinePosition.b);
+		status = processField<int16_t,long>(jobj, key, machine.axis[4].position);
 	} else if (strcmp("c",key)==0 || strcmp("spoc",key)==0) {
-		status = processField<POSITION_TYPE,long>(jobj, key, machine.machinePosition.c);
+		status = processField<int16_t,long>(jobj, key, machine.axis[5].position);
 	}
 	return status;
+}
+
+Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
+	int s1len = 0;
+	int s2len = 0;
+	int s3len = 0;
+	int s4len = 0;
+	for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
+		if (strcmp("us", it->key) == 0) {
+			Status status = processField<int32_t, long>(stroke, it->key, machine.stroke.planMicros);
+			if (status != STATUS_OK) {
+				jcmd.setError(it->key);
+				return status;
+			}
+		} else if (strcmp("s1", it->key) == 0) {
+			JsonArray &jarr = stroke[it->key];
+			if (jarr.success()) {
+				for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
+					if (*it < -127 || 127 < *it) {
+						return STATUS_S1_RANGE_ERROR;
+					}
+					machine.stroke.seg[s1len++].value[0] = (int8_t) (long) * it;
+				}
+			}
+		} else if (strcmp("s2", it->key) == 0) {
+			JsonArray &jarr = stroke[it->key];
+			if (jarr.success()) {
+				for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
+					if (*it < -127 || 127 < *it) {
+						return STATUS_S2_RANGE_ERROR;
+					}
+					machine.stroke.seg[s2len++].value[1] = (int8_t) (long) * it;
+				}
+			}
+		} else if (strcmp("s3", it->key) == 0) {
+			JsonArray &jarr = stroke[it->key];
+			if (jarr.success()) {
+				for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
+					if (*it < -127 || 127 < *it) {
+						return STATUS_S3_RANGE_ERROR;
+					}
+					machine.stroke.seg[s3len++].value[2] = (int8_t) (long) * it;
+				}
+			}
+		} else if (strcmp("s4", it->key) == 0) {
+			JsonArray &jarr = stroke[it->key];
+			if (jarr.success()) {
+				for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
+					if (*it < -127 || 127 < *it) {
+						return STATUS_S4_RANGE_ERROR;
+					}
+					machine.stroke.seg[s4len++].value[3] = (int8_t) (long) * it;
+				}
+			}
+		} else {
+			jcmd.setError(it->key);
+			return STATUS_UNRECOGNIZED_NAME;
+		}
+	}
+	if (s1len && s2len && s1len != s2len) {
+		return STATUS_S1S2LEN_ERROR;
+	}
+	if (s1len && s3len && s1len != s3len) {
+		return STATUS_S1S3LEN_ERROR;
+	}
+	if (s1len && s4len && s1len != s4len) {
+		return STATUS_S1S4LEN_ERROR;
+	}
+	machine.stroke.length = s1len ? s1len : (s2len ? s2len : (s3len ? s3len : s4len));
+	machine.stroke.curSeg = 0;
+	if (machine.stroke.length == 0) {
+		return STATUS_STROKE_NULL_ERROR;
+	}
+	return STATUS_PROCESSING;
+}
+
+bool JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
+	Quad<int8_t> &seg = machine.stroke.seg[machine.stroke.curSeg];
+	stroke["s1"] = seg.value[0];
+	stroke["s2"] = seg.value[1];
+	stroke["s3"] = seg.value[2];
+	stroke["s4"] = seg.value[3];
+
+    float newPathPosition = machine.processMicros / (float) machine.stroke.planMicros;
+    bool completed = newPathPosition >= 1;
+
+	/*
+    SerialVector32 delta;
+
+    if (completed) {
+        newPathPosition = 1;
+        delta.copyFrom(&endPos);
+    } else {
+        float segmentCoordinate = newPathPosition * deltaCount.intValue;
+        while (segmentIndex < segmentCoordinate) {
+            segmentStart.increment(&toolVelocity);
+            toolVelocity.increment(&deltas[segmentIndex]);
+            segmentIndex++;
+            if (segmentIndex >= deltaCount.intValue) {
+                segmentStartPos.copyFrom(&drivePos);
+            }
+        }
+
+        float pDelta = segmentCoordinate - (segmentIndex - 1);
+        if (segmentIndex < deltaCount.intValue) {
+            SerialVectorF pathOffset;
+            pathOffset.copyFrom(&toolVelocity);
+            pathOffset.scale(pDelta);
+            pathOffset.increment(&segmentStart);
+            pathOffset.multiply(&drivePathScale);
+            delta.copyFrom(&pathOffset);
+            delta.increment(&startPos);
+        } else {
+            delta.copyFrom(&segmentStartPos);
+            delta.interpolateTo(&endPos, pDelta);
+        }
+
+    }
+
+    delta.decrement(&drivePos);
+    int deltaBacklash;
+
+    deltaBacklash = slack.x.deltaWithBacklash(delta.x.lsInt);
+    if (!pulseDrivePin(PIN_X, PIN_X_DIR, PIN_X_LIM, deltaBacklash, xReverse, 'x')) {
+        return true;
+    }
+    deltaBacklash = slack.y.deltaWithBacklash(delta.y.lsInt);
+    if (!pulseDrivePin(PIN_Y, PIN_Y_DIR, PIN_Y_LIM, deltaBacklash, yReverse, 'y')) {
+        return true;
+    }
+    deltaBacklash = slack.z.deltaWithBacklash(delta.z.lsInt);
+    if (!pulseDrivePin(PIN_Z, PIN_Z_DIR, PIN_Z_LIM, deltaBacklash, zReverse, 'z')) {
+        return true;
+    }
+    drivePos.increment(&delta);
+
+    pathPosition = newPathPosition;
+
+    return completed;
+*/
 }
 
 Status JsonController::processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
@@ -168,75 +309,10 @@ Status JsonController::processStroke(JsonCommand &jcmd, JsonObject& jobj, const 
 	}
 
     if (status == STATUS_JSON_PARSED) {
-        int s1len = 0;
-        int s2len = 0;
-        int s3len = 0;
-        int s4len = 0;
-        for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
-            if (strcmp("s1", it->key) == 0) {
-                JsonArray &jarr = stroke[it->key];
-                if (jarr.success()) {
-                    for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
-                        if (*it < -127 || 127 < *it) {
-                            return STATUS_S1_RANGE_ERROR;
-                        }
-                        machine.stroke.seg[s1len++].dv[0] = (int8_t) (long) * it;
-                    }
-                }
-            } else if (strcmp("s2", it->key) == 0) {
-                JsonArray &jarr = stroke[it->key];
-                if (jarr.success()) {
-                    for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
-                        if (*it < -127 || 127 < *it) {
-                            return STATUS_S2_RANGE_ERROR;
-                        }
-                        machine.stroke.seg[s2len++].dv[1] = (int8_t) (long) * it;
-                    }
-                }
-            } else if (strcmp("s3", it->key) == 0) {
-                JsonArray &jarr = stroke[it->key];
-                if (jarr.success()) {
-                    for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
-                        if (*it < -127 || 127 < *it) {
-                            return STATUS_S3_RANGE_ERROR;
-                        }
-                        machine.stroke.seg[s3len++].dv[2] = (int8_t) (long) * it;
-                    }
-                }
-            } else if (strcmp("s4", it->key) == 0) {
-                JsonArray &jarr = stroke[it->key];
-                if (jarr.success()) {
-                    for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
-                        if (*it < -127 || 127 < *it) {
-                            return STATUS_S4_RANGE_ERROR;
-                        }
-                        machine.stroke.seg[s4len++].dv[3] = (int8_t) (long) * it;
-                    }
-                }
-            }
-        }
-        if (s1len && s2len && s1len != s2len) {
-            return STATUS_S1S2LEN_ERROR;
-        }
-        if (s1len && s3len && s1len != s3len) {
-            return STATUS_S1S3LEN_ERROR;
-        }
-        if (s1len && s4len && s1len != s4len) {
-            return STATUS_S1S4LEN_ERROR;
-        }
-        machine.stroke.length = s1len ? s1len : (s2len ? s2len : (s3len ? s3len : s4len));
-        machine.stroke.curSeg = 0;
-        if (machine.stroke.length == 0) {
-            return STATUS_STROKE_NULL_ERROR;
-        }
-        status = STATUS_PROCESSING;
+		status = initializeStroke(jcmd, stroke);
     } else if (status == STATUS_PROCESSING) {
         if (machine.stroke.curSeg < machine.stroke.length) {
-			StrokeSegment &seg = machine.stroke.seg[machine.stroke.curSeg];
-			stroke["s1"] = seg.dv[0];
-			stroke["s2"] = seg.dv[1];
-			stroke["s3"] = seg.dv[2];
-			stroke["s4"] = seg.dv[3];
+			traverseStroke(jcmd, stroke);
             machine.stroke.curSeg++;
         }
         if (machine.stroke.curSeg >= machine.stroke.length) {
@@ -297,8 +373,13 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             JsonObject& node = jcmd.createJsonObject();
             jobj[key] = node;
             node["am"] = "";
-            node["tn"] = "";
+            node["pd"] = "";
+            node["pe"] = "";
+            node["pn"] = "";
+            node["po"] = "";
+            node["ps"] = "";
             node["tm"] = "";
+            node["tn"] = "";
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -309,6 +390,16 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
                 }
             }
         }
+    } else if (strcmp("ps", key) == 0 || strcmp("ps", key + 1) == 0) {
+        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].pinStep);
+    } else if (strcmp("pd", key) == 0 || strcmp("pd", key + 1) == 0) {
+        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].pinDir);
+    } else if (strcmp("pe", key) == 0 || strcmp("pe", key + 1) == 0) {
+        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].pinEnable);
+    } else if (strcmp("po", key) == 0 || strcmp("po", key + 1) == 0) {
+        status = processField<int16_t, long>(jobj, key, machine.axis[iAxis].position);
+    } else if (strcmp("pn", key) == 0 || strcmp("pn", key + 1) == 0) {
+        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].pinMin);
     } else if (strcmp("am", key) == 0 || strcmp("am", key + 1) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].mode);
     } else if (strcmp("tn", key) == 0 || strcmp("tn", key + 1) == 0) {

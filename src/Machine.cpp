@@ -7,6 +7,9 @@
 
 using namespace firestep;
 
+template class Quad<int16_t>;
+template class Quad<int32_t>;
+
 #define COMMAND_RESULT_NOP 0
 #define COMMAND_RESULT_READ 1
 #define COMMAND_RESULT_ERR 3
@@ -458,6 +461,19 @@ void SlackVector::init(byte xMax, byte yMax, byte zMax) {
 }
 
 Machine::Machine() {
+	axis[0].pinStep = X_STEP_PIN;
+	axis[0].pinDir = X_DIR_PIN;
+	axis[0].pinMin = X_MIN_PIN;
+	axis[0].pinEnable = X_ENABLE_PIN;
+	axis[1].pinStep = Y_STEP_PIN;
+	axis[1].pinDir = Y_DIR_PIN;
+	axis[1].pinMin = Y_MIN_PIN;
+	axis[1].pinEnable = Y_ENABLE_PIN;
+	axis[2].pinStep = Z_STEP_PIN;
+	axis[2].pinDir = Z_DIR_PIN;
+	axis[2].pinMin = Z_MIN_PIN;
+	axis[2].pinEnable = Z_ENABLE_PIN;
+
 	for (int i=0; i<MOTOR_COUNT; i++) {
 		motor[i].axisMap = i;
 	}
@@ -674,4 +690,5 @@ bool Machine::doAccelerationStroke() {
 
     return completed;
 }
+
 
