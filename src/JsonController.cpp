@@ -275,6 +275,14 @@ bool JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
 	stroke["s3"] = seg.value[2];
 	stroke["s4"] = seg.value[3];
 
+	if (machine.stroke.curSeg == 0) {
+		//machine.actualMicros = 0;
+		//lastClock = masterClock.clock;
+	} else {
+		//int32_t elapsed = MicrosecondsSince(lastClock);
+		//machine.actualMicros += elapsed;
+	}
+
     float newPathPosition = machine.processMicros / (float) machine.stroke.planMicros;
     bool completed = newPathPosition >= 1;
 

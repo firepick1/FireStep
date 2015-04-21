@@ -53,7 +53,7 @@ void ArduinoType::dump() {
 }
 
 void ArduinoType::timer1(int increment) {
-	if (TCCR1B & (1<<CS10)) {
+	if (TIMER_ENABLED) {
 		TCNT1 += increment;
 	}
 }

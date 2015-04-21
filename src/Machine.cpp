@@ -72,15 +72,15 @@ void MachineThread::Heartbeat() {
             nextHeartbeat.clock = masterClock.clock + hbDelta;
             break;
         default:
-            nextHeartbeat.Repeat();
+            nextHeartbeat.clock = 0;
             break;
         }
         if (controller.processCommand()) {
             isProcessing = false;
-            nextHeartbeat.Repeat();
+            nextHeartbeat.clock = 0;
         }
     } else if (Serial.available() > 0) {
-        nextHeartbeat.Repeat();
+        nextHeartbeat.clock = 0;
         monitor.LED(LED_YELLOW);
         byte result = controller.readCommand();
         switch (result) {
@@ -327,7 +327,7 @@ bool Controller::processCommand() {
     if (lastClock == 0) {
         lastClock = masterClock.clock;
     }
-    long elapsed = MicrosecondsSince(lastClock);
+    int32_t elapsed = MicrosecondsSince(lastClock);
     machine.actualMicros.longValue = machine.actualMicros.longValue + elapsed;
     if (elapsed > machine.heartbeatMicros.longValue) {
         machine.heartbeatMicros.longValue = elapsed;

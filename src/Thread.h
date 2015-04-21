@@ -1,6 +1,8 @@
 #ifndef THREAD_H
 #define THREAD_H
 
+#include "Arduino.h"
+
 #define DEBUG_EOL() Serial.println("");
 #define DEBUG_HEX(S,V) Serial.print(" " S ":");Serial.print(V,HEX);
 #define DEBUG_DEC(S,V) Serial.print(" " S ":");Serial.print(V,DEC);
@@ -15,6 +17,7 @@ extern byte lastByte;		// declare this at end of program
 #define MIDI_CYCLES(midi) (4 * (CLOCK) Midi4MHz(midi))
 #define MAX_GENERATIONS 50010
 #define GENERATION_RESET 50000
+#define TIMER_ENABLED (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10))
 
 		
 typedef unsigned long CLOCK;
@@ -39,36 +42,10 @@ typedef union ThreadClock  {
 	CLOCK clock;
 	struct {
 		uint16_t age;
-		unsigned int generation;
+		uint16_t generation;
 	};
-	struct {
-		byte lsb;
-		byte b2;
-		byte b3;
-		byte msb;
-	};
-
-	inline void Increment(unsigned int delta) __attribute__((always_inline));
-
-	void Sleep(byte seconds) {
-		clock += MS_TIMER_CYCLES(seconds * 1000);
-	}
-
-	void Repeat() {
-		clock = 0;
-	}
-
+	ThreadClock() : clock(0) {}
 } ThreadClock, *ThreadClockPtr;
-
-
-// About 23/32 instruction cycles inline vs. 28
-void ThreadClock::Increment(unsigned int delta) {
-	age = age + delta;
-	if (age < delta) {
-		generation++;
-	}
-}
-
 
 extern ThreadClock masterClock;
 
@@ -132,7 +109,7 @@ typedef struct MonitorThread : PulseThread {
 void Error(const char *msg, int value);
 void ThreadEnable(boolean enable);
 void PrintN(char c, byte n);
-long MicrosecondsSince(CLOCK lastClock);
+int32_t MicrosecondsSince(CLOCK lastClock);
 
 extern MonitorThread monitor;
 
@@ -192,12 +169,15 @@ typedef class ThreadRunner {
     public:
         inline byte innerLoop() {
             cli();
+			//cout << "innerloopA:" << masterClock.clock << endl;
             masterClock.age = age = TCNT1;
+			//cout << "innerloopB:" << masterClock.clock << endl;
             if (age < lastAge) {	
 				// a generation is 4.194304s and is incremented when TCNT1 overflows
 				// Innerloop MUST complete within a generation
                 lastAge = age;
                 masterClock.generation = ++generation;
+				//cout << "innerloopC:" << masterClock.clock << endl;
                 if (generation > MAX_GENERATIONS) { 
 					// generation overflow every ~58 hours
                     resetGenerations();

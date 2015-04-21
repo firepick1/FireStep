@@ -207,6 +207,14 @@ void test_Thread() {
     cout << "TEST	: test_Thread() BEGIN" << endl;
 	arduino.clear();
 
+	ThreadClock tc;
+	CLOCK tcLast = tc.clock;
+	ASSERTEQUAL(0, tc.clock);
+	tc.age++;
+	ASSERTEQUAL(1, tc.clock - tcLast);
+	tc.generation++;
+	ASSERTEQUAL(65537, tc.clock - tcLast);
+
 	threadRunner.setup(LED_PIN_RED, LED_PIN_GRN);
 	monitor.verbose = false;
 
@@ -222,22 +230,22 @@ void test_Thread() {
 	ASSERTEQUAL(0x0000, TCCR1A);	// Timer/Counter1 normal port operation
 	ASSERTEQUAL(0x0005, TCCR1B);	// Timer/Counter1 active; prescale 1024
 	ASSERTEQUAL(NOVALUE, SREGI); 	// Global interrupts enabled
-	for (int i = 0; i<10; i++) {
-		test_tick(8000); // 500us
-		ASSERTEQUALS("", Serial.output().c_str());
-	}
+	test_tick(1);
+	CLOCK lastClock = masterClock.clock;
+	test_tick(1);
+	ASSERTEQUAL(1000000/15625, MicrosecondsSince(lastClock));
 
 	cout << "TEST	:=== test_Thread() OK " << endl;
 }
 
 void test_command(const char *cmd, const char* expected) {
+	Serial.clear();
 	Serial.push(cmd);
 	ASSERTEQUAL(strlen(cmd), Serial.available());
-	test_tick(MS_CYCLES(1));
-	test_tick(MS_CYCLES(1));
-	ASSERTEQUAL(0, Serial.available());
-	test_tick(MS_CYCLES(1));
-	test_tick(MS_CYCLES(1));
+	test_tick(MS_TIMER_CYCLES(1));
+	test_tick(MS_TIMER_CYCLES(1));
+	test_tick(MS_TIMER_CYCLES(1));
+	test_tick(MS_TIMER_CYCLES(1));
 	ASSERTEQUALS(expected, Serial.output().c_str());
 }
 
@@ -286,7 +294,7 @@ void test_Machine() {
 
 	// Clock should increase with TCNT1
 	CLOCK lastClock = masterClock.clock;
-	test_tick(MS_CYCLES(1));
+	test_tick(1);
 	ASSERT(lastClock < masterClock.clock);
 	lastClock = masterClock.clock;
 	arduino.dump();

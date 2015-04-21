@@ -128,6 +128,9 @@ void MonitorThread::Heartbeat() {
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
         if (masterClock.generation > pThread->nextHeartbeat.generation + 1 && 
 			pThread->nextHeartbeat.generation > 0) {
+			cout << "masterClock:" << masterClock.clock 
+				<< " nextHeartBeat:" << pThread->nextHeartbeat.clock 
+				<< " pThread:" << pThread->id << endl;
             Error("O@G", pThread->nextHeartbeat.generation);
         }
     }
@@ -195,8 +198,9 @@ void ThreadRunner::resetGenerations() {
     }
 }
 
-long MicrosecondsSince(CLOCK lastClock) {
-    long elapsed;
+int32_t MicrosecondsSince(CLOCK lastClock) {
+    int32_t elapsed;
+	//cout << "masterClock:" << masterClock.clock << " lastClock:" << lastClock << endl;
     if (masterClock.clock < lastClock) {
         ThreadClock reset;
         reset.generation = GENERATION_RESET;
@@ -217,11 +221,13 @@ long MicrosecondsSince(CLOCK lastClock) {
             //e.send();
             Error("e?", 0);
         }
+//cout << "elapsed:" << elapsed << endl;
     } else {
         elapsed = masterClock.clock - lastClock;
+//cout << "ELAPSED:" << elapsed  << endl;
     }
 
-    return elapsed / FREQ_CYCLES(1000000);
+    return (elapsed * 1000000) / MS_TIMER_CYCLES(1000);
 }
 
 // Make sure we come up for air sometimes
