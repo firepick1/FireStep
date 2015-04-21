@@ -57,7 +57,7 @@ unsigned long totalHeartbeats;
 void MonitorThread::setup(int pin1, int pin2) {
     id = 'Z';
     // set monitor interval to not coincide with timer overflow
-    PulseThread::setup(MS_CYCLES(1000), MS_CYCLES(250));
+    PulseThread::setup(MS_TIMER_CYCLES(1000), MS_TIMER_CYCLES(250));
     m_Pin1 = pin1;
     m_Pin2 = pin2;
     verbose = true;
@@ -240,7 +240,8 @@ void ThreadEnable(boolean enable) {
 #endif
     if (enable) {
         //TCCR1B = 1<<CS12 | 0<<CS11 | 0<<CS10; // Timer prescaler div256
-        TCCR1B = 0 << CS12 | 0 << CS11 | 1 << CS10; // Timer prescaler div1 (16MHz)
+        //TCCR1B = 0 << CS12 | 0 << CS11 | 1 << CS10; // Timer prescaler div1 (16MHz)
+        TCCR1B = 1 << CS12 | 0 << CS11 | 1 << CS10; // Timer prescaler div1024 (15625Hz)
     } else {
         TCCR1B = 0;	// Stop clock
     }

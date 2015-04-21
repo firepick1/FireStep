@@ -7,8 +7,10 @@
 
 extern byte lastByte;		// declare this at end of program
 #define CLOCK_HZ 16000000	// cycles per second
+#define TIMER_PRESCALE	1024 /* 1, 8, 64, 256, 1024 */
 #define FREQ_CYCLES(freq) (CLOCK_HZ/(freq))
 #define MS_CYCLES(ms) FREQ_CYCLES(1000.0 / (ms))
+#define MS_TIMER_CYCLES(ms) (FREQ_CYCLES(1000.0 / (ms))/TIMER_PRESCALE)
 #define GENERATION_CYCLES (CLOCK_HZ / 65536)
 #define MIDI_CYCLES(midi) (4 * (CLOCK) Midi4MHz(midi))
 #define MAX_GENERATIONS 50010
@@ -49,7 +51,7 @@ typedef union ThreadClock  {
 	inline void Increment(unsigned int delta) __attribute__((always_inline));
 
 	void Sleep(byte seconds) {
-		clock += MS_CYCLES(seconds * 1000);
+		clock += MS_TIMER_CYCLES(seconds * 1000);
 	}
 
 	void Repeat() {
@@ -192,12 +194,12 @@ typedef class ThreadRunner {
             cli();
             masterClock.age = age = TCNT1;
             if (age < lastAge) {	
-				// timer overflow every ~4ms
-				// therefore innerLoop MUST complete within one generation (<4ms)
+				// a generation is 4.194304s and is incremented when TCNT1 overflows
+				// Innerloop MUST complete within a generation
                 lastAge = age;
                 masterClock.generation = ++generation;
                 if (generation > MAX_GENERATIONS) { 
-					// generation overflow every ~225seconds
+					// generation overflow every ~58 hours
                     resetGenerations();
 					//const char *msg ="GOVFL";
 					//Serial.println(msg);

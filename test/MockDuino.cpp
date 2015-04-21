@@ -4,6 +4,7 @@
 #include <sstream>
 #include "FireUtils.hpp"
 #include "Arduino.h"
+#include "Thread.h"
 
 SerialType Serial;
 ArduinoType arduino;
@@ -58,7 +59,6 @@ void ArduinoType::timer1(int increment) {
 }
 
 void ArduinoType::delay500ns() {
-	timer1(8000);
 }
 
 void digitalWrite(int pin, int value) {
@@ -81,8 +81,5 @@ void pinMode(int pin, int inout) {
 }
 
 void delay(int ms) {
-  for (int i=0; i<ms; i++) {
-	  arduino.delay500ns();
-	  arduino.delay500ns();
-  }
+	arduino.timer1(MS_TIMER_CYCLES(ms));
 }

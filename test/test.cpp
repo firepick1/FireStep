@@ -210,6 +210,8 @@ void test_Thread() {
 	threadRunner.setup(LED_PIN_RED, LED_PIN_GRN);
 	monitor.verbose = false;
 
+	ASSERTEQUAL(16000, MS_CYCLES(1));
+	ASSERTEQUAL(15625, MS_TIMER_CYCLES(1000)); 
 	arduino.dump();
 	ASSERTEQUALS(" CLKPR:0 nThreads:1\n", Serial.output().c_str());
 	ASSERTEQUAL(OUTPUT, arduino.pinMode[LED_PIN_RED]);
@@ -218,7 +220,7 @@ void test_Thread() {
 	ASSERTEQUAL(LOW, digitalRead(LED_PIN_GRN));
 	ASSERTEQUAL(0x0000, TIMSK1); 	// Timer/Counter1 interrupt mask; no interrupts
 	ASSERTEQUAL(0x0000, TCCR1A);	// Timer/Counter1 normal port operation
-	ASSERTEQUAL(0x0001, TCCR1B);	// Timer/Counter1 active; no prescale
+	ASSERTEQUAL(0x0005, TCCR1B);	// Timer/Counter1 active; prescale 1024
 	ASSERTEQUAL(NOVALUE, SREGI); 	// Global interrupts enabled
 	for (int i = 0; i<10; i++) {
 		test_tick(8000); // 500us
@@ -268,7 +270,7 @@ void test_Machine() {
 	ASSERTEQUAL(LOW, digitalRead(LED_PIN_GRN));
 	ASSERTEQUAL(0x0000, TIMSK1); 	// Timer/Counter1 interrupt mask; no interrupts
 	ASSERTEQUAL(0x0000, TCCR1A);	// Timer/Counter1 normal port operation
-	ASSERTEQUAL(0x0001, TCCR1B);	// Timer/Counter1 active; no prescale
+	ASSERTEQUAL(0x0005, TCCR1B);	// Timer/Counter1 active; no prescale
 #ifdef THROTTLE_SPEED
 	ASSERTEQUAL((1<<ADEN)|(1<<ADPS2), 
 		ADCSRA & ((1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)));	// ADC 1MHz prescale

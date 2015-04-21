@@ -87,14 +87,14 @@ void MachineThread::Heartbeat() {
         case COMMAND_RESULT_ERR:
             // Command error is 10 second LED_YELLOW
             monitor.blinkLED = LED_NONE;
-            nextHeartbeat.clock = masterClock.clock + MS_CYCLES(10000);
+            nextHeartbeat.clock = masterClock.clock + MS_TIMER_CYCLES(10000);
             break;
         case COMMAND_RESULT_READ:
             isProcessing = true;
             break;
         }
     } else {
-        nextHeartbeat.clock = masterClock.clock + MS_CYCLES(2);	// Simulate work
+        nextHeartbeat.clock = masterClock.clock + MS_TIMER_CYCLES(2);	// Simulate work
     }
 
 }
