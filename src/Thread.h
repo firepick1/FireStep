@@ -14,13 +14,12 @@ extern byte lastByte;		// declare this at end of program
 #define MS_CYCLES(ms) FREQ_CYCLES(1000.0 / (ms))
 #define MS_TIMER_CYCLES(ms) (FREQ_CYCLES(1000.0 / (ms))/TIMER_PRESCALE)
 #define GENERATION_CYCLES (CLOCK_HZ / 65536)
-#define MIDI_CYCLES(midi) (4 * (CLOCK) Midi4MHz(midi))
 #define MAX_GENERATIONS 50010
 #define GENERATION_RESET 50000
 #define TIMER_ENABLED (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10))
 
 		
-typedef unsigned long CLOCK;
+typedef unsigned long TICKS;
 typedef long PERIOD;
 
 union UIntByte {
@@ -39,7 +38,7 @@ typedef struct INotify {
 
 /// LIVING DANGEROUSLY
 typedef union ThreadClock  {
-	CLOCK clock;
+	TICKS clock;
 	struct {
 		uint16_t age;
 		uint16_t generation;
@@ -75,14 +74,14 @@ typedef void (*ValueDelegatePtr)(void *sender, int value);
 // Binary pulse with variable width
 typedef struct PulseThread : Thread
 {
-	virtual void setup(CLOCK period, CLOCK pulseWidth);
+	virtual void setup(TICKS period, TICKS pulseWidth);
 	virtual void Heartbeat();
 
 	boolean isHigh;
 
 	protected:
-		CLOCK m_LowPeriod;	
-		CLOCK m_HighPeriod;
+		TICKS m_LowPeriod;	
+		TICKS m_HighPeriod;
 } PulseThread, *PulseThreadPtr;
 
 #define LED_RED 3
@@ -109,7 +108,7 @@ typedef struct MonitorThread : PulseThread {
 void Error(const char *msg, int value);
 void ThreadEnable(boolean enable);
 void PrintN(char c, byte n);
-int32_t MicrosecondsSince(CLOCK lastClock);
+int32_t MicrosecondsSince(TICKS lastClock);
 
 extern MonitorThread monitor;
 

@@ -208,7 +208,7 @@ void test_Thread() {
 	arduino.clear();
 
 	ThreadClock tc;
-	CLOCK tcLast = tc.clock;
+	TICKS tcLast = tc.clock;
 	ASSERTEQUAL(0, tc.clock);
 	tc.age++;
 	ASSERTEQUAL(1, tc.clock - tcLast);
@@ -231,7 +231,7 @@ void test_Thread() {
 	ASSERTEQUAL(0x0005, TCCR1B);	// Timer/Counter1 active; prescale 1024
 	ASSERTEQUAL(NOVALUE, SREGI); 	// Global interrupts enabled
 	test_tick(1);
-	CLOCK lastClock = masterClock.clock;
+	TICKS lastClock = masterClock.clock;
 	test_tick(1);
 	ASSERTEQUAL(1000000/15625, MicrosecondsSince(lastClock));
 
@@ -293,7 +293,7 @@ void test_Machine() {
 	ASSERTEQUAL(NOVALUE, SREGI); 	// Global interrupts enabled
 
 	// Clock should increase with TCNT1
-	CLOCK lastClock = masterClock.clock;
+	TICKS lastClock = masterClock.clock;
 	test_tick(1);
 	ASSERT(lastClock < masterClock.clock);
 	lastClock = masterClock.clock;
@@ -610,6 +610,20 @@ void test_JsonController() {
 	cout << "TEST	:=== test_JsonController() OK " << endl;
 }
 
+void test_Quad() {
+    cout << "TEST	: test_Quad() BEGIN" << endl;
+
+	Quad<int16_t> q1(1,2,3,4);
+	Quad<int16_t> q2(2,4,6,8);
+	ASSERT(q1+q1 == q2);
+	ASSERT(q1+q1 != q1);
+	ASSERT(q1 != q2);
+	q1 *= 2;
+	ASSERT(q1 == q2);
+
+	cout << "TEST	:=== test_Quad() OK " << endl;
+}
+
 int main(int argc, char *argv[]) {
     LOGINFO3("INFO	: FireStep test v%d.%d.%d",
 		VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -617,6 +631,7 @@ int main(int argc, char *argv[]) {
 
     test_Serial();
 	test_Thread();
+	test_Quad();
 	test_Machine();
 	test_ArduinoJson();
 	test_JsonCommand();

@@ -89,7 +89,8 @@ typedef class JsonCommand {
 typedef class JsonController {
     private:
 		Machine&	machine;
-        CLOCK		lastClock;
+        TICKS		clkStart;
+		float		plannedTicks;
 
 	protected:
 		Status processMachinePosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);

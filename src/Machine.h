@@ -177,6 +177,10 @@ typedef struct MachineThread : Thread {
     void Heartbeat();
 } MachineThread;
 
+typedef int16_t StepCoord;
+typedef uint8_t PinType;
+typedef uint8_t SegIndex;
+
 template<class T> class Quad {
     public:
         T value[4];
@@ -187,11 +191,41 @@ template<class T> class Quad {
             value[2] = v3;
             value[4] = v4;
         }
-        Quad operator+=(Quad<T> that) {
+        Quad<T> operator+(Quad<T> that) {
+            return Quad<T>(
+                       value[0] + that.value[0],
+                       value[1] + that.value[1],
+                       value[2] + that.value[2],
+                       value[3] + that.value[3]
+                   );
+        }
+        Quad<T>& operator=(Quad<T> that) {
+            value[0] = that.value[0];
+            value[1] = that.value[1];
+            value[2] = that.value[2];
+            value[3] = that.value[3];
+            return *this;
+        }
+        Quad<T>& operator*=(T that) {
+            value[0] *= that;
+            value[1] *= that;
+            value[2] *= that;
+            value[3] *= that;
+            return *this;
+        }
+        Quad<T>& operator+=(T that) {
+            value[0] += that;
+            value[1] += that;
+            value[2] += that;
+            value[3] += that;
+            return *this;
+        }
+        Quad<T>& operator+=(Quad<T> that) {
             value[0] += that.value[0];
             value[1] += that.value[1];
             value[2] += that.value[2];
             value[3] += that.value[3];
+            return *this;
         }
         bool operator==(Quad<T> that) {
             return value[0] == that.value[0] &&
@@ -199,7 +233,14 @@ template<class T> class Quad {
                    value[2] == that.value[2] &&
                    value[3] == that.value[3];
         }
+        bool operator!=(Quad<T> that) {
+            return value[0] != that.value[0] ||
+                   value[1] != that.value[1] ||
+                   value[2] != that.value[2] ||
+                   value[3] != that.value[3];
+        }
 };
+
 template<class T1, class T2>
 Quad<T1>& operator+=(Quad<T1> &qa, Quad<T2> qb) {
     qa.value[0] += (T1) qb.value[0];
@@ -258,35 +299,35 @@ enum AxisMode {
 typedef class Axis {
     public:
         uint8_t mode;
-		uint8_t pinStep;
-		uint8_t pinDir;
-		uint8_t pinMin;
-		uint8_t pinEnable;
-        int16_t travelMin;
-        int16_t travelMax;
-        int16_t searchVelocity;
-		int16_t position;
+        PinType pinStep;
+        PinType pinDir;
+        PinType pinMin;
+        PinType pinEnable;
+        StepCoord travelMin;
+        StepCoord travelMax;
+        StepCoord searchVelocity;
+        StepCoord position;
         Axis() :
             mode((uint8_t)MODE_STANDARD),
-			pinStep(0),
-			pinDir(0),
-			pinMin(0),
+            pinStep(0),
+            pinDir(0),
+            pinMin(0),
             travelMin(0),
             travelMax(10000),
             searchVelocity(200),
-			position(0)
+            position(0)
         {};
 } Axis;
 
 typedef class Stroke {
     public:
-        uint8_t 		length;				// number of segments
+        SegIndex	 	length;				// number of segments
         float 			scale;				// steps per segment
-        uint8_t 		curSeg;				// current segment index
+        SegIndex		curSeg;				// current segment index
         int32_t 		planMicros;			// planned traversal time in microseconds
         Quad<int8_t> 	seg[SEGMENT_COUNT];	// delta velocity
-		Quad<int16_t>	velocity;			// current velocity
-		Quad<int16_t>	endPos;				// end position
+        Quad<int16_t>	velocity;			// current velocity
+        Quad<int16_t>	endPos;				// end position
     public:
         Stroke() : length(0), scale(1), curSeg(0), planMicros(1000000) {}
 } Stroke;
@@ -298,7 +339,7 @@ typedef class Machine {
         Motor motor[MOTOR_COUNT];
         Axis axis[AXIS_COUNT];
         Stroke stroke;
-		int32_t processMicros;
+        int32_t processMicros;
 
         float pathPosition;
         SerialInt16 maxPulses;
@@ -351,7 +392,7 @@ typedef class Controller {
     private:
         CommandParser	parser;
         char			guardStart;
-        CLOCK			lastClock;
+        TICKS			lastClock;
         byte			speed;
         byte			guardEnd;
 

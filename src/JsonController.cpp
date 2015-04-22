@@ -98,6 +98,7 @@ Status processField(JsonObject& jobj, const char* key, TF& field) {
 	return status;
 }
 template Status processField<int16_t,long>(JsonObject& jobj, const char *key, int16_t& field);
+template Status processField<uint16_t,long>(JsonObject& jobj, const char *key, uint16_t& field);
 template Status processField<int32_t,long>(JsonObject& jobj, const char *key, int32_t& field);
 template Status processField<uint8_t,long>(JsonObject& jobj, const char *key, uint8_t& field);
 template Status processField<float,double>(JsonObject& jobj, const char *key, float& field);
@@ -146,17 +147,17 @@ Status JsonController::processMachinePosition(JsonCommand &jcmd, JsonObject& job
 			}
 		} 
 	} else if (strcmp("x",key)==0 || strcmp("spox",key)==0) {
-		status = processField<int16_t,long>(jobj, key, machine.axis[0].position);
+		status = processField<StepCoord,long>(jobj, key, machine.axis[0].position);
 	} else if (strcmp("y",key)==0 || strcmp("spoy",key)==0) {
-		status = processField<int16_t,long>(jobj, key, machine.axis[1].position);
+		status = processField<StepCoord,long>(jobj, key, machine.axis[1].position);
 	} else if (strcmp("z",key)==0 || strcmp("spoz",key)==0) {
-		status = processField<int16_t,long>(jobj, key, machine.axis[2].position);
+		status = processField<StepCoord,long>(jobj, key, machine.axis[2].position);
 	} else if (strcmp("a",key)==0 || strcmp("spoa",key)==0) {
-		status = processField<int16_t,long>(jobj, key, machine.axis[3].position);
+		status = processField<StepCoord,long>(jobj, key, machine.axis[3].position);
 	} else if (strcmp("b",key)==0 || strcmp("spob",key)==0) {
-		status = processField<int16_t,long>(jobj, key, machine.axis[4].position);
+		status = processField<StepCoord,long>(jobj, key, machine.axis[4].position);
 	} else if (strcmp("c",key)==0 || strcmp("spoc",key)==0) {
-		status = processField<int16_t,long>(jobj, key, machine.axis[5].position);
+		status = processField<StepCoord,long>(jobj, key, machine.axis[5].position);
 	}
 	return status;
 }
@@ -276,15 +277,19 @@ bool JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
 	stroke["s4"] = seg.value[3];
 
 	if (machine.stroke.curSeg == 0) {
-		//machine.actualMicros = 0;
-		//lastClock = masterClock.clock;
-	} else {
-		//int32_t elapsed = MicrosecondsSince(lastClock);
-		//machine.actualMicros += elapsed;
+		clkStart = masterClock.clock;
+		plannedTicks = MS_TIMER_CYCLES(machine.stroke.planMicros)/1000.0;
 	}
 
-    float newPathPosition = machine.processMicros / (float) machine.stroke.planMicros;
-    bool completed = newPathPosition >= 1;
+	float newPathPos = (masterClock.clock - clkStart) / plannedTicks;
+    bool completed = newPathPos >= 1;
+	Quad<int16_t> delta;
+	if (completed) {
+		newPathPos = 1;
+		delta = machine.stroke.endPos;
+	} else {
+		float segCoord = newPathPos * machine.stroke.length;
+	}
 
 	/*
     SerialVector32 delta;
@@ -432,21 +437,21 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             }
         }
     } else if (strcmp("ps", key) == 0 || strcmp("ps", key + 1) == 0) {
-        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].pinStep);
+        status = processField<PinType, long>(jobj, key, machine.axis[iAxis].pinStep);
     } else if (strcmp("pd", key) == 0 || strcmp("pd", key + 1) == 0) {
-        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].pinDir);
+        status = processField<PinType, long>(jobj, key, machine.axis[iAxis].pinDir);
     } else if (strcmp("pe", key) == 0 || strcmp("pe", key + 1) == 0) {
-        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].pinEnable);
+        status = processField<PinType, long>(jobj, key, machine.axis[iAxis].pinEnable);
     } else if (strcmp("po", key) == 0 || strcmp("po", key + 1) == 0) {
-        status = processField<int16_t, long>(jobj, key, machine.axis[iAxis].position);
+        status = processField<StepCoord, long>(jobj, key, machine.axis[iAxis].position);
     } else if (strcmp("pn", key) == 0 || strcmp("pn", key + 1) == 0) {
-        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].pinMin);
+        status = processField<PinType, long>(jobj, key, machine.axis[iAxis].pinMin);
     } else if (strcmp("am", key) == 0 || strcmp("am", key + 1) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].mode);
     } else if (strcmp("tn", key) == 0 || strcmp("tn", key + 1) == 0) {
-        status = processField<int16_t, long>(jobj, key, machine.axis[iAxis].travelMin);
+        status = processField<StepCoord, long>(jobj, key, machine.axis[iAxis].travelMin);
     } else if (strcmp("tm", key) == 0 || strcmp("tm", key + 1) == 0) {
-        status = processField<int16_t, long>(jobj, key, machine.axis[iAxis].travelMax);
+        status = processField<StepCoord, long>(jobj, key, machine.axis[iAxis].travelMax);
     }
     return status;
 }

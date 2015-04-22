@@ -32,7 +32,7 @@ void Thread::setup() {
     }
 }
 
-void PulseThread::setup(CLOCK period, CLOCK pulseWidth) {
+void PulseThread::setup(TICKS period, TICKS pulseWidth) {
     Thread::setup();
     if (pulseWidth == 0) {
         m_HighPeriod = period / 2;
@@ -198,7 +198,7 @@ void ThreadRunner::resetGenerations() {
     }
 }
 
-int32_t MicrosecondsSince(CLOCK lastClock) {
+int32_t MicrosecondsSince(TICKS lastClock) {
     int32_t elapsed;
 	//cout << "masterClock:" << masterClock.clock << " lastClock:" << lastClock << endl;
     if (masterClock.clock < lastClock) {
