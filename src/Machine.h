@@ -1,7 +1,9 @@
 #ifndef MACHINE_H
 #define MACHINE_H
 #include "SerialTypes.h"
-#include "Thread.h"
+//#include "Thread.h"
+//#include "Quad.h"
+#include "Stroke.h"
 
 namespace firestep {
 
@@ -177,79 +179,10 @@ typedef struct MachineThread : Thread {
     void Heartbeat();
 } MachineThread;
 
-typedef int16_t StepCoord;
-typedef uint8_t PinType;
-typedef uint8_t SegIndex;
-
-template<class T> class Quad {
-    public:
-        T value[4];
-    public:
-        Quad(T v1 = 0, T v2 = 0, T v3 = 0, T v4 = 0) {
-            value[0] = v1;
-            value[1] = v2;
-            value[2] = v3;
-            value[4] = v4;
-        }
-        Quad<T> operator+(Quad<T> that) {
-            return Quad<T>(
-                       value[0] + that.value[0],
-                       value[1] + that.value[1],
-                       value[2] + that.value[2],
-                       value[3] + that.value[3]
-                   );
-        }
-        Quad<T>& operator=(Quad<T> that) {
-            value[0] = that.value[0];
-            value[1] = that.value[1];
-            value[2] = that.value[2];
-            value[3] = that.value[3];
-            return *this;
-        }
-        Quad<T>& operator*=(T that) {
-            value[0] *= that;
-            value[1] *= that;
-            value[2] *= that;
-            value[3] *= that;
-            return *this;
-        }
-        Quad<T>& operator+=(T that) {
-            value[0] += that;
-            value[1] += that;
-            value[2] += that;
-            value[3] += that;
-            return *this;
-        }
-        Quad<T>& operator+=(Quad<T> that) {
-            value[0] += that.value[0];
-            value[1] += that.value[1];
-            value[2] += that.value[2];
-            value[3] += that.value[3];
-            return *this;
-        }
-        bool operator==(Quad<T> that) {
-            return value[0] == that.value[0] &&
-                   value[1] == that.value[1] &&
-                   value[2] == that.value[2] &&
-                   value[3] == that.value[3];
-        }
-        bool operator!=(Quad<T> that) {
-            return value[0] != that.value[0] ||
-                   value[1] != that.value[1] ||
-                   value[2] != that.value[2] ||
-                   value[3] != that.value[3];
-        }
-};
-
-template<class T1, class T2>
-Quad<T1>& operator+=(Quad<T1> &qa, Quad<T2> qb) {
-    qa.value[0] += (T1) qb.value[0];
-    qa.value[1] += (T1) qb.value[1];
-    qa.value[2] += (T1) qb.value[2];
-    qa.value[3] += (T1) qb.value[3];
-    return qa;
-};
-template<> inline Quad<int32_t>& operator+=(Quad<int32_t> &qa, Quad<int16_t> qb);
+//typedef int8_t  StepDV;			// change in StepCoord velocity
+//typedef int16_t StepCoord;		// stepper coordinate (i.e., pulses)
+typedef uint8_t PinType;		// pin specification
+//typedef uint8_t SegIndex;		// Stroke segment index [0..length)
 
 typedef struct CommandParser {
     int cPeek;
@@ -319,18 +252,28 @@ typedef class Axis {
         {};
 } Axis;
 
-typedef class Stroke {
-    public:
-        SegIndex	 	length;				// number of segments
-        float 			scale;				// steps per segment
-        SegIndex		curSeg;				// current segment index
-        int32_t 		planMicros;			// planned traversal time in microseconds
-        Quad<int8_t> 	seg[SEGMENT_COUNT];	// delta velocity
-        Quad<int16_t>	velocity;			// current velocity
-        Quad<int16_t>	endPos;				// end position
-    public:
-        Stroke() : length(0), scale(1), curSeg(0), planMicros(1000000) {}
-} Stroke;
+//typedef class Stroke {
+	//class Machine;
+    //public:
+        //SegIndex	 	length;				// number of segments
+        //float 			scale;				// steps per segment
+        //SegIndex		curSeg;				// current segment index
+        //int32_t 		planMicros;			// planned traversal time in microseconds
+		//TICKS			tStart;				// ticks at start of traversal
+		//TICKS			tTotal;				// ticks for planned traversal
+        //Quad<StepDV> 	seg[SEGMENT_COUNT];	// delta velocity
+		//Quad<StepCoord> dPos;				// offset from start position
+        //Quad<StepCoord>	velocity;			// current velocity
+        //Quad<StepCoord>	endPos;				// end position
+    //public:
+        //Stroke();
+		//void start(TICKS tStart);
+		//bool traverse(TICKS tCurrent);
+		//Quad<StepCoord> goalPos(TICKS t);
+		//TICKS goalStartTicks(TICKS t);
+		//TICKS goalEndTicks(TICKS t);
+		//SegIndex goalSegment(TICKS t);
+//} Stroke;
 
 typedef class Machine {
         friend class Controller;

@@ -22,7 +22,7 @@ void test_tick(int ticks) {
 }
 
 void test_Serial() {
-    cout << "TEST	: test_Serial() BEGIN" << endl;
+    cout << "TEST	: test_Serial() =====" << endl;
 
 	ASSERTEQUAL(0, Serial.available());
 	Serial.clear();
@@ -200,11 +200,11 @@ void test_Serial() {
 	ASSERTEQUALT(-3, svf.y, epsilon);
 	ASSERTEQUALT(-3, svf.z, epsilon);
 
-	cout << "TEST	:=== test_Serial() OK " << endl;
+	cout << "TEST	: test_Serial() OK " << endl;
 }
 
 void test_Thread() {
-    cout << "TEST	: test_Thread() BEGIN" << endl;
+    cout << "TEST	: test_Thread() =====" << endl;
 	arduino.clear();
 
 	ThreadClock tc;
@@ -235,7 +235,7 @@ void test_Thread() {
 	test_tick(1);
 	ASSERTEQUAL(1000000/15625, MicrosecondsSince(lastClock));
 
-	cout << "TEST	:=== test_Thread() OK " << endl;
+	cout << "TEST	: test_Thread() OK " << endl;
 }
 
 void test_command(const char *cmd, const char* expected) {
@@ -250,7 +250,7 @@ void test_command(const char *cmd, const char* expected) {
 }
 
 void test_Machine() {
-    cout << "TEST	: test_Machine() BEGIN" << endl;
+    cout << "TEST	: test_Machine() =====" << endl;
 	arduino.clear();
 
 	MachineThread machThread;
@@ -306,11 +306,11 @@ void test_Machine() {
 	test_command("[GULS]", "[XYZ00000000 00000000 00000000 X1Y1Z1 00000000 00000001 00000000 00000000 0000]\n");
 	test_command("[GXYZ]", "[XYZ00000000 00000000 00000000 X1Y1Z1 00000000 00000001 00000000 00000000 0000]\n");
 
-	cout << "TEST	:=== test_Machine() OK " << endl;
+	cout << "TEST	: test_Machine() OK " << endl;
 }
 
 void test_ArduinoJson() {
-    cout << "TEST	: test_ArduinoJson() BEGIN" << endl;
+    cout << "TEST	: test_ArduinoJson() =====" << endl;
 	char json[] = "{\"sensor\":\"gps\",\"time\":1351824120,\"data\":[48.756080,2.302038]}";
 
 	StaticJsonBuffer<500> jsonBuffer;
@@ -361,11 +361,11 @@ void test_ArduinoJson() {
 		}
 	}
 
-	cout << "TEST	:=== test_ArduinoJson() OK " << endl;
+	cout << "TEST	: test_ArduinoJson() OK " << endl;
 }
 
 void test_JsonCommand() {
-    cout << "TEST	: test_JsonCommand() BEGIN" << endl;
+    cout << "TEST	: test_JsonCommand() =====" << endl;
 
 	JsonCommand cmd1;
 	ASSERT(!cmd1.root().success());
@@ -414,7 +414,7 @@ void test_JsonCommand() {
 	cmd3.response().printTo(Serial);
 	ASSERTEQUALS("{\"s\":1,\"r\":{\"x\":-0.123}}", Serial.output().c_str());
 
-	cout << "TEST	:=== test_JsonCommand() OK " << endl;
+	cout << "TEST	: test_JsonCommand() OK " << endl;
 }
 
 void replaceChar(string &s, char cmatch, char creplace) {
@@ -576,7 +576,7 @@ void test_JsonController_stroke(JsonController &jc) {
 }
 
 void test_JsonController() {
-    cout << "TEST	: test_JsonController() BEGIN" << endl;
+    cout << "TEST	: test_JsonController() =====" << endl;
 
 	Machine machine;
 	JsonController jc(machine);
@@ -607,11 +607,11 @@ void test_JsonController() {
 
 	test_JsonController_stroke(jc);
 
-	cout << "TEST	:=== test_JsonController() OK " << endl;
+	cout << "TEST	: test_JsonController() OK " << endl;
 }
 
 void test_Quad() {
-    cout << "TEST	: test_Quad() BEGIN" << endl;
+    cout << "TEST	: test_Quad() =====" << endl;
 
 	Quad<int16_t> q1(1,2,3,4);
 	Quad<int16_t> q2(2,4,6,8);
@@ -621,7 +621,60 @@ void test_Quad() {
 	q1 *= 2;
 	ASSERT(q1 == q2);
 
-	cout << "TEST	:=== test_Quad() OK " << endl;
+	cout << "TEST	: test_Quad() OK " << endl;
+}
+
+void test_Stroke() {
+	cout << "TEST	: test_Stroke() =====" << endl;
+
+	Stroke stroke;
+	stroke.seg[stroke.length++] = Quad<StepDV>(1,10,-1,-10);
+	stroke.seg[stroke.length++] = Quad<StepDV>(2,20,-2,-20);	
+	stroke.seg[stroke.length++] = Quad<StepDV>(-1,-10,1,10);
+	stroke.tTotal = 17;
+	TICKS tStart = 100000;
+	stroke.start(tStart);
+	ASSERTEQUAL(0, (long) stroke.goalSegment(0));
+	ASSERTEQUAL(0, (long) stroke.goalSegment(tStart-1));
+	ASSERTEQUAL(0, (long) stroke.goalSegment(tStart));
+	ASSERTEQUAL(0, (long) stroke.goalSegment(tStart+1));
+	ASSERTEQUAL(0, (long) stroke.goalSegment(tStart+5));
+	ASSERTEQUAL(1, (long) stroke.goalSegment(tStart+6));
+	ASSERTEQUAL(1, (long) stroke.goalSegment(tStart+11));
+	ASSERTEQUAL(2, (long) stroke.goalSegment(tStart+12));
+	ASSERTEQUAL(2, (long) stroke.goalSegment(tStart+17));
+	ASSERTEQUAL(2, (long) stroke.goalSegment(tStart+18));
+	ASSERTEQUAL(2, (long) stroke.goalSegment(tStart+1000));
+
+	ASSERTEQUAL(0, stroke.goalStartTicks(0));
+	ASSERTEQUAL(0, stroke.goalStartTicks(tStart-1));
+	ASSERTEQUAL(0, stroke.goalStartTicks(tStart));
+	ASSERTEQUAL(0, stroke.goalStartTicks(tStart+1));
+	ASSERTEQUAL(0, stroke.goalStartTicks(tStart+5));
+	ASSERTEQUAL(5, stroke.goalStartTicks(tStart+6));
+	ASSERTEQUAL(5, stroke.goalStartTicks(tStart+11));
+	ASSERTEQUAL(11, stroke.goalStartTicks(tStart+12));
+	ASSERTEQUAL(11, stroke.goalStartTicks(tStart+17));
+	ASSERTEQUAL(11, stroke.goalStartTicks(tStart+18));
+	ASSERTEQUAL(11, stroke.goalStartTicks(tStart+1000));
+
+	ASSERTEQUAL(0, stroke.goalEndTicks(0));
+	ASSERTEQUAL(0, stroke.goalEndTicks(tStart-1));
+	ASSERTEQUAL(0, stroke.goalEndTicks(tStart));
+	ASSERTEQUAL(5, stroke.goalEndTicks(tStart+1));
+	ASSERTEQUAL(5, stroke.goalEndTicks(tStart+5));
+	ASSERTEQUAL(11, stroke.goalEndTicks(tStart+6));
+	ASSERTEQUAL(11, stroke.goalEndTicks(tStart+11));
+	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+12));
+	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+17));
+	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+18));
+	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+1000));
+
+	for (int t=0; t<20; t++) {
+		cout << "t:" << t << " goalPos:" << stroke.goalPos(tStart+t).toString() << endl;
+	}
+	
+	cout << "TEST	: test_Stroke() OK " << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -632,6 +685,7 @@ int main(int argc, char *argv[]) {
     test_Serial();
 	test_Thread();
 	test_Quad();
+	test_Stroke();
 	test_Machine();
 	test_ArduinoJson();
 	test_JsonCommand();

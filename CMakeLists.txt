@@ -74,6 +74,7 @@ link_directories(
 add_executable(test 
 	src/JsonController.cpp
 	src/Thread.cpp
+	src/Stroke.cpp
 	src/Machine.cpp
 	src/SerialTypes.cpp
 	test/FireLog.cpp

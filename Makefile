@@ -200,6 +200,30 @@ src/SerialTypes.cpp.s:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/SerialTypes.cpp.s
 .PHONY : src/SerialTypes.cpp.s
 
+src/Stroke.o: src/Stroke.cpp.o
+.PHONY : src/Stroke.o
+
+# target to build an object file
+src/Stroke.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Stroke.cpp.o
+.PHONY : src/Stroke.cpp.o
+
+src/Stroke.i: src/Stroke.cpp.i
+.PHONY : src/Stroke.i
+
+# target to preprocess a source file
+src/Stroke.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Stroke.cpp.i
+.PHONY : src/Stroke.cpp.i
+
+src/Stroke.s: src/Stroke.cpp.s
+.PHONY : src/Stroke.s
+
+# target to generate assembly for a file
+src/Stroke.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Stroke.cpp.s
+.PHONY : src/Stroke.cpp.s
+
 src/Thread.o: src/Thread.cpp.o
 .PHONY : src/Thread.o
 
@@ -316,6 +340,9 @@ help:
 	@echo "... src/SerialTypes.o"
 	@echo "... src/SerialTypes.i"
 	@echo "... src/SerialTypes.s"
+	@echo "... src/Stroke.o"
+	@echo "... src/Stroke.i"
+	@echo "... src/Stroke.s"
 	@echo "... src/Thread.o"
 	@echo "... src/Thread.i"
 	@echo "... src/Thread.s"
