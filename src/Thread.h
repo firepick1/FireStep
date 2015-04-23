@@ -2,6 +2,7 @@
 #define THREAD_H
 
 #include "Arduino.h"
+#include "pins.h"
 
 namespace firestep {
 
@@ -71,8 +72,6 @@ typedef struct PulseThread : Thread {
 #define LED_YELLOW 2
 #define LED_GREEN 1
 #define LED_NONE 0
-#define LED_PIN_RED 13
-#define LED_PIN_GRN 12
 
 typedef class MonitorThread : PulseThread {
         friend class ThreadRunner;
