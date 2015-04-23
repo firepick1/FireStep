@@ -1,9 +1,4 @@
 #include <cstring>
-//#include "Arduino.h"
-//#include "Machine.h"
-//#include "AnalogRead.h"
-//#include "version.h"
-//#include "build.h"
 
 #include "Stroke.h"
 
@@ -67,7 +62,15 @@ Quad<StepCoord> Stroke::goalPos(TICKS t) {
 		v *= tNum;
 		v /= tDenom;
 		pos = posSegStart+v;
-		cout << "goalPos tNum:" << tNum << " tDenom:" << tDenom << " v:" << v.toString() << endl;
+#ifdef TEST
+		cout << std::dec << "goalPos"
+			<< " dt:" << dt
+			<< " tNum:" << tNum 
+			<< " tDenom:" << tDenom 
+			<< " v:" << v.toString() 
+			<< " pos:" << pos.toString() 
+			<< endl;
+#endif
 	}
 	return pos;
 }

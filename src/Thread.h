@@ -3,11 +3,13 @@
 
 #include "Arduino.h"
 
+namespace firestep {
+
 #define DEBUG_EOL() Serial.println("");
 #define DEBUG_HEX(S,V) Serial.print(" " S ":");Serial.print(V,HEX);
 #define DEBUG_DEC(S,V) Serial.print(" " S ":");Serial.print(V,DEC);
 
-extern byte lastByte;		// declare this at end of program
+//extern byte lastByte;		// declare this at end of program
 #define CLOCK_HZ 16000000	// cycles per second
 #define TIMER_PRESCALE	1024 /* 1, 8, 64, 256, 1024 */
 #define FREQ_CYCLES(freq) (CLOCK_HZ/(freq))
@@ -18,32 +20,16 @@ extern byte lastByte;		// declare this at end of program
 #define GENERATION_RESET 50000
 #define TIMER_ENABLED (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10))
 
-		
-typedef unsigned long TICKS;
-typedef long PERIOD;
+typedef uint32_t TICKS;
+typedef int32_t PERIOD;
 
-union UIntByte {
-	struct {
-		unsigned int intValue;
-	};
-	struct {
-		byte lsb;
-		byte msb;
-	};
-};
-
-typedef struct INotify {
-	virtual void Notify(){}
-} INotify, *INotifyPtr;
-
-/// LIVING DANGEROUSLY
 typedef union ThreadClock  {
-	TICKS clock;
-	struct {
-		uint16_t age;
-		uint16_t generation;
-	};
-	ThreadClock() : clock(0) {}
+    TICKS clock;
+    struct {
+        uint16_t age;
+        uint16_t generation;
+    };
+    ThreadClock() : clock(0) {}
 } ThreadClock, *ThreadClockPtr;
 
 extern ThreadClock masterClock;
@@ -51,37 +37,34 @@ extern ThreadClock masterClock;
 #define MAX_ThreadS 32
 
 typedef struct Thread {
-	public:
-		Thread() : tardies(0), id(0), pNext(NULL) {
-			nextHeartbeat.clock = 0;
-		}
-		virtual void setup();
-		virtual void Heartbeat(){}
+    public:
+        Thread() : tardies(0), id(0), pNext(NULL) {
+            nextHeartbeat.clock = 0;
+        }
+        virtual void setup();
+        virtual void Heartbeat() {}
 
-		struct Thread *pNext;
+        struct Thread *pNext;
 
-		// Threads should increment the heartbeat as desired.
-		// Threads with 0 nextHeartbeat will always run ASAP.
-		ThreadClock nextHeartbeat;
+        // Threads should increment the heartbeat as desired.
+        // Threads with 0 nextHeartbeat will always run ASAP.
+        ThreadClock nextHeartbeat;
 
-		byte tardies;
-		char id;
-} 
+        byte tardies;
+        char id;
+}
 Thread, *ThreadPtr;
 
-typedef void (*ValueDelegatePtr)(void *sender, int value);
-
 // Binary pulse with variable width
-typedef struct PulseThread : Thread
-{
-	virtual void setup(TICKS period, TICKS pulseWidth);
-	virtual void Heartbeat();
+typedef struct PulseThread : Thread {
+        virtual void setup(TICKS period, TICKS pulseWidth);
+        virtual void Heartbeat();
 
-	boolean isHigh;
+        boolean isHigh;
 
-	protected:
-		TICKS m_LowPeriod;	
-		TICKS m_HighPeriod;
+    protected:
+        TICKS m_LowPeriod;
+        TICKS m_HighPeriod;
 } PulseThread, *PulseThreadPtr;
 
 #define LED_RED 3
@@ -91,18 +74,25 @@ typedef struct PulseThread : Thread
 #define LED_PIN_RED 13
 #define LED_PIN_GRN 12
 
-typedef struct MonitorThread : PulseThread {
-	boolean verbose;
-	byte	blinkLED;
+typedef class MonitorThread : PulseThread {
+        friend class ThreadRunner;
+		friend class MachineThread;
 
-	void 	LED(byte value);
+    private:
+        byte	blinkLED;
 
-	/* PRIVATE */ void setup(int pin1, int pin2);
-	/* PRIVATE */ void Error(const char *msg, int value);
-	/* PRIVATE */ unsigned int Free();
-	/* PRIVATE */ void Heartbeat();
-	/* PRIVATE */ int m_Pin1;
-	/* PRIVATE */ int m_Pin2;
+        void 	LED(byte value);
+
+        void setup(int pin1, int pin2); /* PRIVATE */
+        unsigned int Free(); /* PRIVATE */
+        void Heartbeat(); /* PRIVATE */
+        int m_Pin1; /* PRIVATE */
+        int m_Pin2; /* PRIVATE */
+
+	public:
+        boolean verbose;
+	public:
+        void Error(const char *msg, int value); /* PRIVATE */
 } MonitorThread;
 
 void Error(const char *msg, int value);
@@ -124,19 +114,19 @@ typedef class ThreadRunner {
         uint16_t 	lastAge;
         uint16_t 	age;
         byte		testTardies;
-		int16_t		nHB;
-		byte		fast;
-	protected:
-		void resetGenerations();
-	public: 
-		ThreadRunner();
-	public:
-		void setup(int monitorPin1, int monitorPin2);
+        int16_t		nHB;
+        byte		fast;
+    protected:
+        void resetGenerations();
+    public:
+        ThreadRunner();
+    public:
+        void setup(int monitorPin1, int monitorPin2);
     public:
         void run() {
             // outer loop: bookkeeping
             for (;;) {
-				outerLoop();
+                outerLoop();
             }
         }
     public:
@@ -156,35 +146,35 @@ typedef class ThreadRunner {
             return testTardies;
         }
     public:
-		inline void outerLoop() {
-			if (fast-- && innerLoop()) {
-				// do nothing
-			} else {
-				nHeartbeats += nHB;
-				nHB = 0;
-				fast = 255;
-			}
-		}
+        inline void outerLoop() {
+            if (fast-- && innerLoop()) {
+                // do nothing
+            } else {
+                nHeartbeats += nHB;
+                nHB = 0;
+                fast = 255;
+            }
+        }
     public:
         inline byte innerLoop() {
             cli();
-			//cout << "innerloopA:" << masterClock.clock << endl;
+            //cout << "innerloopA:" << masterClock.clock << endl;
             masterClock.age = age = TCNT1;
-			//cout << "innerloopB:" << masterClock.clock << endl;
-            if (age < lastAge) {	
-				// a generation is 4.194304s and is incremented when TCNT1 overflows
-				// Innerloop MUST complete within a generation
+            //cout << "innerloopB:" << masterClock.clock << endl;
+            if (age < lastAge) {
+                // a generation is 4.194304s and is incremented when TCNT1 overflows
+                // Innerloop MUST complete within a generation
                 lastAge = age;
                 masterClock.generation = ++generation;
-				//cout << "innerloopC:" << masterClock.clock << endl;
-                if (generation > MAX_GENERATIONS) { 
-					// generation overflow every ~58 hours
+                //cout << "innerloopC:" << masterClock.clock << endl;
+                if (generation > MAX_GENERATIONS) {
+                    // generation overflow every ~58 hours
                     resetGenerations();
-					//const char *msg ="GOVFL";
-					//Serial.println(msg);
+                    //const char *msg ="GOVFL";
+                    //Serial.println(msg);
                     //throw msg;
                 }
-				sei();
+                sei();
                 return 0;
             }
             lastAge = age;
@@ -218,10 +208,12 @@ typedef class ThreadRunner {
                     nTardies++;			// global tardy count
                 }
             }
-			return 1;
+            return 1;
         }
 } ThreadRunner;
 
 extern ThreadRunner threadRunner;
+
+} // namespace firestep
 
 #endif

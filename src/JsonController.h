@@ -2,11 +2,6 @@
 #define JSONCONTROLLER_H
 
 #include <string>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include "FireLog.h"
-#include "FireUtils.hpp"
 #include "version.h"
 #include "Arduino.h"
 #include "SerialTypes.h"
@@ -50,6 +45,7 @@ enum Status {
 	STATUS_FIELD_ARRAY_ERROR = -109,// Expected JSON field array value
 	STATUS_FIELD_REQUIRED = -110,	// Expected JSON field value
 	STATUS_JSON_ARRAY_LEN = -111,	// JSON array is too short
+	STATUS_MOTOR_INDEX = -112,		// Internal error: motor index out of range
 };
 
 typedef class JsonCommand {

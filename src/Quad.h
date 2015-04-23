@@ -1,5 +1,6 @@
 #ifndef QUAD_H
 #define QUAD_H
+
 #include <string>
 #include <cstdio>
 

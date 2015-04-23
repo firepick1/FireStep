@@ -629,7 +629,7 @@ void test_Stroke() {
 
 	Stroke stroke;
 	stroke.seg[stroke.length++] = Quad<StepDV>(1,10,-1,-10);
-	stroke.seg[stroke.length++] = Quad<StepDV>(2,20,-2,-20);	
+	stroke.seg[stroke.length++] = Quad<StepDV>(1,10,-1,-10);	
 	stroke.seg[stroke.length++] = Quad<StepDV>(-1,-10,1,10);
 	stroke.tTotal = 17;
 	TICKS tStart = 100000;
@@ -671,8 +671,14 @@ void test_Stroke() {
 	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+1000));
 
 	for (int t=0; t<20; t++) {
-		cout << "t:" << t << " goalPos:" << stroke.goalPos(tStart+t).toString() << endl;
+		Quad<StepCoord> pos = stroke.goalPos(tStart+t);
 	}
+	ASSERT(Quad<StepCoord>(4,40,-4,-40) == stroke.goalPos(tStart+17));
+	ASSERT(Quad<StepCoord>(3,35,-3,-35) == stroke.goalPos(tStart+14));
+	ASSERT(Quad<StepCoord>(3,30,-3,-30) == stroke.goalPos(tStart+11));
+	ASSERT(Quad<StepCoord>(2,20,-2,-20) == stroke.goalPos(tStart+8));
+	ASSERT(Quad<StepCoord>(1,10,-1,-10) == stroke.goalPos(tStart+5));
+	ASSERT(Quad<StepCoord>(0,0,0,0) == stroke.goalPos(tStart));
 	
 	cout << "TEST	: test_Stroke() OK " << endl;
 }

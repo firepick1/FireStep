@@ -2,13 +2,16 @@
 #include "Thread.h"
 #include "SerialTypes.h"
 
-ThreadRunner threadRunner;
+using namespace firestep;
 
-struct Thread *pThreadList;
-ThreadClock masterClock;
-int nThreads;
-long nHeartbeats;
-long nTardies;
+namespace firestep {
+	ThreadClock 	masterClock;
+	ThreadRunner 	threadRunner;
+	struct Thread *	pThreadList;
+	int 			nThreads;
+	long 			nHeartbeats;
+	long 			nTardies;
+};
 
 void Thread::setup() {
     bool active = false;
@@ -87,17 +90,17 @@ void MonitorThread::Error(const char *msg, int value) {
     Serial.println(value);
 }
 
-/**
- * A dangerous way to find out how much memory is consumed
- */
-unsigned int MonitorThread::Free() {
-    unsigned int result;
-    for (byte *pByte = &lastByte; *++pByte == 0x00; pByte++) {
-        result++;
-    }
-
-    return result;
-}
+///**
+ //* A dangerous way to find out how much memory is consumed
+ //*/
+//unsigned int MonitorThread::Free() {
+    //unsigned int result;
+    //for (byte *pByte = &lastByte; *++pByte == 0x00; pByte++) {
+        //result++;
+    //}
+//
+    //return result;
+//}
 
 void MonitorThread::Heartbeat() {
     PulseThread::Heartbeat();
@@ -155,9 +158,9 @@ void MonitorThread::Heartbeat() {
 #endif
 }
 
-MonitorThread monitor;
+MonitorThread firestep::monitor;
 
-void Error(const char *msg, int value) {
+void firestep::Error(const char *msg, int value) {
     monitor.Error(msg, value);
 }
 
@@ -198,7 +201,7 @@ void ThreadRunner::resetGenerations() {
     }
 }
 
-int32_t MicrosecondsSince(TICKS lastClock) {
+int32_t firestep::MicrosecondsSince(TICKS lastClock) {
     int32_t elapsed;
 	//cout << "masterClock:" << masterClock.clock << " lastClock:" << lastClock << endl;
     if (masterClock.clock < lastClock) {
@@ -233,7 +236,7 @@ int32_t MicrosecondsSince(TICKS lastClock) {
 // Make sure we come up for air sometimes
 #define MAX_ACTIVE_HEARTBEATS (255-MAX_ThreadS)
 
-void ThreadEnable(boolean enable) {
+void firestep::ThreadEnable(boolean enable) {
 #ifdef DEBUG_ThreadENABLE
     DEBUG_DEC("C", masterClock.clock);
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {

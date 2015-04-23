@@ -372,8 +372,9 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
     Status status = STATUS_OK;
     const char *s;
     int iMotor = group - '1';
-    ASSERT(0 <= iMotor);
-    ASSERT(iMotor < MOTOR_COUNT);
+	if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
+		return STATUS_MOTOR_INDEX;
+	}
     if (strlen(key) == 1) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jcmd.createJsonObject();
