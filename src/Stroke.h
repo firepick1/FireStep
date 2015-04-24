@@ -12,6 +12,11 @@ typedef int8_t  StepDV;			// change in StepCoord velocity
 typedef int16_t StepCoord;		// stepper coordinate (i.e., pulses)
 typedef uint8_t SegIndex;		// Stroke segment index [0..length)
 
+typedef class QuadStepper {
+	public:
+		virtual void step(const Quad<StepCoord> &pulse) = 0;
+} QuadStepper;
+
 typedef class Stroke {
 	class Machine;
     public:
@@ -22,13 +27,13 @@ typedef class Stroke {
 		TICKS			tStart;				// ticks at start of traversal
 		TICKS			tTotal;				// ticks for planned traversal 
 		Quad<StepDV> 	seg[SEGMENT_COUNT];	// delta velocity 
-		Quad<StepCoord> dPos;				// offset from start position
         Quad<StepCoord>	velocity;			// current velocity
-        Quad<StepCoord>	endPos;				// end position
+		Quad<StepCoord> dPos;				// current offset from start position
+        Quad<StepCoord>	dPosEnd;			// ending offset
     public:
         Stroke();
 		void start(TICKS tStart);
-		bool traverse(TICKS tCurrent);
+		bool traverse(TICKS tCurrent, QuadStepper &quadStep);
 		Quad<StepCoord> goalPos(TICKS t);
 		TICKS goalStartTicks(TICKS t);
 		TICKS goalEndTicks(TICKS t);

@@ -52,13 +52,11 @@ typedef struct SlackVector {
 
 typedef struct Motor {
     uint8_t	axisMap; 	// index into axis array
-    float	stepAngle;
     uint8_t	microsteps;
     uint8_t	polarity;
     uint8_t powerManagementMode;
 
     Motor() :
-        stepAngle(1.8),
         microsteps(16),
         polarity(0),			// 0:clockwise, 1:counter-clockwise
         powerManagementMode(0) 	// 0:off, 1:on, 2:on in cycle, 3:on when moving
@@ -72,15 +70,16 @@ enum AxisMode {
 
 typedef class Axis {
     public:
-        uint8_t mode;
-        PinType pinStep;
-        PinType pinDir;
-        PinType pinMin;
-        PinType pinEnable;
-        StepCoord travelMin;
-        StepCoord travelMax;
-        StepCoord searchVelocity;
-        StepCoord position;
+        uint8_t 	mode;
+        PinType 	pinStep;
+        PinType 	pinDir;
+        PinType 	pinMin;
+        PinType 	pinEnable;
+        StepCoord 	travelMin;
+        StepCoord 	travelMax;
+        StepCoord 	searchVelocity;
+        StepCoord 	position;
+		float		stepAngle;
         Axis() :
             mode((uint8_t)MODE_STANDARD),
             pinStep(0),
@@ -89,11 +88,12 @@ typedef class Axis {
             travelMin(0),
             travelMax(10000),
             searchVelocity(200),
-            position(0)
+            position(0),
+			stepAngle(1.8)
         {};
 } Axis;
 
-typedef class Machine {
+typedef class Machine : public QuadStepper {
         friend class Controller;
         friend class JsonController;
     private:
@@ -141,6 +141,8 @@ typedef class Machine {
     public:
         Machine();
         void init();
+		virtual void step(const Quad<StepCoord> &pulse);
+
         bool doJog();
         bool doAccelerationStroke();
         bool pulseDrivePin(byte stepPin, byte dirPin, byte limitPin, int delta, bool reverse, char axis);

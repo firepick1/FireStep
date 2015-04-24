@@ -485,6 +485,16 @@ void Machine::init() {
     zReverse = false;
 }
 
+void Machine::step(const Quad<StepCoord> &pulse) {
+	for (int i=0; i<4; i++) {
+		//if (!pulseDrivePin(PIN_X, PIN_X_DIR, PIN_X_LIM, deltaBacklash, xReverse, 'X')) {
+			//if (!jogOverride) {
+				//goto PULSE_ERROR;
+			//}
+		//}
+	}
+}
+
 bool Machine::doJog() {
     if (jogCount.longValue > 0) {
         int deltaBacklash;

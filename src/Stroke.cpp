@@ -11,12 +11,6 @@ Stroke::Stroke()
 	: length(0), scale(1), curSeg(0), planMicros(1000000), tStart(0), tTotal(0)
 {}
 
-void Stroke::start(TICKS tStart) {
-	this->tStart = tStart;
-	this->dPos = 0;
-	this->velocity = 0;
-}
-
 SegIndex Stroke::goalSegment(TICKS t) {
 	if (t < tStart || length == 0 || tTotal==0) {
 		return 0;
@@ -62,7 +56,7 @@ Quad<StepCoord> Stroke::goalPos(TICKS t) {
 		v *= tNum;
 		v /= tDenom;
 		pos = posSegStart+v;
-#ifdef TEST
+#ifdef TEST_TRACE
 		cout << std::dec << "goalPos"
 			<< " dt:" << dt
 			<< " tNum:" << tNum 
@@ -75,9 +69,42 @@ Quad<StepCoord> Stroke::goalPos(TICKS t) {
 	return pos;
 }
 
-bool Stroke::traverse(TICKS tCurrent) {
-	TICKS tElapsed = tCurrent - tStart;
-	SegIndex sGoal = goalSegment(tCurrent);
+void Stroke::start(TICKS tStart) {
+	this->tStart = tStart;
+
+	velocity = 0;
+	dPos = 0;
+	dPosEnd = goalPos(tStart+tTotal);
+}
+
+template<class T> T abs(T a) { return a < 0 ? -a : a; };
+
+bool Stroke::traverse(TICKS tCurrent, QuadStepper &stepper) {
+	Quad<StepCoord> dGoal = goalPos(tCurrent);
+	if (tCurrent>tStart+tTotal || tCurrent>tStart && dPos==dGoal) {
+		return true;
+	}
+	while (dPos != dGoal) {
+		StepCoord d[4];
+		StepCoord dMax = 0;
+		for (uint8_t i=0; i<4; i++) {
+			d[i] = dGoal.value[i] - dPos.value[i];
+			dMax = max(dMax, abs(d[i]));
+		}
+		if (dMax == 0) {
+			break;
+		}
+		Quad<StepCoord> pulse;
+		for (uint8_t i=0; i<4; i++) {
+			if (abs(d[i]) != dMax) {
+				continue;
+			}
+			pulse.value[i] = d[i] < 0 ? -1 : 1;
+		}
+		dPos += pulse;
+		stepper.step(pulse);
+	}
+	return false;
 }
 
 

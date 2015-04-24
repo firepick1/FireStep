@@ -458,19 +458,13 @@ void test_JsonController_motor(JsonController &jc, char motor) {
 	replace.push_back('\''); replace.push_back('"');
 	replace.push_back('?'); replace.push_back(motor);
 	replace.push_back('!'); replace.push_back(motor-1);
-	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!,'sa':1.80,'mi':16,'po':0,'pm':0}}}");
+	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!,'mi':16,'po':0,'pm':0}}}");
 	testJSON(jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':!}}");
 	testJSON(jc, replace, "{'?ma':4}", "{'s':0,'r':{'?ma':4}}");
 	testJSON(jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':4}}");
 	testJSON(jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':4}}}");
 	testJSON(jc, replace, "{'?':{'ma':!}}", "{'s':0,'r':{'?':{'ma':!}}}");
 	testJSON(jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':!}}}");
-	testJSON(jc, replace, "{'?sa':''}", "{'s':0,'r':{'?sa':1.80}}");
-	testJSON(jc, replace, "{'?sa':0.90}", "{'s':0,'r':{'?sa':0.90}}");
-	testJSON(jc, replace, "{'?sa':''}", "{'s':0,'r':{'?sa':0.90}}");
-	testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':0.90}}}");
-	testJSON(jc, replace, "{'?':{'sa':1.80}}", "{'s':0,'r':{'?':{'sa':1.80}}}");
-	testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':1.80}}}");
 	testJSON(jc, replace, "{'?mi':''}", "{'s':0,'r':{'?mi':16}}");
 	testJSON(jc, replace, "{'?mi':33}", "{'s':0,'r':{'?mi':33}}");
 	testJSON(jc, replace, "{'?mi':''}", "{'s':0,'r':{'?mi':33}}");
@@ -489,7 +483,7 @@ void test_JsonController_motor(JsonController &jc, char motor) {
 	testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':0,'r':{'?':{'pm':2}}}");
 	testJSON(jc, replace, "{'?':{'pm':0}}", "{'s':0,'r':{'?':{'pm':0}}}");
 	testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':0,'r':{'?':{'pm':0}}}");
-	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!,'sa':1.80,'mi':16,'po':0,'pm':0}}}");
+	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!,'mi':16,'po':0,'pm':0}}}");
 }
 
 void test_JsonController_axis(JsonController &jc, char axis) {
@@ -514,13 +508,17 @@ void test_JsonController_axis(JsonController &jc, char axis) {
 	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':77}}}");
 	testJSON(jc, replace, "{'?':{'am':1}}", "{'s':0,'r':{'?':{'am':1}}}");
 	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':1}}}");
+	testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':1.80}}}");
+	testJSON(jc, replace, "{'?':{'sa':0.9}}", "{'s':0,'r':{'?':{'sa':0.90}}}");
+	testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':0.90}}}");
+	testJSON(jc, replace, "{'?':{'sa':1.8}}", "{'s':0,'r':{'?':{'sa':1.80}}}");
 
 	testJSON(jc, replace, 
-		"{'x':''}", "{'s':0,'r':{'x':{'am':1,'pd':22,'pe':14,'pn':21,'po':0,'ps':23,'tm':10000,'tn':0}}}");
+		"{'x':''}", "{'s':0,'r':{'x':{'am':1,'pd':22,'pe':14,'pn':21,'po':0,'ps':23,'sa':1.80,'tm':10000,'tn':0}}}");
 	testJSON(jc, replace, 
-		"{'y':''}", "{'s':0,'r':{'y':{'am':1,'pd':3,'pe':14,'pn':2,'po':0,'ps':4,'tm':10000,'tn':0}}}");
+		"{'y':''}", "{'s':0,'r':{'y':{'am':1,'pd':3,'pe':14,'pn':2,'po':0,'ps':4,'sa':1.80,'tm':10000,'tn':0}}}");
 	testJSON(jc, replace, 
-		"{'z':''}", "{'s':0,'r':{'z':{'am':1,'pd':12,'pe':14,'pn':11,'po':0,'ps':13,'tm':10000,'tn':0}}}");
+		"{'z':''}", "{'s':0,'r':{'z':{'am':1,'pd':12,'pe':14,'pn':11,'po':0,'ps':13,'sa':1.80,'tm':10000,'tn':0}}}");
 }
 
 void test_JsonController_machinePosition(JsonController &jc) {
@@ -624,6 +622,17 @@ void test_Quad() {
 	cout << "TEST	: test_Quad() OK " << endl;
 }
 
+class MockStepper : public QuadStepper {
+	public:
+		Quad<StepCoord> dPos;
+		virtual void step(const Quad<StepCoord> &pulse) {
+			dPos += pulse;
+			cout << "	: MockStepper" 
+				<< " dPos:" << dPos.toString() 
+				<< " pulse:" << pulse.toString() << endl;
+		}
+};
+
 void test_Stroke() {
 	cout << "TEST	: test_Stroke() =====" << endl;
 
@@ -680,6 +689,23 @@ void test_Stroke() {
 	ASSERT(Quad<StepCoord>(1,10,-1,-10) == stroke.goalPos(tStart+5));
 	ASSERT(Quad<StepCoord>(0,0,0,0) == stroke.goalPos(tStart));
 	
+	MockStepper stepper;
+	for (TICKS t=tStart; t<tStart+20; t++) {
+		cout << "stroke	: traverse(" << t << ")" << endl;
+		if (stroke.traverse(t, stepper)) {
+			ASSERTEQUAL(18, t-tStart);
+			Quad<StepCoord> dPos = stepper.dPos;
+			ASSERT(stroke.traverse(t, stepper)); 	// should do nothing
+			ASSERT(stroke.traverse(t+1, stepper)); 	// should do nothing
+			ASSERT(dPos == stepper.dPos); 
+			break;
+		} else {
+			Quad<StepCoord> dPos = stepper.dPos;
+			stroke.traverse(t, stepper); 	// should do nothing
+			ASSERT(dPos == stepper.dPos); 
+		}
+	}
+
 	cout << "TEST	: test_Stroke() OK " << endl;
 }
 

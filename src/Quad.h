@@ -16,7 +16,7 @@ template<class T> class Quad { // a 4 element vector
             value[2] = v3;
             value[3] = v4;
         }
-		string toString(const char *fmt = "[%d,%d,%d,%d]") {
+		string toString(const char *fmt = "[%d,%d,%d,%d]") const {
 			char buf[50];
 			snprintf(buf, sizeof(buf), fmt, 
 				(T) value[0], (T) value[1], (T) value[2], (T) value[3]);
