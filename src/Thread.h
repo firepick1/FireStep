@@ -20,6 +20,7 @@ namespace firestep {
 #define MAX_GENERATIONS 50010
 #define GENERATION_RESET 50000
 #define TIMER_ENABLED (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10))
+#define MAX_ThreadS 32
 
 typedef uint32_t Ticks;
 typedef int32_t PERIOD;
@@ -34,10 +35,15 @@ typedef union ThreadClock  {
 } ThreadClock, *ThreadClockPtr;
 
 extern ThreadClock threadClock;
-inline Ticks ticks(){ return threadClock.ticks; }
 
-
-#define MAX_ThreadS 32
+/**
+ * With the standard ATMEGA 16,000,000 Hz system clock and TCNT1 / 1024 prescaler:
+ * 1 tick = 1024 clock cycles = 64 microseconds
+ * Clock overflows in 2^32 * 0.000064 seconds = ~76.3 hours
+ */
+inline Ticks ticks() {
+    return threadClock.ticks;
+}
 
 typedef struct Thread {
     public:
@@ -77,7 +83,7 @@ typedef struct PulseThread : Thread {
 
 typedef class MonitorThread : PulseThread {
         friend class ThreadRunner;
-		friend class MachineThread;
+        friend class MachineThread;
 
     private:
         byte	blinkLED;
@@ -90,9 +96,9 @@ typedef class MonitorThread : PulseThread {
         int m_Pin1; /* PRIVATE */
         int m_Pin2; /* PRIVATE */
 
-	public:
+    public:
         boolean verbose;
-	public:
+    public:
         void Error(const char *msg, int value); /* PRIVATE */
 } MonitorThread;
 
@@ -158,16 +164,14 @@ typedef class ThreadRunner {
     public:
         inline byte innerLoop() {
             cli();
-            //cout << "innerloopA:" << ticks() << endl;
             threadClock.age = age = TCNT1;
-            //cout << "innerloopB:" << ticks() << endl;
             if (age < lastAge) {
                 // a generation is 4.194304s and is incremented when TCNT1 overflows
                 // Innerloop MUST complete within a generation
                 lastAge = age;
                 threadClock.generation = ++generation;
-                //cout << "innerloopC:" << ticks() << endl;
                 if (generation > MAX_GENERATIONS) {
+                    // TODO test this
                     // generation overflow every ~58 hours
                     resetGenerations();
                     //const char *msg ="GOVFL";
