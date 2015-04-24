@@ -380,9 +380,6 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
             JsonObject& node = jcmd.createJsonObject();
             jobj[key] = node;
             node["ma"] = "";
-            node["mi"] = "";
-            node["po"] = "";
-            node["pm"] = "";
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -395,12 +392,6 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
         }
     } else if (strcmp("ma", key) == 0 || strcmp("ma", key + 1) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.motor[iMotor].axisMap);
-    } else if (strcmp("mi", key) == 0 || strcmp("mi", key + 1) == 0) {
-        status = processField<uint8_t, long>(jobj, key, machine.motor[iMotor].microsteps);
-    } else if (strcmp("po", key) == 0 || strcmp("po", key + 1) == 0) {
-        status = processField<uint8_t, long>(jobj, key, machine.motor[iMotor].polarity);
-    } else if (strcmp("pm", key) == 0 || strcmp("pm", key + 1) == 0) {
-        status = processField<uint8_t, long>(jobj, key, machine.motor[iMotor].powerManagementMode);
     }
     return status;
 }
@@ -417,8 +408,11 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             JsonObject& node = jcmd.createJsonObject();
             jobj[key] = node;
             node["am"] = "";
+			node["in"] = "";
+            node["mi"] = "";
             node["pd"] = "";
             node["pe"] = "";
+            node["pm"] = "";
             node["pn"] = "";
             node["po"] = "";
             node["ps"] = "";
@@ -437,10 +431,16 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
         }
     } else if (strcmp("am", key) == 0 || strcmp("am", key + 1) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].mode);
+    } else if (strcmp("in", key) == 0 || strcmp("in", key + 1) == 0) {
+        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].invert);
+    } else if (strcmp("mi", key) == 0 || strcmp("mi", key + 1) == 0) {
+        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].microsteps);
     } else if (strcmp("pd", key) == 0 || strcmp("pd", key + 1) == 0) {
         status = processField<PinType, long>(jobj, key, machine.axis[iAxis].pinDir);
     } else if (strcmp("pe", key) == 0 || strcmp("pe", key + 1) == 0) {
         status = processField<PinType, long>(jobj, key, machine.axis[iAxis].pinEnable);
+    } else if (strcmp("pm", key) == 0 || strcmp("pm", key + 1) == 0) {
+        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].powerManagementMode);
     } else if (strcmp("pn", key) == 0 || strcmp("pn", key + 1) == 0) {
         status = processField<PinType, long>(jobj, key, machine.axis[iAxis].pinMin);
     } else if (strcmp("po", key) == 0 || strcmp("po", key + 1) == 0) {

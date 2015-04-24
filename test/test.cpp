@@ -458,32 +458,13 @@ void test_JsonController_motor(JsonController &jc, char motor) {
 	replace.push_back('\''); replace.push_back('"');
 	replace.push_back('?'); replace.push_back(motor);
 	replace.push_back('!'); replace.push_back(motor-1);
-	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!,'mi':16,'po':0,'pm':0}}}");
+	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!}}}");
 	testJSON(jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':!}}");
 	testJSON(jc, replace, "{'?ma':4}", "{'s':0,'r':{'?ma':4}}");
 	testJSON(jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':4}}");
 	testJSON(jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':4}}}");
 	testJSON(jc, replace, "{'?':{'ma':!}}", "{'s':0,'r':{'?':{'ma':!}}}");
 	testJSON(jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':!}}}");
-	testJSON(jc, replace, "{'?mi':''}", "{'s':0,'r':{'?mi':16}}");
-	testJSON(jc, replace, "{'?mi':33}", "{'s':0,'r':{'?mi':33}}");
-	testJSON(jc, replace, "{'?mi':''}", "{'s':0,'r':{'?mi':33}}");
-	testJSON(jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':33}}}");
-	testJSON(jc, replace, "{'?':{'mi':16}}", "{'s':0,'r':{'?':{'mi':16}}}");
-	testJSON(jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':16}}}");
-	testJSON(jc, replace, "{'?po':''}", "{'s':0,'r':{'?po':0}}");
-	testJSON(jc, replace, "{'?po':2}", "{'s':0,'r':{'?po':2}}");
-	testJSON(jc, replace, "{'?po':''}", "{'s':0,'r':{'?po':2}}");
-	testJSON(jc, replace, "{'?':{'po':''}}", "{'s':0,'r':{'?':{'po':2}}}");
-	testJSON(jc, replace, "{'?':{'po':0}}", "{'s':0,'r':{'?':{'po':0}}}");
-	testJSON(jc, replace, "{'?':{'po':''}}", "{'s':0,'r':{'?':{'po':0}}}");
-	testJSON(jc, replace, "{'?pm':''}", "{'s':0,'r':{'?pm':0}}");
-	testJSON(jc, replace, "{'?pm':2}", "{'s':0,'r':{'?pm':2}}");
-	testJSON(jc, replace, "{'?pm':''}", "{'s':0,'r':{'?pm':2}}");
-	testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':0,'r':{'?':{'pm':2}}}");
-	testJSON(jc, replace, "{'?':{'pm':0}}", "{'s':0,'r':{'?':{'pm':0}}}");
-	testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':0,'r':{'?':{'pm':0}}}");
-	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!,'mi':16,'po':0,'pm':0}}}");
 }
 
 void test_JsonController_axis(JsonController &jc, char axis) {
@@ -508,17 +489,35 @@ void test_JsonController_axis(JsonController &jc, char axis) {
 	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':77}}}");
 	testJSON(jc, replace, "{'?':{'am':1}}", "{'s':0,'r':{'?':{'am':1}}}");
 	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':1}}}");
+	testJSON(jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':16}}}");
+	testJSON(jc, replace, "{'?':{'mi':1}}", "{'s':0,'r':{'?':{'mi':1}}}");
+	testJSON(jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':1}}}");
+	testJSON(jc, replace, "{'?':{'mi':16}}", "{'s':0,'r':{'?':{'mi':16}}}");
+	testJSON(jc, replace, "{'?':{'in':''}}", "{'s':0,'r':{'?':{'in':0}}}");
+	testJSON(jc, replace, "{'?':{'in':1}}", "{'s':0,'r':{'?':{'in':1}}}");
+	testJSON(jc, replace, "{'?':{'in':''}}", "{'s':0,'r':{'?':{'in':1}}}");
+	testJSON(jc, replace, "{'?':{'in':0}}", "{'s':0,'r':{'?':{'in':0}}}");
+	testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':0,'r':{'?':{'pm':0}}}");
+	testJSON(jc, replace, "{'?':{'pm':3}}", "{'s':0,'r':{'?':{'pm':3}}}");
+	testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':0,'r':{'?':{'pm':3}}}");
+	testJSON(jc, replace, "{'?':{'pm':0}}", "{'s':0,'r':{'?':{'pm':0}}}");
 	testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':1.80}}}");
 	testJSON(jc, replace, "{'?':{'sa':0.9}}", "{'s':0,'r':{'?':{'sa':0.90}}}");
 	testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':0.90}}}");
 	testJSON(jc, replace, "{'?':{'sa':1.8}}", "{'s':0,'r':{'?':{'sa':1.80}}}");
 
 	testJSON(jc, replace, 
-		"{'x':''}", "{'s':0,'r':{'x':{'am':1,'pd':22,'pe':14,'pn':21,'po':0,'ps':23,'sa':1.80,'tm':10000,'tn':0}}}");
+		"{'x':''}", 
+		"{'s':0,'r':{'x':{'am':1,'in':0,'mi':16,'pd':22,'pe':14,'pm':0,"\
+			"'pn':21,'po':0,'ps':23,'sa':1.80,'tm':10000,'tn':0}}}");
 	testJSON(jc, replace, 
-		"{'y':''}", "{'s':0,'r':{'y':{'am':1,'pd':3,'pe':14,'pn':2,'po':0,'ps':4,'sa':1.80,'tm':10000,'tn':0}}}");
+		"{'y':''}", 
+		"{'s':0,'r':{'y':{'am':1,'in':0,'mi':16,'pd':3,'pe':14,'pm':0,"\
+			"'pn':2,'po':0,'ps':4,'sa':1.80,'tm':10000,'tn':0}}}");
 	testJSON(jc, replace, 
-		"{'z':''}", "{'s':0,'r':{'z':{'am':1,'pd':12,'pe':14,'pn':11,'po':0,'ps':13,'sa':1.80,'tm':10000,'tn':0}}}");
+		"{'z':''}", 
+		"{'s':0,'r':{'z':{'am':1,'in':0,'mi':16,'pd':12,'pe':14,'pm':0,"\
+			"'pn':11,'po':0,'ps':13,'sa':1.80,'tm':10000,'tn':0}}}");
 }
 
 void test_JsonController_machinePosition(JsonController &jc) {

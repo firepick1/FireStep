@@ -52,15 +52,7 @@ typedef struct SlackVector {
 
 typedef struct Motor {
     uint8_t	axisMap; 	// index into axis array
-    uint8_t	microsteps;
-    uint8_t	polarity;
-    uint8_t powerManagementMode;
-
-    Motor() :
-        microsteps(16),
-        polarity(0),			// 0:clockwise, 1:counter-clockwise
-        powerManagementMode(0) 	// 0:off, 1:on, 2:on in cycle, 3:on when moving
-    {}
+    Motor() {}
 } Motor;
 
 enum AxisMode {
@@ -80,6 +72,9 @@ typedef class Axis {
         StepCoord 	searchVelocity;
         StepCoord 	position;
 		float		stepAngle;
+		uint8_t		microsteps;
+		uint8_t		invert;
+		uint8_t 	powerManagementMode;
         Axis() :
             mode((uint8_t)MODE_STANDARD),
             pinStep(0),
@@ -89,7 +84,10 @@ typedef class Axis {
             travelMax(10000),
             searchVelocity(200),
             position(0),
-			stepAngle(1.8)
+			stepAngle(1.8),
+			microsteps(16),
+			invert(0),				// 0:normal direction, 1:inverted direction
+			powerManagementMode(0) 	// 0:off, 1:on, 2:on in cycle, 3:on when moving
         {};
 } Axis;
 
