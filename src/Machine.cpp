@@ -69,32 +69,32 @@ void MachineThread::Heartbeat() {
         switch (controller.cmd) {
         case CMD_JOG:
             hbDelta = FREQ_CYCLES(controller.machine.jogFrequency.longValue);
-            nextHeartbeat.clock = masterClock.clock + hbDelta;
+            nextHeartbeat.ticks = ticks() + hbDelta;
             break;
         default:
-            nextHeartbeat.clock = 0;
+            nextHeartbeat.ticks = 0;
             break;
         }
         if (controller.processCommand()) {
             isProcessing = false;
-            nextHeartbeat.clock = 0;
+            nextHeartbeat.ticks = 0;
         }
     } else if (Serial.available() > 0) {
-        nextHeartbeat.clock = 0;
+        nextHeartbeat.ticks = 0;
         monitor.LED(LED_YELLOW);
         byte result = controller.readCommand();
         switch (result) {
         case COMMAND_RESULT_ERR:
             // Command error is 10 second LED_YELLOW
             monitor.blinkLED = LED_NONE;
-            nextHeartbeat.clock = masterClock.clock + MS_TIMER_CYCLES(10000);
+            nextHeartbeat.ticks = ticks() + MS_TIMER_CYCLES(10000);
             break;
         case COMMAND_RESULT_READ:
             isProcessing = true;
             break;
         }
     } else {
-        nextHeartbeat.clock = masterClock.clock + MS_TIMER_CYCLES(2);	// Simulate work
+        nextHeartbeat.ticks = ticks() + MS_TIMER_CYCLES(2);	// Simulate work
     }
 
 }
@@ -325,7 +325,7 @@ bool Controller::processCommand() {
     int sz;
 
     if (lastClock == 0) {
-        lastClock = masterClock.clock;
+        lastClock = ticks();
     }
     int32_t elapsed = MicrosecondsSince(lastClock);
     machine.actualMicros.longValue = machine.actualMicros.longValue + elapsed;
@@ -335,7 +335,7 @@ bool Controller::processCommand() {
     //if (elapsed> 2000) {
     //	monitor.Error("HB", (int) elapsed);
     //}
-    lastClock = masterClock.clock;
+    lastClock = ticks();
 
     switch (cmd) {
     default:

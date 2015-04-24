@@ -156,7 +156,7 @@ typedef class Controller {
     private:
         CommandParser	parser;
         char			guardStart;
-        TICKS			lastClock;
+        Ticks			lastClock;
         byte			speed;
         byte			guardEnd;
 

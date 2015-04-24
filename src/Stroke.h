@@ -24,20 +24,20 @@ typedef class Stroke {
         float 			scale;				// steps per segment
         SegIndex		curSeg;				// current segment index
         int32_t 		planMicros;			// planned traversal time in microseconds
-		TICKS			tStart;				// ticks at start of traversal
-		TICKS			tTotal;				// ticks for planned traversal 
+		Ticks			tStart;				// ticks at start of traversal
+		Ticks			tTotal;				// ticks for planned traversal 
 		Quad<StepDV> 	seg[SEGMENT_COUNT];	// delta velocity 
         Quad<StepCoord>	velocity;			// current velocity
 		Quad<StepCoord> dPos;				// current offset from start position
         Quad<StepCoord>	dPosEnd;			// ending offset
     public:
         Stroke();
-		void start(TICKS tStart);
-		bool traverse(TICKS tCurrent, QuadStepper &quadStep);
-		Quad<StepCoord> goalPos(TICKS t);
-		TICKS goalStartTicks(TICKS t);
-		TICKS goalEndTicks(TICKS t);
-		SegIndex goalSegment(TICKS t);
+		void start(Ticks tStart);
+		bool traverse(Ticks tCurrent, QuadStepper &quadStep);
+		Quad<StepCoord> goalPos(Ticks t);
+		Ticks goalStartTicks(Ticks t);
+		Ticks goalEndTicks(Ticks t);
+		SegIndex goalSegment(Ticks t);
 } Stroke;
 
 } // namespace firestep

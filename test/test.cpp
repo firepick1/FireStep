@@ -208,12 +208,12 @@ void test_Thread() {
 	arduino.clear();
 
 	ThreadClock tc;
-	TICKS tcLast = tc.clock;
-	ASSERTEQUAL(0, tc.clock);
+	Ticks tcLast = tc.ticks;
+	ASSERTEQUAL(0, tc.ticks);
 	tc.age++;
-	ASSERTEQUAL(1, tc.clock - tcLast);
+	ASSERTEQUAL(1, tc.ticks - tcLast);
 	tc.generation++;
-	ASSERTEQUAL(65537, tc.clock - tcLast);
+	ASSERTEQUAL(65537, tc.ticks - tcLast);
 
 	threadRunner.setup(LED_PIN_RED, LED_PIN_GRN);
 	monitor.verbose = false;
@@ -231,7 +231,7 @@ void test_Thread() {
 	ASSERTEQUAL(0x0005, TCCR1B);	// Timer/Counter1 active; prescale 1024
 	ASSERTEQUAL(NOVALUE, SREGI); 	// Global interrupts enabled
 	test_tick(1);
-	TICKS lastClock = masterClock.clock;
+	Ticks lastClock = ticks();
 	test_tick(1);
 	ASSERTEQUAL(1000000/15625, MicrosecondsSince(lastClock));
 
@@ -292,11 +292,11 @@ void test_Machine() {
 #endif
 	ASSERTEQUAL(NOVALUE, SREGI); 	// Global interrupts enabled
 
-	// Clock should increase with TCNT1
-	TICKS lastClock = masterClock.clock;
+	// ticks should increase with TCNT1
+	Ticks lastClock = ticks();
 	test_tick(1);
-	ASSERT(lastClock < masterClock.clock);
-	lastClock = masterClock.clock;
+	ASSERT(lastClock < ticks());
+	lastClock = ticks();
 	arduino.dump();
 
 	char buf[200];
@@ -641,7 +641,7 @@ void test_Stroke() {
 	stroke.seg[stroke.length++] = Quad<StepDV>(1,10,-1,-10);	
 	stroke.seg[stroke.length++] = Quad<StepDV>(-1,-10,1,10);
 	stroke.tTotal = 17;
-	TICKS tStart = 100000;
+	Ticks tStart = 100000;
 	stroke.start(tStart);
 	ASSERTEQUAL(0, (long) stroke.goalSegment(0));
 	ASSERTEQUAL(0, (long) stroke.goalSegment(tStart-1));
@@ -690,7 +690,7 @@ void test_Stroke() {
 	ASSERT(Quad<StepCoord>(0,0,0,0) == stroke.goalPos(tStart));
 	
 	MockStepper stepper;
-	for (TICKS t=tStart; t<tStart+20; t++) {
+	for (Ticks t=tStart; t<tStart+20; t++) {
 		cout << "stroke	: traverse(" << t << ")" << endl;
 		if (stroke.traverse(t, stepper)) {
 			ASSERTEQUAL(18, t-tStart);

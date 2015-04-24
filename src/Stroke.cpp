@@ -11,33 +11,33 @@ Stroke::Stroke()
 	: length(0), scale(1), curSeg(0), planMicros(1000000), tStart(0), tTotal(0)
 {}
 
-SegIndex Stroke::goalSegment(TICKS t) {
+SegIndex Stroke::goalSegment(Ticks t) {
 	if (t < tStart || length == 0 || tTotal==0) {
 		return 0;
 	}
-	TICKS dt = t-tStart;
+	Ticks dt = t-tStart;
 	return dt >= tTotal ? length-1 : ((dt*length) / tTotal);
 }
 
-TICKS Stroke::goalStartTicks(TICKS t) {
+Ticks Stroke::goalStartTicks(Ticks t) {
 	if (t < tStart || length == 0 || tTotal==0) {
 		return 0;
 	}
-	TICKS dt = t - tStart;
-	TICKS dtl = (dt >= tTotal ? tTotal-1:dt) * length;
+	Ticks dt = t - tStart;
+	Ticks dtl = (dt >= tTotal ? tTotal-1:dt) * length;
 	return ((dtl/tTotal)*tTotal)/length;
 }
 
-TICKS Stroke::goalEndTicks(TICKS t) {
+Ticks Stroke::goalEndTicks(Ticks t) {
 	if (t < tStart || length == 0 || tTotal==0) {
 		return 0;
 	}
-	TICKS dt = t - tStart;
-	TICKS dtl = (dt >= tTotal ? tTotal-1:dt) * length;
+	Ticks dt = t - tStart;
+	Ticks dtl = (dt >= tTotal ? tTotal-1:dt) * length;
 	return (((dtl+tTotal-1)/tTotal)*tTotal)/length;
 }
 
-Quad<StepCoord> Stroke::goalPos(TICKS t) {
+Quad<StepCoord> Stroke::goalPos(Ticks t) {
 	Quad<StepCoord> v;
 	SegIndex sGoal = goalSegment(t);
 	Quad<StepCoord> pos;
@@ -47,11 +47,11 @@ Quad<StepCoord> Stroke::goalPos(TICKS t) {
 			v += seg[s];
 			posSegStart += v;
 		}
-		TICKS tSegStart = goalStartTicks(t);
-		TICKS tSegEnd = goalEndTicks(t);
-		TICKS dt = t - tStart;
-		TICKS tNum = (dt>tSegEnd ? tSegEnd:dt) - tSegStart;
-		TICKS tDenom = tSegEnd - tSegStart;
+		Ticks tSegStart = goalStartTicks(t);
+		Ticks tSegEnd = goalEndTicks(t);
+		Ticks dt = t - tStart;
+		Ticks tNum = (dt>tSegEnd ? tSegEnd:dt) - tSegStart;
+		Ticks tDenom = tSegEnd - tSegStart;
 		v += seg[sGoal];
 		v *= tNum;
 		v /= tDenom;
@@ -69,7 +69,7 @@ Quad<StepCoord> Stroke::goalPos(TICKS t) {
 	return pos;
 }
 
-void Stroke::start(TICKS tStart) {
+void Stroke::start(Ticks tStart) {
 	this->tStart = tStart;
 
 	velocity = 0;
@@ -79,7 +79,7 @@ void Stroke::start(TICKS tStart) {
 
 template<class T> T abs(T a) { return a < 0 ? -a : a; };
 
-bool Stroke::traverse(TICKS tCurrent, QuadStepper &stepper) {
+bool Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 	Quad<StepCoord> dGoal = goalPos(tCurrent);
 	if (tCurrent>tStart+tTotal || tCurrent>tStart && dPos==dGoal) {
 		return true;

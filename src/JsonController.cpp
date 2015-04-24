@@ -277,11 +277,11 @@ bool JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
 	stroke["s4"] = seg.value[3];
 
 	if (machine.stroke.curSeg == 0) {
-		clkStart = masterClock.clock;
+		clkStart = ticks();
 		plannedTicks = MS_TIMER_CYCLES(machine.stroke.planMicros)/1000.0;
 	}
 
-	float newPathPos = (masterClock.clock - clkStart) / plannedTicks;
+	float newPathPos = (ticks() - clkStart) / plannedTicks;
     bool completed = newPathPos >= 1;
 	Quad<int16_t> delta;
 	if (completed) {

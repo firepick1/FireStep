@@ -52,7 +52,7 @@ typedef class JsonCommand {
 typedef class JsonController {
     private:
 		Machine&	machine;
-        TICKS		clkStart;
+        Ticks		clkStart;
 		float		plannedTicks;
 
 	protected:

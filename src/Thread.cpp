@@ -5,13 +5,15 @@
 using namespace firestep;
 
 namespace firestep {
-	ThreadClock 	masterClock;
+	ThreadClock 	threadClock;
 	ThreadRunner 	threadRunner;
 	struct Thread *	pThreadList;
 	int 			nThreads;
 	long 			nHeartbeats;
 	long 			nTardies;
+
 };
+
 
 void Thread::setup() {
     bool active = false;
@@ -35,7 +37,7 @@ void Thread::setup() {
     }
 }
 
-void PulseThread::setup(TICKS period, TICKS pulseWidth) {
+void PulseThread::setup(Ticks period, Ticks pulseWidth) {
     Thread::setup();
     if (pulseWidth == 0) {
         m_HighPeriod = period / 2;
@@ -48,9 +50,9 @@ void PulseThread::setup(TICKS period, TICKS pulseWidth) {
 void PulseThread::Heartbeat() {
     isHigh = !isHigh;
     if (isHigh) {
-        nextHeartbeat.clock += m_HighPeriod;
+        nextHeartbeat.ticks += m_HighPeriod;
     } else {
-        nextHeartbeat.clock += m_LowPeriod;
+        nextHeartbeat.ticks += m_LowPeriod;
     }
 }
 
@@ -129,10 +131,10 @@ void MonitorThread::Heartbeat() {
         verbose = true;
     }
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-        if (masterClock.generation > pThread->nextHeartbeat.generation + 1 && 
+        if (threadClock.generation > pThread->nextHeartbeat.generation + 1 && 
 			pThread->nextHeartbeat.generation > 0) {
-			cout << "masterClock:" << masterClock.clock 
-				<< " nextHeartBeat:" << pThread->nextHeartbeat.clock 
+			cout << "ticks:" << threadClock.ticks 
+				<< " nextHeartBeat:" << pThread->nextHeartbeat.ticks 
 				<< " pThread:" << pThread->id << endl;
             Error("O@G", pThread->nextHeartbeat.generation);
         }
@@ -143,10 +145,10 @@ void MonitorThread::Heartbeat() {
             Serial.print(".");
             //DEBUG_DEC("F", Free());
             DEBUG_DEC("S", millis() / 1000);
-            DEBUG_DEC("G", masterClock.generation);
+            DEBUG_DEC("G", threadClock.generation);
             DEBUG_DEC("H", nHeartbeats);
-            if (masterClock.generation > 0) {
-                DEBUG_DEC("H/G", totalHeartbeats / masterClock.generation);
+            if (threadClock.generation > 0) {
+                DEBUG_DEC("H/G", totalHeartbeats / threadClock.generation);
             }
             DEBUG_DEC("T", nTardies);
             DEBUG_EOL();
@@ -166,11 +168,11 @@ void firestep::Error(const char *msg, int value) {
 
 ThreadRunner::ThreadRunner() {
 	pThreadList = NULL;
-	masterClock.clock = 0;
+	threadClock.ticks = 0;
 	nThreads = 0;
 	nHeartbeats = 0;
 	nTardies = 0;
-	generation = masterClock.generation;
+	generation = threadClock.generation;
 	lastAge = 0;
 	age = 0;
 	nHB = 0;
@@ -193,31 +195,31 @@ void ThreadRunner::setup(int monitorPin1, int monitorPin2) {
  * The generation count has exceeded the maximum (~3.5minutes @ 16MHZ).
  */ 
 void ThreadRunner::resetGenerations() {
-    masterClock.generation -= GENERATION_RESET;
+    threadClock.generation -= GENERATION_RESET;
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-        if (pThread->nextHeartbeat.clock) {
+        if (pThread->nextHeartbeat.ticks) {
             pThread->nextHeartbeat.generation -= GENERATION_RESET;
         }
     }
 }
 
-int32_t firestep::MicrosecondsSince(TICKS lastClock) {
+int32_t firestep::MicrosecondsSince(Ticks lastClock) {
     int32_t elapsed;
-	//cout << "masterClock:" << masterClock.clock << " lastClock:" << lastClock << endl;
-    if (masterClock.clock < lastClock) {
+	//cout << "ticks:" << ticks() << " lastClock:" << lastClock << endl;
+    if (ticks() < lastClock) {
         ThreadClock reset;
         reset.generation = GENERATION_RESET;
         reset.age = 0;
-        elapsed = (masterClock.clock + reset.clock) - lastClock;
+        elapsed = (ticks() + reset.ticks) - lastClock;
         if (elapsed < 0) {
             //SerialInt32 e;
             //e.longValue = elapsed;
             //e.send();
             //Serial.print(' ', BYTE);
-            //e.longValue = masterClock.clock;
+            //e.longValue = ticks()
             //e.send();
             //Serial.print(' ', BYTE);
-            //e.longValue = reset.clock;
+            //e.longValue = reset.ticks;
             //e.send();
             //Serial.print(' ', BYTE);
             //e.longValue = lastClock;
@@ -226,7 +228,7 @@ int32_t firestep::MicrosecondsSince(TICKS lastClock) {
         }
 //cout << "elapsed:" << elapsed << endl;
     } else {
-        elapsed = masterClock.clock - lastClock;
+        elapsed = ticks() - lastClock;
 //cout << "ELAPSED:" << elapsed  << endl;
     }
 
@@ -238,11 +240,11 @@ int32_t firestep::MicrosecondsSince(TICKS lastClock) {
 
 void firestep::ThreadEnable(boolean enable) {
 #ifdef DEBUG_ThreadENABLE
-    DEBUG_DEC("C", masterClock.clock);
+    DEBUG_DEC("C", ticks());
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
         Serial.print(pThread->id);
         Serial.print(":");
-        Serial.print(pThread->nextHeartbeat.clock, DEC);
+        Serial.print(pThread->nextHeartbeat.ticks, DEC);
         Serial.print(" ");
     }
     DEBUG_EOL();

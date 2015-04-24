@@ -21,26 +21,28 @@ namespace firestep {
 #define GENERATION_RESET 50000
 #define TIMER_ENABLED (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10))
 
-typedef uint32_t TICKS;
+typedef uint32_t Ticks;
 typedef int32_t PERIOD;
 
 typedef union ThreadClock  {
-    TICKS clock;
+    Ticks ticks;
     struct {
         uint16_t age;
         uint16_t generation;
     };
-    ThreadClock() : clock(0) {}
+    ThreadClock() : ticks(0) {}
 } ThreadClock, *ThreadClockPtr;
 
-extern ThreadClock masterClock;
+extern ThreadClock threadClock;
+inline Ticks ticks(){ return threadClock.ticks; }
+
 
 #define MAX_ThreadS 32
 
 typedef struct Thread {
     public:
         Thread() : tardies(0), id(0), pNext(NULL) {
-            nextHeartbeat.clock = 0;
+            nextHeartbeat.ticks = 0;
         }
         virtual void setup();
         virtual void Heartbeat() {}
@@ -58,14 +60,14 @@ Thread, *ThreadPtr;
 
 // Binary pulse with variable width
 typedef struct PulseThread : Thread {
-        virtual void setup(TICKS period, TICKS pulseWidth);
+        virtual void setup(Ticks period, Ticks pulseWidth);
         virtual void Heartbeat();
 
         boolean isHigh;
 
     protected:
-        TICKS m_LowPeriod;
-        TICKS m_HighPeriod;
+        Ticks m_LowPeriod;
+        Ticks m_HighPeriod;
 } PulseThread, *PulseThreadPtr;
 
 #define LED_RED 3
@@ -97,12 +99,11 @@ typedef class MonitorThread : PulseThread {
 void Error(const char *msg, int value);
 void ThreadEnable(boolean enable);
 void PrintN(char c, byte n);
-int32_t MicrosecondsSince(TICKS lastClock);
+int32_t MicrosecondsSince(Ticks lastClock);
 
 extern MonitorThread monitor;
 
 extern struct Thread *pThreadList;
-extern ThreadClock masterClock;
 extern int nThreads;
 extern long nHeartbeats;
 extern long nTardies;
@@ -157,15 +158,15 @@ typedef class ThreadRunner {
     public:
         inline byte innerLoop() {
             cli();
-            //cout << "innerloopA:" << masterClock.clock << endl;
-            masterClock.age = age = TCNT1;
-            //cout << "innerloopB:" << masterClock.clock << endl;
+            //cout << "innerloopA:" << ticks() << endl;
+            threadClock.age = age = TCNT1;
+            //cout << "innerloopB:" << ticks() << endl;
             if (age < lastAge) {
                 // a generation is 4.194304s and is incremented when TCNT1 overflows
                 // Innerloop MUST complete within a generation
                 lastAge = age;
-                masterClock.generation = ++generation;
-                //cout << "innerloopC:" << masterClock.clock << endl;
+                threadClock.generation = ++generation;
+                //cout << "innerloopC:" << ticks() << endl;
                 if (generation > MAX_GENERATIONS) {
                     // generation overflow every ~58 hours
                     resetGenerations();
