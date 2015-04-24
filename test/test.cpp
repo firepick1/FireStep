@@ -640,9 +640,13 @@ void test_Stroke() {
 	stroke.seg[stroke.length++] = Quad<StepDV>(1,10,-1,-10);
 	stroke.seg[stroke.length++] = Quad<StepDV>(1,10,-1,-10);	
 	stroke.seg[stroke.length++] = Quad<StepDV>(-1,-10,1,10);
+	stroke.dPosEnd = Quad<StepCoord>(4,40,-4,-40);
 	stroke.tTotal = 17;
 	Ticks tStart = 100000;
-	stroke.start(tStart);
+	stroke.dPosEnd.value[0]++;
+	ASSERTEQUAL(STATUS_STROKE_END_ERROR, stroke.start(tStart));
+	stroke.dPosEnd.value[0]--;
+	ASSERTEQUAL(STATUS_OK, stroke.start(tStart));
 	ASSERTEQUAL(0, (long) stroke.goalSegment(0));
 	ASSERTEQUAL(0, (long) stroke.goalSegment(tStart-1));
 	ASSERTEQUAL(0, (long) stroke.goalSegment(tStart));
@@ -692,16 +696,17 @@ void test_Stroke() {
 	MockStepper stepper;
 	for (Ticks t=tStart; t<tStart+20; t++) {
 		cout << "stroke	: traverse(" << t << ")" << endl;
-		if (stroke.traverse(t, stepper)) {
+		if (STATUS_OK == stroke.traverse(t, stepper)) {
 			ASSERTEQUAL(18, t-tStart);
 			Quad<StepCoord> dPos = stepper.dPos;
-			ASSERT(stroke.traverse(t, stepper)); 	// should do nothing
-			ASSERT(stroke.traverse(t+1, stepper)); 	// should do nothing
+			ASSERTEQUAL(STATUS_OK, stroke.traverse(t, stepper)); 	// should do nothing
+			ASSERTEQUAL(STATUS_OK, stroke.traverse(t+1, stepper)); 	// should do nothing
 			ASSERT(dPos == stepper.dPos); 
 			break;
 		} else {
 			Quad<StepCoord> dPos = stepper.dPos;
-			stroke.traverse(t, stepper); 	// should do nothing
+			Status status = stroke.traverse(t, stepper); // should do nothing
+			ASSERT(status == STATUS_PROCESSING || status == STATUS_OK);
 			ASSERT(dPos == stepper.dPos); 
 		}
 	}

@@ -36,6 +36,7 @@ enum Status {
 	STATUS_JSON_ARRAY_LEN = -111,	// JSON array is too short
 	STATUS_MOTOR_INDEX = -112,		// Internal error: motor index out of range
 	STATUS_STEP_RANGE_ERROR = -113,	// Internal error: pulse step out of range [-1,0,1]
+	STATUS_STROKE_END_ERROR = -114,	// Stroke delta/end-position mismatch
 };
 
 } // namespace firestep

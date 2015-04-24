@@ -32,8 +32,8 @@ typedef class Stroke {
         Quad<StepCoord>	dPosEnd;			// ending offset
     public:
         Stroke();
-		void start(Ticks tStart);
-		bool traverse(Ticks tCurrent, QuadStepper &quadStep);
+		Status start(Ticks tStart);
+		Status traverse(Ticks tCurrent, QuadStepper &quadStep);
 		Quad<StepCoord> goalPos(Ticks t);
 		Ticks goalStartTicks(Ticks t);
 		Ticks goalEndTicks(Ticks t);

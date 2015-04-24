@@ -69,20 +69,22 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 	return pos;
 }
 
-void Stroke::start(Ticks tStart) {
+Status Stroke::start(Ticks tStart) {
 	this->tStart = tStart;
 
 	velocity = 0;
 	dPos = 0;
-	dPosEnd = goalPos(tStart+tTotal);
+	if (dPosEnd != goalPos(tStart+tTotal)) {
+		return STATUS_STROKE_END_ERROR;
+	}
 }
 
 template<class T> T abs(T a) { return a < 0 ? -a : a; };
 
-bool Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
+Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 	Quad<StepCoord> dGoal = goalPos(tCurrent);
 	if (tCurrent>tStart+tTotal || tCurrent>tStart && dPos==dGoal) {
-		return true;
+		return STATUS_OK;
 	}
 	while (dPos != dGoal) {
 		StepCoord d[4];
@@ -104,7 +106,7 @@ bool Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 		dPos += pulse;
 		stepper.step(pulse);
 	}
-	return false;
+	return STATUS_PROCESSING;
 }
 
 
