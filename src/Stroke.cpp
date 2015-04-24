@@ -8,7 +8,7 @@ template class Quad<int16_t>;
 template class Quad<int32_t>;
 
 Stroke::Stroke() 
-	: length(0), scale(1), curSeg(0), planMicros(1000000), tStart(0), tTotal(0)
+	: length(0), maxV(16), scale(1), curSeg(0), planMicros(1000000), tStart(0), tTotal(0)
 {}
 
 SegIndex Stroke::goalSegment(Ticks t) {
@@ -41,7 +41,11 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 	Quad<StepCoord> v;
 	SegIndex sGoal = goalSegment(t);
 	Quad<StepCoord> pos;
-	if (t > tStart && tTotal > 0 && length > 0) {
+	if (t <= tStart || tTotal <= 0 || length <= 0) {
+		// do nothing
+	} else if (t >= tStart+tTotal) {
+		return dEndPos;
+	} else {
 		Quad<StepCoord> posSegStart;
 		for (SegIndex s=0; s<sGoal; s++) {
 			v += seg[s]*scale;
@@ -69,19 +73,23 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 	return pos;
 }
 
+template<class T> T abs(T a) { return a < 0 ? -a : a; };
+
 Status Stroke::start(Ticks tStart) {
 	this->tStart = tStart;
 
 	dPos = 0;
-	if (dPosEnd != goalPos(tStart+tTotal)) {
-		return STATUS_STROKE_END_ERROR;
+	Quad<StepCoord> end = goalPos(tStart+tTotal-1);
+	for (int i=0; i<4; i++) {
+		if (maxV < abs(dEndPos.value[i] - end.value[i])) {
+			return STATUS_STROKE_END_ERROR;
+		}
 	}
+	return STATUS_OK;
 }
 
-template<class T> T abs(T a) { return a < 0 ? -a : a; };
-
 bool Stroke::isDone() {
-	return dPos == dPosEnd;
+	return dPos == dEndPos;
 }
 
 Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {

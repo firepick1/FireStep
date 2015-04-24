@@ -643,12 +643,12 @@ void test_Stroke() {
 	stroke.seg[stroke.length++] = Quad<StepDV>(1,10,-1,-10);
 	stroke.seg[stroke.length++] = Quad<StepDV>(1,10,-1,-10);	
 	stroke.seg[stroke.length++] = Quad<StepDV>(-1,-10,1,10);
-	stroke.dPosEnd = Quad<StepCoord>(4,40,-4,-40);
+	stroke.dEndPos = Quad<StepCoord>(4,40,-4,-40);
 	stroke.tTotal = 17;
 	Ticks tStart = 100000;
-	stroke.dPosEnd.value[0]++;
+	stroke.dEndPos.value[0] += 17;
 	ASSERTEQUAL(STATUS_STROKE_END_ERROR, stroke.start(tStart));
-	stroke.dPosEnd.value[0]--;
+	stroke.dEndPos.value[0] -= 17;
 	ASSERTEQUAL(STATUS_OK, stroke.start(tStart));
 	ASSERTEQUAL(0, (long) stroke.goalSegment(0));
 	ASSERTEQUAL(0, (long) stroke.goalSegment(tStart-1));
@@ -686,17 +686,17 @@ void test_Stroke() {
 	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+18));
 	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+1000));
 
+	// Test goalPos() and traverse()
 	for (int t=0; t<20; t++) {
 		Quad<StepCoord> pos = stroke.goalPos(tStart+t);
 	}
-	ASSERT(Quad<StepCoord>(4,40,-4,-40) == stroke.dPosEnd);
+	ASSERT(Quad<StepCoord>(4,40,-4,-40) == stroke.dEndPos);
 	ASSERT(Quad<StepCoord>(4,40,-4,-40) == stroke.goalPos(tStart+17));
 	ASSERT(Quad<StepCoord>(3,35,-3,-35) == stroke.goalPos(tStart+14));
 	ASSERT(Quad<StepCoord>(3,30,-3,-30) == stroke.goalPos(tStart+11));
 	ASSERT(Quad<StepCoord>(2,20,-2,-20) == stroke.goalPos(tStart+8));
 	ASSERT(Quad<StepCoord>(1,10,-1,-10) == stroke.goalPos(tStart+5));
 	ASSERT(Quad<StepCoord>(0,0,0,0) == stroke.goalPos(tStart));
-	
 	MockStepper stepper;
 	for (Ticks t=tStart; t<tStart+20; t++) {
 		cout << "stroke	: traverse(" << t << ")" << endl;
@@ -715,13 +715,49 @@ void test_Stroke() {
 		}
 	}
 
+	// Test scale
 	stroke.scale = 3;
 	ASSERTEQUAL(STATUS_STROKE_END_ERROR, stroke.start(tStart));
-	stroke.dPosEnd *= stroke.scale;
+	stroke.dEndPos *= stroke.scale;
 	ASSERTEQUAL(STATUS_OK, stroke.start(tStart));
-
-	ASSERT(Quad<StepCoord>(12,120,-12,-120) == stroke.dPosEnd);
+	ASSERTEQUAL(STATUS_OK, stroke.start(tStart));
+	ASSERT(Quad<StepCoord>(12,120,-12,-120) == stroke.dEndPos);
 	ASSERT(Quad<StepCoord>(12,120,-12,-120) == stroke.goalPos(tStart+17));
+	ASSERT(Quad<StepCoord>(10,105,-10,-105) == stroke.goalPos(tStart+14));
+	ASSERT(Quad<StepCoord>(9,90,-9,-90) == stroke.goalPos(tStart+11));
+	ASSERT(Quad<StepCoord>(6,60,-6,-60) == stroke.goalPos(tStart+8));
+	ASSERT(Quad<StepCoord>(3,30,-3,-30) == stroke.goalPos(tStart+5));
+	ASSERT(Quad<StepCoord>(0,0,0,0) == stroke.goalPos(tStart));
+	stepper.clear();
+	for (Ticks t=tStart; t<tStart+20; t++) {
+		cout << "stroke	: traverse(" << t << ")" << endl;
+		if (STATUS_OK == stroke.traverse(t, stepper)) {
+			ASSERTEQUAL(18, t-tStart);
+			Quad<StepCoord> dPos = stepper.dPos;
+			ASSERTEQUAL(STATUS_OK, stroke.traverse(t, stepper)); 	// should do nothing
+			ASSERTEQUAL(STATUS_OK, stroke.traverse(t+1, stepper)); 	// should do nothing
+			ASSERT(dPos == stepper.dPos); 
+			break;
+		} else {
+			Quad<StepCoord> dPos = stepper.dPos;
+			Status status = stroke.traverse(t, stepper); // should do nothing
+			ASSERT(status == STATUS_PROCESSING || status == STATUS_OK);
+			ASSERT(dPos == stepper.dPos); 
+		}
+	}
+
+	// Test end position not modulo scale
+	stroke.dEndPos.value[0] += 1;
+	stroke.dEndPos.value[1] += 2;
+	stroke.dEndPos.value[2] += 1;
+	stroke.dEndPos.value[3] += 102;
+	ASSERTEQUAL(STATUS_STROKE_END_ERROR, stroke.start(tStart));
+	stroke.dEndPos.value[3] -= 100;
+	ASSERTEQUAL(STATUS_OK, stroke.start(tStart));
+	cout << stroke.dEndPos.toString() << endl;
+	ASSERT(Quad<StepCoord>(13,122,-11,-118) == stroke.dEndPos);
+	cout << stroke.goalPos(tStart+17).toString() << endl;
+	ASSERT(Quad<StepCoord>(13,122,-11,-118) == stroke.goalPos(tStart+17));
 	ASSERT(Quad<StepCoord>(10,105,-10,-105) == stroke.goalPos(tStart+14));
 	ASSERT(Quad<StepCoord>(9,90,-9,-90) == stroke.goalPos(tStart+11));
 	ASSERT(Quad<StepCoord>(6,60,-6,-60) == stroke.goalPos(tStart+8));

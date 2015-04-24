@@ -23,13 +23,14 @@ typedef class Stroke {
 		Ticks			tStart;				// ticks at start of traversal
 		Quad<StepCoord> dPos;				// current offset from start position
     public:
+		StepCoord		maxV;				// max steps/tick (default 16)
         StepDV 			scale;				// segment velocity unit
 		Ticks			tTotal;				// ticks for planned traversal 
         int32_t 		planMicros;			// planned traversal time in microseconds
         SegIndex		curSeg;				// current segment index
         SegIndex	 	length;				// number of segments
 		Quad<StepDV> 	seg[SEGMENT_COUNT];	// delta velocity 
-        Quad<StepCoord>	dPosEnd;			// ending offset
+        Quad<StepCoord>	dEndPos;			// ending offset
     public:
         Stroke();
 		Status start(Ticks tStart);

@@ -189,7 +189,7 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
 			}
 			po_ok = true;
 			for (int i=0; i<4 && jarr[i].success(); i++) {
-				machine.stroke.dPosEnd.value[i] = jarr[i];
+				machine.stroke.dEndPos.value[i] = jarr[i];
 			}
 		} else if (strcmp("s1", it->key) == 0) {
 			JsonArray &jarr = stroke[it->key];
@@ -287,7 +287,7 @@ bool JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
 	Quad<int16_t> delta;
 	if (completed) {
 		newPathPos = 1;
-		delta = machine.stroke.dPosEnd;
+		delta = machine.stroke.dEndPos;
 	} else {
 		float segCoord = newPathPos * machine.stroke.length;
 	}
@@ -296,7 +296,7 @@ bool JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
 
     if (completed) {
         newPathPosition = 1;
-        delta.copyFrom(&dPosEnd);
+        delta.copyFrom(&dEndPos);
     } else {
         float segmentCoordinate = newPathPosition * deltaCount.intValue;
         while (segmentIndex < segmentCoordinate) {
@@ -319,7 +319,7 @@ bool JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
             delta.increment(&startPos);
         } else {
             delta.copyFrom(&segmentStartPos);
-            delta.interpolateTo(&dPosEnd, pDelta);
+            delta.interpolateTo(&dEndPos, pDelta);
         }
 
     }
