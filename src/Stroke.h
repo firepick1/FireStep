@@ -19,21 +19,22 @@ typedef class QuadStepper {
 } QuadStepper;
 
 typedef class Stroke {
-    public:
-        SegIndex	 	length;				// number of segments
-        float 			scale;				// steps per segment
-        SegIndex		curSeg;				// current segment index
-        int32_t 		planMicros;			// planned traversal time in microseconds
+	private:
 		Ticks			tStart;				// ticks at start of traversal
-		Ticks			tTotal;				// ticks for planned traversal 
-		Quad<StepDV> 	seg[SEGMENT_COUNT];	// delta velocity 
-        Quad<StepCoord>	velocity;			// current velocity
 		Quad<StepCoord> dPos;				// current offset from start position
+    public:
+        StepDV 			scale;				// segment velocity unit
+		Ticks			tTotal;				// ticks for planned traversal 
+        int32_t 		planMicros;			// planned traversal time in microseconds
+        SegIndex		curSeg;				// current segment index
+        SegIndex	 	length;				// number of segments
+		Quad<StepDV> 	seg[SEGMENT_COUNT];	// delta velocity 
         Quad<StepCoord>	dPosEnd;			// ending offset
     public:
         Stroke();
 		Status start(Ticks tStart);
 		Status traverse(Ticks tCurrent, QuadStepper &quadStep);
+		bool isDone();
 		Quad<StepCoord> goalPos(Ticks t);
 		Ticks goalStartTicks(Ticks t);
 		Ticks goalEndTicks(Ticks t);

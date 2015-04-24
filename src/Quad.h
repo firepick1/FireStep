@@ -6,7 +6,7 @@
 
 namespace firestep {
 
-template<class T> class Quad { // a 4 element vector 
+template<class T> class Quad { // a 4 element vector
     public:
         T value[4];
     public:
@@ -16,12 +16,15 @@ template<class T> class Quad { // a 4 element vector
             value[2] = v3;
             value[3] = v4;
         }
-		string toString(const char *fmt = "[%d,%d,%d,%d]") const {
-			char buf[50];
-			snprintf(buf, sizeof(buf), fmt, 
-				(T) value[0], (T) value[1], (T) value[2], (T) value[3]);
-			return string(buf);
-		};
+        string toString(const char *fmt = "[%d,%d,%d,%d]") const {
+            char buf[50];
+            snprintf(buf, sizeof(buf), fmt,
+                     (T) value[0], (T) value[1], (T) value[2], (T) value[3]);
+            return string(buf);
+        };
+		void clear() {
+			value[0] = value[1] = value[2] = value[3] = 0;
+		}
         Quad<T> operator+(Quad<T> that) {
             return Quad<T>(
                        value[0] + that.value[0],
@@ -30,7 +33,8 @@ template<class T> class Quad { // a 4 element vector
                        value[3] + that.value[3]
                    );
         }
-        Quad<T>& operator=(T that) { value[0] = that;
+        Quad<T>& operator=(T that) {
+            value[0] = that;
             value[1] = that;
             value[2] = that;
             value[3] = that;
@@ -42,6 +46,14 @@ template<class T> class Quad { // a 4 element vector
             value[2] = that.value[2];
             value[3] = that.value[3];
             return *this;
+        }
+        Quad<T> operator*(T that) {
+            return Quad<T>(
+                       value[0] * that,
+                       value[1] * that,
+                       value[2] * that,
+                       value[3] * that
+                   );
         }
         Quad<T>& operator*=(T that) {
             value[0] *= that;

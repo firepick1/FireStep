@@ -624,6 +624,9 @@ void test_Quad() {
 class MockStepper : public QuadStepper {
 	public:
 		Quad<StepCoord> dPos;
+		void clear() {
+			dPos.clear();
+		}
 		virtual Status step(const Quad<StepCoord> &pulse) {
 			dPos += pulse;
 			cout << "	: MockStepper" 
@@ -686,6 +689,7 @@ void test_Stroke() {
 	for (int t=0; t<20; t++) {
 		Quad<StepCoord> pos = stroke.goalPos(tStart+t);
 	}
+	ASSERT(Quad<StepCoord>(4,40,-4,-40) == stroke.dPosEnd);
 	ASSERT(Quad<StepCoord>(4,40,-4,-40) == stroke.goalPos(tStart+17));
 	ASSERT(Quad<StepCoord>(3,35,-3,-35) == stroke.goalPos(tStart+14));
 	ASSERT(Quad<StepCoord>(3,30,-3,-30) == stroke.goalPos(tStart+11));
@@ -694,6 +698,37 @@ void test_Stroke() {
 	ASSERT(Quad<StepCoord>(0,0,0,0) == stroke.goalPos(tStart));
 	
 	MockStepper stepper;
+	for (Ticks t=tStart; t<tStart+20; t++) {
+		cout << "stroke	: traverse(" << t << ")" << endl;
+		if (STATUS_OK == stroke.traverse(t, stepper)) {
+			ASSERTEQUAL(18, t-tStart);
+			Quad<StepCoord> dPos = stepper.dPos;
+			ASSERTEQUAL(STATUS_OK, stroke.traverse(t, stepper)); 	// should do nothing
+			ASSERTEQUAL(STATUS_OK, stroke.traverse(t+1, stepper)); 	// should do nothing
+			ASSERT(dPos == stepper.dPos); 
+			break;
+		} else {
+			Quad<StepCoord> dPos = stepper.dPos;
+			Status status = stroke.traverse(t, stepper); // should do nothing
+			ASSERT(status == STATUS_PROCESSING || status == STATUS_OK);
+			ASSERT(dPos == stepper.dPos); 
+		}
+	}
+
+	stroke.scale = 3;
+	ASSERTEQUAL(STATUS_STROKE_END_ERROR, stroke.start(tStart));
+	stroke.dPosEnd *= stroke.scale;
+	ASSERTEQUAL(STATUS_OK, stroke.start(tStart));
+
+	ASSERT(Quad<StepCoord>(12,120,-12,-120) == stroke.dPosEnd);
+	ASSERT(Quad<StepCoord>(12,120,-12,-120) == stroke.goalPos(tStart+17));
+	ASSERT(Quad<StepCoord>(10,105,-10,-105) == stroke.goalPos(tStart+14));
+	ASSERT(Quad<StepCoord>(9,90,-9,-90) == stroke.goalPos(tStart+11));
+	ASSERT(Quad<StepCoord>(6,60,-6,-60) == stroke.goalPos(tStart+8));
+	ASSERT(Quad<StepCoord>(3,30,-3,-30) == stroke.goalPos(tStart+5));
+	ASSERT(Quad<StepCoord>(0,0,0,0) == stroke.goalPos(tStart));
+
+	stepper.clear();
 	for (Ticks t=tStart; t<tStart+20; t++) {
 		cout << "stroke	: traverse(" << t << ")" << endl;
 		if (STATUS_OK == stroke.traverse(t, stepper)) {

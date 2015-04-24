@@ -37,6 +37,7 @@ enum Status {
 	STATUS_MOTOR_INDEX = -112,		// Internal error: motor index out of range
 	STATUS_STEP_RANGE_ERROR = -113,	// Internal error: pulse step out of range [-1,0,1]
 	STATUS_STROKE_END_ERROR = -114,	// Stroke delta/end-position mismatch
+	STATUS_STROKE_MAXLEN = -115,	// Stroke maximum length exceeded
 };
 
 } // namespace firestep

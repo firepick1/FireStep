@@ -262,10 +262,10 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
 		return STATUS_S1S4LEN_ERROR;
 	}
 	machine.stroke.length = s1len ? s1len : (s2len ? s2len : (s3len ? s3len : s4len));
-	machine.stroke.curSeg = 0;
 	if (machine.stroke.length == 0) {
 		return STATUS_STROKE_NULL_ERROR;
 	}
+	machine.stroke.start(ticks());
 	return STATUS_PROCESSING;
 }
 
@@ -276,6 +276,7 @@ bool JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
 	stroke["s3"] = seg.value[2];
 	stroke["s4"] = seg.value[3];
 
+	/*
 	if (machine.stroke.curSeg == 0) {
 		clkStart = ticks();
 		plannedTicks = MS_TIMER_CYCLES(machine.stroke.planMicros)/1000.0;
@@ -291,7 +292,6 @@ bool JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
 		float segCoord = newPathPos * machine.stroke.length;
 	}
 
-	/*
     SerialVector32 delta;
 
     if (completed) {

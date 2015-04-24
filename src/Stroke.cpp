@@ -44,7 +44,7 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 	if (t > tStart && tTotal > 0 && length > 0) {
 		Quad<StepCoord> posSegStart;
 		for (SegIndex s=0; s<sGoal; s++) {
-			v += seg[s];
+			v += seg[s]*scale;
 			posSegStart += v;
 		}
 		Ticks tSegStart = goalStartTicks(t);
@@ -52,7 +52,7 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 		Ticks dt = t - tStart;
 		Ticks tNum = (dt>tSegEnd ? tSegEnd:dt) - tSegStart;
 		Ticks tDenom = tSegEnd - tSegStart;
-		v += seg[sGoal];
+		v += seg[sGoal]*scale;
 		v *= tNum;
 		v /= tDenom;
 		pos = posSegStart+v;
@@ -72,7 +72,6 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 Status Stroke::start(Ticks tStart) {
 	this->tStart = tStart;
 
-	velocity = 0;
 	dPos = 0;
 	if (dPosEnd != goalPos(tStart+tTotal)) {
 		return STATUS_STROKE_END_ERROR;
@@ -80,6 +79,10 @@ Status Stroke::start(Ticks tStart) {
 }
 
 template<class T> T abs(T a) { return a < 0 ? -a : a; };
+
+bool Stroke::isDone() {
+	return dPos == dPosEnd;
+}
 
 Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 	Quad<StepCoord> dGoal = goalPos(tCurrent);
