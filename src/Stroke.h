@@ -40,6 +40,9 @@ typedef class Stroke {
 		Ticks goalStartTicks(Ticks t);
 		Ticks goalEndTicks(Ticks t);
 		SegIndex goalSegment(Ticks t);
+		inline Quad<StepCoord>& position() {
+			return dPos;
+		}
 } Stroke;
 
 } // namespace firestep

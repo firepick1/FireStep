@@ -565,11 +565,11 @@ void test_JsonController_stroke(JsonController &jc) {
 		"{'str':{'us':123,'po':[10,20],'s1':[1,2],'s2':[4,5],'s3':[7,8],'s4':[-10,-11]}}", 
 		"{'s':2,'r':{'str':{'us':123,'po':[10,20],'s1':[1,2],'s2':[4,5],'s3':[7,8],'s4':[-10,-11]}}}");
 	testJSON_process(jc, jcmd, replace, 
-		"{'s':2,'r':{'str':{'us':123,'po':[10,20],'s1':1,'s2':4,'s3':7,'s4':-10}}}");
+		"{'s':2,'r':{'str':{'us':123,'po':[10,20],'s1':0,'s2':0,'s3':0,'s4':0}}}");
 	testJSON_process(jc, jcmd, replace, 
-		"{'s':0,'r':{'str':{'us':123,'po':[10,20],'s1':2,'s2':5,'s3':8,'s4':-11}}}");
+		"{'s':0,'r':{'str':{'us':123,'po':[10,20],'s1':0,'s2':0,'s3':0,'s4':0}}}");
 	testJSON_process(jc, jcmd, replace, 
-		"{'s':0,'r':{'str':{'us':123,'po':[10,20],'s1':2,'s2':5,'s3':8,'s4':-11}}}");
+		"{'s':0,'r':{'str':{'us':123,'po':[10,20],'s1':0,'s2':0,'s3':0,'s4':0}}}");
 }
 
 void test_JsonController() {

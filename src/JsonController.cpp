@@ -270,11 +270,11 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
 }
 
 bool JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
-	Quad<int8_t> &seg = machine.stroke.seg[machine.stroke.curSeg];
-	stroke["s1"] = seg.value[0];
-	stroke["s2"] = seg.value[1];
-	stroke["s3"] = seg.value[2];
-	stroke["s4"] = seg.value[3];
+	Quad<StepCoord> &pos = machine.stroke.position();
+	stroke["s1"] = pos.value[0];
+	stroke["s2"] = pos.value[1];
+	stroke["s3"] = pos.value[2];
+	stroke["s4"] = pos.value[3];
 
 	/*
 	if (machine.stroke.curSeg == 0) {
