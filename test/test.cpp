@@ -624,11 +624,12 @@ void test_Quad() {
 class MockStepper : public QuadStepper {
 	public:
 		Quad<StepCoord> dPos;
-		virtual void step(const Quad<StepCoord> &pulse) {
+		virtual Status step(const Quad<StepCoord> &pulse) {
 			dPos += pulse;
 			cout << "	: MockStepper" 
 				<< " dPos:" << dPos.toString() 
 				<< " pulse:" << pulse.toString() << endl;
+			return STATUS_OK;
 		}
 };
 

@@ -1,5 +1,6 @@
 #ifndef MACHINE_H
 #define MACHINE_H
+
 #include "SerialTypes.h"
 #include "Stroke.h"
 #include "pins.h"
@@ -75,6 +76,7 @@ typedef class Axis {
 		uint8_t		microsteps;
 		uint8_t		invert;
 		uint8_t 	powerManagementMode;
+		bool		atMin;
         Axis() :
             mode((uint8_t)MODE_STANDARD),
             pinStep(0),
@@ -87,7 +89,8 @@ typedef class Axis {
 			stepAngle(1.8),
 			microsteps(16),
 			invert(0),				// 0:normal direction, 1:inverted direction
-			powerManagementMode(0) 	// 0:off, 1:on, 2:on in cycle, 3:on when moving
+			powerManagementMode(0),	// 0:off, 1:on, 2:on in cycle, 3:on when moving
+			atMin(false)
         {};
 } Axis;
 
@@ -139,7 +142,7 @@ typedef class Machine : public QuadStepper {
     public:
         Machine();
         void init();
-		virtual void step(const Quad<StepCoord> &pulse);
+		virtual Status step(const Quad<StepCoord> &pulse);
 
         bool doJog();
         bool doAccelerationStroke();

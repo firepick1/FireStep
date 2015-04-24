@@ -1,6 +1,7 @@
 #ifndef STROKE_H
 #define STROKE_H
 
+#include "Status.h"
 #include "Thread.h"
 #include "Quad.h"
 
@@ -14,11 +15,10 @@ typedef uint8_t SegIndex;		// Stroke segment index [0..length)
 
 typedef class QuadStepper {
 	public:
-		virtual void step(const Quad<StepCoord> &pulse) = 0;
+		virtual Status step(const Quad<StepCoord> &pulse) = 0;
 } QuadStepper;
 
 typedef class Stroke {
-	class Machine;
     public:
         SegIndex	 	length;				// number of segments
         float 			scale;				// steps per segment

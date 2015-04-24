@@ -485,14 +485,39 @@ void Machine::init() {
     zReverse = false;
 }
 
-void Machine::step(const Quad<StepCoord> &pulse) {
+Status Machine::step(const Quad<StepCoord> &pulse) {
 	for (int i=0; i<4; i++) {
-		//if (!pulseDrivePin(PIN_X, PIN_X_DIR, PIN_X_LIM, deltaBacklash, xReverse, 'X')) {
-			//if (!jogOverride) {
-				//goto PULSE_ERROR;
-			//}
-		//}
+		Axis &a(axis[motor[i].axisMap]);
+		switch (pulse.value[i]) {
+			case 1:
+				digitalWrite(a.pinDir, a.invert ? LOW : HIGH);
+				break;
+			case 0:
+				continue;
+			case -1:
+				if (a.atMin) {
+					continue;
+				}
+				digitalWrite(a.pinDir, a.invert ? HIGH : LOW);
+				break;
+			default:
+				return STATUS_STEP_RANGE_ERROR;
+		}
+		digitalWrite(a.pinStep, LOW);
 	}
+	STEPPER_PULSE_DELAY;
+	for (int i=0; i<4; i++) {
+		Axis &a(axis[motor[i].axisMap]);
+		StepDV p = pulse.value[i];
+		if (p == 0 || p == -1 && a.atMin) {
+			continue;
+		}
+		digitalWrite(a.pinStep, HIGH);
+		a.atMin = digitalRead(a.pinMin);
+		a.position += p;
+	}
+
+	return STATUS_OK;
 }
 
 bool Machine::doJog() {
