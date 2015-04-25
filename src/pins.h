@@ -1,6 +1,8 @@
 #ifndef PINS_H
 #define PINS_H
 
+#define NOPIN 255
+
 #define LED_PIN_RED 13
 #define LED_PIN_GRN 12
 

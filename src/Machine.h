@@ -79,9 +79,9 @@ typedef class Axis {
 		bool		atMin;
         Axis() :
             mode((uint8_t)MODE_STANDARD),
-            pinStep(0),
-            pinDir(0),
-            pinMin(0),
+            pinStep(NOPIN),
+            pinDir(NOPIN),
+            pinMin(NOPIN),
             travelMin(0),
             travelMax(10000),
             searchVelocity(200),
@@ -98,8 +98,6 @@ typedef class Machine : public QuadStepper {
         friend class Controller;
         friend class JsonController;
     private:
-        Motor motor[MOTOR_COUNT];
-        Axis axis[AXIS_COUNT];
         Stroke stroke;
         int32_t processMicros;
 
@@ -138,6 +136,9 @@ typedef class Machine : public QuadStepper {
         int segmentIndex;
         SerialInt16 deltaCount;
         SerialVector8 deltas[DELTA_COUNT];
+	public:
+        Motor motor[MOTOR_COUNT];
+        Axis axis[AXIS_COUNT];
 
     public:
         Machine();
@@ -145,6 +146,7 @@ typedef class Machine : public QuadStepper {
 		virtual Status step(const Quad<StepCoord> &pulse);
 
         bool doJog();
+		Quad<StepCoord> motorPosition();
         bool doAccelerationStroke();
         bool pulseDrivePin(byte stepPin, byte dirPin, byte limitPin, int delta, bool reverse, char axis);
         bool pulseLow(byte stepPin, byte limitPin);

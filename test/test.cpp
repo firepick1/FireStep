@@ -785,6 +785,88 @@ void test_Stroke() {
 	cout << "TEST	: test_Stroke() OK " << endl;
 }
 
+template<class T>
+void assertQuad(Quad<T> actual, Quad<T> expected) {
+	ASSERTEQUALS( expected.toString().c_str(), actual.toString().c_str() );
+}
+
+void test_Machine_step() {
+	cout << "TEST	: test_Machine_step() =====" << endl;
+
+	Machine machine;
+	arduino.pin[machine.axis[0].pinMin] = 0;
+	arduino.pin[machine.axis[1].pinMin] = 0;
+	arduino.pin[machine.axis[2].pinMin] = 0;
+	arduino.pin[machine.axis[3].pinMin] = 0;
+	machine.axis[0].travelMax = 5;
+	machine.axis[1].travelMax = 4;
+	machine.axis[2].travelMax = 3;
+	machine.axis[3].travelMax = 2;
+	ASSERTEQUAL(false, machine.axis[0].atMin);
+	ASSERTEQUAL(false, machine.axis[1].atMin);
+	ASSERTEQUAL(false, machine.axis[2].atMin);
+	ASSERTEQUAL(false, machine.axis[3].atMin);
+	Status status;
+	ASSERT(machine.motorPosition() == Quad<StepCoord>(0,0,0,0));
+	ASSERTEQUAL(STATUS_STEP_RANGE_ERROR, machine.step(Quad<StepCoord>(1,2,3,4)));
+	ASSERT(machine.motorPosition() == Quad<StepCoord>(0,0,0,0));
+
+	// Test travelMax
+	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1,0,0,0)));
+	ASSERTEQUAL(false, machine.axis[3].atMin);
+	ASSERT(machine.motorPosition() == Quad<StepCoord>(1,0,0,0));
+	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1,1,0,0)));
+	ASSERTEQUAL(false, machine.axis[3].atMin);
+	ASSERT(machine.motorPosition() == Quad<StepCoord>(2,1,0,0));
+	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1,1,1,0)));
+	ASSERTEQUAL(false, machine.axis[3].atMin);
+	ASSERT(machine.motorPosition() == Quad<StepCoord>(3,2,1,0));
+	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1,1,1,1)));
+	ASSERTEQUAL(false, machine.axis[3].atMin);
+	assertQuad(machine.motorPosition(), Quad<StepCoord>(4,3,2,0));
+	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1,1,1,1)));
+	ASSERTEQUAL(false, machine.axis[3].atMin);
+	ASSERT(machine.motorPosition() == Quad<StepCoord>(5,4,3,0));
+	ASSERTEQUAL(false, machine.axis[0].atMin);
+	ASSERTEQUAL(false, machine.axis[1].atMin);
+	ASSERTEQUAL(false, machine.axis[2].atMin);
+	ASSERTEQUAL(false, machine.axis[3].atMin);
+	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1,1,1,1)));
+	assertQuad(machine.motorPosition(), Quad<StepCoord>(5,4,3,0));
+
+	// Test travelMin
+	ASSERTEQUAL(false, machine.axis[0].atMin);
+	ASSERTEQUAL(false, machine.axis[1].atMin);
+	ASSERTEQUAL(false, machine.axis[2].atMin);
+	ASSERTEQUAL(false, machine.axis[3].atMin);
+	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
+	assertQuad(machine.motorPosition(), Quad<StepCoord>(4,3,2,0));
+	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
+	assertQuad(machine.motorPosition(), Quad<StepCoord>(3,2,1,0));
+	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
+	assertQuad(machine.motorPosition(), Quad<StepCoord>(2,1,0,0));
+	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
+	assertQuad(machine.motorPosition(), Quad<StepCoord>(1,0,0,0));
+	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
+	assertQuad(machine.motorPosition(), Quad<StepCoord>(0,0,0,0));
+	machine.axis[1].travelMin--;
+	machine.axis[2].travelMin++;
+	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
+	assertQuad(machine.motorPosition(), Quad<StepCoord>(0,-1,0,0));
+
+	// Test pinMin
+	assertQuad(machine.motorPosition(), Quad<StepCoord>(0,-1,0,0));
+	arduino.pin[machine.axis[0].pinMin] = 1;
+	machine.axis[0].travelMin = -10;
+	machine.axis[1].travelMin = -10;
+	machine.axis[2].travelMin = -10;
+	machine.axis[3].travelMin = -10;
+	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
+	assertQuad(machine.motorPosition(), Quad<StepCoord>(0,-2,-1,0));
+
+	cout << "TEST	: test_Machine_step() OK " << endl;
+}
+
 int main(int argc, char *argv[]) {
     LOGINFO3("INFO	: FireStep test v%d.%d.%d",
 		VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -794,6 +876,7 @@ int main(int argc, char *argv[]) {
 	test_Thread();
 	test_Quad();
 	test_Stroke();
+	test_Machine_step();
 	test_Machine();
 	test_ArduinoJson();
 	test_JsonCommand();
