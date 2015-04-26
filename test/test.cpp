@@ -623,30 +623,50 @@ void test_JsonController_machinePosition(JsonController &jc) {
 void test_JsonController_stroke(JsonController &jc, Machine &machine) {
 	string replace;
 	replace.push_back('\''); replace.push_back('"');
-	string jconfig = "{'xtm':'','xtn':'','xpo':''}";
-	ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.stroke.position());
+
+#define STROKE_CONFIG "{"\
+		"'xtm':10000,'xtn':0,'xpo':5,'xln':false,"\
+		"'ytm':10000,'ytn':0,'ypo':5,'yln':false,"\
+		"'ztm':10000,'ztn':0,'zpo':5,'zln':false,"\
+		"'atm':10000,'atn':0,'apo':5,'aln':false,'aps':255}"
+	// Set machine to known position and state
+	string jconfig = STROKE_CONFIG;
+	// Set and verify configuration
+	testJSON(jc, replace, jconfig.c_str(), "{'s':0,'r':" STROKE_CONFIG "}");
+	ASSERTQUAD(Quad<StepCoord>(5,5,5,5), machine.motorPosition());
+	Ticks tStart = threadClock.ticks+1;
+
+	// tStart+0: parse and initialize stroke
 	JsonCommand jcmd = testJSON(jc, replace, 
 		"{'str':{'us':123,'dp':[10,20],'s1':[1,2],'s2':[4,5],'s3':[7,8],'s4':[-10,-11]}}", 
 		"{'s':2,'r':{'str':{'us':123,'dp':[10,20],'s1':0,'s2':0,'s3':0,'s4':0}}}");
+	ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.stroke.position());
+	ASSERTQUAD(Quad<StepCoord>(5,5,5,5), machine.motorPosition());
+	ASSERTEQUAL(tStart+0, threadClock.ticks);
+	ASSERTEQUAL(tStart+0, machine.stroke.tStart);
 	ASSERTEQUAL(2,machine.stroke.dtTotal);
-	Ticks tStart = machine.stroke.tStart;
-	ASSERTEQUAL(0, machine.stroke.goalStartTicks(tStart));
-	ASSERTEQUAL(1, machine.stroke.goalEndTicks(tStart));
-	ASSERTEQUAL(1, machine.stroke.goalStartTicks(tStart+1));
-	ASSERTEQUAL(2, machine.stroke.goalEndTicks(tStart+1));
-	ASSERTEQUAL(1, machine.stroke.goalStartTicks(tStart+2));
-	ASSERTEQUAL(2, machine.stroke.goalEndTicks(tStart+2));
+	ASSERTQUAD(Quad<StepCoord>(10,20,0,0), machine.stroke.dEndPos);
 
+	// tStart+1: traverse first stroke segment
 	testJSON_process(jc, jcmd, replace, 
 		"{'s':2,'r':{'str':{'us':123,'dp':[10,20],'s1':1,'s2':4,'s3':7,'s4':-10}}}");
 	ASSERTQUAD(Quad<StepCoord>(1,4,7,-10), machine.stroke.position());
+	ASSERTQUAD(Quad<StepCoord>(6,9,12,5), machine.motorPosition()); // axis a is NOPIN inactive 
+	ASSERTEQUAL(tStart+1, threadClock.ticks);
 
+	// tStart+2: traverse final stroke segment
 	testJSON_process(jc, jcmd, replace, 
 		"{'s':2,'r':{'str':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}");
 	ASSERTQUAD(Quad<StepCoord>(10,20,0,0), machine.stroke.position());
+	ASSERTQUAD(Quad<StepCoord>(15,25,5,5), machine.motorPosition()); // axis a is NOPIN inactive 
+	ASSERTEQUAL(tStart+2, threadClock.ticks);
 
+	// tStart+3: finalize stroke
 	testJSON_process(jc, jcmd, replace, 
 		"{'s':0,'r':{'str':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}");
+	ASSERTQUAD(Quad<StepCoord>(10,20,0,0), machine.stroke.position());
+	ASSERTQUAD(Quad<StepCoord>(15,25,5,5), machine.motorPosition()); // axis a is NOPIN inactive 
+	ASSERTEQUAL(tStart+3, threadClock.ticks);
 
 	// Test largest valid stroke
 	char buf[5000];
