@@ -16,6 +16,8 @@ byte lastByte;
 using namespace firestep;
 using namespace ArduinoJson;
 
+#define ASSERTQUAD(expected,actual) ASSERTEQUALS( expected.toString().c_str(), actual.toString().c_str() );
+
 void test_tick(int ticks) {
 	arduino.timer1(ticks);
 	threadRunner.outerLoop();
@@ -214,6 +216,7 @@ void test_Thread() {
 	ASSERTEQUAL(1, tc.ticks - tcLast);
 	tc.generation++;
 	ASSERTEQUAL(65537, tc.ticks - tcLast);
+	ASSERTEQUAL(64, TICK_MICROSECONDS);
 
 	threadRunner.setup(LED_PIN_RED, LED_PIN_GRN);
 	monitor.verbose = false;
@@ -309,6 +312,26 @@ void test_Machine() {
 	cout << "TEST	: test_Machine() OK " << endl;
 }
 
+void test_BadJson(const char *json) {
+	StaticJsonBuffer<JSON_OBJECT_SIZE(4)> jbTiny;
+	char tinybuf[2000];
+	snprintf(tinybuf, sizeof(tinybuf), "%s", json);
+	JsonObject &jtiny = jbTiny.parseObject(tinybuf);
+	if (jtiny.success()) {
+		char output[2000];
+		jtiny.printTo(output, sizeof(output));
+		cout << output << endl;
+		ASSERTEQUALS(json, output);
+		int kids = 0;
+		for (JsonObject::iterator it=jtiny.begin();
+			it!=jtiny.end();
+			++it) {
+			kids++;
+		}
+		ASSERT(kids > 0);
+	}
+}
+
 void test_ArduinoJson() {
     cout << "TEST	: test_ArduinoJson() =====" << endl;
 	char json[] = "{\"sensor\":\"gps\",\"time\":1351824120,\"data\":[48.756080,2.302038]}";
@@ -361,6 +384,34 @@ void test_ArduinoJson() {
 		}
 	}
 
+	test_BadJson( "{\"a\":1,\"b\":2}" );
+	test_BadJson( "{\"a\":1,\"b\":2,\"c\":3}" );
+	test_BadJson( "{\"a\":1,\"b\":2,\"c\":3,\"d\":4}" );
+	test_BadJson( "{\"a\":1,\"b\":2,\"c\":3,\"d\":4,\"e\":5}" );
+	test_BadJson( "{\"a\":1,\"b\":2,\"c\":3,\"d\":4,\"e\":5,\"f\":6}" );
+	test_BadJson( "{\"a\":123}" );
+	test_BadJson( "{\"a\":{\"b\":123}}" );
+	test_BadJson( "{\"a\":{\"b\":{\"c\":123}}}" );
+	test_BadJson( "{\"a\":{\"b\":{\"c\":{\"d\":123}}}}" );
+	test_BadJson( "{\"a\":" );
+	test_BadJson( "{\"a\":\"\":" );
+	test_BadJson( "{\"a\":[1]}" );
+	test_BadJson( "{\"a\":[1,2]}" );
+	test_BadJson( "{\"a\":[1,2,3]}" );
+	test_BadJson( "{\"a\":[1,2,3,4]}" );
+	test_BadJson( "{\"a\":[1,2,3,4,5]}" );
+	test_BadJson( "{\"a\":[1,2,3,4,5,6]}" );
+	test_BadJson( "{\"a\":[1,2,3,4,5,6,7]}" );
+	test_BadJson( "{\"a\":[1,2,3,4,5,6,7,8]}" );
+	test_BadJson( "{\"a\":{\"b\":[1]}}" );
+	test_BadJson( "{\"a\":{\"b\":[1,2]}}" );
+	test_BadJson( "{\"a\":{\"b\":[1,2,3]}}" );
+	test_BadJson( "{\"a\":{\"b\":[1,2,3,4]}}" );
+	test_BadJson( "{\"a\":{\"b\":[1,2,3,4,5]}}" );
+	test_BadJson( "{\"a\":{\"b\":[1,2,3,4,5,6]}}" );
+	test_BadJson( "{\"a\":{\"b\":[1,2,3,4,5,6,7]}}" );
+	test_BadJson( "{\"a\":{\"b\":[1,2,3,4,5,6,7,8]}}" );
+
 	cout << "TEST	: test_ArduinoJson() OK " << endl;
 }
 
@@ -368,28 +419,28 @@ void test_JsonCommand() {
     cout << "TEST	: test_JsonCommand() =====" << endl;
 
 	JsonCommand cmd1;
-	ASSERT(!cmd1.root().success());
-	ASSERT(cmd1.parse("{\"sys\":\"\"}"));
+	ASSERT(!cmd1.requestRoot().success());
+	ASSERTEQUAL(STATUS_JSON_PARSED, cmd1.parse("{\"sys\":\"\"}"));
 	ASSERTEQUAL(STATUS_JSON_PARSED, cmd1.getStatus());
 	ASSERT(cmd1.isValid());
-	JsonVariant& sys = cmd1.root()["sys"];
+	JsonVariant& sys = cmd1.requestRoot()["sys"];
 	ASSERTEQUALS("", sys);
 	ASSERT(!sys.is<double>());
 	ASSERT(!sys.is<long>());
 	ASSERT(sys.is<const char *>());
 	
 	JsonCommand cmd2;
-	ASSERT(cmd2.parse("{\"x\":123,\"y\":2.3}"));
+	ASSERTEQUAL(STATUS_JSON_PARSED, cmd2.parse("{\"x\":123,\"y\":2.3}"));
 	ASSERTEQUAL(STATUS_JSON_PARSED, cmd2.getStatus());
 	ASSERT(cmd2.isValid());
-	ASSERTEQUALT(2.3, cmd2.root()["y"], 0.001);
-	ASSERTEQUAL(123.0, cmd2.root()["x"]);
-	JsonVariant& y = cmd2.root()["y"];
+	ASSERTEQUALT(2.3, cmd2.requestRoot()["y"], 0.001);
+	ASSERTEQUAL(123.0, cmd2.requestRoot()["x"]);
+	JsonVariant& y = cmd2.requestRoot()["y"];
 	ASSERTEQUALT(2.3, y, 0.001);
 	ASSERT(y.success());
 	ASSERT(y.is<double>());
 	ASSERT(!y.is<long>());
-	JsonVariant& x = cmd2.root()["x"];
+	JsonVariant& x = cmd2.requestRoot()["x"];
 	ASSERT(x.is<long>());
 	ASSERT(!x.is<double>());
 
@@ -397,17 +448,17 @@ void test_JsonCommand() {
 	const char *json2 = "23}\n";
 	Serial.push(json1);
 	JsonCommand cmd3;
-	ASSERT(!cmd3.parse());
+	ASSERTEQUAL(STATUS_SERIAL_EOL_WAIT, cmd3.parse());
 	Serial.push(json2);
-	ASSERT(cmd3.parse());
+	ASSERTEQUAL(STATUS_JSON_PARSED, cmd3.parse());
 	ASSERTEQUAL(STATUS_JSON_PARSED, cmd3.getStatus());
 	ASSERT(cmd3.isValid());
-	ASSERT(cmd3.root().success());
-	x = cmd3.root()["x"];
+	ASSERT(cmd3.requestRoot().success());
+	x = cmd3.requestRoot()["x"];
 	ASSERTEQUAL(-0.123, x);
 
 	Serial.clear();
-	cmd3.root().printTo(Serial);
+	cmd3.requestRoot().printTo(Serial);
 	ASSERTEQUALS("{\"x\":-0.123}", Serial.output().c_str());
 
 	Serial.clear();
@@ -433,20 +484,31 @@ void testJSON_process(JsonController&jc, JsonCommand &jcmd, string replace, cons
 		char creplace = replace[i+1];
 		replaceChar(jo, cmatch, creplace);
 	}
+	arduino.timer1(1);
+	threadClock.ticks++;
 	jc.process(jcmd);
 	jcmd.response().printTo(Serial);
 	ASSERTEQUALS(jo.c_str(), Serial.output().c_str());
 }
 
-JsonCommand testJSON(JsonController &jc, string replace, const char *jsonIn, const char* jsonOut) {
+string jsonTemplate(const char *jsonIn, string replace="'\"") {
 	string ji(jsonIn);
 	for (int i=0; i<replace.size(); i+=2) {
 		char cmatch = replace[i];
 		char creplace = replace[i+1];
 		replaceChar(ji, cmatch, creplace);
 	}
+	return ji;
+}
+
+JsonCommand testJSON(JsonController &jc, string replace, const char *jsonIn, const char* jsonOut) {
+	string ji(jsonTemplate(jsonIn, replace));
 	JsonCommand jcmd; 
-	ASSERT(jcmd.parse(ji.c_str()));
+	Status status = jcmd.parse(ji.c_str());
+	ASSERTEQUAL(STATUS_JSON_PARSED, status);
+	char parseOut[MAX_JSON];
+	jcmd.requestRoot().printTo(parseOut, sizeof(parseOut));
+	ASSERTEQUALS(ji.c_str(), parseOut);
 
 	testJSON_process(jc, jcmd, replace, jsonOut);
 
@@ -508,15 +570,15 @@ void test_JsonController_axis(JsonController &jc, char axis) {
 
 	testJSON(jc, replace, 
 		"{'x':''}", 
-		"{'s':0,'r':{'x':{'am':1,'in':0,'mi':16,'pd':22,'pe':14,'pm':0,"\
+		"{'s':0,'r':{'x':{'am':1,'in':0,'ln':false,'mi':16,'pd':22,'pe':14,'pm':0,"\
 			"'pn':21,'po':0,'ps':23,'sa':1.80,'tm':10000,'tn':0}}}");
 	testJSON(jc, replace, 
 		"{'y':''}", 
-		"{'s':0,'r':{'y':{'am':1,'in':0,'mi':16,'pd':3,'pe':14,'pm':0,"\
+		"{'s':0,'r':{'y':{'am':1,'in':0,'ln':false,'mi':16,'pd':3,'pe':14,'pm':0,"\
 			"'pn':2,'po':0,'ps':4,'sa':1.80,'tm':10000,'tn':0}}}");
 	testJSON(jc, replace, 
 		"{'z':''}", 
-		"{'s':0,'r':{'z':{'am':1,'in':0,'mi':16,'pd':12,'pe':14,'pm':0,"\
+		"{'s':0,'r':{'z':{'am':1,'in':0,'ln':false,'mi':16,'pd':12,'pe':14,'pm':0,"\
 			"'pn':11,'po':0,'ps':13,'sa':1.80,'tm':10000,'tn':0}}}");
 }
 
@@ -558,18 +620,48 @@ void test_JsonController_machinePosition(JsonController &jc) {
 		"{'s':0,'r':{'spo':{'x':-32760,'y':-32761,'z':-32762,'a':-32763,'b':-32764,'c':-32765}}}");
 }
 
-void test_JsonController_stroke(JsonController &jc) {
+void test_JsonController_stroke(JsonController &jc, Machine &machine) {
 	string replace;
 	replace.push_back('\''); replace.push_back('"');
+	string jconfig = "{'xtm':'','xtn':'','xpo':''}";
+	ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.stroke.position());
 	JsonCommand jcmd = testJSON(jc, replace, 
-		"{'str':{'us':123,'po':[10,20],'s1':[1,2],'s2':[4,5],'s3':[7,8],'s4':[-10,-11]}}", 
-		"{'s':2,'r':{'str':{'us':123,'po':[10,20],'s1':[1,2],'s2':[4,5],'s3':[7,8],'s4':[-10,-11]}}}");
+		"{'str':{'us':123,'dp':[10,20],'s1':[1,2],'s2':[4,5],'s3':[7,8],'s4':[-10,-11]}}", 
+		"{'s':2,'r':{'str':{'us':123,'dp':[10,20],'s1':0,'s2':0,'s3':0,'s4':0}}}");
+	ASSERTEQUAL(2,machine.stroke.dtTotal);
+	Ticks tStart = machine.stroke.tStart;
+	ASSERTEQUAL(0, machine.stroke.goalStartTicks(tStart));
+	ASSERTEQUAL(1, machine.stroke.goalEndTicks(tStart));
+	ASSERTEQUAL(1, machine.stroke.goalStartTicks(tStart+1));
+	ASSERTEQUAL(2, machine.stroke.goalEndTicks(tStart+1));
+	ASSERTEQUAL(1, machine.stroke.goalStartTicks(tStart+2));
+	ASSERTEQUAL(2, machine.stroke.goalEndTicks(tStart+2));
+
 	testJSON_process(jc, jcmd, replace, 
-		"{'s':2,'r':{'str':{'us':123,'po':[10,20],'s1':0,'s2':0,'s3':0,'s4':0}}}");
+		"{'s':2,'r':{'str':{'us':123,'dp':[10,20],'s1':1,'s2':4,'s3':7,'s4':-10}}}");
+	ASSERTQUAD(Quad<StepCoord>(1,4,7,-10), machine.stroke.position());
+
 	testJSON_process(jc, jcmd, replace, 
-		"{'s':0,'r':{'str':{'us':123,'po':[10,20],'s1':0,'s2':0,'s3':0,'s4':0}}}");
+		"{'s':2,'r':{'str':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}");
+	ASSERTQUAD(Quad<StepCoord>(10,20,0,0), machine.stroke.position());
+
 	testJSON_process(jc, jcmd, replace, 
-		"{'s':0,'r':{'str':{'us':123,'po':[10,20],'s1':0,'s2':0,'s3':0,'s4':0}}}");
+		"{'s':0,'r':{'str':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}");
+
+	// Test largest valid stroke
+	char buf[5000];
+	string segs = "[-127";
+	for (int i=1; i<SEGMENT_COUNT*5; i++) {
+		segs += ",-127";
+	}
+	segs += "]";
+	string jlarge ="{'str':{";
+	jlarge += "'s1':";
+	jlarge += segs;
+	jlarge += "}}";
+	string jlargein = jsonTemplate(jlarge.c_str());
+	JsonCommand jcmd2;
+	ASSERTEQUAL(STATUS_JSON_PARSE_ERROR, jcmd2.parse(jlargein.c_str()));
 }
 
 void test_JsonController() {
@@ -580,7 +672,7 @@ void test_JsonController() {
 
 	Serial.clear();
 	JsonCommand jcmd;
-	ASSERT(jcmd.parse("{\"sys\":\"\"}"));
+	ASSERTEQUAL(STATUS_JSON_PARSED, jcmd.parse("{\"sys\":\"\"}"));
 	jc.process(jcmd);
 	jcmd.response().printTo(Serial);
 	char sysbuf[500];
@@ -602,7 +694,7 @@ void test_JsonController() {
 
 	test_JsonController_machinePosition(jc);
 
-	test_JsonController_stroke(jc);
+	test_JsonController_stroke(jc, machine);
 
 	cout << "TEST	: test_JsonController() OK " << endl;
 }
@@ -640,66 +732,82 @@ void test_Stroke() {
 	cout << "TEST	: test_Stroke() =====" << endl;
 
 	Stroke stroke;
+	MockStepper stepper;
+	Ticks tStart = 100000;
+	ASSERTEQUAL(STATUS_STROKE_START, stroke.traverse(ticks(), stepper));
 	stroke.seg[stroke.length++] = Quad<StepDV>(1,10,-1,-10);
 	stroke.seg[stroke.length++] = Quad<StepDV>(1,10,-1,-10);	
 	stroke.seg[stroke.length++] = Quad<StepDV>(-1,-10,1,10);
 	stroke.dEndPos = Quad<StepCoord>(4,40,-4,-40);
-	stroke.tTotal = 17;
-	Ticks tStart = 100000;
-	stroke.dEndPos.value[0] += 17;
+	ASSERTEQUAL(0, stroke.dtTotal);
+	ASSERTEQUAL(STATUS_STROKE_PLANMICROS, stroke.start(tStart));
+	stroke.planMicros = 17*TICK_MICROSECONDS-1; // should round up to 17
+	stroke.dEndPos.value[0] += 100;
 	ASSERTEQUAL(STATUS_STROKE_END_ERROR, stroke.start(tStart));
-	stroke.dEndPos.value[0] -= 17;
+	stroke.dEndPos.value[0] -= 100;
+	ASSERTEQUAL(17, stroke.dtTotal);
+
+	ASSERTEQUAL(0, stroke.goalStartTicks(tStart-1));
+	ASSERTEQUAL(0, stroke.goalEndTicks(tStart-1));
+	ASSERTEQUAL(0, stroke.goalStartTicks(0));
+	ASSERTEQUAL(0, stroke.goalEndTicks(0));
+
+	ASSERTEQUAL(0, stroke.goalStartTicks(tStart));
+	ASSERTEQUAL(5, stroke.goalEndTicks(tStart));
+	ASSERTEQUAL(0, stroke.goalStartTicks(tStart+1));
+	ASSERTEQUAL(5, stroke.goalEndTicks(tStart+1));
+	ASSERTEQUAL(0, stroke.goalStartTicks(tStart+4));
+	ASSERTEQUAL(5, stroke.goalEndTicks(tStart+4));
+
+	ASSERTEQUAL(5, stroke.goalStartTicks(tStart+5));
+	ASSERTEQUAL(11, stroke.goalEndTicks(tStart+5));
+	ASSERTEQUAL(5, stroke.goalStartTicks(tStart+6));
+	ASSERTEQUAL(11, stroke.goalEndTicks(tStart+6));
+	ASSERTEQUAL(5, stroke.goalStartTicks(tStart+10));
+	ASSERTEQUAL(11, stroke.goalEndTicks(tStart+10));
+
+	ASSERTEQUAL(11, stroke.goalStartTicks(tStart+11));
+	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+11));
+	ASSERTEQUAL(11, stroke.goalStartTicks(tStart+12));
+	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+12));
+	ASSERTEQUAL(11, stroke.goalStartTicks(tStart+17));
+	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+17));
+
+	ASSERTEQUAL(11, stroke.goalStartTicks(tStart+18));
+	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+18));
+	ASSERTEQUAL(11, stroke.goalStartTicks(tStart+1000));
+	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+1000));
+
 	ASSERTEQUAL(STATUS_OK, stroke.start(tStart));
 	ASSERTEQUAL(0, (long) stroke.goalSegment(0));
 	ASSERTEQUAL(0, (long) stroke.goalSegment(tStart-1));
 	ASSERTEQUAL(0, (long) stroke.goalSegment(tStart));
 	ASSERTEQUAL(0, (long) stroke.goalSegment(tStart+1));
-	ASSERTEQUAL(0, (long) stroke.goalSegment(tStart+5));
+	ASSERTEQUAL(0, (long) stroke.goalSegment(tStart+4));
+	ASSERTEQUAL(1, (long) stroke.goalSegment(tStart+5));
 	ASSERTEQUAL(1, (long) stroke.goalSegment(tStart+6));
-	ASSERTEQUAL(1, (long) stroke.goalSegment(tStart+11));
+	ASSERTEQUAL(1, (long) stroke.goalSegment(tStart+10));
+	ASSERTEQUAL(2, (long) stroke.goalSegment(tStart+11));
 	ASSERTEQUAL(2, (long) stroke.goalSegment(tStart+12));
 	ASSERTEQUAL(2, (long) stroke.goalSegment(tStart+17));
 	ASSERTEQUAL(2, (long) stroke.goalSegment(tStart+18));
 	ASSERTEQUAL(2, (long) stroke.goalSegment(tStart+1000));
 
-	ASSERTEQUAL(0, stroke.goalStartTicks(0));
-	ASSERTEQUAL(0, stroke.goalStartTicks(tStart-1));
-	ASSERTEQUAL(0, stroke.goalStartTicks(tStart));
-	ASSERTEQUAL(0, stroke.goalStartTicks(tStart+1));
-	ASSERTEQUAL(0, stroke.goalStartTicks(tStart+5));
-	ASSERTEQUAL(5, stroke.goalStartTicks(tStart+6));
-	ASSERTEQUAL(5, stroke.goalStartTicks(tStart+11));
-	ASSERTEQUAL(11, stroke.goalStartTicks(tStart+12));
-	ASSERTEQUAL(11, stroke.goalStartTicks(tStart+17));
-	ASSERTEQUAL(11, stroke.goalStartTicks(tStart+18));
-	ASSERTEQUAL(11, stroke.goalStartTicks(tStart+1000));
-
-	ASSERTEQUAL(0, stroke.goalEndTicks(0));
-	ASSERTEQUAL(0, stroke.goalEndTicks(tStart-1));
-	ASSERTEQUAL(0, stroke.goalEndTicks(tStart));
-	ASSERTEQUAL(5, stroke.goalEndTicks(tStart+1));
-	ASSERTEQUAL(5, stroke.goalEndTicks(tStart+5));
-	ASSERTEQUAL(11, stroke.goalEndTicks(tStart+6));
-	ASSERTEQUAL(11, stroke.goalEndTicks(tStart+11));
-	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+12));
-	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+17));
-	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+18));
-	ASSERTEQUAL(17, stroke.goalEndTicks(tStart+1000));
-
 	// Test goalPos() and traverse()
 	for (int t=0; t<20; t++) {
 		Quad<StepCoord> pos = stroke.goalPos(tStart+t);
 	}
-	ASSERT(Quad<StepCoord>(4,40,-4,-40) == stroke.dEndPos);
-	ASSERT(Quad<StepCoord>(4,40,-4,-40) == stroke.goalPos(tStart+17));
-	ASSERT(Quad<StepCoord>(3,35,-3,-35) == stroke.goalPos(tStart+14));
-	ASSERT(Quad<StepCoord>(3,30,-3,-30) == stroke.goalPos(tStart+11));
-	ASSERT(Quad<StepCoord>(2,20,-2,-20) == stroke.goalPos(tStart+8));
-	ASSERT(Quad<StepCoord>(1,10,-1,-10) == stroke.goalPos(tStart+5));
-	ASSERT(Quad<StepCoord>(0,0,0,0) == stroke.goalPos(tStart));
-	MockStepper stepper;
+	ASSERTQUAD(Quad<StepCoord>(4,40,-4,-40), stroke.dEndPos);
+	ASSERTQUAD(Quad<StepCoord>(4,40,-4,-40), stroke.goalPos(tStart+17));
+	ASSERTQUAD(Quad<StepCoord>(3,35,-3,-35), stroke.goalPos(tStart+14));
+	ASSERTQUAD(Quad<StepCoord>(3,30,-3,-30), stroke.goalPos(tStart+11));
+	ASSERTQUAD(Quad<StepCoord>(2,26,-2,-26), stroke.goalPos(tStart+10));
+	ASSERTQUAD(Quad<StepCoord>(2,20,-2,-20), stroke.goalPos(tStart+8));
+	ASSERTQUAD(Quad<StepCoord>(2,20,-2,-20), stroke.goalPos(tStart+8));
+	ASSERTQUAD(Quad<StepCoord>(1,10,-1,-10), stroke.goalPos(tStart+5));
+	ASSERTQUAD(Quad<StepCoord>(0,0,0,0), stroke.goalPos(tStart));
 	for (Ticks t=tStart; t<tStart+20; t++) {
-		cout << "stroke	: traverse(" << t << ")" << endl;
+		cout << std::dec << "stroke	: traverse(" << t << ")" << endl;
 		if (STATUS_OK == stroke.traverse(t, stepper)) {
 			ASSERTEQUAL(18, t-tStart);
 			Quad<StepCoord> dPos = stepper.dPos;
@@ -754,10 +862,10 @@ void test_Stroke() {
 	ASSERTEQUAL(STATUS_STROKE_END_ERROR, stroke.start(tStart));
 	stroke.dEndPos.value[3] -= 100;
 	ASSERTEQUAL(STATUS_OK, stroke.start(tStart));
-	cout << stroke.dEndPos.toString() << endl;
-	ASSERT(Quad<StepCoord>(13,122,-11,-118) == stroke.dEndPos);
-	cout << stroke.goalPos(tStart+17).toString() << endl;
-	ASSERT(Quad<StepCoord>(13,122,-11,-118) == stroke.goalPos(tStart+17));
+	ASSERTEQUAL(17, stroke.dtTotal);
+	ASSERTQUAD(Quad<StepCoord>(0,0,0,0), stroke.position());
+	ASSERTQUAD(Quad<StepCoord>(13,122,-11,-118), stroke.dEndPos);
+	ASSERTQUAD(Quad<StepCoord>(13,122,-11,-118), stroke.goalPos(tStart+17));
 	ASSERT(Quad<StepCoord>(10,105,-10,-105) == stroke.goalPos(tStart+14));
 	ASSERT(Quad<StepCoord>(9,90,-9,-90) == stroke.goalPos(tStart+11));
 	ASSERT(Quad<StepCoord>(6,60,-6,-60) == stroke.goalPos(tStart+8));
@@ -783,11 +891,6 @@ void test_Stroke() {
 	}
 
 	cout << "TEST	: test_Stroke() OK " << endl;
-}
-
-template<class T>
-void assertQuad(Quad<T> actual, Quad<T> expected) {
-	ASSERTEQUALS( expected.toString().c_str(), actual.toString().c_str() );
 }
 
 void test_Machine_step() {
@@ -823,7 +926,7 @@ void test_Machine_step() {
 	ASSERT(machine.motorPosition() == Quad<StepCoord>(3,2,1,0));
 	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1,1,1,1)));
 	ASSERTEQUAL(false, machine.axis[3].atMin);
-	assertQuad(machine.motorPosition(), Quad<StepCoord>(4,3,2,0));
+	ASSERTQUAD(Quad<StepCoord>(4,3,2,0), machine.motorPosition());
 	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1,1,1,1)));
 	ASSERTEQUAL(false, machine.axis[3].atMin);
 	ASSERT(machine.motorPosition() == Quad<StepCoord>(5,4,3,0));
@@ -832,7 +935,7 @@ void test_Machine_step() {
 	ASSERTEQUAL(false, machine.axis[2].atMin);
 	ASSERTEQUAL(false, machine.axis[3].atMin);
 	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1,1,1,1)));
-	assertQuad(machine.motorPosition(), Quad<StepCoord>(5,4,3,0));
+	ASSERTQUAD(Quad<StepCoord>(5,4,3,0), machine.motorPosition());
 
 	// Test travelMin
 	ASSERTEQUAL(false, machine.axis[0].atMin);
@@ -840,29 +943,29 @@ void test_Machine_step() {
 	ASSERTEQUAL(false, machine.axis[2].atMin);
 	ASSERTEQUAL(false, machine.axis[3].atMin);
 	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
-	assertQuad(machine.motorPosition(), Quad<StepCoord>(4,3,2,0));
+	ASSERTQUAD(Quad<StepCoord>(4,3,2,0), machine.motorPosition());
 	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
-	assertQuad(machine.motorPosition(), Quad<StepCoord>(3,2,1,0));
+	ASSERTQUAD(Quad<StepCoord>(3,2,1,0), machine.motorPosition());
 	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
-	assertQuad(machine.motorPosition(), Quad<StepCoord>(2,1,0,0));
+	ASSERTQUAD(Quad<StepCoord>(2,1,0,0), machine.motorPosition());
 	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
-	assertQuad(machine.motorPosition(), Quad<StepCoord>(1,0,0,0));
+	ASSERTQUAD(Quad<StepCoord>(1,0,0,0), machine.motorPosition());
 	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
-	assertQuad(machine.motorPosition(), Quad<StepCoord>(0,0,0,0));
+	ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.motorPosition());
 	machine.axis[1].travelMin--;
 	machine.axis[2].travelMin++;
 	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
-	assertQuad(machine.motorPosition(), Quad<StepCoord>(0,-1,0,0));
+	ASSERTQUAD(Quad<StepCoord>(0,-1,0,0), machine.motorPosition());
 
 	// Test pinMin
-	assertQuad(machine.motorPosition(), Quad<StepCoord>(0,-1,0,0));
+	ASSERTQUAD(Quad<StepCoord>(0,-1,0,0), machine.motorPosition());
 	arduino.pin[machine.axis[0].pinMin] = 1;
 	machine.axis[0].travelMin = -10;
 	machine.axis[1].travelMin = -10;
 	machine.axis[2].travelMin = -10;
 	machine.axis[3].travelMin = -10;
 	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
-	assertQuad(machine.motorPosition(), Quad<StepCoord>(0,-2,-1,0));
+	ASSERTQUAD(Quad<StepCoord>(0,-2,-1,0), machine.motorPosition());
 
 	cout << "TEST	: test_Machine_step() OK " << endl;
 }

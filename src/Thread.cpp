@@ -133,9 +133,9 @@ void MonitorThread::Heartbeat() {
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
         if (threadClock.generation > pThread->nextHeartbeat.generation + 1 && 
 			pThread->nextHeartbeat.generation > 0) {
-			cout << "ticks:" << threadClock.ticks 
-				<< " nextHeartBeat:" << pThread->nextHeartbeat.ticks 
-				<< " pThread:" << pThread->id << endl;
+			//cout << "ticks:" << threadClock.ticks 
+				//<< " nextHeartBeat:" << pThread->nextHeartbeat.ticks 
+				//<< " pThread:" << pThread->id << endl;
             Error("O@G", pThread->nextHeartbeat.generation);
         }
     }

@@ -15,30 +15,41 @@ JsonCommand::JsonCommand() {
     memset(json, 0, sizeof(json));
     memset(error, 0, sizeof(error));
     pJsonFree = json;
-	jsonResp = jsonBuffer.createObject();
-	jsonResp["s"] = STATUS_EMPTY;
+	jResponseRoot = jbResponse.createObject();
+	jResponseRoot["s"] = STATUS_EMPTY;
+	jResponseRoot.asObject().createNestedObject("r");
 }
 
 const char * JsonCommand::getError() {
 	return error;
 }
 
-void JsonCommand::setError(const char *err) {
+Status JsonCommand::setError(Status status, const char *err) {
 	snprintf(error, sizeof(error), "%s", err);
-	jsonResp["e"] = error;
+	jResponseRoot["s"] = status;
+	jResponseRoot["e"] = error;
+	return status;
 }
 
-bool JsonCommand::parseCore() {
-    jsonRoot = jsonBuffer.parseObject(json);
-    if (jsonRoot.success()) {
-        jsonResp["s"] = STATUS_JSON_PARSED;
-		jsonResp["r"] = jsonRoot;
-    } else {
-        jsonResp["s"] = STATUS_JSON_SYNTAX_ERROR;
-    }
+Status JsonCommand::parseCore() {
+	JsonObject &jobj = jbRequest.parseObject(json);
 	parsed = true;
+    jRequestRoot = jobj;
+    if (jobj.success()) {
+		int kids = 0;
+		for (JsonObject::iterator it=jobj.begin(); it!=jobj.end(); ++it) {
+			kids++;
+		}
+		if (kids < 1) {
+			return setError(STATUS_JSON_MEM, "mem");
+		}
+        jResponseRoot["s"] = STATUS_JSON_PARSED;
+		jResponseRoot["r"] = jRequestRoot;
+    } else {
+		return setError(STATUS_JSON_PARSE_ERROR, "json");
+    }
 
-    return true;
+	return STATUS_JSON_PARSED;
 }
 
 /**
@@ -46,37 +57,36 @@ bool JsonCommand::parseCore() {
  * Return true if parsing is complete.
  * Check isValid() and getStatus() for parsing status.
  */
-bool JsonCommand::parse(const char *jsonIn) {
+Status JsonCommand::parse(const char *jsonIn) {
     if (parsed) {
-        return true;
+        return STATUS_JSON_PARSED;
     }
     if (jsonIn) {
         snprintf(json, sizeof(json), "%s", jsonIn);
         if (strcmp(jsonIn, json) != 0) {
             parsed = true;
-            jsonResp["s"] = STATUS_JSON_TOO_LONG;
-            return true;
+			return setError(STATUS_JSON_TOO_LONG,"p1");
         }
         return parseCore();
-    }
-    while (Serial.available()) {
-        if (pJsonFree - json >= MAX_JSON - 1) {
-            parsed = true;
-            jsonResp["s"] = STATUS_JSON_TOO_LONG;
-            return true;
-        }
-        char c = Serial.read();
-        if (c == '\n') {
-            return parseCore();
-        } else {
-            *pJsonFree++ = c;
-        }
-    }
-    return false;
+	} else {
+		while (Serial.available()) {
+			if (pJsonFree - json >= MAX_JSON - 1) {
+				parsed = true;
+				return setError(STATUS_JSON_TOO_LONG,"p2");
+			}
+			char c = Serial.read();
+			if (c == '\n') {
+				return parseCore();
+			} else {
+				*pJsonFree++ = c;
+			}
+		}
+		return STATUS_SERIAL_EOL_WAIT;
+	}
 }
 
 bool JsonCommand::isValid() {
-    return parsed && jsonRoot.success();
+    return parsed && jRequestRoot.success();
 }
 
 //////////////////// JsonController ///////////////
@@ -102,6 +112,7 @@ template Status processField<uint16_t,long>(JsonObject& jobj, const char *key, u
 template Status processField<int32_t,long>(JsonObject& jobj, const char *key, int32_t& field);
 template Status processField<uint8_t,long>(JsonObject& jobj, const char *key, uint8_t& field);
 template Status processField<float,double>(JsonObject& jobj, const char *key, float& field);
+template Status processField<bool,bool>(JsonObject& jobj, const char *key, bool& field);
 
 int axisOf(char c) {
 	switch (c) {
@@ -127,8 +138,7 @@ Status JsonController::processMachinePosition(JsonCommand &jcmd, JsonObject& job
 	const char *s;
 	if (strlen(key) == 3) {
 		if ((s=jobj[key]) && *s==0) {
-			JsonObject& node = jcmd.createJsonObject();
-			jobj[key] = node;
+			JsonObject& node = jobj.createNestedObject(key);
 			node["x"] = "";
 			node["y"] = "";
 			node["z"] = "";
@@ -168,89 +178,83 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
 	int s3len = 0;
 	int s4len = 0;
 	bool us_ok = false;
-	bool po_ok = false;
+	bool dp_ok = false;
 	for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
 		if (strcmp("us", it->key) == 0) {
 			Status status = processField<int32_t, long>(stroke, it->key, machine.stroke.planMicros);
 			if (status != STATUS_OK) {
-				jcmd.setError(it->key);
-				return status;
+				return jcmd.setError(status, it->key);
 			}
 			us_ok = true;
-		} else if (strcmp("po", it->key) == 0) {
+		} else if (strcmp("dp", it->key) == 0) {
 			JsonArray &jarr = stroke[it->key];
 			if (!jarr.success()) {
-				jcmd.setError(it->key);
-				return STATUS_FIELD_ARRAY_ERROR;
+				return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, it->key);
 			}
 			if (!jarr[0].success()) {
-				jcmd.setError(it->key);
-				return STATUS_JSON_ARRAY_LEN;
+				return jcmd.setError(STATUS_JSON_ARRAY_LEN, it->key);
 			}
-			po_ok = true;
+			dp_ok = true;
 			for (int i=0; i<4 && jarr[i].success(); i++) {
 				machine.stroke.dEndPos.value[i] = jarr[i];
 			}
 		} else if (strcmp("s1", it->key) == 0) {
 			JsonArray &jarr = stroke[it->key];
 			if (!jarr.success()) {
-				jcmd.setError(it->key);
-				return STATUS_FIELD_ARRAY_ERROR;
+				return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, it->key);
 			}
-			for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
-				if (*it < -127 || 127 < *it) {
+			for (JsonArray::iterator it2 = jarr.begin(); it2 != jarr.end(); ++it2) {
+				if (*it2 < -127 || 127 < *it2) {
 					return STATUS_S1_RANGE_ERROR;
 				}
-				machine.stroke.seg[s1len++].value[0] = (int8_t) (long) * it;
+				machine.stroke.seg[s1len++].value[0] = (int8_t) (long) * it2;
 			}
+			stroke[it->key] = (long) 0;
 		} else if (strcmp("s2", it->key) == 0) {
 			JsonArray &jarr = stroke[it->key];
 			if (!jarr.success()) {
-				jcmd.setError(it->key);
-				return STATUS_FIELD_ARRAY_ERROR;
+				return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, it->key);
 			}
-			for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
-				if (*it < -127 || 127 < *it) {
+			for (JsonArray::iterator it2 = jarr.begin(); it2 != jarr.end(); ++it2) {
+				if (*it2 < -127 || 127 < *it2) {
 					return STATUS_S2_RANGE_ERROR;
 				}
-				machine.stroke.seg[s2len++].value[1] = (int8_t) (long) * it;
+				machine.stroke.seg[s2len++].value[1] = (int8_t) (long) * it2;
 			}
+			stroke[it->key] = 0;
 		} else if (strcmp("s3", it->key) == 0) {
 			JsonArray &jarr = stroke[it->key];
 			if (!jarr.success()) {
-				jcmd.setError(it->key);
-				return STATUS_FIELD_ARRAY_ERROR;
+				return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, it->key);
 			}
-			for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
-				if (*it < -127 || 127 < *it) {
+			for (JsonArray::iterator it2 = jarr.begin(); it2 != jarr.end(); ++it2) {
+				if (*it2 < -127 || 127 < *it2) {
 					return STATUS_S3_RANGE_ERROR;
 				}
-				machine.stroke.seg[s3len++].value[2] = (int8_t) (long) * it;
+				machine.stroke.seg[s3len++].value[2] = (int8_t) (long) * it2;
 			}
+			stroke[it->key] = 0;
 		} else if (strcmp("s4", it->key) == 0) {
 			JsonArray &jarr = stroke[it->key];
 			if (!jarr.success()) {
-				jcmd.setError(it->key);
-				return STATUS_FIELD_ARRAY_ERROR;
+				return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, it->key);
 			}
-			for (JsonArray::iterator it = jarr.begin(); it != jarr.end(); ++it) {
-				if (*it < -127 || 127 < *it) {
+			for (JsonArray::iterator it2 = jarr.begin(); it2 != jarr.end(); ++it2) {
+				if (*it2 < -127 || 127 < *it2) {
 					return STATUS_S4_RANGE_ERROR;
 				}
-				machine.stroke.seg[s4len++].value[3] = (int8_t) (long) * it;
+				machine.stroke.seg[s4len++].value[3] = (int8_t) (long) * it2;
 			}
+			stroke[it->key] = 0;
 		} else {
-			jcmd.setError(it->key);
-			return STATUS_UNRECOGNIZED_NAME;
+			return jcmd.setError(STATUS_UNRECOGNIZED_NAME, it->key);
 		}
 	}
 	if (!us_ok) {
-		jcmd.setError("us");
-		return STATUS_FIELD_REQUIRED;
+		return jcmd.setError(STATUS_FIELD_REQUIRED, "us");
 	}
-	if (!po_ok) {
-		jcmd.setError("po");
-		return STATUS_FIELD_REQUIRED;
+	if (!dp_ok) {
+		return jcmd.setError(STATUS_FIELD_REQUIRED, "dp");
 	}
 	if (s1len && s2len && s1len != s2len) {
 		return STATUS_S1S2LEN_ERROR;
@@ -269,13 +273,16 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
 	return STATUS_PROCESSING;
 }
 
-bool JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
+Status JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
+	Status status =  machine.stroke.traverse(ticks(), machine);
+
 	Quad<StepCoord> &pos = machine.stroke.position();
 	stroke["s1"] = pos.value[0];
 	stroke["s2"] = pos.value[1];
 	stroke["s3"] = pos.value[2];
 	stroke["s4"] = pos.value[3];
 
+	return status;
 	/*
 	if (machine.stroke.curSeg == 0) {
 		clkStart = ticks();
@@ -358,8 +365,7 @@ Status JsonController::processStroke(JsonCommand &jcmd, JsonObject& jobj, const 
 		status = initializeStroke(jcmd, stroke);
     } else if (status == STATUS_PROCESSING) {
         if (machine.stroke.curSeg < machine.stroke.length) {
-			traverseStroke(jcmd, stroke);
-            machine.stroke.curSeg++;
+			status = traverseStroke(jcmd, stroke);
         }
         if (machine.stroke.curSeg >= machine.stroke.length) {
             status = STATUS_OK;
@@ -377,8 +383,7 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
 	}
     if (strlen(key) == 1) {
         if ((s = jobj[key]) && *s == 0) {
-            JsonObject& node = jcmd.createJsonObject();
-            jobj[key] = node;
+            JsonObject& node = jobj.createNestedObject(key);
             node["ma"] = "";
         }
         JsonObject& kidObj = jobj[key];
@@ -405,10 +410,10 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
     }
     if (strlen(key) == 1) {
         if ((s = jobj[key]) && *s == 0) {
-            JsonObject& node = jcmd.createJsonObject();
-            jobj[key] = node;
+            JsonObject& node = jobj.createNestedObject(key);
             node["am"] = "";
 			node["in"] = "";
+			node["ln"] = "";
             node["mi"] = "";
             node["pd"] = "";
             node["pe"] = "";
@@ -433,6 +438,8 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
         status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].mode);
     } else if (strcmp("in", key) == 0 || strcmp("in", key + 1) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].invert);
+    } else if (strcmp("ln", key) == 0 || strcmp("ln", key + 1) == 0) {
+        status = processField<bool, bool>(jobj, key, machine.axis[iAxis].atMin);
     } else if (strcmp("mi", key) == 0 || strcmp("mi", key + 1) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].microsteps);
     } else if (strcmp("pd", key) == 0 || strcmp("pd", key + 1) == 0) {
@@ -459,7 +466,7 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
 
 void JsonController::process(JsonCommand& jcmd) {
     const char *s;
-    JsonObject& root = jcmd.root();
+    JsonObject& root = jcmd.requestRoot();
     JsonVariant node;
     node = root;
     Status status = STATUS_OK;
@@ -469,7 +476,8 @@ void JsonController::process(JsonCommand& jcmd) {
             status = processStroke(jcmd, root, it->key);
         } else if (strcmp("sys", it->key) == 0) {
             if ((s = it->value) && *s == 0) {
-                node = root["sys"] = jcmd.createJsonObject();
+                //node = root["sys"] = jcmd.createJsonObject();
+                node = root.createNestedObject("sys");
                 node["fb"] = BUILD;
                 node["fv"] = VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0;
                 status = node.success() ? STATUS_OK : STATUS_SYS_ERROR;
@@ -493,8 +501,7 @@ void JsonController::process(JsonCommand& jcmd) {
                 status = processAxis(jcmd, root, it->key, it->key[0]);
                 break;
             default:
-                jcmd.setError(it->key);
-                status = STATUS_UNRECOGNIZED_NAME;
+                status = jcmd.setError(STATUS_UNRECOGNIZED_NAME, it->key);
                 break;
             }
         }

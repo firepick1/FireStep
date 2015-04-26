@@ -7,7 +7,11 @@
 
 namespace firestep {
 
+#if defined(TEST)
+#define SEGMENT_COUNT 5
+#else
 #define SEGMENT_COUNT 100
+#endif
 
 typedef int8_t  StepDV;			// change in StepCoord velocity
 typedef int16_t StepCoord;		// stepper coordinate (i.e., pulses)
@@ -20,12 +24,12 @@ typedef class QuadStepper {
 
 typedef class Stroke {
 	private:
-		Ticks			tStart;				// ticks at start of traversal
 		Quad<StepCoord> dPos;				// current offset from start position
     public:
+		Ticks			tStart;				// ticks at start of traversal
 		StepCoord		maxV;				// max steps/tick (default 16)
         StepDV 			scale;				// segment velocity unit
-		Ticks			tTotal;				// ticks for planned traversal 
+		Ticks			dtTotal;			// ticks for planned traversal 
         int32_t 		planMicros;			// planned traversal time in microseconds
         SegIndex		curSeg;				// current segment index
         SegIndex	 	length;				// number of segments

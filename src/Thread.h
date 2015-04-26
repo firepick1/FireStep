@@ -21,9 +21,9 @@ namespace firestep {
 #define GENERATION_RESET 50000
 #define TIMER_ENABLED (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10))
 #define MAX_ThreadS 32
+#define TICK_MICROSECONDS ((TIMER_PRESCALE * 1000L)/(CLOCK_HZ/1000))
 
-typedef uint32_t Ticks;
-typedef int32_t PERIOD;
+typedef int32_t Ticks;
 
 typedef union ThreadClock  {
     Ticks ticks;
@@ -39,7 +39,7 @@ extern ThreadClock threadClock;
 /**
  * With the standard ATMEGA 16,000,000 Hz system clock and TCNT1 / 1024 prescaler:
  * 1 tick = 1024 clock cycles = 64 microseconds
- * Clock overflows in 2^32 * 0.000064 seconds = ~76.3 hours
+ * Clock overflows in 2^31 * 0.000064 seconds = ~38.1 hours
  */
 inline Ticks ticks() {
     return threadClock.ticks;
@@ -166,8 +166,9 @@ typedef class ThreadRunner {
             cli();
             threadClock.age = age = TCNT1;
             if (age < lastAge) {
-                // a generation is 4.194304s and is incremented when TCNT1 overflows
-                // Innerloop MUST complete within a generation
+                // 1) a generation is 4.194304s 
+				// 1) generation is incremented when TCNT1 overflows
+                // 1) innerLoop MUST complete within a generation
                 lastAge = age;
                 threadClock.generation = ++generation;
                 if (generation > MAX_GENERATIONS) {

@@ -7,11 +7,12 @@ enum Status {
 	STATUS_OK = 0,					// operation completed successfully
 	STATUS_JSON_PARSED = 1,			// json parsed, awaiting processing
 	STATUS_PROCESSING = 2,			// json parsed, processing in progress
+	STATUS_SERIAL_EOL_WAIT = 3,		// waiting for EOL on Serial
 	STATUS_EMPTY = -1,				// uninitialized JsonCommand
 	STATUS_JSON_BRACE_ERROR = -2,	// unbalanced JSON braces
 	STATUS_JSON_BRACKET_ERROR = -3,	// unbalanced JSON braces
 	STATUS_UNRECOGNIZED_NAME = -4,	// parse didn't recognize thecommand
-	STATUS_JSON_SYNTAX_ERROR = -5,	// JSON input string is not well formed
+	STATUS_JSON_PARSE_ERROR = -5,	// JSON invalid or too long
 	STATUS_JSON_TOO_LONG = -6,		// JSON exceeds buffer size
 	STATUS_JSON_STROKE_ERROR = -20,	// Expected JSON object for stroke
 	STATUS_S1_RANGE_ERROR = -21,	// stroke segment s1 value out of range [-127,127] 
@@ -38,6 +39,9 @@ enum Status {
 	STATUS_STEP_RANGE_ERROR = -113,	// Internal error: pulse step out of range [-1,0,1]
 	STATUS_STROKE_END_ERROR = -114,	// Stroke delta/end-position mismatch
 	STATUS_STROKE_MAXLEN = -115,	// Stroke maximum length exceeded
+	STATUS_STROKE_PLANMICROS = -116,// Stroke planMicros < TICK_MICROSECONDS
+	STATUS_STROKE_START = -117,		// Stroke start() must be called before traverse()
+	STATUS_JSON_MEM = -118,			// Internal error: no more JSON memory
 };
 
 } // namespace firestep

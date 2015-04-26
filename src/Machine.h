@@ -98,7 +98,6 @@ typedef class Machine : public QuadStepper {
         friend class Controller;
         friend class JsonController;
     private:
-        Stroke stroke;
         int32_t processMicros;
 
         float pathPosition;
@@ -139,6 +138,7 @@ typedef class Machine : public QuadStepper {
 	public:
         Motor motor[MOTOR_COUNT];
         Axis axis[AXIS_COUNT];
+        Stroke stroke;
 
     public:
         Machine();

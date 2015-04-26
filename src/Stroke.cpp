@@ -8,42 +8,93 @@ template class Quad<int16_t>;
 template class Quad<int32_t>;
 
 Stroke::Stroke() 
-	: length(0), maxV(16), scale(1), curSeg(0), planMicros(1000000), tStart(0), tTotal(0)
+	: length(0), maxV(16), scale(1), curSeg(0), planMicros(0), tStart(0), dtTotal(0)
 {}
 
 SegIndex Stroke::goalSegment(Ticks t) {
-	if (t < tStart || length == 0 || tTotal==0) {
+	if (t < tStart || length == 0 || dtTotal==0) {
 		return 0;
 	}
-	Ticks dt = t-tStart;
-	return dt >= tTotal ? length-1 : ((dt*length) / tTotal);
+	Ticks dt = t - tStart;
+	if (dt >= dtTotal) {
+		return length-1;
+	}
+	Ticks dtl = dt * length;
+	return (dtl + length-1) / dtTotal;
 }
 
 Ticks Stroke::goalStartTicks(Ticks t) {
-	if (t < tStart || length == 0 || tTotal==0) {
+	if (t < tStart || length == 0 || dtTotal==0) {
 		return 0;
 	}
 	Ticks dt = t - tStart;
-	Ticks dtl = (dt >= tTotal ? tTotal-1:dt) * length;
-	return ((dtl/tTotal)*tTotal)/length;
+	if (dt >= dtTotal) {
+		return (dtTotal*(length-1))/length;
+	}
+	Ticks dtl = dt * length;
+	SegIndex s = (dtl + length-1) / dtTotal;
+	Ticks dtEnd = (s*dtTotal)/length;
+	cout << "dtEnd:" << (long) dtEnd
+		<< " s:" << s 
+		<< " dtl:" << dtl 
+		<< " dt:" << dt
+		<< " dtTotal:" << dtTotal
+		<< " length:" << (long) length
+		<< endl;
+	return dtEnd;
 }
 
 Ticks Stroke::goalEndTicks(Ticks t) {
-	if (t < tStart || length == 0 || tTotal==0) {
+	if (t < tStart || length == 0 || dtTotal==0) {
 		return 0;
 	}
 	Ticks dt = t - tStart;
-	Ticks dtl = (dt >= tTotal ? tTotal-1:dt) * length;
-	return (((dtl+tTotal-1)/tTotal)*tTotal)/length;
+	if (dt >= dtTotal) {
+		return dtTotal;
+	}
+	Ticks dtl = dt * length;
+	SegIndex s = (dtl + length-1) / dtTotal;
+	Ticks dtEnd = ((s+1)*dtTotal)/length;
+	cout << "dtEnd:" << (long) dtEnd
+		<< " s:" << s 
+		<< " dtl:" << dtl 
+		<< " dt:" << dt
+		<< " dtTotal:" << dtTotal
+		<< " length:" << (long) length
+		<< endl;
+	return dtEnd;
 }
 
 Quad<StepCoord> Stroke::goalPos(Ticks t) {
 	Quad<StepCoord> v;
 	SegIndex sGoal = goalSegment(t);
 	Quad<StepCoord> pos;
-	if (t <= tStart || tTotal <= 0 || length <= 0) {
+	Ticks dtSegStart = goalStartTicks(t);
+	Ticks dtSegEnd = goalEndTicks(t);
+	Ticks dtSeg = dtSegEnd - dtSegStart;
+	if (t <= tStart || dtTotal <= 0 || length <= 0 || dtSeg <= 0) {
+#ifdef TEST
+	cout << std::dec << "goalPos skip " 
+			<< " t:" << t
+			<< " tStart:" << tStart
+			<< " dtSeg:" << dtSeg 
+			<< " dtSegStart:" << dtSegStart
+			<< " dtSegEnd:" << dtSegEnd
+			<< " pos:" << pos.toString() 
+			<< endl;
+#endif
 		// do nothing
-	} else if (t >= tStart+tTotal) {
+	} else if (tStart+dtTotal <= t) {
+#ifdef TEST
+	cout << std::dec << "goalPos endPos:" << dEndPos.toString() 
+			<< " t:" << t
+			<< " tStart:" << tStart
+			<< " dtSeg:" << dtSeg 
+			<< " dtSegStart:" << dtSegStart
+			<< " dtSegEnd:" << dtSegEnd
+			<< " pos:" << pos.toString() 
+			<< endl;
+#endif
 		return dEndPos;
 	} else {
 		Quad<StepCoord> posSegStart;
@@ -51,20 +102,19 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 			v += seg[s]*scale;
 			posSegStart += v;
 		}
-		Ticks tSegStart = goalStartTicks(t);
-		Ticks tSegEnd = goalEndTicks(t);
 		Ticks dt = t - tStart;
-		Ticks tNum = (dt>tSegEnd ? tSegEnd:dt) - tSegStart;
-		Ticks tDenom = tSegEnd - tSegStart;
+		Ticks tNum = (dt>dtSegEnd ? dtSegEnd:dt) - dtSegStart;
 		v += seg[sGoal]*scale;
 		v *= tNum;
-		v /= tDenom;
+		v /= dtSeg;
 		pos = posSegStart+v;
-#ifdef TEST_TRACE
+#ifdef TEST
 		cout << std::dec << "goalPos"
 			<< " dt:" << dt
 			<< " tNum:" << tNum 
-			<< " tDenom:" << tDenom 
+			<< " dtSeg:" << dtSeg 
+			<< " dtSegStart:" << dtSegStart
+			<< " dtSegEnd:" << dtSegEnd
 			<< " v:" << v.toString() 
 			<< " pos:" << pos.toString() 
 			<< endl;
@@ -78,8 +128,15 @@ template<class T> T abs(T a) { return a < 0 ? -a : a; };
 Status Stroke::start(Ticks tStart) {
 	this->tStart = tStart;
 
+	if (dtTotal <= 0) {
+		if (planMicros <= TICK_MICROSECONDS) {
+			return STATUS_STROKE_PLANMICROS;
+		}
+		dtTotal = (planMicros + TICK_MICROSECONDS-1) / TICK_MICROSECONDS;
+	}
+
 	dPos = 0;
-	Quad<StepCoord> end = goalPos(tStart+tTotal-1);
+	Quad<StepCoord> end = goalPos(tStart+dtTotal-1);
 	for (int i=0; i<4; i++) {
 		if (maxV < abs(dEndPos.value[i] - end.value[i])) {
 			return STATUS_STROKE_END_ERROR;
@@ -94,7 +151,11 @@ bool Stroke::isDone() {
 
 Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 	Quad<StepCoord> dGoal = goalPos(tCurrent);
-	if (tCurrent>tStart+tTotal || tCurrent>tStart && dPos==dGoal) {
+	if (tStart <= 0) {
+		return STATUS_STROKE_START;
+	}
+	//if (tCurrent > tStart+dtTotal || tCurrent>tStart && dPos==dGoal) {
+	if (tCurrent > tStart+dtTotal) {
 		return STATUS_OK;
 	}
 	while (dPos != dGoal) {
