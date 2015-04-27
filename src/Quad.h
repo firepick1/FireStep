@@ -33,6 +33,14 @@ template<class T> class Quad { // a 4 element vector
                        value[3] + that.value[3]
                    );
         }
+        Quad<T> operator-(Quad<T> that) {
+            return Quad<T>(
+                       value[0] - that.value[0],
+                       value[1] - that.value[1],
+                       value[2] - that.value[2],
+                       value[3] - that.value[3]
+                   );
+        }
         Quad<T>& operator=(T that) {
             value[0] = that;
             value[1] = that;

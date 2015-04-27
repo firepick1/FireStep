@@ -48,21 +48,21 @@ typedef uint8_t boolean;
 #define CS11 1
 #define CS12 2
 
-#define ADCH arduino.mem[0]
-#define ADCSRA arduino.mem[1]
-#define ADCSRB arduino.mem[2]
-#define ADMUX arduino.mem[3]
-#define CLKPR arduino.mem[4]
-#define DIDR0 arduino.mem[5]
-#define PRR arduino.mem[6]
-#define SREGI arduino.mem[7]
-#define TCCR1A arduino.mem[8]
-#define TCCR1B arduino.mem[9]
-#define TCNT1 arduino.mem[10]
-#define TIMSK1 arduino.mem[11]
+#define ADCH arduino.MEM(0)
+#define ADCSRA arduino.MEM(1)
+#define ADCSRB arduino.MEM(2)
+#define ADMUX arduino.MEM(3)
+#define CLKPR arduino.MEM(4)
+#define DIDR0 arduino.MEM(5)
+#define PRR arduino.MEM(6)
+#define SREGI arduino.MEM(7)
+#define TCCR1A arduino.MEM(8)
+#define TCCR1B arduino.MEM(9)
+#define TCNT1 arduino.MEM(10)
+#define TIMSK1 arduino.MEM(11)
 
-#define cli() SREGI=0
-#define sei() SREGI=1
+#define cli() (SREGI=0)
+#define sei() (SREGI=1)
 
 extern "C" {
     extern long millis();
@@ -146,6 +146,7 @@ typedef class SerialType : public Print {
             switch (format) {
             case HEX:
                 buf << std::hex << value;
+				buf << std::dec;
                 break;
             default:
             case DEC:
@@ -169,9 +170,9 @@ typedef class SerialType : public Print {
 } SerialType;
 
 
-void digitalWrite(int dirPin, int value);
-int digitalRead(int dirPin);
-void pinMode(int pin, int inout);
+void digitalWrite(int16_t dirPin, int16_t value);
+int16_t digitalRead(int16_t dirPin);
+void pinMode(int16_t pin, int16_t inout);
 void delay(int ms);
 
 extern SerialType Serial;
@@ -179,18 +180,24 @@ extern SerialType Serial;
 #define ARDUINO_PINS 127
 #define ARDUINO_MEM 1024
 typedef class ArduinoType {
-    public:
-        uint16_t pinMode[ARDUINO_PINS];
-        uint16_t pin[ARDUINO_PINS];
-        uint16_t mem[ARDUINO_MEM];
+	friend void digitalWrite(int16_t pin, int16_t value);
+	friend int16_t digitalRead(int16_t pin);
+	friend void pinMode(int16_t pin, int16_t inout);
+	private: 
+		uint16_t pin[ARDUINO_PINS];
+        uint16_t _pinMode[ARDUINO_PINS];
 		uint32_t pinPulses[ARDUINO_PINS];
+        uint16_t mem[ARDUINO_MEM];
+    public:
 
     public:
         ArduinoType();
 		void dump();
+		uint16_t& MEM(int addr);
 		void clear();
 		void timer1(int increment=1);
 		void delay500ns();
+		int16_t getPinMode(int16_t pin);
 } ArduinoType;
 
 #define DELAY500NS arduino.delay500ns();

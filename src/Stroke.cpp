@@ -34,13 +34,15 @@ Ticks Stroke::goalStartTicks(Ticks t) {
 	Ticks dtl = dt * length;
 	SegIndex s = (dtl + length-1) / dtTotal;
 	Ticks dtEnd = (s*dtTotal)/length;
+#ifdef TEST_TRACE
 	cout << "dtEnd:" << (long) dtEnd
-		<< " s:" << s 
+		<< " s:" << (long) s 
 		<< " dtl:" << dtl 
 		<< " dt:" << dt
 		<< " dtTotal:" << dtTotal
 		<< " length:" << (long) length
 		<< endl;
+#endif
 	return dtEnd;
 }
 
@@ -55,47 +57,38 @@ Ticks Stroke::goalEndTicks(Ticks t) {
 	Ticks dtl = dt * length;
 	SegIndex s = (dtl + length-1) / dtTotal;
 	Ticks dtEnd = ((s+1)*dtTotal)/length;
+#ifdef TRACE
 	cout << "dtEnd:" << (long) dtEnd
-		<< " s:" << s 
+		<< " s:" << (long) s 
 		<< " dtl:" << dtl 
 		<< " dt:" << dt
 		<< " dtTotal:" << dtTotal
 		<< " length:" << (long) length
 		<< endl;
+#endif
 	return dtEnd;
 }
 
 Quad<StepCoord> Stroke::goalPos(Ticks t) {
 	Quad<StepCoord> v;
 	SegIndex sGoal = goalSegment(t);
-	Quad<StepCoord> pos;
+	Quad<StepCoord> dGoal;
 	Ticks dtSegStart = goalStartTicks(t);
 	Ticks dtSegEnd = goalEndTicks(t);
 	Ticks dtSeg = dtSegEnd - dtSegStart;
+#ifdef TEST
+	string testMsg = "goalPos";
+#endif
 	if (t <= tStart || dtTotal <= 0 || length <= 0 || dtSeg <= 0) {
 #ifdef TEST
-	cout << std::dec << "goalPos skip " 
-			<< " t:" << t
-			<< " tStart:" << tStart
-			<< " dtSeg:" << dtSeg 
-			<< " dtSegStart:" << dtSegStart
-			<< " dtSegEnd:" << dtSegEnd
-			<< " pos:" << pos.toString() 
-			<< endl;
+		testMsg += " skip";
 #endif
 		// do nothing
 	} else if (tStart+dtTotal <= t) {
+		dGoal = dEndPos;
 #ifdef TEST
-	cout << std::dec << "goalPos endPos:" << dEndPos.toString() 
-			<< " t:" << t
-			<< " tStart:" << tStart
-			<< " dtSeg:" << dtSeg 
-			<< " dtSegStart:" << dtSegStart
-			<< " dtSegEnd:" << dtSegEnd
-			<< " pos:" << pos.toString() 
-			<< endl;
+		testMsg += " endPos";
 #endif
-		return dEndPos;
 	} else {
 		Quad<StepCoord> posSegStart;
 		for (SegIndex s=0; s<sGoal; s++) {
@@ -107,20 +100,22 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 		v += seg[sGoal]*scale;
 		v *= tNum;
 		v /= dtSeg;
-		pos = posSegStart+v;
+		dGoal = posSegStart+v;
 #ifdef TEST
-		cout << std::dec << "goalPos"
-			<< " dt:" << dt
-			<< " tNum:" << tNum 
+		testMsg += " goalPos";
+#endif
+	}
+#ifdef TEST_TRACE
+	cout << testMsg
+			<< " t:" << t
+			<< " tStart:" << tStart
 			<< " dtSeg:" << dtSeg 
 			<< " dtSegStart:" << dtSegStart
 			<< " dtSegEnd:" << dtSegEnd
-			<< " v:" << v.toString() 
-			<< " pos:" << pos.toString() 
+			<< " dGoal:" << dGoal.toString() 
 			<< endl;
 #endif
-	}
-	return pos;
+	return dGoal;
 }
 
 template<class T> T abs(T a) { return a < 0 ? -a : a; };
@@ -154,10 +149,10 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 	if (tStart <= 0) {
 		return STATUS_STROKE_START;
 	}
-	//if (tCurrent > tStart+dtTotal || tCurrent>tStart && dPos==dGoal) {
 	if (tCurrent > tStart+dtTotal) {
 		return STATUS_OK;
 	}
+	//cout << "I dPos:" << dPos.toString() << " dGoal:" << dGoal.toString() << endl;
 	while (dPos != dGoal) {
 		StepCoord d[4];
 		StepCoord dMax = 0;
@@ -184,6 +179,7 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 			default:
 				return status;	// abnormal return
 		}
+	//cout << "L dPos:" << dPos.toString() << " dGoal:" << dGoal.toString() << endl;
 	}
 	return STATUS_PROCESSING;
 }

@@ -224,10 +224,10 @@ void test_Thread() {
 	ASSERTEQUAL(16000, MS_CYCLES(1));
 	ASSERTEQUAL(15625, MS_TIMER_CYCLES(1000)); 
 	arduino.dump();
-	ASSERTEQUALS(" CLKPR:0 nThreads:1\n", Serial.output().c_str());
-	ASSERTEQUAL(OUTPUT, arduino.pinMode[LED_PIN_RED]);
+	//ASSERTEQUALS(" CLKPR:0 nThreads:1\n", Serial.output().c_str());
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(LED_PIN_RED));
 	ASSERTEQUAL(LOW, digitalRead(LED_PIN_RED));
-	ASSERTEQUAL(OUTPUT, arduino.pinMode[LED_PIN_GRN]);
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(LED_PIN_GRN));
 	ASSERTEQUAL(LOW, digitalRead(LED_PIN_GRN));
 	ASSERTEQUAL(0x0000, TIMSK1); 	// Timer/Counter1 interrupt mask; no interrupts
 	ASSERTEQUAL(0x0000, TCCR1A);	// Timer/Counter1 normal port operation
@@ -262,6 +262,8 @@ void test_Machine() {
 	monitor.verbose = false;
 
 	arduino.dump();
+	Serial.clear();
+#ifdef LEGACY
 	ASSERTEQUALS(" CLKPR:0 nThreads:2\n", Serial.output().c_str());
 	ASSERTEQUAL(OUTPUT, arduino.pinMode[PIN_X]);
 	ASSERTEQUAL(OUTPUT, arduino.pinMode[PIN_Y]);
@@ -279,6 +281,7 @@ void test_Machine() {
 	ASSERTEQUAL(LOW, digitalRead(LED_PIN_RED));
 	ASSERTEQUAL(OUTPUT, arduino.pinMode[LED_PIN_GRN]);
 	ASSERTEQUAL(LOW, digitalRead(LED_PIN_GRN));
+#endif
 	ASSERTEQUAL(0x0000, TIMSK1); 	// Timer/Counter1 interrupt mask; no interrupts
 	ASSERTEQUAL(0x0000, TCCR1A);	// Timer/Counter1 normal port operation
 	ASSERTEQUAL(0x0005, TCCR1B);	// Timer/Counter1 active; no prescale
@@ -304,10 +307,12 @@ void test_Machine() {
 
 	char buf[200];
 	snprintf(buf, sizeof(buf), "[DIAG%ld 120 X1Y1Z1]\n", (long) sizeof(Controller));
+#ifdef LEGACY
 	test_command("[DIAG]", buf);
 	test_command("[V]", "[v1.0]\n");
 	test_command("[GULS]", "[XYZ00000000 00000000 00000000 X1Y1Z1 00000000 00000001 00000000 00000000 0000]\n");
 	test_command("[GXYZ]", "[XYZ00000000 00000000 00000000 X1Y1Z1 00000000 00000001 00000000 00000000 0000]\n");
+#endif
 
 	cout << "TEST	: test_Machine() OK " << endl;
 }
@@ -320,7 +325,7 @@ void test_BadJson(const char *json) {
 	if (jtiny.success()) {
 		char output[2000];
 		jtiny.printTo(output, sizeof(output));
-		cout << output << endl;
+		//cout << output << endl;
 		ASSERTEQUALS(json, output);
 		int kids = 0;
 		for (JsonObject::iterator it=jtiny.begin();
@@ -624,12 +629,15 @@ void test_JsonController_stroke(JsonController &jc, Machine &machine) {
 	string replace;
 	replace.push_back('\''); replace.push_back('"');
 
+	// Set machine to known position and state
+	digitalWrite(machine.axis[0].pinMin, 0);
+	digitalWrite(machine.axis[1].pinMin, 0);
+	digitalWrite(machine.axis[2].pinMin, 0);
 #define STROKE_CONFIG "{"\
 		"'xtm':10000,'xtn':0,'xpo':5,'xln':false,"\
 		"'ytm':10000,'ytn':0,'ypo':5,'yln':false,"\
 		"'ztm':10000,'ztn':0,'zpo':5,'zln':false,"\
 		"'atm':10000,'atn':0,'apo':5,'aln':false,'aps':255}"
-	// Set machine to known position and state
 	string jconfig = STROKE_CONFIG;
 	// Set and verify configuration
 	testJSON(jc, replace, jconfig.c_str(), "{'s':0,'r':" STROKE_CONFIG "}");
@@ -648,10 +656,12 @@ void test_JsonController_stroke(JsonController &jc, Machine &machine) {
 	ASSERTQUAD(Quad<StepCoord>(10,20,0,0), machine.stroke.dEndPos);
 
 	// tStart+1: traverse first stroke segment
+	ASSERTEQUAL(0, digitalRead(11));
 	testJSON_process(jc, jcmd, replace, 
 		"{'s':2,'r':{'str':{'us':123,'dp':[10,20],'s1':1,'s2':4,'s3':7,'s4':-10}}}");
+	ASSERTEQUAL(0, digitalRead(11));
 	ASSERTQUAD(Quad<StepCoord>(1,4,7,-10), machine.stroke.position());
-	ASSERTQUAD(Quad<StepCoord>(6,9,12,5), machine.motorPosition()); // axis a is NOPIN inactive 
+	ASSERTQUAD(Quad<StepCoord>(6,9,12,5), machine.motorPosition()); // axis a NOPIN inactive 
 	ASSERTEQUAL(tStart+1, threadClock.ticks);
 
 	// tStart+2: traverse final stroke segment
@@ -741,9 +751,11 @@ class MockStepper : public QuadStepper {
 		}
 		virtual Status step(const Quad<StepCoord> &pulse) {
 			dPos += pulse;
+#ifdef TEST_TRACE
 			cout << "	: MockStepper" 
 				<< " dPos:" << dPos.toString() 
 				<< " pulse:" << pulse.toString() << endl;
+#endif
 			return STATUS_OK;
 		}
 };
@@ -827,7 +839,7 @@ void test_Stroke() {
 	ASSERTQUAD(Quad<StepCoord>(1,10,-1,-10), stroke.goalPos(tStart+5));
 	ASSERTQUAD(Quad<StepCoord>(0,0,0,0), stroke.goalPos(tStart));
 	for (Ticks t=tStart; t<tStart+20; t++) {
-		cout << std::dec << "stroke	: traverse(" << t << ")" << endl;
+		//cout << "stroke	: traverse(" << t << ")" << endl;
 		if (STATUS_OK == stroke.traverse(t, stepper)) {
 			ASSERTEQUAL(18, t-tStart);
 			Quad<StepCoord> dPos = stepper.dPos;
@@ -839,7 +851,7 @@ void test_Stroke() {
 			Quad<StepCoord> dPos = stepper.dPos;
 			Status status = stroke.traverse(t, stepper); // should do nothing
 			ASSERT(status == STATUS_PROCESSING || status == STATUS_OK);
-			ASSERT(dPos == stepper.dPos); 
+			ASSERTQUAD(dPos, stepper.dPos); 
 		}
 	}
 
@@ -858,7 +870,7 @@ void test_Stroke() {
 	ASSERT(Quad<StepCoord>(0,0,0,0) == stroke.goalPos(tStart));
 	stepper.clear();
 	for (Ticks t=tStart; t<tStart+20; t++) {
-		cout << "stroke	: traverse(" << t << ")" << endl;
+		//cout << "stroke	: traverse(" << t << ")" << endl;
 		if (STATUS_OK == stroke.traverse(t, stepper)) {
 			ASSERTEQUAL(18, t-tStart);
 			Quad<StepCoord> dPos = stepper.dPos;
@@ -894,7 +906,7 @@ void test_Stroke() {
 
 	stepper.clear();
 	for (Ticks t=tStart; t<tStart+20; t++) {
-		cout << "stroke	: traverse(" << t << ")" << endl;
+		//cout << "stroke	: traverse(" << t << ")" << endl;
 		if (STATUS_OK == stroke.traverse(t, stepper)) {
 			ASSERTEQUAL(18, t-tStart);
 			Quad<StepCoord> dPos = stepper.dPos;
@@ -917,10 +929,9 @@ void test_Machine_step() {
 	cout << "TEST	: test_Machine_step() =====" << endl;
 
 	Machine machine;
-	arduino.pin[machine.axis[0].pinMin] = 0;
-	arduino.pin[machine.axis[1].pinMin] = 0;
-	arduino.pin[machine.axis[2].pinMin] = 0;
-	arduino.pin[machine.axis[3].pinMin] = 0;
+	digitalWrite(machine.axis[0].pinMin, 0);
+	digitalWrite(machine.axis[1].pinMin, 0);
+	digitalWrite(machine.axis[2].pinMin, 0);
 	machine.axis[0].travelMax = 5;
 	machine.axis[1].travelMax = 4;
 	machine.axis[2].travelMax = 3;
@@ -930,9 +941,9 @@ void test_Machine_step() {
 	ASSERTEQUAL(false, machine.axis[2].atMin);
 	ASSERTEQUAL(false, machine.axis[3].atMin);
 	Status status;
-	ASSERT(machine.motorPosition() == Quad<StepCoord>(0,0,0,0));
+	ASSERTQUAD(machine.motorPosition(), Quad<StepCoord>(0,0,0,0));
 	ASSERTEQUAL(STATUS_STEP_RANGE_ERROR, machine.step(Quad<StepCoord>(1,2,3,4)));
-	ASSERT(machine.motorPosition() == Quad<StepCoord>(0,0,0,0));
+	ASSERTQUAD(machine.motorPosition(), Quad<StepCoord>(0,0,0,0));
 
 	// Test travelMax
 	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1,0,0,0)));
@@ -949,7 +960,7 @@ void test_Machine_step() {
 	ASSERTQUAD(Quad<StepCoord>(4,3,2,0), machine.motorPosition());
 	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1,1,1,1)));
 	ASSERTEQUAL(false, machine.axis[3].atMin);
-	ASSERT(machine.motorPosition() == Quad<StepCoord>(5,4,3,0));
+	ASSERTQUAD(machine.motorPosition(), Quad<StepCoord>(5,4,3,0));
 	ASSERTEQUAL(false, machine.axis[0].atMin);
 	ASSERTEQUAL(false, machine.axis[1].atMin);
 	ASSERTEQUAL(false, machine.axis[2].atMin);
@@ -977,9 +988,9 @@ void test_Machine_step() {
 	ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1,-1,-1,-1)));
 	ASSERTQUAD(Quad<StepCoord>(0,-1,0,0), machine.motorPosition());
 
-	// Test pinMin
+	// Test atMin
 	ASSERTQUAD(Quad<StepCoord>(0,-1,0,0), machine.motorPosition());
-	arduino.pin[machine.axis[0].pinMin] = 1;
+	digitalWrite(machine.axis[0].pinMin, 1);
 	machine.axis[0].travelMin = -10;
 	machine.axis[1].travelMin = -10;
 	machine.axis[2].travelMin = -10;

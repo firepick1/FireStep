@@ -182,9 +182,9 @@ ThreadRunner::ThreadRunner() {
 
 void ThreadRunner::setup(int monitorPin1, int monitorPin2) {
     monitor.setup(monitorPin1, monitorPin2);
-    DEBUG_DEC("CLKPR", CLKPR);
-    DEBUG_DEC("nThreads", nThreads);
-    DEBUG_EOL();
+    //DEBUG_DEC("CLKPR", CLKPR);
+    //DEBUG_DEC("nThreads", nThreads);
+    //DEBUG_EOL();
 
     TCCR1A = 0; // Timer mode
     TIMSK1 = 0 << TOIE1;	// disable interrupts

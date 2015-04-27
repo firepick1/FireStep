@@ -172,7 +172,7 @@ byte CommandParser::readCommand() {
 
 
 void Controller::init() {
-
+#ifdef LEGACY
     pinMode(PIN_X, OUTPUT);
     pinMode(PIN_Y, OUTPUT);
     pinMode(PIN_Z, OUTPUT);
@@ -194,6 +194,7 @@ void Controller::init() {
     guardStart = GUARD_BYTE;
     guardEnd = GUARD_BYTE;
     machine.init();
+#endif
 }
 
 byte Controller::readCommand() {
@@ -357,6 +358,7 @@ bool Controller::processCommand() {
         Serial.println("]");
         break;
     case CMD_DIAG:
+#ifdef LEGACY
         sz = sizeof(Controller);
         Serial.write('[');
         Serial.write('D');
@@ -382,6 +384,7 @@ bool Controller::processCommand() {
         Serial.print(sz);
         Serial.println("]");
         break;
+#endif
     case CMD_SET_BACKLASH:
         machine.backlash.x.longValue = machine.slack.x.maxSlack;
         machine.backlash.y.longValue = machine.slack.y.maxSlack;
@@ -486,62 +489,89 @@ void Machine::init() {
 }
 
 Status Machine::step(const Quad<StepCoord> &pulse) {
-	for (int i=0; i<4; i++) {
-		Axis &a(axis[motor[i].axisMap]);
-		a.atMin = a.pinMin != NOPIN && digitalRead(a.pinMin);
-		if (a.pinStep == NOPIN || a.pinDir == NOPIN) {
-			continue;
-		}
-		switch (pulse.value[i]) {
-			case 1:
-				if (a.position >= a.travelMax) {
-					continue;
-				}
-				digitalWrite(a.pinDir, a.invert ? LOW : HIGH);
-				break;
-			case 0:
-				continue;
-			case -1:
-				if (a.atMin || a.position <= a.travelMin) {
-					continue;
-				}
-				digitalWrite(a.pinDir, a.invert ? HIGH : LOW);
-				break;
-			default:
-				return STATUS_STEP_RANGE_ERROR;
-		}
-		digitalWrite(a.pinStep, LOW);
-	}
-	STEPPER_PULSE_DELAY;
-	for (int i=0; i<4; i++) {
-		Axis &a(axis[motor[i].axisMap]);
-		if (a.pinStep == NOPIN || a.pinDir == NOPIN) {
-			continue;
-		}
-		switch(pulse.value[i]) {
-			case 1:
-				if (a.position >= a.travelMax) {
-					continue;
-				}
-				break;
-			case 0:
-				continue;
-			case -1:
-				if (a.atMin || (a.position <= a.travelMin)) {
-					continue;
-				}	
-				break;
-			default:
-				return STATUS_STEP_RANGE_ERROR;
-		}
-		digitalWrite(a.pinStep, HIGH);
-		a.position += pulse.value[i];
-	}
+    for (int i = 0; i < 4; i++) {
+        Axis &a(axis[motor[i].axisMap]);
+        if (a.pinMin != NOPIN) {
+            bool atMin = digitalRead(a.pinMin);
+            if (atMin != a.atMin) {
+#ifdef TEST_TRACE
+                cout << "axis[" << i << "] CHANGE" 
+					<< " atMin:" << atMin 
+					<< " pinMin:" << (int) a.pinMin
+					<< endl;
+#endif
+                a.atMin = atMin;
+            }
+        }
+        if (a.pinStep == NOPIN || a.pinDir == NOPIN) {
+#ifdef TEST_TRACE
+            cout << "axis[" << i << "] NOPIN" << endl;
+#endif
+            continue;
+        }
+        switch (pulse.value[i]) {
+        case 1:
+            if (a.position >= a.travelMax) {
+#ifdef TEST_TRACE
+                cout << "axis[" << i << "] travelMax:" << a.travelMax << endl;
+#endif
+                continue;
+            }
+            digitalWrite(a.pinDir, a.invert ? LOW : HIGH);
+            break;
+        case 0:
+            continue;
+        case -1:
+            if (a.atMin) {
+#ifdef TEST_TRACE
+                cout << "axis[" << i << "] atMin:" << endl;
+#endif
+                continue;
+            }
+            if (a.position <= a.travelMin) {
+#ifdef TEST_TRACE
+                cout << "axis[" << i << "] travelMin:" << a.travelMin;
+#endif
+                continue;
+            }
+            digitalWrite(a.pinDir, a.invert ? HIGH : LOW);
+            break;
+        default:
+            return STATUS_STEP_RANGE_ERROR;
+        }
+        digitalWrite(a.pinStep, LOW);
+    }
+    STEPPER_PULSE_DELAY;
+    for (int i = 0; i < 4; i++) {
+        Axis &a(axis[motor[i].axisMap]);
+        if (a.pinStep == NOPIN || a.pinDir == NOPIN) {
+            continue;
+        }
+        switch (pulse.value[i]) {
+        case 1:
+            if (a.position >= a.travelMax) {
+                continue;
+            }
+            break;
+        case 0:
+            continue;
+        case -1:
+            if (a.atMin || (a.position <= a.travelMin)) {
+                continue;
+            }
+            break;
+        default:
+            return STATUS_STEP_RANGE_ERROR;
+        }
+        digitalWrite(a.pinStep, HIGH);
+        a.position += pulse.value[i];
+    }
 
-	return STATUS_OK;
+    return STATUS_OK;
 }
 
 bool Machine::doJog() {
+#ifdef LEGACY
     if (jogCount.longValue > 0) {
         int deltaBacklash;
 
@@ -574,6 +604,7 @@ bool Machine::doJog() {
     }
 
     sendXYZResponse(&drivePos);
+#endif
     return true;
 
 PULSE_ERROR:
@@ -582,6 +613,7 @@ PULSE_ERROR:
 }
 
 void Machine::sendXYZResponse(struct SerialVector32 *pVector) {
+#ifdef LEGACY
     int sz;
 
     Serial.print("[XYZ");
@@ -612,6 +644,7 @@ void Machine::sendXYZResponse(struct SerialVector32 *pVector) {
     maxPulses.send();
     Serial.write(']');
     Serial.println();
+#endif
 }
 
 void Machine::sendBacklashResponse(struct SerialVector32 *pVector) {
@@ -683,7 +716,7 @@ bool Machine::pulseLow(byte stepPin, byte limitPin) {
     digitalWrite(stepPin, LOW);
 
     atLimit = digitalRead(limitPin);
-	STEPPER_PULSE_DELAY;
+    STEPPER_PULSE_DELAY;
 
     digitalWrite(stepPin, HIGH);
 
@@ -694,18 +727,19 @@ bool Machine::pulseLow(byte stepPin, byte limitPin) {
  * Return position of currently driven axes bound to motors
  */
 Quad<StepCoord> Machine::motorPosition() {
-	return Quad<StepCoord>(
-		axis[motor[0].axisMap].position,
-		axis[motor[1].axisMap].position,
-		axis[motor[2].axisMap].position,
-		axis[motor[3].axisMap].position
-	);
+    return Quad<StepCoord>(
+               axis[motor[0].axisMap].position,
+               axis[motor[1].axisMap].position,
+               axis[motor[2].axisMap].position,
+               axis[motor[3].axisMap].position
+           );
 }
 
 bool Machine::doAccelerationStroke() {
     SerialVector32 delta;
     float newPathPosition = actualMicros.longValue / (float) estimatedMicros.longValue;
     bool completed = newPathPosition >= 1;
+#ifdef LEGACY
 
     if (completed) {
         newPathPosition = 1;
@@ -756,6 +790,7 @@ bool Machine::doAccelerationStroke() {
 
     pathPosition = newPathPosition;
 
+#endif
     return completed;
 }
 
