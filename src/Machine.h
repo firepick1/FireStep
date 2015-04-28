@@ -26,31 +26,6 @@ typedef struct MachineThread : Thread {
     void Heartbeat();
 } MachineThread;
 
-typedef struct CommandParser {
-    int cPeek;
-    byte peekAvail;
-
-    byte readCommand();
-    byte peek(byte c);
-    void reset();
-} CommandParser;
-
-typedef struct Slack {
-    byte maxSlack;
-    byte curSlack;
-    bool isPlusDelta;
-
-    void init(byte maxSlack);
-    int deltaWithBacklash(int delta);
-} Slack;
-
-typedef struct SlackVector {
-    Slack x;
-    Slack y;
-    Slack z;
-    void init(byte xMax, byte yMax, byte zMax);
-} SlackVector;
-
 typedef struct Motor {
     uint8_t	axisMap; 	// index into axis array
     Motor() {}
@@ -95,32 +70,10 @@ typedef class Axis {
 } Axis;
 
 typedef class Machine : public QuadStepper {
-        friend class Controller;
         friend class JsonController;
     private:
-        int32_t processMicros;
-
-        float pathPosition;
-        SerialInt16 maxPulses;
-        SerialInt32 pulses;
-        SerialInt32 heartbeats;
-        SerialInt32 heartbeatMicros;
-        SerialInt32 actualMicros;
-        SerialVector32 unitLengthSteps;
-        SerialVector32 drivePos;
-        bool 	xReverse;
-        bool 	yReverse;
-        bool 	zReverse;
 		bool	invertLim;
         union {
-            struct {
-                SerialInt32 estimatedMicros;
-                SerialVector32 startPos;
-                SerialVector32 endPos;
-                SerialVector32 segmentStart;
-                SerialVector32 segmentStartPos;
-                SerialVector16 toolVelocity;
-            };
             struct {
                 SerialVector16 jogDelta;
                 SerialInt32 jogFrequency;
@@ -132,7 +85,6 @@ typedef class Machine : public QuadStepper {
             };
         };
         SerialVectorF drivePathScale;
-        SlackVector slack;
         int segmentIndex;
         SerialInt16 deltaCount;
         SerialVector8 deltas[DELTA_COUNT];
@@ -146,18 +98,11 @@ typedef class Machine : public QuadStepper {
         void init();
 		virtual Status step(const Quad<StepCoord> &pulse);
 
-        bool doJog();
 		Quad<StepCoord> motorPosition();
-        bool doAccelerationStroke();
-        bool pulseDrivePin(byte stepPin, byte dirPin, byte limitPin, int delta, bool reverse, char axis);
-        bool pulseLow(byte stepPin, byte limitPin);
-        void sendXYZResponse(struct SerialVector32 *pVector);
-        void sendBacklashResponse(struct SerialVector32 *pVector);
 } Machine;
 
 typedef class Controller {
     private:
-        CommandParser	parser;
         char			guardStart;
         Ticks			lastClock;
         byte			speed;
@@ -166,10 +111,6 @@ typedef class Controller {
     public:
         byte 			cmd; // TODO
         Machine 		machine; // TODO
-        void init();
-        byte readCommand();
-        bool processCommand();
-        bool readAccelerationStroke();
 } Controller;
 
 } // namespace firestep
