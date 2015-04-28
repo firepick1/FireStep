@@ -703,10 +703,12 @@ void test_JsonController() {
 	Serial.clear();
 	JsonCommand jcmd;
 	ASSERTEQUAL(STATUS_JSON_PARSED, jcmd.parse("{\"sys\":\"\"}"));
+	threadClock.ticks = 12345;
 	jc.process(jcmd);
 	jcmd.response().printTo(Serial);
 	char sysbuf[500];
-	snprintf(sysbuf, sizeof(sysbuf), "{\"s\":%d,\"r\":{\"sys\":{\"fb\":\"%s\",\"fv\":%.2f}}}",
+	snprintf(sysbuf, sizeof(sysbuf), 
+		"{\"s\":%d,\"r\":{\"sys\":{\"fb\":\"%s\",\"fv\":%.2f,\"li\":false,\"tc\":12345}}}",
 		STATUS_OK, BUILD, VERSION_MAJOR*100 + VERSION_MINOR + VERSION_PATCH/100.0);
 	ASSERTEQUALS(sysbuf, Serial.output().c_str());
 

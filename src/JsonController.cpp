@@ -437,7 +437,7 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
     } else if (strcmp("am", key) == 0 || strcmp("am", key + 1) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].mode);
     } else if (strcmp("in", key) == 0 || strcmp("in", key + 1) == 0) {
-        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].invert);
+        status = processField<bool, long>(jobj, key, machine.axis[iAxis].invertDir);
     } else if (strcmp("ln", key) == 0 || strcmp("ln", key + 1) == 0) {
         status = processField<bool, bool>(jobj, key, machine.axis[iAxis].atMin);
     } else if (strcmp("mi", key) == 0 || strcmp("mi", key + 1) == 0) {
@@ -464,6 +464,37 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
     return status;
 }
 
+Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = STATUS_OK;
+    const char *s;
+    if (strcmp("sys",key) == 0 && (s = jobj[key]) && *s == 0) {
+		JsonObject& node = jobj.createNestedObject(key);
+		node["fb"] = "";
+		node["fv"] = "";
+		node["li"] = "";
+		node["tc"] = "";
+        status = node.success() ? STATUS_OK : STATUS_SYS_ERROR;
+        JsonObject& kidObj = jobj[key];
+        if (kidObj.success()) {
+            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+                status = processSys(jcmd, kidObj, it->key);
+                if (status != STATUS_OK) {
+                    return status;
+                }
+            }
+        }
+    } else if (strcmp("fb", key) == 0 || strcmp("fb", key + 1) == 0) {
+		jobj["fb"] = BUILD;
+    } else if (strcmp("fv", key) == 0 || strcmp("fb", key + 1) == 0) {
+        jobj["fv"] = VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0;
+    } else if (strcmp("li", key) == 0 || strcmp("li", key + 1) == 0) {
+        status = processField<bool, bool>(jobj, key, machine.invertLim);
+    } else if (strcmp("tc", key) == 0 || strcmp("tc", key + 1) == 0) {
+        status = processField<Ticks, long>(jobj, key, threadClock.ticks);
+	}
+	return status;
+}
+
 void JsonController::process(JsonCommand& jcmd) {
     const char *s;
     JsonObject& root = jcmd.requestRoot();
@@ -475,13 +506,7 @@ void JsonController::process(JsonCommand& jcmd) {
         if (strcmp("str", it->key) == 0) {
             status = processStroke(jcmd, root, it->key);
         } else if (strcmp("sys", it->key) == 0) {
-            if ((s = it->value) && *s == 0) {
-                //node = root["sys"] = jcmd.createJsonObject();
-                node = root.createNestedObject("sys");
-                node["fb"] = BUILD;
-                node["fv"] = VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0;
-                status = node.success() ? STATUS_OK : STATUS_SYS_ERROR;
-            }
+            status = processSys(jcmd, root, it->key);
         } else if (strncmp("spo", it->key, 3) == 0) {
             status = processMachinePosition(jcmd, root, it->key);
         } else {

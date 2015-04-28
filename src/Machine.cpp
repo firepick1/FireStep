@@ -492,7 +492,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
     for (int i = 0; i < 4; i++) {
         Axis &a(axis[motor[i].axisMap]);
         if (a.pinMin != NOPIN) {
-            bool atMin = digitalRead(a.pinMin);
+            bool atMin = (invertLim == !digitalRead(a.pinMin));
             if (atMin != a.atMin) {
 #ifdef TEST_TRACE
                 cout << "axis[" << i << "] CHANGE" 
@@ -517,7 +517,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
 #endif
                 continue;
             }
-            digitalWrite(a.pinDir, a.invert ? LOW : HIGH);
+            digitalWrite(a.pinDir, a.invertDir ? LOW : HIGH);
             break;
         case 0:
             continue;
@@ -534,7 +534,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
 #endif
                 continue;
             }
-            digitalWrite(a.pinDir, a.invert ? HIGH : LOW);
+            digitalWrite(a.pinDir, a.invertDir ? HIGH : LOW);
             break;
         default:
             return STATUS_STEP_RANGE_ERROR;

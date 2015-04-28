@@ -66,6 +66,7 @@ typedef class JsonController {
 		Status processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
 		Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
 		Status processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key);
+		Status processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key);
 		Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);
 		Status traverseStroke(JsonCommand &jcmd, JsonObject &stroke);
 

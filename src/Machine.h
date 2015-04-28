@@ -74,7 +74,7 @@ typedef class Axis {
         StepCoord 	position;
 		float		stepAngle;
 		uint8_t		microsteps;
-		uint8_t		invert;
+		bool		invertDir;
 		uint8_t 	powerManagementMode;
 		bool		atMin;
         Axis() :
@@ -88,7 +88,7 @@ typedef class Axis {
             position(0),
 			stepAngle(1.8),
 			microsteps(16),
-			invert(0),				// 0:normal direction, 1:inverted direction
+			invertDir(0),				// 0:normal direction, 1:inverted direction
 			powerManagementMode(0),	// 0:off, 1:on, 2:on in cycle, 3:on when moving
 			atMin(false)
         {};
@@ -108,9 +108,10 @@ typedef class Machine : public QuadStepper {
         SerialInt32 actualMicros;
         SerialVector32 unitLengthSteps;
         SerialVector32 drivePos;
-        bool xReverse;
-        bool yReverse;
-        bool zReverse;
+        bool 	xReverse;
+        bool 	yReverse;
+        bool 	zReverse;
+		bool	invertLim;
         union {
             struct {
                 SerialInt32 estimatedMicros;
