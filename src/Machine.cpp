@@ -4,6 +4,9 @@
 #include "AnalogRead.h"
 #include "version.h"
 #include "build.h"
+#ifdef TEST
+#include "../test/FireUtils.hpp"
+#endif
 
 using namespace firestep;
 
@@ -40,7 +43,8 @@ void MachineThread::Heartbeat() {
 	nextHeartbeat.ticks = 0;
 }
 
-Machine::Machine() {
+Machine::Machine() 
+	: invertLim(false) {
 	axis[0].pinStep = X_STEP_PIN;
 	axis[0].pinDir = X_DIR_PIN;
 	axis[0].pinMin = X_MIN_PIN;
@@ -64,9 +68,14 @@ void Machine::init() {
 
 Status Machine::step(const Quad<StepCoord> &pulse) {
     for (int i = 0; i < 4; i++) {
-        Axis &a(axis[motor[i].axisMap]);
+		int iAxis = motor[i].axisMap;
+#ifdef TEST
+		ASSERT(0<=iAxis && iAxis<AXIS_COUNT);
+#endif
+        Axis &a(axis[iAxis]);
         if (a.pinMin != NOPIN) {
-            bool atMin = (invertLim == !digitalRead(a.pinMin));
+			bool minHigh = digitalRead(a.pinMin);
+            bool atMin = (invertLim == !minHigh);
             if (atMin != a.atMin) {
 #ifdef TEST_TRACE
                 cout << "axis[" << i << "] CHANGE" 

@@ -1,6 +1,5 @@
 #include "Arduino.h"
 #include "Thread.h"
-#include "SerialTypes.h"
 
 using namespace firestep;
 

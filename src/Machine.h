@@ -1,7 +1,6 @@
 #ifndef MACHINE_H
 #define MACHINE_H
 
-#include "SerialTypes.h"
 #include "Stroke.h"
 #include "pins.h"
 
@@ -28,7 +27,7 @@ typedef struct MachineThread : Thread {
 
 typedef struct Motor {
     uint8_t	axisMap; 	// index into axis array
-    Motor() {}
+    Motor() : axisMap(0) {}
 } Motor;
 
 enum AxisMode {
@@ -57,6 +56,7 @@ typedef class Axis {
             pinStep(NOPIN),
             pinDir(NOPIN),
             pinMin(NOPIN),
+			pinEnable(NOPIN),
             travelMin(0),
             travelMax(10000),
             searchVelocity(200),
@@ -73,21 +73,6 @@ typedef class Machine : public QuadStepper {
         friend class JsonController;
     private:
 		bool	invertLim;
-        union {
-            struct {
-                SerialVector16 jogDelta;
-                SerialInt32 jogFrequency;
-                SerialInt32 jogCount;
-                bool		jogOverride;
-            };
-            struct {
-                SerialVector32 backlash;
-            };
-        };
-        SerialVectorF drivePathScale;
-        int segmentIndex;
-        SerialInt16 deltaCount;
-        SerialVector8 deltas[DELTA_COUNT];
 	public:
         Motor motor[MOTOR_COUNT];
         Axis axis[AXIS_COUNT];
@@ -100,18 +85,6 @@ typedef class Machine : public QuadStepper {
 
 		Quad<StepCoord> motorPosition();
 } Machine;
-
-typedef class Controller {
-    private:
-        char			guardStart;
-        Ticks			lastClock;
-        byte			speed;
-        byte			guardEnd;
-
-    public:
-        byte 			cmd; // TODO
-        Machine 		machine; // TODO
-} Controller;
 
 } // namespace firestep
 

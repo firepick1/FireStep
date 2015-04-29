@@ -145,15 +145,6 @@ void test_Machine() {
 	lastClock = ticks();
 	arduino.dump();
 
-	char buf[200];
-	snprintf(buf, sizeof(buf), "[DIAG%ld 120 X1Y1Z1]\n", (long) sizeof(Controller));
-#ifdef LEGACY
-	test_command("[DIAG]", buf);
-	test_command("[V]", "[v1.0]\n");
-	test_command("[GULS]", "[XYZ00000000 00000000 00000000 X1Y1Z1 00000000 00000001 00000000 00000000 0000]\n");
-	test_command("[GXYZ]", "[XYZ00000000 00000000 00000000 X1Y1Z1 00000000 00000001 00000000 00000000 0000]\n");
-#endif
-
 	cout << "TEST	: test_Machine() OK " << endl;
 }
 

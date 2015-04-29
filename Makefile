@@ -176,30 +176,6 @@ src/Machine.cpp.s:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Machine.cpp.s
 .PHONY : src/Machine.cpp.s
 
-src/SerialTypes.o: src/SerialTypes.cpp.o
-.PHONY : src/SerialTypes.o
-
-# target to build an object file
-src/SerialTypes.cpp.o:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/SerialTypes.cpp.o
-.PHONY : src/SerialTypes.cpp.o
-
-src/SerialTypes.i: src/SerialTypes.cpp.i
-.PHONY : src/SerialTypes.i
-
-# target to preprocess a source file
-src/SerialTypes.cpp.i:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/SerialTypes.cpp.i
-.PHONY : src/SerialTypes.cpp.i
-
-src/SerialTypes.s: src/SerialTypes.cpp.s
-.PHONY : src/SerialTypes.s
-
-# target to generate assembly for a file
-src/SerialTypes.cpp.s:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/SerialTypes.cpp.s
-.PHONY : src/SerialTypes.cpp.s
-
 src/Stroke.o: src/Stroke.cpp.o
 .PHONY : src/Stroke.o
 
@@ -337,9 +313,6 @@ help:
 	@echo "... src/Machine.o"
 	@echo "... src/Machine.i"
 	@echo "... src/Machine.s"
-	@echo "... src/SerialTypes.o"
-	@echo "... src/SerialTypes.i"
-	@echo "... src/SerialTypes.s"
 	@echo "... src/Stroke.o"
 	@echo "... src/Stroke.i"
 	@echo "... src/Stroke.s"

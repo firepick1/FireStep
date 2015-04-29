@@ -4,7 +4,6 @@
 #include <string>
 #include "version.h"
 #include "Arduino.h"
-#include "SerialTypes.h"
 #include "Thread.h"
 #include "ArduinoJson.h"
 #include "Status.h"

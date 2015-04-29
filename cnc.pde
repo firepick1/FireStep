@@ -1,5 +1,4 @@
 #include "WProgram.h"
-#include "SerialTypes.h"
 #include "Machine.h"
 #include "Thread.h"
 
