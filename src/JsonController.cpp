@@ -11,10 +11,24 @@ using namespace firestep;
 /////////////////////// JsonCommand ////////////
 
 JsonCommand::JsonCommand() {
+	clear();
+}
+
+size_t JsonCommand::responseAvailable() {
+	return jbResponse.capacity() - jbResponse.size();
+}
+
+size_t JsonCommand::requestAvailable() {
+	return jbRequest.capacity() - jbRequest.size();
+}
+
+void JsonCommand::clear() {
     parsed = false;
     memset(json, 0, sizeof(json));
     memset(error, 0, sizeof(error));
     pJsonFree = json;
+	jbRequest.clear();
+	jbResponse.clear();
 	jResponseRoot = jbResponse.createObject();
 	jResponseRoot["s"] = STATUS_EMPTY;
 	jResponseRoot.asObject().createNestedObject("r");
@@ -91,9 +105,7 @@ bool JsonCommand::isValid() {
 
 //////////////////// JsonController ///////////////
 
-JsonController::JsonController(Machine &machine) :
-	machine(machine) {
-}
+JsonController::JsonController() {}
 
 template<class TF, class TJ>
 Status processField(JsonObject& jobj, const char* key, TF& field) {
@@ -133,7 +145,7 @@ int axisOf(char c) {
 	}
 }
 
-Status JsonController::processStepperPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
+Status JsonController::processStepperPosition(Machine &machine, JsonCommand &jcmd, JsonObject& jobj, const char* key) {
 	Status status = STATUS_OK;
 	const char *s;
 	if (strlen(key) == 3) {
@@ -151,7 +163,7 @@ Status JsonController::processStepperPosition(JsonCommand &jcmd, JsonObject& job
 			return STATUS_POSITION_ERROR;
 		}
 		for (JsonObject::iterator it=kidObj.begin(); it!=kidObj.end(); ++it) {
-			status = processStepperPosition(jcmd, kidObj, it->key);
+			status = processStepperPosition(machine, jcmd, kidObj, it->key);
 			if (status != STATUS_OK) {
 				return status;
 			}
@@ -172,7 +184,7 @@ Status JsonController::processStepperPosition(JsonCommand &jcmd, JsonObject& job
 	return status;
 }
 
-Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
+Status JsonController::initializeStroke(Machine &machine, JsonCommand &jcmd, JsonObject& stroke) {
 	int s1len = 0;
 	int s2len = 0;
 	int s3len = 0;
@@ -273,7 +285,7 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
 	return STATUS_PROCESSING;
 }
 
-Status JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
+Status JsonController::traverseStroke(Machine &machine, JsonCommand &jcmd, JsonObject &stroke) {
 	Status status =  machine.stroke.traverse(ticks(), machine);
 
 	Quad<StepCoord> &pos = machine.stroke.position();
@@ -285,7 +297,7 @@ Status JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
 	return status;
 }
 
-Status JsonController::processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
+Status JsonController::processStroke(Machine &machine, JsonCommand &jcmd, JsonObject& jobj, const char* key) {
     Status status = jcmd.getStatus();
 	JsonObject &stroke = jobj[key];
 	if (!stroke.success()) {
@@ -293,10 +305,10 @@ Status JsonController::processStroke(JsonCommand &jcmd, JsonObject& jobj, const 
 	}
 
     if (status == STATUS_JSON_PARSED) {
-		status = initializeStroke(jcmd, stroke);
+		status = initializeStroke(machine, jcmd, stroke);
     } else if (status == STATUS_PROCESSING) {
         if (machine.stroke.curSeg < machine.stroke.length) {
-			status = traverseStroke(jcmd, stroke);
+			status = traverseStroke(machine, jcmd, stroke);
         }
         if (machine.stroke.curSeg >= machine.stroke.length) {
             status = STATUS_OK;
@@ -305,7 +317,7 @@ Status JsonController::processStroke(JsonCommand &jcmd, JsonObject& jobj, const 
     return status;
 }
 
-Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group) {
+Status JsonController::processMotor(Machine &machine, JsonCommand &jcmd, JsonObject& jobj, const char* key, char group) {
     Status status = STATUS_OK;
     const char *s;
     int iMotor = group - '1';
@@ -320,7 +332,7 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-                status = processMotor(jcmd, kidObj, it->key, group);
+                status = processMotor(machine, jcmd, kidObj, it->key, group);
                 if (status != STATUS_OK) {
                     return status;
                 }
@@ -332,7 +344,7 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
     return status;
 }
 
-Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group) {
+Status JsonController::processAxis(Machine &machine, JsonCommand &jcmd, JsonObject& jobj, const char* key, char group) {
     Status status = STATUS_OK;
     const char *s;
     int iAxis = axisOf(group);
@@ -359,7 +371,7 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-                status = processAxis(jcmd, kidObj, it->key, group);
+                status = processAxis(machine, jcmd, kidObj, it->key, group);
                 if (status != STATUS_OK) {
                     return status;
                 }
@@ -405,7 +417,7 @@ int freeRam () {
 #endif
 }
 
-Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("sys", key) == 0) {
 		const char *s;
@@ -420,7 +432,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-                status = processSys(jcmd, kidObj, it->key);
+                status = processSys(machine, jcmd, kidObj, it->key);
                 if (status != STATUS_OK) {
                     return status;
                 }
@@ -429,20 +441,20 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp("b", key) == 0 || strcmp("sysb", key) == 0) {
         jobj[key] = BUILD;
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
-        jobj["fr"] = freeRam();
+        jobj[key] = freeRam();
     } else if (strcmp("v", key) == 0 || strcmp("sysv", key) == 0) {
-        jobj["v"] = VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0;
+        jobj[key] = VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0;
     } else if (strcmp("li", key) == 0 || strcmp("sysli", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.invertLim);
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
-        status = processField<Ticks, long>(jobj, key, threadClock.ticks);
+		jobj[key] = threadClock.ticks;
 	} else {
 		status = jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
     return status;
 }
 
-void JsonController::process(JsonCommand& jcmd) {
+Status JsonController::process(Machine &machine, JsonCommand& jcmd) {
     const char *s;
     JsonObject& root = jcmd.requestRoot();
     JsonVariant node;
@@ -451,18 +463,18 @@ void JsonController::process(JsonCommand& jcmd) {
 
     for (JsonObject::iterator it = root.begin(); it != root.end(); ++it) {
         if (strcmp("dvs", it->key) == 0) {
-            status = processStroke(jcmd, root, it->key);
+            status = processStroke(machine, jcmd, root, it->key);
         } else if (strncmp("sys", it->key, 3) == 0) {
-            status = processSys(jcmd, root, it->key);
+            status = processSys(machine, jcmd, root, it->key);
         } else if (strncmp("spo", it->key, 3) == 0) {
-            status = processStepperPosition(jcmd, root, it->key);
+            status = processStepperPosition(machine, jcmd, root, it->key);
         } else {
             switch (it->key[0]) {
             case '1':
             case '2':
             case '3':
             case '4':
-                status = processMotor(jcmd, root, it->key, it->key[0]);
+                status = processMotor(machine, jcmd, root, it->key, it->key[0]);
                 break;
             case 'x':
             case 'y':
@@ -470,7 +482,7 @@ void JsonController::process(JsonCommand& jcmd) {
             case 'a':
             case 'b':
             case 'c':
-                status = processAxis(jcmd, root, it->key, it->key[0]);
+                status = processAxis(machine, jcmd, root, it->key, it->key[0]);
                 break;
             default:
                 status = jcmd.setError(STATUS_UNRECOGNIZED_NAME, it->key);
@@ -480,5 +492,7 @@ void JsonController::process(JsonCommand& jcmd) {
     }
 
     jcmd.setStatus(status);
+
+	return status;
 }
 

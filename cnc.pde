@@ -1,6 +1,5 @@
-#include "WProgram.h"
-#include "Machine.h"
-#include "Thread.h"
+#include "Arduino.h"
+#include "MachineThread.h"
 
 MachineThread mainThread;
 

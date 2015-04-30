@@ -176,6 +176,30 @@ src/Machine.cpp.s:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Machine.cpp.s
 .PHONY : src/Machine.cpp.s
 
+src/MachineThread.o: src/MachineThread.cpp.o
+.PHONY : src/MachineThread.o
+
+# target to build an object file
+src/MachineThread.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/MachineThread.cpp.o
+.PHONY : src/MachineThread.cpp.o
+
+src/MachineThread.i: src/MachineThread.cpp.i
+.PHONY : src/MachineThread.i
+
+# target to preprocess a source file
+src/MachineThread.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/MachineThread.cpp.i
+.PHONY : src/MachineThread.cpp.i
+
+src/MachineThread.s: src/MachineThread.cpp.s
+.PHONY : src/MachineThread.s
+
+# target to generate assembly for a file
+src/MachineThread.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/MachineThread.cpp.s
+.PHONY : src/MachineThread.cpp.s
+
 src/Stroke.o: src/Stroke.cpp.o
 .PHONY : src/Stroke.o
 
@@ -313,6 +337,9 @@ help:
 	@echo "... src/Machine.o"
 	@echo "... src/Machine.i"
 	@echo "... src/Machine.s"
+	@echo "... src/MachineThread.o"
+	@echo "... src/MachineThread.i"
+	@echo "... src/MachineThread.s"
 	@echo "... src/Stroke.o"
 	@echo "... src/Stroke.i"
 	@echo "... src/Stroke.s"

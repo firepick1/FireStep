@@ -20,11 +20,6 @@ namespace firestep {
 	asm("nop");asm("nop");asm("nop");asm("nop"); asm("nop");asm("nop");asm("nop");asm("nop");
 #endif
 
-typedef struct MachineThread : Thread {
-    void setup();
-    void Heartbeat();
-} MachineThread;
-
 typedef struct Motor {
     uint8_t	axisMap; 	// index into axis array
     Motor() : axisMap(0) {}

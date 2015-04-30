@@ -13,36 +13,6 @@ using namespace firestep;
 template class Quad<int16_t>;
 template class Quad<int32_t>;
 
-#ifndef ASM
-#define ASM(op) asm(op)
-#endif
-
-void MachineThread::setup() {
-    id = 'M';
-#ifdef THROTTLE_SPEED
-    ADC_LISTEN8(ANALOG_SPEED_PIN);
-#endif
-    Thread::setup();
-}
-
-void MachineThread::Heartbeat() {
-#ifdef THROTTLE_SPEED
-    controller.speed = ADCH;
-    if (controller.speed <= 251) {
-        ThreadEnable(false);
-        for (byte iPause = controller.speed; iPause <= 247; iPause++) {
-            for (byte iIdle = 0; iIdle < 10; iIdle++) {
-				DELAY500NS;
-				DELAY500NS;
-            }
-        }
-        ThreadEnable(true);
-    }
-#endif
-
-	nextHeartbeat.ticks = 0;
-}
-
 Machine::Machine() 
 	: invertLim(false) {
 	axis[0].pinStep = X_STEP_PIN;

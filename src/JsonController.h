@@ -34,45 +34,33 @@ typedef class JsonCommand {
 		Status parseCore();
     public:
         JsonCommand();
-	public:
-		//inline JsonObject& createJsonObject() { return jbResponse.createObject(); }
-	public:
+		void clear();
 		inline JsonVariant& requestRoot() { return jRequestRoot; }
-	public:
 		inline JsonObject & response() { return jResponseRoot; }
-    public:
         Status parse(const char *jsonIn=NULL);
-	public:
 		bool isValid();
-	public:
 		inline Status getStatus() { return (Status) (long) jResponseRoot["s"]; }
-	public:
 		inline void setStatus(Status status) { jResponseRoot["s"] = status; }
-	public:
 		const char *getError();
-	public:
 		Status setError(Status status, const char *err);
+		size_t requestAvailable();
+		size_t responseAvailable();
 } JsonCommand;
 
 typedef class JsonController {
-    private:
-		Machine&	machine;
-        Ticks		clkStart;
-		float		plannedTicks;
-
 	protected:
-		Status processStepperPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);
-		Status processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
-		Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
-		Status processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key);
-		Status processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-		Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);
-		Status traverseStroke(JsonCommand &jcmd, JsonObject &stroke);
+		Status processStepperPosition(Machine& machine, JsonCommand &jcmd, JsonObject& jobj, const char* key);
+		Status processMotor(Machine& machine, JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
+		Status processAxis(Machine& machine, JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
+		Status processStroke(Machine& machine, JsonCommand &jcmd, JsonObject& jobj, const char* key);
+		Status processSys(Machine& machine, JsonCommand& jcmd, JsonObject& jobj, const char* key);
+		Status initializeStroke(Machine& machine, JsonCommand &jcmd, JsonObject& stroke);
+		Status traverseStroke(Machine& machine, JsonCommand &jcmd, JsonObject &stroke);
 
     public:
-        JsonController(Machine &machine);
+        JsonController();
 	public: 
-		void process(JsonCommand& jcmd);
+		Status process(Machine& machine, JsonCommand& jcmd);
 } JsonController;
 
 } // namespace firestep

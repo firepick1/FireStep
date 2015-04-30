@@ -76,6 +76,7 @@ add_executable(test
 	src/Thread.cpp
 	src/Stroke.cpp
 	src/Machine.cpp
+	src/MachineThread.cpp
 	test/FireLog.cpp
 	test/MockDuino.cpp
 	test/test.cpp
