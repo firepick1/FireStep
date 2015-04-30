@@ -15,6 +15,10 @@ void MachineThread::setup() {
     Thread::setup();
 }
 
+MachineThread::MachineThread()
+    : status(STATUS_IDLE) {
+}
+
 void MachineThread::Heartbeat() {
 #ifdef THROTTLE_SPEED
     controller.speed = ADCH;
@@ -22,14 +26,37 @@ void MachineThread::Heartbeat() {
         ThreadEnable(false);
         for (byte iPause = controller.speed; iPause <= 247; iPause++) {
             for (byte iIdle = 0; iIdle < 10; iIdle++) {
-				DELAY500NS;
-				DELAY500NS;
+                DELAY500NS;
+                DELAY500NS;
             }
         }
         ThreadEnable(true);
     }
 #endif
 
-	nextHeartbeat.ticks = 0;
+    switch (status) {
+    case STATUS_IDLE:
+        if (Serial.available()) {
+            command.clear();
+            status = command.parse();
+        }
+        break;
+    case STATUS_SERIAL_EOL_WAIT:
+        if (Serial.available()) {
+            status = command.parse();
+        }
+        break;
+    case STATUS_JSON_PARSED:
+    case STATUS_PROCESSING:
+        status = controller.process(machine, command);
+        break;
+    default:	// errors
+    case STATUS_OK:
+        command.response().printTo(Serial);
+        status = STATUS_IDLE;
+        break;
+    }
+
+    nextHeartbeat.ticks = 0;
 }
 

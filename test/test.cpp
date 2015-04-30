@@ -503,7 +503,7 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
     testJSON(machine, jc, replace, jconfig.c_str(), "{'s':0,'r':" STROKE_CONFIG "}");
     ASSERTQUAD(Quad<StepCoord>(5, 5, 5, 5), machine.motorPosition());
     Ticks tStart = 101;
-    ASSERTEQUAL(tStart, threadClock.ticks);
+    ASSERTEQUAL(tStart, threadClock.ticks+1);
 
     // parse and initialize stroke
     JsonCommand jcmd =
@@ -540,13 +540,13 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
 	ASSERTEQUAL(reqAvail, jcmd.requestAvailable());
 	ASSERTEQUAL(resAvail, jcmd.responseAvailable());
 
-    // tStart+3: finalize stroke
+    // finalize stroke
     testJSON_process(machine, jc, jcmd, replace,
                      "{'s':0,'r':{'systc':104,'dvs':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}",
 					 STATUS_OK);
     ASSERTQUAD(Quad<StepCoord>(10, 20, 0, 0), machine.stroke.position());
     ASSERTQUAD(Quad<StepCoord>(15, 25, 5, 5), machine.motorPosition()); // axis a is NOPIN inactive
-    ASSERTEQUAL(tStart + 4, threadClock.ticks);
+    ASSERTEQUAL(tStart + 3, threadClock.ticks);
 	ASSERTEQUAL(reqAvail, jcmd.requestAvailable());
 	ASSERTEQUAL(resAvail, jcmd.responseAvailable());
 
@@ -875,6 +875,58 @@ void test_Machine_step() {
     cout << "TEST	: test_Machine_step() OK " << endl;
 }
 
+void test_MachineThread() {
+    cout << "TEST	: test_MachineThread() =====" << endl;
+
+	MachineThread mt;
+	ASSERTQUAD(Quad<StepCoord>(0,0,0,0), mt.machine.motorPosition());
+
+	threadClock.ticks = 100;
+	Serial.clear();
+	Serial.push("{");
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_SERIAL_EOL_WAIT, mt.status);
+	ASSERTEQUALS("", Serial.output().c_str());
+
+	threadClock.ticks++;
+    const char *jsonIn = "'systc':'','dvs':{'us':123,'dp':[10,20],'s1':[1,2],'s2':[4,5],'s3':[7,8],'s4':[-10,-11]}}\n";
+    string ji(jsonTemplate(jsonIn, "'\""));
+	Serial.push(ji.c_str());
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_JSON_PARSED, mt.status);
+	ASSERTEQUALS("", Serial.output().c_str());
+
+	threadClock.ticks++;
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_PROCESSING, mt.status);
+	ASSERTEQUALS("", Serial.output().c_str());
+
+	threadClock.ticks++;
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_PROCESSING, mt.status);
+	ASSERTEQUALS("", Serial.output().c_str());
+
+	threadClock.ticks++;
+	ASSERTEQUAL(STATUS_PROCESSING, mt.status);
+	mt.Heartbeat();
+	ASSERTEQUALS("", Serial.output().c_str());
+
+	threadClock.ticks++;
+	ASSERTEQUAL(STATUS_PROCESSING, mt.status);
+	mt.Heartbeat();
+	ASSERTEQUALS("", Serial.output().c_str());
+
+	threadClock.ticks++;
+	ASSERTEQUAL(STATUS_OK, mt.status);
+	mt.Heartbeat();
+    const char *jsonOut = "{'s':0,'r':{'systc':105,'dvs':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}";
+	string jo(jsonTemplate(jsonOut, "'\""));
+	ASSERTEQUALS(jo.c_str(), Serial.output().c_str());
+	ASSERTQUAD(Quad<StepCoord>(10,20,0,0), mt.machine.motorPosition());
+
+    cout << "TEST	: test_MachineThread() OK " << endl;
+}
+
 int main(int argc, char *argv[]) {
     LOGINFO3("INFO	: FireStep test v%d.%d.%d",
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -889,6 +941,7 @@ int main(int argc, char *argv[]) {
     test_ArduinoJson();
     test_JsonCommand();
     test_JsonController();
+	test_MachineThread();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }

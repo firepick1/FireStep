@@ -8,6 +8,7 @@ enum Status {
 	STATUS_JSON_PARSED = 1,			// json parsed, awaiting processing
 	STATUS_PROCESSING = 2,			// json parsed, processing in progress
 	STATUS_SERIAL_EOL_WAIT = 3,		// waiting for EOL on Serial
+	STATUS_IDLE = 4,				// awaiting input
 	STATUS_EMPTY = -1,				// uninitialized JsonCommand
 	STATUS_JSON_BRACE_ERROR = -2,	// unbalanced JSON braces
 	STATUS_JSON_BRACKET_ERROR = -3,	// unbalanced JSON braces
