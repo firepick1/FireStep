@@ -263,222 +263,222 @@ void test_JsonCommand() {
 	ASSERTEQUALS("", sys);
 	ASSERT(!sys.is<double>());
 	ASSERT(!sys.is<long>());
-	ASSERT(sys.is<const char *>());
-	
-	JsonCommand cmd2;
-	ASSERTEQUAL(STATUS_JSON_PARSED, cmd2.parse("{\"x\":123,\"y\":2.3}"));
-	ASSERTEQUAL(STATUS_JSON_PARSED, cmd2.getStatus());
-	ASSERT(cmd2.isValid());
-	ASSERTEQUALT(2.3, cmd2.requestRoot()["y"], 0.001);
-	ASSERTEQUAL(123.0, cmd2.requestRoot()["x"]);
-	JsonVariant& y = cmd2.requestRoot()["y"];
-	ASSERTEQUALT(2.3, y, 0.001);
-	ASSERT(y.success());
-	ASSERT(y.is<double>());
-	ASSERT(!y.is<long>());
-	JsonVariant& x = cmd2.requestRoot()["x"];
-	ASSERT(x.is<long>());
-	ASSERT(!x.is<double>());
+		ASSERT(sys.is<const char *>());
+		
+		JsonCommand cmd2;
+		ASSERTEQUAL(STATUS_JSON_PARSED, cmd2.parse("{\"x\":123,\"y\":2.3}"));
+		ASSERTEQUAL(STATUS_JSON_PARSED, cmd2.getStatus());
+		ASSERT(cmd2.isValid());
+		ASSERTEQUALT(2.3, cmd2.requestRoot()["y"], 0.001);
+		ASSERTEQUAL(123.0, cmd2.requestRoot()["x"]);
+		JsonVariant& y = cmd2.requestRoot()["y"];
+		ASSERTEQUALT(2.3, y, 0.001);
+		ASSERT(y.success());
+		ASSERT(y.is<double>());
+		ASSERT(!y.is<long>());
+		JsonVariant& x = cmd2.requestRoot()["x"];
+		ASSERT(x.is<long>());
+		ASSERT(!x.is<double>());
 
-	const char *json1 = "{\"x\":-0.1";
-	const char *json2 = "23}\n";
-	Serial.push(json1);
-	JsonCommand cmd3;
-	ASSERTEQUAL(STATUS_SERIAL_EOL_WAIT, cmd3.parse());
-	Serial.push(json2);
-	ASSERTEQUAL(STATUS_JSON_PARSED, cmd3.parse());
-	ASSERTEQUAL(STATUS_JSON_PARSED, cmd3.getStatus());
-	ASSERT(cmd3.isValid());
-	ASSERT(cmd3.requestRoot().success());
-	x = cmd3.requestRoot()["x"];
-	ASSERTEQUAL(-0.123, x);
+		const char *json1 = "{\"x\":-0.1";
+		const char *json2 = "23}\n";
+		Serial.push(json1);
+		JsonCommand cmd3;
+		ASSERTEQUAL(STATUS_SERIAL_EOL_WAIT, cmd3.parse());
+		Serial.push(json2);
+		ASSERTEQUAL(STATUS_JSON_PARSED, cmd3.parse());
+		ASSERTEQUAL(STATUS_JSON_PARSED, cmd3.getStatus());
+		ASSERT(cmd3.isValid());
+		ASSERT(cmd3.requestRoot().success());
+		x = cmd3.requestRoot()["x"];
+		ASSERTEQUAL(-0.123, x);
 
-	Serial.clear();
-	cmd3.requestRoot().printTo(Serial);
-	ASSERTEQUALS("{\"x\":-0.123}", Serial.output().c_str());
+		Serial.clear();
+		cmd3.requestRoot().printTo(Serial);
+		ASSERTEQUALS("{\"x\":-0.123}", Serial.output().c_str());
 
-	Serial.clear();
-	cmd3.response().printTo(Serial);
-	ASSERTEQUALS("{\"s\":1,\"r\":{\"x\":-0.123}}", Serial.output().c_str());
+		Serial.clear();
+		cmd3.response().printTo(Serial);
+		ASSERTEQUALS("{\"s\":1,\"r\":{\"x\":-0.123}}", Serial.output().c_str());
 
-	cout << "TEST	: test_JsonCommand() OK " << endl;
-}
+		cout << "TEST	: test_JsonCommand() OK " << endl;
+	}
 
-void replaceChar(string &s, char cmatch, char creplace) {
-	for (int i=0; i<s.size(); i++) { 
-		if (s[i] == cmatch) {
-			s[i] = creplace;
+	void replaceChar(string &s, char cmatch, char creplace) {
+		for (int i=0; i<s.size(); i++) { 
+			if (s[i] == cmatch) {
+				s[i] = creplace;
+			}
 		}
 	}
-}
 
-void testJSON_process(JsonController&jc, JsonCommand &jcmd, string replace, const char *jsonOut) {
-	Serial.clear();
-	string jo(jsonOut);
-	for (int i=0; i<replace.size(); i+=2) {
-		char cmatch = replace[i];
-		char creplace = replace[i+1];
-		replaceChar(jo, cmatch, creplace);
+	void testJSON_process(JsonController&jc, JsonCommand &jcmd, string replace, const char *jsonOut) {
+		Serial.clear();
+		string jo(jsonOut);
+		for (int i=0; i<replace.size(); i+=2) {
+			char cmatch = replace[i];
+			char creplace = replace[i+1];
+			replaceChar(jo, cmatch, creplace);
+		}
+		arduino.timer1(1);
+		threadClock.ticks++;
+		jc.process(jcmd);
+		jcmd.response().printTo(Serial);
+		ASSERTEQUALS(jo.c_str(), Serial.output().c_str());
 	}
-	arduino.timer1(1);
-	threadClock.ticks++;
-	jc.process(jcmd);
-	jcmd.response().printTo(Serial);
-	ASSERTEQUALS(jo.c_str(), Serial.output().c_str());
-}
 
-string jsonTemplate(const char *jsonIn, string replace="'\"") {
-	string ji(jsonIn);
-	for (int i=0; i<replace.size(); i+=2) {
-		char cmatch = replace[i];
-		char creplace = replace[i+1];
-		replaceChar(ji, cmatch, creplace);
+	string jsonTemplate(const char *jsonIn, string replace="'\"") {
+		string ji(jsonIn);
+		for (int i=0; i<replace.size(); i+=2) {
+			char cmatch = replace[i];
+			char creplace = replace[i+1];
+			replaceChar(ji, cmatch, creplace);
+		}
+		return ji;
 	}
-	return ji;
-}
 
-JsonCommand testJSON(JsonController &jc, string replace, const char *jsonIn, const char* jsonOut) {
-	string ji(jsonTemplate(jsonIn, replace));
-	JsonCommand jcmd; 
-	Status status = jcmd.parse(ji.c_str());
-	ASSERTEQUAL(STATUS_JSON_PARSED, status);
-	char parseOut[MAX_JSON];
-	jcmd.requestRoot().printTo(parseOut, sizeof(parseOut));
-	ASSERTEQUALS(ji.c_str(), parseOut);
+	JsonCommand testJSON(JsonController &jc, string replace, const char *jsonIn, const char* jsonOut) {
+		string ji(jsonTemplate(jsonIn, replace));
+		JsonCommand jcmd; 
+		Status status = jcmd.parse(ji.c_str());
+		ASSERTEQUAL(STATUS_JSON_PARSED, status);
+		char parseOut[MAX_JSON];
+		jcmd.requestRoot().printTo(parseOut, sizeof(parseOut));
+		ASSERTEQUALS(ji.c_str(), parseOut);
 
-	testJSON_process(jc, jcmd, replace, jsonOut);
+		testJSON_process(jc, jcmd, replace, jsonOut);
 
-	return jcmd;
-}
+		return jcmd;
+	}
 
-void test_JsonController_motor(JsonController &jc, char motor) {
-	string replace;
-	replace.push_back('\''); replace.push_back('"');
-	replace.push_back('?'); replace.push_back(motor);
-	replace.push_back('!'); replace.push_back(motor-1);
-	testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!}}}");
-	testJSON(jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':!}}");
-	testJSON(jc, replace, "{'?ma':4}", "{'s':0,'r':{'?ma':4}}");
-	testJSON(jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':4}}");
-	testJSON(jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':4}}}");
-	testJSON(jc, replace, "{'?':{'ma':!}}", "{'s':0,'r':{'?':{'ma':!}}}");
-	testJSON(jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':!}}}");
-}
+	void test_JsonController_motor(JsonController &jc, char motor) {
+		string replace;
+		replace.push_back('\''); replace.push_back('"');
+		replace.push_back('?'); replace.push_back(motor);
+		replace.push_back('!'); replace.push_back(motor-1);
+		testJSON(jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!}}}");
+		testJSON(jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':!}}");
+		testJSON(jc, replace, "{'?ma':4}", "{'s':0,'r':{'?ma':4}}");
+		testJSON(jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':4}}");
+		testJSON(jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':4}}}");
+		testJSON(jc, replace, "{'?':{'ma':!}}", "{'s':0,'r':{'?':{'ma':!}}}");
+		testJSON(jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':!}}}");
+	}
 
-void test_JsonController_axis(JsonController &jc, char axis) {
-	string replace;
-	replace.push_back('\''); replace.push_back('"');
-	replace.push_back('?'); replace.push_back(axis);
-	testJSON(jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':0}}");		// default
-	testJSON(jc, replace, "{'?tn':111}", "{'s':0,'r':{'?tn':111}}");	
-	testJSON(jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':111}}");
-	testJSON(jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':111}}}");
-	testJSON(jc, replace, "{'?':{'tn':0}}", "{'s':0,'r':{'?':{'tn':0}}}");
-	testJSON(jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':0}}}");
-	testJSON(jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':10000}}");  	// default
-	testJSON(jc, replace, "{'?tm':222}", "{'s':0,'r':{'?tm':222}}");	
-	testJSON(jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':222}}");	
-	testJSON(jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':222}}}");
-	testJSON(jc, replace, "{'?':{'tm':10000}}", "{'s':0,'r':{'?':{'tm':10000}}}");
-	testJSON(jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':10000}}}");
-	testJSON(jc, replace, "{'?am':''}", "{'s':0,'r':{'?am':1}}");  	// default
-	testJSON(jc, replace, "{'?am':333}", "{'s':0,'r':{'?am':77}}");	// out of range
-	testJSON(jc, replace, "{'?am':''}", "{'s':0,'r':{'?am':77}}");	
-	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':77}}}");
-	testJSON(jc, replace, "{'?':{'am':1}}", "{'s':0,'r':{'?':{'am':1}}}");
-	testJSON(jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':1}}}");
-	testJSON(jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':16}}}");
-	testJSON(jc, replace, "{'?':{'mi':1}}", "{'s':0,'r':{'?':{'mi':1}}}");
-	testJSON(jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':1}}}");
-	testJSON(jc, replace, "{'?':{'mi':16}}", "{'s':0,'r':{'?':{'mi':16}}}");
-	testJSON(jc, replace, "{'?':{'in':''}}", "{'s':0,'r':{'?':{'in':0}}}");
-	testJSON(jc, replace, "{'?':{'in':1}}", "{'s':0,'r':{'?':{'in':1}}}");
-	testJSON(jc, replace, "{'?':{'in':''}}", "{'s':0,'r':{'?':{'in':1}}}");
-	testJSON(jc, replace, "{'?':{'in':0}}", "{'s':0,'r':{'?':{'in':0}}}");
-	testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':0,'r':{'?':{'pm':0}}}");
-	testJSON(jc, replace, "{'?':{'pm':3}}", "{'s':0,'r':{'?':{'pm':3}}}");
-	testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':0,'r':{'?':{'pm':3}}}");
-	testJSON(jc, replace, "{'?':{'pm':0}}", "{'s':0,'r':{'?':{'pm':0}}}");
-	testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':1.80}}}");
-	testJSON(jc, replace, "{'?':{'sa':0.9}}", "{'s':0,'r':{'?':{'sa':0.90}}}");
-	testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':0.90}}}");
-	testJSON(jc, replace, "{'?':{'sa':1.8}}", "{'s':0,'r':{'?':{'sa':1.80}}}");
+	void test_JsonController_axis(JsonController &jc, char axis) {
+		string replace;
+		replace.push_back('\''); replace.push_back('"');
+		replace.push_back('?'); replace.push_back(axis);
+		testJSON(jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':0}}");		// default
+		testJSON(jc, replace, "{'?tn':111}", "{'s':0,'r':{'?tn':111}}");	
+		testJSON(jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':111}}");
+		testJSON(jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':111}}}");
+		testJSON(jc, replace, "{'?':{'tn':0}}", "{'s':0,'r':{'?':{'tn':0}}}");
+		testJSON(jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':0}}}");
+		testJSON(jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':10000}}");  	// default
+		testJSON(jc, replace, "{'?tm':222}", "{'s':0,'r':{'?tm':222}}");	
+		testJSON(jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':222}}");	
+		testJSON(jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':222}}}");
+		testJSON(jc, replace, "{'?':{'tm':10000}}", "{'s':0,'r':{'?':{'tm':10000}}}");
+		testJSON(jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':10000}}}");
+		testJSON(jc, replace, "{'?am':''}", "{'s':0,'r':{'?am':1}}");  	// default
+		testJSON(jc, replace, "{'?am':333}", "{'s':0,'r':{'?am':77}}");	// out of range
+		testJSON(jc, replace, "{'?am':''}", "{'s':0,'r':{'?am':77}}");	
+		testJSON(jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':77}}}");
+		testJSON(jc, replace, "{'?':{'am':1}}", "{'s':0,'r':{'?':{'am':1}}}");
+		testJSON(jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':1}}}");
+		testJSON(jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':16}}}");
+		testJSON(jc, replace, "{'?':{'mi':1}}", "{'s':0,'r':{'?':{'mi':1}}}");
+		testJSON(jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':1}}}");
+		testJSON(jc, replace, "{'?':{'mi':16}}", "{'s':0,'r':{'?':{'mi':16}}}");
+		testJSON(jc, replace, "{'?':{'in':''}}", "{'s':0,'r':{'?':{'in':0}}}");
+		testJSON(jc, replace, "{'?':{'in':1}}", "{'s':0,'r':{'?':{'in':1}}}");
+		testJSON(jc, replace, "{'?':{'in':''}}", "{'s':0,'r':{'?':{'in':1}}}");
+		testJSON(jc, replace, "{'?':{'in':0}}", "{'s':0,'r':{'?':{'in':0}}}");
+		testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':0,'r':{'?':{'pm':0}}}");
+		testJSON(jc, replace, "{'?':{'pm':3}}", "{'s':0,'r':{'?':{'pm':3}}}");
+		testJSON(jc, replace, "{'?':{'pm':''}}", "{'s':0,'r':{'?':{'pm':3}}}");
+		testJSON(jc, replace, "{'?':{'pm':0}}", "{'s':0,'r':{'?':{'pm':0}}}");
+		testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':1.80}}}");
+		testJSON(jc, replace, "{'?':{'sa':0.9}}", "{'s':0,'r':{'?':{'sa':0.90}}}");
+		testJSON(jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':0.90}}}");
+		testJSON(jc, replace, "{'?':{'sa':1.8}}", "{'s':0,'r':{'?':{'sa':1.80}}}");
 
-	testJSON(jc, replace, 
-		"{'x':''}", 
-		"{'s':0,'r':{'x':{'am':1,'in':0,'ln':false,'mi':16,'pd':22,'pe':14,'pm':0,"\
-			"'pn':21,'po':0,'ps':23,'sa':1.80,'tm':10000,'tn':0}}}");
-	testJSON(jc, replace, 
-		"{'y':''}", 
-		"{'s':0,'r':{'y':{'am':1,'in':0,'ln':false,'mi':16,'pd':3,'pe':14,'pm':0,"\
-			"'pn':2,'po':0,'ps':4,'sa':1.80,'tm':10000,'tn':0}}}");
-	testJSON(jc, replace, 
-		"{'z':''}", 
-		"{'s':0,'r':{'z':{'am':1,'in':0,'ln':false,'mi':16,'pd':12,'pe':14,'pm':0,"\
-			"'pn':11,'po':0,'ps':13,'sa':1.80,'tm':10000,'tn':0}}}");
-}
+		testJSON(jc, replace, 
+			"{'x':''}", 
+			"{'s':0,'r':{'x':{'am':1,'in':0,'ln':false,'mi':16,'pd':22,'pe':14,'pm':0,"\
+				"'pn':21,'po':0,'ps':23,'sa':1.80,'tm':10000,'tn':0}}}");
+		testJSON(jc, replace, 
+			"{'y':''}", 
+			"{'s':0,'r':{'y':{'am':1,'in':0,'ln':false,'mi':16,'pd':3,'pe':14,'pm':0,"\
+				"'pn':2,'po':0,'ps':4,'sa':1.80,'tm':10000,'tn':0}}}");
+		testJSON(jc, replace, 
+			"{'z':''}", 
+			"{'s':0,'r':{'z':{'am':1,'in':0,'ln':false,'mi':16,'pd':12,'pe':14,'pm':0,"\
+				"'pn':11,'po':0,'ps':13,'sa':1.80,'tm':10000,'tn':0}}}");
+	}
 
-void test_JsonController_machinePosition(JsonController &jc) {
-	string replace;
-	replace.push_back('\''); replace.push_back('"');
-	testJSON(jc, replace, "{'spo':''}", "{'s':0,'r':{'spo':{'x':0,'y':0,'z':0,'a':0,'b':0,'c':0}}}");
-	testJSON(jc, replace, "{'spox':''}", "{'s':0,'r':{'spox':0}}");
-	testJSON(jc, replace, "{'spox':32760}", "{'s':0,'r':{'spox':32760}}");
-	testJSON(jc, replace, "{'spox':''}", "{'s':0,'r':{'spox':32760}}");
-	testJSON(jc, replace, "{'spox':-32760}", "{'s':0,'r':{'spox':-32760}}");
-	testJSON(jc, replace, "{'spox':''}", "{'s':0,'r':{'spox':-32760}}");
-	testJSON(jc, replace, "{'spoy':''}", "{'s':0,'r':{'spoy':0}}");
-	testJSON(jc, replace, "{'spoy':32761}", "{'s':0,'r':{'spoy':32761}}");
-	testJSON(jc, replace, "{'spoy':''}", "{'s':0,'r':{'spoy':32761}}");
-	testJSON(jc, replace, "{'spoy':-32761}", "{'s':0,'r':{'spoy':-32761}}");
-	testJSON(jc, replace, "{'spoy':''}", "{'s':0,'r':{'spoy':-32761}}");
-	testJSON(jc, replace, "{'spoz':''}", "{'s':0,'r':{'spoz':0}}");
-	testJSON(jc, replace, "{'spoz':32762}", "{'s':0,'r':{'spoz':32762}}");
-	testJSON(jc, replace, "{'spoz':''}", "{'s':0,'r':{'spoz':32762}}");
-	testJSON(jc, replace, "{'spoz':-32762}", "{'s':0,'r':{'spoz':-32762}}");
-	testJSON(jc, replace, "{'spoz':''}", "{'s':0,'r':{'spoz':-32762}}");
-	testJSON(jc, replace, "{'spoa':''}", "{'s':0,'r':{'spoa':0}}");
-	testJSON(jc, replace, "{'spoa':32763}", "{'s':0,'r':{'spoa':32763}}");
-	testJSON(jc, replace, "{'spoa':''}", "{'s':0,'r':{'spoa':32763}}");
-	testJSON(jc, replace, "{'spoa':-32763}", "{'s':0,'r':{'spoa':-32763}}");
-	testJSON(jc, replace, "{'spoa':''}", "{'s':0,'r':{'spoa':-32763}}");
-	testJSON(jc, replace, "{'spob':''}", "{'s':0,'r':{'spob':0}}");
-	testJSON(jc, replace, "{'spob':32764}", "{'s':0,'r':{'spob':32764}}");
-	testJSON(jc, replace, "{'spob':''}", "{'s':0,'r':{'spob':32764}}");
-	testJSON(jc, replace, "{'spob':-32764}", "{'s':0,'r':{'spob':-32764}}");
-	testJSON(jc, replace, "{'spob':''}", "{'s':0,'r':{'spob':-32764}}");
-	testJSON(jc, replace, "{'spoc':''}", "{'s':0,'r':{'spoc':0}}");
-	testJSON(jc, replace, "{'spoc':32765}", "{'s':0,'r':{'spoc':32765}}");
-	testJSON(jc, replace, "{'spoc':''}", "{'s':0,'r':{'spoc':32765}}");
-	testJSON(jc, replace, "{'spoc':-32765}", "{'s':0,'r':{'spoc':-32765}}");
-	testJSON(jc, replace, "{'spoc':''}", "{'s':0,'r':{'spoc':-32765}}");
-	testJSON(jc, replace, "{'spo':''}", 
-		"{'s':0,'r':{'spo':{'x':-32760,'y':-32761,'z':-32762,'a':-32763,'b':-32764,'c':-32765}}}");
-}
+	void test_JsonController_machinePosition(JsonController &jc) {
+		string replace;
+		replace.push_back('\''); replace.push_back('"');
+		testJSON(jc, replace, "{'spo':''}", "{'s':0,'r':{'spo':{'x':0,'y':0,'z':0,'a':0,'b':0,'c':0}}}");
+		testJSON(jc, replace, "{'spox':''}", "{'s':0,'r':{'spox':0}}");
+		testJSON(jc, replace, "{'spox':32760}", "{'s':0,'r':{'spox':32760}}");
+		testJSON(jc, replace, "{'spox':''}", "{'s':0,'r':{'spox':32760}}");
+		testJSON(jc, replace, "{'spox':-32760}", "{'s':0,'r':{'spox':-32760}}");
+		testJSON(jc, replace, "{'spox':''}", "{'s':0,'r':{'spox':-32760}}");
+		testJSON(jc, replace, "{'spoy':''}", "{'s':0,'r':{'spoy':0}}");
+		testJSON(jc, replace, "{'spoy':32761}", "{'s':0,'r':{'spoy':32761}}");
+		testJSON(jc, replace, "{'spoy':''}", "{'s':0,'r':{'spoy':32761}}");
+		testJSON(jc, replace, "{'spoy':-32761}", "{'s':0,'r':{'spoy':-32761}}");
+		testJSON(jc, replace, "{'spoy':''}", "{'s':0,'r':{'spoy':-32761}}");
+		testJSON(jc, replace, "{'spoz':''}", "{'s':0,'r':{'spoz':0}}");
+		testJSON(jc, replace, "{'spoz':32762}", "{'s':0,'r':{'spoz':32762}}");
+		testJSON(jc, replace, "{'spoz':''}", "{'s':0,'r':{'spoz':32762}}");
+		testJSON(jc, replace, "{'spoz':-32762}", "{'s':0,'r':{'spoz':-32762}}");
+		testJSON(jc, replace, "{'spoz':''}", "{'s':0,'r':{'spoz':-32762}}");
+		testJSON(jc, replace, "{'spoa':''}", "{'s':0,'r':{'spoa':0}}");
+		testJSON(jc, replace, "{'spoa':32763}", "{'s':0,'r':{'spoa':32763}}");
+		testJSON(jc, replace, "{'spoa':''}", "{'s':0,'r':{'spoa':32763}}");
+		testJSON(jc, replace, "{'spoa':-32763}", "{'s':0,'r':{'spoa':-32763}}");
+		testJSON(jc, replace, "{'spoa':''}", "{'s':0,'r':{'spoa':-32763}}");
+		testJSON(jc, replace, "{'spob':''}", "{'s':0,'r':{'spob':0}}");
+		testJSON(jc, replace, "{'spob':32764}", "{'s':0,'r':{'spob':32764}}");
+		testJSON(jc, replace, "{'spob':''}", "{'s':0,'r':{'spob':32764}}");
+		testJSON(jc, replace, "{'spob':-32764}", "{'s':0,'r':{'spob':-32764}}");
+		testJSON(jc, replace, "{'spob':''}", "{'s':0,'r':{'spob':-32764}}");
+		testJSON(jc, replace, "{'spoc':''}", "{'s':0,'r':{'spoc':0}}");
+		testJSON(jc, replace, "{'spoc':32765}", "{'s':0,'r':{'spoc':32765}}");
+		testJSON(jc, replace, "{'spoc':''}", "{'s':0,'r':{'spoc':32765}}");
+		testJSON(jc, replace, "{'spoc':-32765}", "{'s':0,'r':{'spoc':-32765}}");
+		testJSON(jc, replace, "{'spoc':''}", "{'s':0,'r':{'spoc':-32765}}");
+		testJSON(jc, replace, "{'spo':''}", 
+			"{'s':0,'r':{'spo':{'x':-32760,'y':-32761,'z':-32762,'a':-32763,'b':-32764,'c':-32765}}}");
+	}
 
-void test_JsonController_stroke(JsonController &jc, Machine &machine) {
-	string replace;
-	replace.push_back('\''); replace.push_back('"');
+	void test_JsonController_stroke(JsonController &jc, Machine &machine) {
+		string replace;
+		replace.push_back('\''); replace.push_back('"');
 
-	// Set machine to known position and state
-	digitalWrite(machine.axis[0].pinMin, 0);
-	digitalWrite(machine.axis[1].pinMin, 0);
-	digitalWrite(machine.axis[2].pinMin, 0);
-#define STROKE_CONFIG "{"\
-		"'xtm':10000,'xtn':0,'xpo':5,'xln':false,"\
-		"'ytm':10000,'ytn':0,'ypo':5,'yln':false,"\
-		"'ztm':10000,'ztn':0,'zpo':5,'zln':false,"\
-		"'atm':10000,'atn':0,'apo':5,'aln':false,'aps':255}"
-	string jconfig = STROKE_CONFIG;
-	// Set and verify configuration
-	testJSON(jc, replace, jconfig.c_str(), "{'s':0,'r':" STROKE_CONFIG "}");
-	ASSERTQUAD(Quad<StepCoord>(5,5,5,5), machine.motorPosition());
-	Ticks tStart = threadClock.ticks+1;
+		// Set machine to known position and state
+		digitalWrite(machine.axis[0].pinMin, 0);
+		digitalWrite(machine.axis[1].pinMin, 0);
+		digitalWrite(machine.axis[2].pinMin, 0);
+	#define STROKE_CONFIG "{"\
+			"'xtm':10000,'xtn':0,'xpo':5,'xln':false,"\
+			"'ytm':10000,'ytn':0,'ypo':5,'yln':false,"\
+			"'ztm':10000,'ztn':0,'zpo':5,'zln':false,"\
+			"'atm':10000,'atn':0,'apo':5,'aln':false,'aps':255}"
+		string jconfig = STROKE_CONFIG;
+		// Set and verify configuration
+		testJSON(jc, replace, jconfig.c_str(), "{'s':0,'r':" STROKE_CONFIG "}");
+		ASSERTQUAD(Quad<StepCoord>(5,5,5,5), machine.motorPosition());
+		Ticks tStart = threadClock.ticks+1;
 
-	// tStart+0: parse and initialize stroke
-	JsonCommand jcmd = testJSON(jc, replace, 
-		"{'str':{'us':123,'dp':[10,20],'s1':[1,2],'s2':[4,5],'s3':[7,8],'s4':[-10,-11]}}", 
-		"{'s':2,'r':{'str':{'us':123,'dp':[10,20],'s1':0,'s2':0,'s3':0,'s4':0}}}");
+		// tStart+0: parse and initialize stroke
+		JsonCommand jcmd = testJSON(jc, replace, 
+			"{'dvs':{'us':123,'dp':[10,20],'s1':[1,2],'s2':[4,5],'s3':[7,8],'s4':[-10,-11]}}", 
+		"{'s':2,'r':{'dvs':{'us':123,'dp':[10,20],'s1':0,'s2':0,'s3':0,'s4':0}}}");
 	ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.stroke.position());
 	ASSERTQUAD(Quad<StepCoord>(5,5,5,5), machine.motorPosition());
 	ASSERTEQUAL(tStart+0, threadClock.ticks);
@@ -489,7 +489,7 @@ void test_JsonController_stroke(JsonController &jc, Machine &machine) {
 	// tStart+1: traverse first stroke segment
 	ASSERTEQUAL(0, digitalRead(11));
 	testJSON_process(jc, jcmd, replace, 
-		"{'s':2,'r':{'str':{'us':123,'dp':[10,20],'s1':1,'s2':4,'s3':7,'s4':-10}}}");
+		"{'s':2,'r':{'dvs':{'us':123,'dp':[10,20],'s1':1,'s2':4,'s3':7,'s4':-10}}}");
 	ASSERTEQUAL(0, digitalRead(11));
 	ASSERTQUAD(Quad<StepCoord>(1,4,7,-10), machine.stroke.position());
 	ASSERTQUAD(Quad<StepCoord>(6,9,12,5), machine.motorPosition()); // axis a NOPIN inactive 
@@ -497,14 +497,14 @@ void test_JsonController_stroke(JsonController &jc, Machine &machine) {
 
 	// tStart+2: traverse final stroke segment
 	testJSON_process(jc, jcmd, replace, 
-		"{'s':2,'r':{'str':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}");
+		"{'s':2,'r':{'dvs':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}");
 	ASSERTQUAD(Quad<StepCoord>(10,20,0,0), machine.stroke.position());
 	ASSERTQUAD(Quad<StepCoord>(15,25,5,5), machine.motorPosition()); // axis a is NOPIN inactive 
 	ASSERTEQUAL(tStart+2, threadClock.ticks);
 
 	// tStart+3: finalize stroke
 	testJSON_process(jc, jcmd, replace, 
-		"{'s':0,'r':{'str':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}");
+		"{'s':0,'r':{'dvs':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}");
 	ASSERTQUAD(Quad<StepCoord>(10,20,0,0), machine.stroke.position());
 	ASSERTQUAD(Quad<StepCoord>(15,25,5,5), machine.motorPosition()); // axis a is NOPIN inactive 
 	ASSERTEQUAL(tStart+3, threadClock.ticks);
@@ -516,7 +516,7 @@ void test_JsonController_stroke(JsonController &jc, Machine &machine) {
 		segs += ",-127";
 	}
 	segs += "]";
-	string jlarge ="{'str':{";
+	string jlarge ="{'dvs':{";
 	jlarge += "'s1':";
 	jlarge += segs;
 	jlarge += "}}";
@@ -539,7 +539,7 @@ void test_JsonController() {
 	jcmd.response().printTo(Serial);
 	char sysbuf[500];
 	snprintf(sysbuf, sizeof(sysbuf), 
-		"{\"s\":%d,\"r\":{\"sys\":{\"fb\":\"%s\",\"fv\":%.2f,\"li\":false,\"tc\":12345}}}",
+		"{\"s\":%d,\"r\":{\"sys\":{\"b\":\"%s\",\"fr\":1000,\"li\":false,\"tc\":12345,\"v\":%.2f}}}",
 		STATUS_OK, BUILD, VERSION_MAJOR*100 + VERSION_MINOR + VERSION_PATCH/100.0);
 	ASSERTEQUALS(sysbuf, Serial.output().c_str());
 

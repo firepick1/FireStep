@@ -133,7 +133,7 @@ int axisOf(char c) {
 	}
 }
 
-Status JsonController::processMachinePosition(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
+Status JsonController::processStepperPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
 	Status status = STATUS_OK;
 	const char *s;
 	if (strlen(key) == 3) {
@@ -151,7 +151,7 @@ Status JsonController::processMachinePosition(JsonCommand &jcmd, JsonObject& job
 			return STATUS_POSITION_ERROR;
 		}
 		for (JsonObject::iterator it=kidObj.begin(); it!=kidObj.end(); ++it) {
-			status = processMachinePosition(jcmd, kidObj, it->key);
+			status = processStepperPosition(jcmd, kidObj, it->key);
 			if (status != STATUS_OK) {
 				return status;
 			}
@@ -395,16 +395,28 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
     return status;
 }
 
+int freeRam () {
+#ifdef TEST
+	return 1000;
+#else
+    extern int __heap_start, *__brkval;
+    int v;
+    return (int)(size_t)&v - (__brkval == 0 ? (int)(size_t)&__heap_start : (int)(size_t)__brkval);
+#endif
+}
+
 Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
-    const char *s;
-    if (strcmp("sys",key) == 0 && (s = jobj[key]) && *s == 0) {
-		JsonObject& node = jobj.createNestedObject(key);
-		node["fb"] = "";
-		node["fv"] = "";
-		node["li"] = "";
-		node["tc"] = "";
-        status = node.success() ? STATUS_OK : STATUS_SYS_ERROR;
+    if (strcmp("sys", key) == 0) {
+		const char *s;
+		if ((s = jobj[key]) && *s == 0) {
+			JsonObject& node = jobj.createNestedObject(key);
+			node["b"] = "";
+			node["fr"] = "";
+			node["li"] = "";
+			node["tc"] = "";
+			node["v"] = "";
+		}	
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
@@ -414,16 +426,20 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
                 }
             }
         }
-    } else if (strcmp("fb", key) == 0 || strcmp("fb", key + 1) == 0) {
-		jobj["fb"] = BUILD;
-    } else if (strcmp("fv", key) == 0 || strcmp("fb", key + 1) == 0) {
-        jobj["fv"] = VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0;
-    } else if (strcmp("li", key) == 0 || strcmp("li", key + 1) == 0) {
+    } else if (strcmp("b", key) == 0 || strcmp("sysb", key) == 0) {
+        jobj[key] = BUILD;
+    } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
+        jobj["fr"] = freeRam();
+    } else if (strcmp("v", key) == 0 || strcmp("sysv", key) == 0) {
+        jobj["v"] = VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0;
+    } else if (strcmp("li", key) == 0 || strcmp("sysli", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.invertLim);
-    } else if (strcmp("tc", key) == 0 || strcmp("tc", key + 1) == 0) {
+    } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
         status = processField<Ticks, long>(jobj, key, threadClock.ticks);
-	}
-	return status;
+	} else {
+		status = jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+    }
+    return status;
 }
 
 void JsonController::process(JsonCommand& jcmd) {
@@ -434,12 +450,12 @@ void JsonController::process(JsonCommand& jcmd) {
     Status status = STATUS_OK;
 
     for (JsonObject::iterator it = root.begin(); it != root.end(); ++it) {
-        if (strcmp("str", it->key) == 0) {
+        if (strcmp("dvs", it->key) == 0) {
             status = processStroke(jcmd, root, it->key);
-        } else if (strcmp("sys", it->key) == 0) {
+        } else if (strncmp("sys", it->key, 3) == 0) {
             status = processSys(jcmd, root, it->key);
         } else if (strncmp("spo", it->key, 3) == 0) {
-            status = processMachinePosition(jcmd, root, it->key);
+            status = processStepperPosition(jcmd, root, it->key);
         } else {
             switch (it->key[0]) {
             case '1':

@@ -61,7 +61,7 @@ typedef class JsonController {
 		float		plannedTicks;
 
 	protected:
-		Status processMachinePosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);
+		Status processStepperPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);
 		Status processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
 		Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
 		Status processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key);

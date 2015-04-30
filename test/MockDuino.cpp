@@ -9,6 +9,7 @@
 SerialType Serial;
 ArduinoType arduino;
 
+int __heap_start, *__brkval;
 
 ArduinoType::ArduinoType() {
 	clear();
