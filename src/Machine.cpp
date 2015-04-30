@@ -38,36 +38,29 @@ void Machine::init() {
 
 Status Machine::step(const Quad<StepCoord> &pulse) {
     for (int i = 0; i < 4; i++) {
-		int iAxis = motor[i].axisMap;
-#ifdef TEST
-		ASSERT(0<=iAxis && iAxis<AXIS_COUNT);
-#endif
-        Axis &a(axis[iAxis]);
+        Axis &a(axis[motor[i].axisMap]);
+		if (a.pinEnable != NOPIN) {
+			bool enable = digitalRead(a.pinEnable);
+			if (!enable) {
+				a.mode = MODE_DISABLE;
+			}
+		}
+		if (a.mode==MODE_DISABLE) {
+			continue;
+		}
         if (a.pinMin != NOPIN) {
 			bool minHigh = digitalRead(a.pinMin);
             bool atMin = (invertLim == !minHigh);
             if (atMin != a.atMin) {
-#ifdef TEST_TRACE
-                cout << "axis[" << i << "] CHANGE" 
-					<< " atMin:" << atMin 
-					<< " pinMin:" << (int) a.pinMin
-					<< endl;
-#endif
                 a.atMin = atMin;
             }
         }
         if (a.pinStep == NOPIN || a.pinDir == NOPIN) {
-#ifdef TEST_TRACE
-            cout << "axis[" << i << "] NOPIN" << endl;
-#endif
             continue;
         }
         switch (pulse.value[i]) {
         case 1:
             if (a.position >= a.travelMax) {
-#ifdef TEST_TRACE
-                cout << "axis[" << i << "] travelMax:" << a.travelMax << endl;
-#endif
                 continue;
             }
             digitalWrite(a.pinDir, a.invertDir ? LOW : HIGH);
@@ -75,16 +68,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
         case 0:
             continue;
         case -1:
-            if (a.atMin) {
-#ifdef TEST_TRACE
-                cout << "axis[" << i << "] atMin:" << endl;
-#endif
-                continue;
-            }
-            if (a.position <= a.travelMin) {
-#ifdef TEST_TRACE
-                cout << "axis[" << i << "] travelMin:" << a.travelMin;
-#endif
+            if (a.atMin || a.position <= a.travelMin) {
                 continue;
             }
             digitalWrite(a.pinDir, a.invertDir ? HIGH : LOW);
@@ -97,7 +81,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
     STEPPER_PULSE_DELAY;
     for (int i = 0; i < 4; i++) {
         Axis &a(axis[motor[i].axisMap]);
-        if (a.pinStep == NOPIN || a.pinDir == NOPIN) {
+		if (a.mode==MODE_DISABLE || a.pinStep == NOPIN || a.pinDir == NOPIN) {
             continue;
         }
         switch (pulse.value[i]) {
@@ -109,7 +93,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
         case 0:
             continue;
         case -1:
-            if (a.atMin || (a.position <= a.travelMin)) {
+            if (a.atMin || a.position <= a.travelMin) {
                 continue;
             }
             break;

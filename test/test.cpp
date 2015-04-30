@@ -494,6 +494,9 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
     digitalWrite(machine.axis[0].pinMin, 0);
     digitalWrite(machine.axis[1].pinMin, 0);
     digitalWrite(machine.axis[2].pinMin, 0);
+    digitalWrite(machine.axis[0].pinEnable, 1);
+    digitalWrite(machine.axis[1].pinEnable, 1);
+    digitalWrite(machine.axis[2].pinEnable, 1);
 #define STROKE_CONFIG "{"\
 			"'xtm':10000,'xtn':0,'xpo':5,'xln':false,"\
 			"'ytm':10000,'ytn':0,'ypo':5,'yln':false,"\
@@ -804,8 +807,11 @@ void test_Machine_step() {
 
     Machine machine;
     digitalWrite(machine.axis[0].pinMin, 0);
+    digitalWrite(machine.axis[0].pinEnable, 1);
     digitalWrite(machine.axis[1].pinMin, 0);
+    digitalWrite(machine.axis[1].pinEnable, 1);
     digitalWrite(machine.axis[2].pinMin, 0);
+    digitalWrite(machine.axis[2].pinEnable, 1);
     machine.axis[0].travelMax = 5;
     machine.axis[1].travelMax = 4;
     machine.axis[2].travelMax = 3;
