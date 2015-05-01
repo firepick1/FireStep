@@ -1,4 +1,6 @@
+#ifdef CMAKE
 #include <cstring>
+#endif
 #include "Arduino.h"
 #include "AnalogRead.h"
 #include "version.h"
