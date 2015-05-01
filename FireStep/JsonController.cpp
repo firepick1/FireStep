@@ -1,8 +1,8 @@
 #include "Arduino.h"
-#ifndef ARDUINO
+#ifdef TEST
 #include <cstring>
-#endif
 #include <cstdio>
+#endif
 #include "build.h"
 #include "version.h"
 #include "JsonController.h"
