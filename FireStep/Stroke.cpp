@@ -98,7 +98,9 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 	return dGoal;
 }
 
+#ifdef CMAKE
 template<class T> T abs(T a) { return a < 0 ? -a : a; };
+#endif
 
 Status Stroke::start(Ticks tStart) {
 	this->tStart = tStart;
