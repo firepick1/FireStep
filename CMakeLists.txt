@@ -59,7 +59,7 @@ endforeach()
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/FireStep/version.h.in"
-  "${BUILD_TARGET_DIR}/version.h"
+  "${PROJECT_SOURCE_DIR}/FireStep/version.h"
   )
 
 message("CMAKE_PREFIX_PATH:${CMAKE_PREFIX_PATH}")
