@@ -4,7 +4,11 @@
 #include "version.h"
 #include "Arduino.h"
 #include "Thread.h"
+#ifdef ARDUINO
+#include <ArduinoJson.h>
+#else
 #include "ArduinoJson.h"
+#endif
 #include "Status.h"
 #include "Machine.h"
 

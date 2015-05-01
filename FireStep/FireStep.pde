@@ -1,6 +1,8 @@
 #include "Arduino.h"
 #include "MachineThread.h"
 
+using namespace firestep;
+
 MachineThread mainThread;
 
 void setup()										// run once, when the sketch starts

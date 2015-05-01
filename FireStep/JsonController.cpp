@@ -1,5 +1,7 @@
 #include "Arduino.h"
+#ifndef ARDUINO
 #include <cstring>
+#endif
 #include <cstdio>
 #include "build.h"
 #include "version.h"
