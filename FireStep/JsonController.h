@@ -1,7 +1,6 @@
 #ifndef JSONCONTROLLER_H
 #define JSONCONTROLLER_H
 
-#include <string>
 #include "version.h"
 #include "Arduino.h"
 #include "Thread.h"

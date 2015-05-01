@@ -76,19 +76,10 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 	Ticks dtSegStart = goalStartTicks(t);
 	Ticks dtSegEnd = goalEndTicks(t);
 	Ticks dtSeg = dtSegEnd - dtSegStart;
-#ifdef TEST
-	string testMsg = "goalPos";
-#endif
 	if (t <= tStart || dtTotal <= 0 || length <= 0 || dtSeg <= 0) {
-#ifdef TEST
-		testMsg += " skip";
-#endif
 		// do nothing
 	} else if (tStart+dtTotal <= t) {
 		dGoal = dEndPos;
-#ifdef TEST
-		testMsg += " endPos";
-#endif
 	} else {
 		Quad<StepCoord> posSegStart;
 		for (SegIndex s=0; s<sGoal; s++) {
@@ -101,20 +92,7 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 		v *= tNum;
 		v /= dtSeg;
 		dGoal = posSegStart+v;
-#ifdef TEST
-		testMsg += " goalPos";
-#endif
 	}
-#ifdef TEST_TRACE
-	cout << testMsg
-			<< " t:" << t
-			<< " tStart:" << tStart
-			<< " dtSeg:" << dtSeg 
-			<< " dtSegStart:" << dtSegStart
-			<< " dtSegEnd:" << dtSegEnd
-			<< " dGoal:" << dGoal.toString() 
-			<< endl;
-#endif
 	return dGoal;
 }
 
@@ -152,7 +130,6 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 	if (tCurrent > tStart+dtTotal) {
 		return STATUS_OK;
 	}
-	//cout << "I dPos:" << dPos.toString() << " dGoal:" << dGoal.toString() << endl;
 	while (dPos != dGoal) {
 		StepCoord d[4];
 		StepCoord dMax = 0;
@@ -179,7 +156,6 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 			default:
 				return status;	// abnormal return
 		}
-	//cout << "L dPos:" << dPos.toString() << " dGoal:" << dGoal.toString() << endl;
 	}
 	return STATUS_PROCESSING;
 }

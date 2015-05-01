@@ -1,8 +1,10 @@
 #ifndef QUAD_H
 #define QUAD_H
 
+#ifdef TEST
 #include <string>
 #include <cstdio>
+#endif
 
 namespace firestep {
 
@@ -16,12 +18,14 @@ template<class T> class Quad { // a 4 element vector
             value[2] = v3;
             value[3] = v4;
         }
+#ifdef TEST
         string toString(const char *fmt = "[%d,%d,%d,%d]") const {
             char buf[50];
             snprintf(buf, sizeof(buf), fmt,
                      (T) value[0], (T) value[1], (T) value[2], (T) value[3]);
             return string(buf);
         };
+#endif
 		void clear() {
 			value[0] = value[1] = value[2] = value[3] = 0;
 		}
