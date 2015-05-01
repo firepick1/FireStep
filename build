@@ -86,9 +86,6 @@ RC=$?; if [ $RC -ne 0 ]; then
 	echo "ERROR	: cmake failed (RC=$RC)"
 	exit -1
 fi
-echo "STATUS	: building FireStep"
-git log --abbrev=10 --pretty=format:'#define BUILD "%h"' -n 1 > FireStep/build.h
-echo "BUILD	: " `cat FireStep/build.h`
 make
 RC=$?; if [ $RC -ne 0 ]; then
 	echo "ERROR	: make failed (RC=$RC)"

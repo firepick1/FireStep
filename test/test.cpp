@@ -7,7 +7,6 @@
 #include "version.h"
 #include "Arduino.h"
 #include "MachineThread.h"
-#include "build.h"
 
 byte lastByte;
 
@@ -583,8 +582,8 @@ void test_JsonController() {
     jcmd.response().printTo(Serial);
     char sysbuf[500];
     snprintf(sysbuf, sizeof(sysbuf),
-             "{\"s\":%d,\"r\":{\"sys\":{\"b\":\"%s\",\"fr\":1000,\"li\":false,\"tc\":12345,\"v\":%.2f}}}",
-             STATUS_OK, BUILD, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
+             "{\"s\":%d,\"r\":{\"sys\":{\"fr\":1000,\"li\":false,\"tc\":12345,\"v\":%.2f}}}",
+             STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
     ASSERTEQUALS(sysbuf, Serial.output().c_str());
 
     test_JsonController_axis(machine, jc, 'x');

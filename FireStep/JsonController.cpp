@@ -3,7 +3,6 @@
 #include <cstring>
 #include <cstdio>
 #endif
-#include "build.h"
 #include "version.h"
 #include "JsonController.h"
 
@@ -430,7 +429,6 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
 		const char *s;
 		if ((s = jobj[key]) && *s == 0) {
 			JsonObject& node = jobj.createNestedObject(key);
-			node["b"] = "";
 			node["fr"] = "";
 			node["li"] = "";
 			node["tc"] = "";
@@ -445,8 +443,6 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
                 }
             }
         }
-    } else if (strcmp("b", key) == 0 || strcmp("sysb", key) == 0) {
-        jobj[key] = BUILD;
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
         jobj[key] = freeRam();
     } else if (strcmp("v", key) == 0 || strcmp("sysv", key) == 0) {

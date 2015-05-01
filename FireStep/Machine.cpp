@@ -3,7 +3,6 @@
 #include "Machine.h"
 #include "AnalogRead.h"
 #include "version.h"
-#include "build.h"
 #ifdef TEST
 #include "../test/FireUtils.hpp"
 #endif

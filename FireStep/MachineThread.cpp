@@ -2,7 +2,6 @@
 #include "Arduino.h"
 #include "AnalogRead.h"
 #include "version.h"
-#include "build.h"
 #include "MachineThread.h"
 
 using namespace firestep;
