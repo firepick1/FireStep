@@ -35,7 +35,7 @@ SET(RUNTIME_OUTPUT_NAME firestep)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 include_directories( 
-	${PROJECT_SOURCE_DIR}/src
+	${PROJECT_SOURCE_DIR}/FireStep
 	${BUILD_TARGET_DIR} 
 	test
 	ArduinoJson/include 
@@ -58,7 +58,7 @@ foreach(dir ${dirs})
 endforeach()
 
 configure_file (
-  "${PROJECT_SOURCE_DIR}/src/version.h.in"
+  "${PROJECT_SOURCE_DIR}/FireStep/version.h.in"
   "${BUILD_TARGET_DIR}/version.h"
   )
 
@@ -72,11 +72,11 @@ link_directories(
 )
 
 add_executable(test 
-	src/JsonController.cpp
-	src/Thread.cpp
-	src/Stroke.cpp
-	src/Machine.cpp
-	src/MachineThread.cpp
+	FireStep/JsonController.cpp
+	FireStep/Thread.cpp
+	FireStep/Stroke.cpp
+	FireStep/Machine.cpp
+	FireStep/MachineThread.cpp
 	test/FireLog.cpp
 	test/MockDuino.cpp
 	test/test.cpp

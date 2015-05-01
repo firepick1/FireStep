@@ -128,125 +128,125 @@ test/fast:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
 .PHONY : test/fast
 
-src/JsonController.o: src/JsonController.cpp.o
-.PHONY : src/JsonController.o
+FireStep/JsonController.o: FireStep/JsonController.cpp.o
+.PHONY : FireStep/JsonController.o
 
 # target to build an object file
-src/JsonController.cpp.o:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JsonController.cpp.o
-.PHONY : src/JsonController.cpp.o
+FireStep/JsonController.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/JsonController.cpp.o
+.PHONY : FireStep/JsonController.cpp.o
 
-src/JsonController.i: src/JsonController.cpp.i
-.PHONY : src/JsonController.i
+FireStep/JsonController.i: FireStep/JsonController.cpp.i
+.PHONY : FireStep/JsonController.i
 
 # target to preprocess a source file
-src/JsonController.cpp.i:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JsonController.cpp.i
-.PHONY : src/JsonController.cpp.i
+FireStep/JsonController.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/JsonController.cpp.i
+.PHONY : FireStep/JsonController.cpp.i
 
-src/JsonController.s: src/JsonController.cpp.s
-.PHONY : src/JsonController.s
+FireStep/JsonController.s: FireStep/JsonController.cpp.s
+.PHONY : FireStep/JsonController.s
 
 # target to generate assembly for a file
-src/JsonController.cpp.s:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/JsonController.cpp.s
-.PHONY : src/JsonController.cpp.s
+FireStep/JsonController.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/JsonController.cpp.s
+.PHONY : FireStep/JsonController.cpp.s
 
-src/Machine.o: src/Machine.cpp.o
-.PHONY : src/Machine.o
+FireStep/Machine.o: FireStep/Machine.cpp.o
+.PHONY : FireStep/Machine.o
 
 # target to build an object file
-src/Machine.cpp.o:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Machine.cpp.o
-.PHONY : src/Machine.cpp.o
+FireStep/Machine.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/Machine.cpp.o
+.PHONY : FireStep/Machine.cpp.o
 
-src/Machine.i: src/Machine.cpp.i
-.PHONY : src/Machine.i
+FireStep/Machine.i: FireStep/Machine.cpp.i
+.PHONY : FireStep/Machine.i
 
 # target to preprocess a source file
-src/Machine.cpp.i:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Machine.cpp.i
-.PHONY : src/Machine.cpp.i
+FireStep/Machine.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/Machine.cpp.i
+.PHONY : FireStep/Machine.cpp.i
 
-src/Machine.s: src/Machine.cpp.s
-.PHONY : src/Machine.s
+FireStep/Machine.s: FireStep/Machine.cpp.s
+.PHONY : FireStep/Machine.s
 
 # target to generate assembly for a file
-src/Machine.cpp.s:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Machine.cpp.s
-.PHONY : src/Machine.cpp.s
+FireStep/Machine.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/Machine.cpp.s
+.PHONY : FireStep/Machine.cpp.s
 
-src/MachineThread.o: src/MachineThread.cpp.o
-.PHONY : src/MachineThread.o
+FireStep/MachineThread.o: FireStep/MachineThread.cpp.o
+.PHONY : FireStep/MachineThread.o
 
 # target to build an object file
-src/MachineThread.cpp.o:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/MachineThread.cpp.o
-.PHONY : src/MachineThread.cpp.o
+FireStep/MachineThread.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/MachineThread.cpp.o
+.PHONY : FireStep/MachineThread.cpp.o
 
-src/MachineThread.i: src/MachineThread.cpp.i
-.PHONY : src/MachineThread.i
+FireStep/MachineThread.i: FireStep/MachineThread.cpp.i
+.PHONY : FireStep/MachineThread.i
 
 # target to preprocess a source file
-src/MachineThread.cpp.i:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/MachineThread.cpp.i
-.PHONY : src/MachineThread.cpp.i
+FireStep/MachineThread.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/MachineThread.cpp.i
+.PHONY : FireStep/MachineThread.cpp.i
 
-src/MachineThread.s: src/MachineThread.cpp.s
-.PHONY : src/MachineThread.s
+FireStep/MachineThread.s: FireStep/MachineThread.cpp.s
+.PHONY : FireStep/MachineThread.s
 
 # target to generate assembly for a file
-src/MachineThread.cpp.s:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/MachineThread.cpp.s
-.PHONY : src/MachineThread.cpp.s
+FireStep/MachineThread.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/MachineThread.cpp.s
+.PHONY : FireStep/MachineThread.cpp.s
 
-src/Stroke.o: src/Stroke.cpp.o
-.PHONY : src/Stroke.o
+FireStep/Stroke.o: FireStep/Stroke.cpp.o
+.PHONY : FireStep/Stroke.o
 
 # target to build an object file
-src/Stroke.cpp.o:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Stroke.cpp.o
-.PHONY : src/Stroke.cpp.o
+FireStep/Stroke.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/Stroke.cpp.o
+.PHONY : FireStep/Stroke.cpp.o
 
-src/Stroke.i: src/Stroke.cpp.i
-.PHONY : src/Stroke.i
+FireStep/Stroke.i: FireStep/Stroke.cpp.i
+.PHONY : FireStep/Stroke.i
 
 # target to preprocess a source file
-src/Stroke.cpp.i:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Stroke.cpp.i
-.PHONY : src/Stroke.cpp.i
+FireStep/Stroke.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/Stroke.cpp.i
+.PHONY : FireStep/Stroke.cpp.i
 
-src/Stroke.s: src/Stroke.cpp.s
-.PHONY : src/Stroke.s
+FireStep/Stroke.s: FireStep/Stroke.cpp.s
+.PHONY : FireStep/Stroke.s
 
 # target to generate assembly for a file
-src/Stroke.cpp.s:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Stroke.cpp.s
-.PHONY : src/Stroke.cpp.s
+FireStep/Stroke.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/Stroke.cpp.s
+.PHONY : FireStep/Stroke.cpp.s
 
-src/Thread.o: src/Thread.cpp.o
-.PHONY : src/Thread.o
+FireStep/Thread.o: FireStep/Thread.cpp.o
+.PHONY : FireStep/Thread.o
 
 # target to build an object file
-src/Thread.cpp.o:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Thread.cpp.o
-.PHONY : src/Thread.cpp.o
+FireStep/Thread.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/Thread.cpp.o
+.PHONY : FireStep/Thread.cpp.o
 
-src/Thread.i: src/Thread.cpp.i
-.PHONY : src/Thread.i
+FireStep/Thread.i: FireStep/Thread.cpp.i
+.PHONY : FireStep/Thread.i
 
 # target to preprocess a source file
-src/Thread.cpp.i:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Thread.cpp.i
-.PHONY : src/Thread.cpp.i
+FireStep/Thread.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/Thread.cpp.i
+.PHONY : FireStep/Thread.cpp.i
 
-src/Thread.s: src/Thread.cpp.s
-.PHONY : src/Thread.s
+FireStep/Thread.s: FireStep/Thread.cpp.s
+.PHONY : FireStep/Thread.s
 
 # target to generate assembly for a file
-src/Thread.cpp.s:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Thread.cpp.s
-.PHONY : src/Thread.cpp.s
+FireStep/Thread.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/Thread.cpp.s
+.PHONY : FireStep/Thread.cpp.s
 
 test/FireLog.o: test/FireLog.cpp.o
 .PHONY : test/FireLog.o
@@ -331,21 +331,21 @@ help:
 	@echo "... package_source"
 	@echo "... rebuild_cache"
 	@echo "... test"
-	@echo "... src/JsonController.o"
-	@echo "... src/JsonController.i"
-	@echo "... src/JsonController.s"
-	@echo "... src/Machine.o"
-	@echo "... src/Machine.i"
-	@echo "... src/Machine.s"
-	@echo "... src/MachineThread.o"
-	@echo "... src/MachineThread.i"
-	@echo "... src/MachineThread.s"
-	@echo "... src/Stroke.o"
-	@echo "... src/Stroke.i"
-	@echo "... src/Stroke.s"
-	@echo "... src/Thread.o"
-	@echo "... src/Thread.i"
-	@echo "... src/Thread.s"
+	@echo "... FireStep/JsonController.o"
+	@echo "... FireStep/JsonController.i"
+	@echo "... FireStep/JsonController.s"
+	@echo "... FireStep/Machine.o"
+	@echo "... FireStep/Machine.i"
+	@echo "... FireStep/Machine.s"
+	@echo "... FireStep/MachineThread.o"
+	@echo "... FireStep/MachineThread.i"
+	@echo "... FireStep/MachineThread.s"
+	@echo "... FireStep/Stroke.o"
+	@echo "... FireStep/Stroke.i"
+	@echo "... FireStep/Stroke.s"
+	@echo "... FireStep/Thread.o"
+	@echo "... FireStep/Thread.i"
+	@echo "... FireStep/Thread.s"
 	@echo "... test/FireLog.o"
 	@echo "... test/FireLog.i"
 	@echo "... test/FireLog.s"
