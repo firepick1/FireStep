@@ -211,7 +211,7 @@ Status JsonController::initializeStroke(Machine &machine, JsonCommand &jcmd, Jso
 				machine.stroke.dEndPos.value[i] = jarr[i];
 			}
 		} else if (strcmp("sc", it->key) == 0) {
-			Status status = processField<int32_t, long>(stroke, it->key, machine.stroke.scale);
+			Status status = processField<StepDV, long>(stroke, it->key, machine.stroke.scale);
 			if (status != STATUS_OK) {
 				return jcmd.setError(status, it->key);
 			}
