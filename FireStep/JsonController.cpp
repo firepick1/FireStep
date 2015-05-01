@@ -1,5 +1,5 @@
 #include "Arduino.h"
-#ifdef TEST
+#ifdef CMAKE
 #include <cstring>
 #include <cstdio>
 #endif

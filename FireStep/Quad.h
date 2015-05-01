@@ -1,7 +1,7 @@
 #ifndef QUAD_H
 #define QUAD_H
 
-#ifdef TEST
+#ifdef CMAKE
 #include <string>
 #include <cstdio>
 #endif

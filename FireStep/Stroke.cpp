@@ -1,4 +1,6 @@
+#ifdef CMAKE
 #include <cstring>
+#endif
 
 #include "Stroke.h"
 
