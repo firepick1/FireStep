@@ -54,6 +54,7 @@ void MachineThread::Heartbeat() {
     default:	// errors
     case STATUS_OK:
         command.response().printTo(Serial);
+        Serial.println();
         status = STATUS_IDLE;
         break;
     }
