@@ -1,5 +1,6 @@
 #! /bin/bash
 
+echo
 echo "COMMAND	: ../FireStep/build"
 echo "DATE	: `date`"
 
@@ -23,6 +24,10 @@ do
   esac
 done
 
+if [ ! -e Adafruit_NeoPixel ]; then
+	echo "GIT	: git clone https://github.com/adafruit/Adafruit_NeoPixel"
+	git clone https://github.com/adafruit/Adafruit_NeoPixel	
+fi
 if [ ! -e ArduinoJson ]; then
 	echo "GIT	: git clone https://github.com:firepick1/ArduinoJson.git"
 	git clone git@github.com:firepick1/ArduinoJson.git
@@ -30,6 +35,15 @@ if [ ! -e ArduinoJson ]; then
 	cmake .
 	make clean all
 	popd
+fi
+
+if [ "$WINDIR" != "" ]; then
+	echo "SYSTEM	: FireStep Windows support is limited to Arduino IDE"
+	echo "TRY	: Copy ArduinoJson       to <your-Arduino-sketch-folder>/libraries/ArduinoJson"
+	echo "TRY	: Copy Adafruit_NeoPixel to <your-Arduino-sketch-folder>/libraries/Adafruit_NeoPixel"
+	echo "TRY	: Launch Arduino 1.6.3 IDE and open FireStep/FireStep.ino"
+	echo "STATUS	: build complete"
+	exit 0;
 fi
 
 if [ "$SUDO_USER" != "" ]; then

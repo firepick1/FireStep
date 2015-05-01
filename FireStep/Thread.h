@@ -10,7 +10,6 @@ namespace firestep {
 #define DEBUG_HEX(S,V) Serial.print(" " S ":");Serial.print(V,HEX);
 #define DEBUG_DEC(S,V) Serial.print(" " S ":");Serial.print(V,DEC);
 
-//extern byte lastByte;		// declare this at end of program
 #define CLOCK_HZ 16000000	// cycles per second
 #define TIMER_PRESCALE	1024 /* 1, 8, 64, 256, 1024 */
 #define FREQ_CYCLES(freq) (CLOCK_HZ/(freq))

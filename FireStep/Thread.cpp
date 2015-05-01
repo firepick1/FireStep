@@ -64,7 +64,7 @@ void MonitorThread::setup(int pin1, int pin2) {
     PulseThread::setup(MS_TIMER_CYCLES(1000), MS_TIMER_CYCLES(250));
     m_Pin1 = pin1;
     m_Pin2 = pin2;
-    verbose = true;
+    verbose = false;
     pinMode(pin1, OUTPUT);
     pinMode(pin2, OUTPUT);
     blinkLED = true;
