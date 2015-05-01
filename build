@@ -24,7 +24,7 @@ do
 done
 
 if [ ! -e ArduinoJson ]; then
-	echo "GIT	: git clone https://github.com/bblanchon/ArduinoJson.git"
+	echo "GIT	: git clone https://github.com:firepick1/ArduinoJson.git"
 	git clone git@github.com:firepick1/ArduinoJson.git
 	pushd ArduinoJson
 	cmake .
