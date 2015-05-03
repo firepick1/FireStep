@@ -5,19 +5,19 @@
 #include "NeoPixel.h"
 
 firestep::MachineThread machineThread;
-firestep::NeoPixel neoPixel;
+firestep::NeoPixel neoPixel(16, DISPLAY_PIN);
 
 void setup() // run once, when the sketch starts
 {
-	Serial.begin(115200); 
-
-	machineThread.setup();
-	machine.pDisplay = &neoPixel;
-	firestep::threadRunner.setup(LED_PIN_RED, LED_PIN_GRN);
+  Serial.begin(38400); // decrease if Serial drops characters
+  machineThread.setup();
+  neoPixel.begin();
+  machineThread.machine.pDisplay = &neoPixel;
+  firestep::threadRunner.setup(LED_PIN_RED, LED_PIN_GRN);
 }
 
 void loop()	// run over and over again
 {
-	firestep::threadRunner.run();
+  firestep::threadRunner.run();
 }
 

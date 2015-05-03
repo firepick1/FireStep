@@ -23,6 +23,8 @@ MachineThread::MachineThread()
 void MachineThread::displayStatus() {
     switch (status) {
 	case STATUS_OK:
+// don't change anything
+break;
     case STATUS_IDLE:
     case STATUS_SERIAL_EOL_WAIT:
 		machine.pDisplay->setStatus(DISPLAY_IDLE);
