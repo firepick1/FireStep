@@ -77,6 +77,8 @@ typedef class SerialType : public Print {
     public:
 		void clear() {
 			bytes.clear();
+			serialout.clear();
+			serialline.clear();
 		}
 		void push(uint8_t value) {
             bytes.push_back(value);
@@ -100,6 +102,9 @@ typedef class SerialType : public Print {
             bytes.push_back(pvalue[2]);
             bytes.push_back(pvalue[3]);
         }
+		void push(string value) {
+			push(value.c_str());
+		}
 		void push(const char * value) {
 			for (const char *s=value; *s; s++) {
 				bytes.push_back(*s);

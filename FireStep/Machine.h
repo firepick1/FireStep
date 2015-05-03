@@ -2,6 +2,7 @@
 #define MACHINE_H
 
 #include "Stroke.h"
+#include "Display.h"
 #include "pins.h"
 
 namespace firestep {
@@ -68,7 +69,9 @@ typedef class Machine : public QuadStepper {
         friend class JsonController;
     private:
 		bool	invertLim;
+		Display nullDisplay;
 	public:
+		Display	*pDisplay;
         Motor motor[MOTOR_COUNT];
         Axis axis[AXIS_COUNT];
         Stroke stroke;

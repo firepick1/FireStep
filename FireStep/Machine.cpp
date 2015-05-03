@@ -15,7 +15,7 @@ template class Quad<int16_t>;
 template class Quad<int32_t>;
 
 Machine::Machine() 
-	: invertLim(false) {
+	: invertLim(false), pDisplay(&nullDisplay) {
 	axis[0].pinStep = X_STEP_PIN;
 	axis[0].pinDir = X_DIR_PIN;
 	axis[0].pinMin = X_MIN_PIN;

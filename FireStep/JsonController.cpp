@@ -429,6 +429,8 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
 		const char *s;
 		if ((s = jobj[key]) && *s == 0) {
 			JsonObject& node = jobj.createNestedObject(key);
+			node["dl"] = "";
+			node["ds"] = "";
 			node["fr"] = "";
 			node["li"] = "";
 			node["tc"] = "";
@@ -443,6 +445,18 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
                 }
             }
         }
+    } else if (strcmp("dl", key) == 0 || strcmp("sysdl", key) == 0) {
+		uint8_t level = machine.pDisplay->getLevel();
+        status = processField<uint8_t, long>(jobj, key, level);
+		if (level != machine.pDisplay->getLevel()) {
+			machine.pDisplay->setLevel((DisplayLevel) level);
+		}
+    } else if (strcmp("ds", key) == 0 || strcmp("sysds", key) == 0) {
+		uint8_t dispStatus = machine.pDisplay->getStatus();
+        status = processField<uint8_t, long>(jobj, key, dispStatus);
+		if (dispStatus != machine.pDisplay->getStatus()) {
+			machine.pDisplay->setStatus((DisplayStatus) dispStatus);
+		}
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
         jobj[key] = freeRam();
     } else if (strcmp("v", key) == 0 || strcmp("sysv", key) == 0) {

@@ -20,6 +20,28 @@ MachineThread::MachineThread()
     : status(STATUS_IDLE) {
 }
 
+void MachineThread::displayStatus() {
+    switch (status) {
+	case STATUS_OK:
+    case STATUS_IDLE:
+    case STATUS_SERIAL_EOL_WAIT:
+		machine.pDisplay->setStatus(DISPLAY_IDLE);
+        break;
+    case STATUS_JSON_PARSED:
+    case STATUS_PROCESSING:
+		machine.pDisplay->setStatus(DISPLAY_PROCESSING);
+        break;
+	case STATUS_OPERATOR:
+		machine.pDisplay->setStatus(DISPLAY_OPERATOR);
+		break;
+    default:	// errors
+		machine.pDisplay->setStatus(DISPLAY_ERROR);
+        break;
+    }
+
+	machine.pDisplay->show();
+}
+
 void MachineThread::Heartbeat() {
 #ifdef THROTTLE_SPEED
     controller.speed = ADCH;
@@ -34,7 +56,7 @@ void MachineThread::Heartbeat() {
         ThreadEnable(true);
     }
 #endif
-
+	
     switch (status) {
     case STATUS_IDLE:
         if (Serial.available()) {
@@ -58,6 +80,8 @@ void MachineThread::Heartbeat() {
         status = STATUS_IDLE;
         break;
     }
+
+	displayStatus();
 
     nextHeartbeat.ticks = 0;
 }

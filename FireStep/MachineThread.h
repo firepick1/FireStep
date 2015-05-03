@@ -6,6 +6,9 @@
 namespace firestep {
 
 typedef class MachineThread : Thread {
+	protected:
+		void displayStatus();
+
     public:
 		Status status;
         Machine machine;

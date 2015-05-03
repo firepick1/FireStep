@@ -7,6 +7,7 @@
 #include "version.h"
 #include "Arduino.h"
 #include "MachineThread.h"
+#include "Display.h"
 
 byte lastByte;
 
@@ -581,8 +582,8 @@ void test_JsonController() {
     jc.process(machine, jcmd);
     jcmd.response().printTo(Serial);
     char sysbuf[500];
-    snprintf(sysbuf, sizeof(sysbuf),
-             "{\"s\":%d,\"r\":{\"sys\":{\"fr\":1000,\"li\":false,\"tc\":12345,\"v\":%.2f}}}",
+	const char *fmt = "{'s':%d,'r':{'sys':{'dl':8,'ds':0,'fr':1000,'li':false,'tc':12345,'v':%.2f}}}";
+    snprintf(sysbuf, sizeof(sysbuf), jsonTemplate(fmt).c_str(),
              STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
     ASSERTEQUALS(sysbuf, Serial.output().c_str());
 
@@ -923,13 +924,65 @@ void test_MachineThread() {
 
 	threadClock.ticks++;
 	ASSERTEQUAL(STATUS_OK, mt.status);
+	Serial.clear();
 	mt.Heartbeat();
-    const char *jsonOut = "{'s':0,'r':{'systc':105,'dvs':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}";
-	string jo(jsonTemplate(jsonOut, "'\""));
+    const char *jsonOut = 
+		"{'s':0,'r':{'systc':105,'dvs':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}\n";
+	string jo(jsonTemplate(jsonOut));
 	ASSERTEQUALS(jo.c_str(), Serial.output().c_str());
 	ASSERTQUAD(Quad<StepCoord>(10,20,0,0), mt.machine.motorPosition());
 
     cout << "TEST	: test_MachineThread() OK " << endl;
+}
+
+class TestDisplay: public Display {
+	public:
+		char message[100];
+		virtual void show() {
+			snprintf(message, sizeof(message), "status:%d level:%d", status, level);
+		}
+} testDisplay;
+
+void test_Display() {
+    cout << "TEST	: test_Display() =====" << endl;
+
+	MachineThread mt;
+	Serial.clear();
+	ASSERTEQUALS("", testDisplay.message);
+
+	mt.machine.pDisplay = &testDisplay;
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_IDLE, mt.status);
+	ASSERTEQUALS("status:0 level:8", testDisplay.message);
+
+	threadClock.ticks++;
+	Serial.push(jsonTemplate("{'sysds':1}\n"));
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_JSON_PARSED, mt.status);
+	ASSERTEQUALS("status:3 level:8", testDisplay.message);
+
+	threadClock.ticks++;
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUALS("status:0 level:8", testDisplay.message);
+
+	threadClock.ticks++;
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_IDLE, mt.status);
+	ASSERTEQUALS("status:0 level:8", testDisplay.message);
+
+	threadClock.ticks++;
+	Serial.push(jsonTemplate("{'sysds':2,'sysdl':16}\n"));
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_JSON_PARSED, mt.status);
+	ASSERTEQUALS("status:3 level:8", testDisplay.message);
+
+	threadClock.ticks++;
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUALS("status:0 level:16", testDisplay.message);
+
+    cout << "TEST	: test_Display() OK " << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -937,6 +990,7 @@ int main(int argc, char *argv[]) {
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
     firelog_level(FIRELOG_TRACE);
 
+	test_Display();
     test_Serial();
     test_Thread();
     test_Quad();
