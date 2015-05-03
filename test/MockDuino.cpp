@@ -96,5 +96,5 @@ int16_t ArduinoType::getPinMode(int16_t pin) {
 }
 
 void delay(int ms) {
-	arduino.timer1(MS_TIMER_CYCLES(ms));
+	arduino.timer1(MS_TICKS(ms));
 }

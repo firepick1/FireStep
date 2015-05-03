@@ -200,6 +200,30 @@ FireStep/MachineThread.cpp.s:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/MachineThread.cpp.s
 .PHONY : FireStep/MachineThread.cpp.s
 
+FireStep/NeoPixel.o: FireStep/NeoPixel.cpp.o
+.PHONY : FireStep/NeoPixel.o
+
+# target to build an object file
+FireStep/NeoPixel.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/NeoPixel.cpp.o
+.PHONY : FireStep/NeoPixel.cpp.o
+
+FireStep/NeoPixel.i: FireStep/NeoPixel.cpp.i
+.PHONY : FireStep/NeoPixel.i
+
+# target to preprocess a source file
+FireStep/NeoPixel.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/NeoPixel.cpp.i
+.PHONY : FireStep/NeoPixel.cpp.i
+
+FireStep/NeoPixel.s: FireStep/NeoPixel.cpp.s
+.PHONY : FireStep/NeoPixel.s
+
+# target to generate assembly for a file
+FireStep/NeoPixel.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/NeoPixel.cpp.s
+.PHONY : FireStep/NeoPixel.cpp.s
+
 FireStep/Stroke.o: FireStep/Stroke.cpp.o
 .PHONY : FireStep/Stroke.o
 
@@ -340,6 +364,9 @@ help:
 	@echo "... FireStep/MachineThread.o"
 	@echo "... FireStep/MachineThread.i"
 	@echo "... FireStep/MachineThread.s"
+	@echo "... FireStep/NeoPixel.o"
+	@echo "... FireStep/NeoPixel.i"
+	@echo "... FireStep/NeoPixel.s"
 	@echo "... FireStep/Stroke.o"
 	@echo "... FireStep/Stroke.i"
 	@echo "... FireStep/Stroke.s"

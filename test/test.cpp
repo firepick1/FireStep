@@ -61,7 +61,7 @@ void test_Thread() {
     monitor.verbose = false;
 
     ASSERTEQUAL(16000, MS_CYCLES(1));
-    ASSERTEQUAL(15625, MS_TIMER_CYCLES(1000));
+    ASSERTEQUAL(15625, MS_TICKS(1000));
     arduino.dump();
     //ASSERTEQUALS(" CLKPR:0 nThreads:1\n", Serial.output().c_str());
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(LED_PIN_RED));
@@ -84,10 +84,10 @@ void test_command(const char *cmd, const char* expected) {
     Serial.clear();
     Serial.push(cmd);
     ASSERTEQUAL(strlen(cmd), Serial.available());
-    test_tick(MS_TIMER_CYCLES(1));
-    test_tick(MS_TIMER_CYCLES(1));
-    test_tick(MS_TIMER_CYCLES(1));
-    test_tick(MS_TIMER_CYCLES(1));
+    test_tick(MS_TICKS(1));
+    test_tick(MS_TICKS(1));
+    test_tick(MS_TICKS(1));
+    test_tick(MS_TICKS(1));
     ASSERTEQUALS(expected, Serial.output().c_str());
 }
 

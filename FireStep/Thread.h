@@ -14,7 +14,7 @@ namespace firestep {
 #define TIMER_PRESCALE	1024 /* 1, 8, 64, 256, 1024 */
 #define FREQ_CYCLES(freq) (CLOCK_HZ/(freq))
 #define MS_CYCLES(ms) FREQ_CYCLES(1000.0 / (ms))
-#define MS_TIMER_CYCLES(ms) (FREQ_CYCLES(1000.0 / (ms))/TIMER_PRESCALE)
+#define MS_TICKS(ms) (FREQ_CYCLES(1000.0 / (ms))/TIMER_PRESCALE)
 #define GENERATION_CYCLES (CLOCK_HZ / 65536)
 #define MAX_GENERATIONS 50010
 #define GENERATION_RESET 50000

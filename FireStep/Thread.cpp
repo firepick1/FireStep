@@ -61,7 +61,7 @@ unsigned long totalHeartbeats;
 void MonitorThread::setup(int pin1, int pin2) {
     id = 'Z';
     // set monitor interval to not coincide with timer overflow
-    PulseThread::setup(MS_TIMER_CYCLES(1000), MS_TIMER_CYCLES(250));
+    PulseThread::setup(MS_TICKS(1000), MS_TICKS(250));
     m_Pin1 = pin1;
     m_Pin2 = pin2;
     verbose = false;
@@ -231,7 +231,7 @@ int32_t firestep::MicrosecondsSince(Ticks lastClock) {
 //cout << "ELAPSED:" << elapsed  << endl;
     }
 
-    return (elapsed * 1000000) / MS_TIMER_CYCLES(1000);
+    return (elapsed * 1000000) / MS_TICKS(1000);
 }
 
 // Make sure we come up for air sometimes

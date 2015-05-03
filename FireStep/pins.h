@@ -3,6 +3,8 @@
 
 #define NOPIN 255
 
+#define DISPLAY_PIN 8
+
 #define LED_PIN_RED 13
 #define LED_PIN_GRN 12
 
@@ -40,7 +42,7 @@
 //****************************************************************************************
 // FirePick Delta EMC01 pin assignment (custom PCB based on ATMega1284P)
 //****************************************************************************************
-//#ifdef MOTHERBOARD == 639 //RAMPS board
+//#if MOTHERBOARD == 639 //RAMPS board
   #define KNOWN_BOARD 1
   
   #define LARGE_FLASH true
@@ -106,7 +108,7 @@
 //****************************************************************************************
 // RAMPS 1.4
 //****************************************************************************************
-//#ifdef MOTHERBOARD == 33 //RAMPS board
+//#if MOTHERBOARD == 33 //RAMPS board
 //  #define KNOWN_BOARD 1
 //  
 //  #define LARGE_FLASH true
