@@ -576,13 +576,14 @@ void test_JsonController() {
     JsonController jc;
 
     Serial.clear();
+	machine.pDisplay->setStatus(DISPLAY_WAIT_IDLE);
     JsonCommand jcmd;
     ASSERTEQUAL(STATUS_JSON_PARSED, jcmd.parse("{\"sys\":\"\"}"));
     threadClock.ticks = 12345;
     jc.process(machine, jcmd);
     jcmd.response().printTo(Serial);
     char sysbuf[500];
-	const char *fmt = "{'s':%d,'r':{'sys':{'dl':8,'ds':0,'fr':1000,'li':false,'tc':12345,'v':%.2f}}}";
+	const char *fmt = "{'s':%d,'r':{'sys':{'dl':8,'ds':10,'fr':1000,'li':false,'tc':12345,'v':%.2f}}}";
     snprintf(sysbuf, sizeof(sysbuf), jsonTemplate(fmt).c_str(),
              STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
     ASSERTEQUALS(sysbuf, Serial.output().c_str());
@@ -918,14 +919,9 @@ void test_MachineThread() {
 	ASSERTEQUALS("", Serial.output().c_str());
 
 	threadClock.ticks++;
-	ASSERTEQUAL(STATUS_PROCESSING, mt.status);
-	mt.Heartbeat();
-	ASSERTEQUALS("", Serial.output().c_str());
-
-	threadClock.ticks++;
-	ASSERTEQUAL(STATUS_OK, mt.status);
 	Serial.clear();
 	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_OK, mt.status);
     const char *jsonOut = 
 		"{'s':0,'r':{'systc':105,'dvs':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}\n";
 	string jo(jsonTemplate(jsonOut));
@@ -943,6 +939,39 @@ class TestDisplay: public Display {
 		}
 } testDisplay;
 
+void test_DisplayPersistance(MachineThread &mt, DisplayStatus dispStatus, Status expectedStatus) {
+	// Send partial serial command 
+	threadClock.ticks++;
+	char jsonIn[128];
+	snprintf(jsonIn, sizeof(jsonIn), jsonTemplate("{'sysds':%d}").c_str(), dispStatus);
+	Serial.push(jsonIn);
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_SERIAL_EOL_WAIT, mt.status);
+	ASSERTEQUALS("status:11 level:8", testDisplay.message);
+
+	// Send EOL to complete serial command
+	threadClock.ticks++;
+	Serial.push(jsonTemplate("\n"));
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_JSON_PARSED, mt.status);
+	ASSERTEQUALS("status:22 level:8", testDisplay.message);
+
+	// Process command
+	threadClock.ticks++;
+	mt.Heartbeat();
+	ASSERTEQUAL(expectedStatus, mt.status);
+	char expectedDisplay[100];
+	snprintf(expectedDisplay, sizeof(expectedDisplay), "status:%d level:8", dispStatus);
+	ASSERTEQUALS(expectedDisplay, testDisplay.message);
+
+	// Verify display persistence
+	threadClock.ticks++;
+	mt.Heartbeat();
+	ASSERTEQUAL(expectedStatus, mt.status);
+	ASSERTEQUALS(expectedDisplay, testDisplay.message);
+
+}
+
 void test_Display() {
     cout << "TEST	: test_Display() =====" << endl;
 
@@ -951,36 +980,17 @@ void test_Display() {
 	ASSERTEQUALS("", testDisplay.message);
 
 	mt.machine.pDisplay = &testDisplay;
+	mt.setup();
+	ASSERTEQUAL(STATUS_SETUP, mt.status);
+	ASSERTEQUALS("status:21 level:8", testDisplay.message);
+
 	mt.Heartbeat();
 	ASSERTEQUAL(STATUS_IDLE, mt.status);
-	ASSERTEQUALS("status:0 level:8", testDisplay.message);
+	ASSERTEQUALS("status:10 level:8", testDisplay.message);
 
-	threadClock.ticks++;
-	Serial.push(jsonTemplate("{'sysds':1}\n"));
-	mt.Heartbeat();
-	ASSERTEQUAL(STATUS_JSON_PARSED, mt.status);
-	ASSERTEQUALS("status:3 level:8", testDisplay.message);
-
-	threadClock.ticks++;
-	mt.Heartbeat();
-	ASSERTEQUAL(STATUS_OK, mt.status);
-	ASSERTEQUALS("status:0 level:8", testDisplay.message);
-
-	threadClock.ticks++;
-	mt.Heartbeat();
-	ASSERTEQUAL(STATUS_IDLE, mt.status);
-	ASSERTEQUALS("status:0 level:8", testDisplay.message);
-
-	threadClock.ticks++;
-	Serial.push(jsonTemplate("{'sysds':2,'sysdl':16}\n"));
-	mt.Heartbeat();
-	ASSERTEQUAL(STATUS_JSON_PARSED, mt.status);
-	ASSERTEQUALS("status:3 level:8", testDisplay.message);
-
-	threadClock.ticks++;
-	mt.Heartbeat();
-	ASSERTEQUAL(STATUS_OK, mt.status);
-	ASSERTEQUALS("status:0 level:16", testDisplay.message);
+	test_DisplayPersistance(mt, DISPLAY_WAIT_OPERATOR, STATUS_DISPLAY_OPERATOR);
+	test_DisplayPersistance(mt, DISPLAY_WAIT_CAMERA, STATUS_DISPLAY_CAMERA);
+	test_DisplayPersistance(mt, DISPLAY_WAIT_ERROR, STATUS_DISPLAY_ERROR);
 
     cout << "TEST	: test_Display() OK " << endl;
 }

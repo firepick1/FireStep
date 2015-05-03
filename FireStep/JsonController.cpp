@@ -456,6 +456,23 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
         status = processField<uint8_t, long>(jobj, key, dispStatus);
 		if (dispStatus != machine.pDisplay->getStatus()) {
 			machine.pDisplay->setStatus((DisplayStatus) dispStatus);
+			switch (dispStatus) {
+				case DISPLAY_WAIT_IDLE:
+					status = STATUS_IDLE;
+					break;
+				case DISPLAY_WAIT_ERROR:
+					status = STATUS_DISPLAY_ERROR;
+					break;
+				case DISPLAY_WAIT_OPERATOR:
+					status = STATUS_DISPLAY_OPERATOR;
+					break;
+				case DISPLAY_BUSY_MOVING:
+					status = STATUS_DISPLAY_MOVING;
+					break;
+				case DISPLAY_WAIT_CAMERA:
+					status = STATUS_DISPLAY_CAMERA;
+					break;
+			}
 		}
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
         jobj[key] = freeRam();

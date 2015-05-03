@@ -14,6 +14,8 @@ void MachineThread::setup() {
     ADC_LISTEN8(ANALOG_SPEED_PIN);
 #endif
     Thread::setup();
+	machine.pDisplay->setup();
+	status = STATUS_SETUP;
 }
 
 MachineThread::MachineThread()
@@ -22,26 +24,35 @@ MachineThread::MachineThread()
 
 void MachineThread::displayStatus() {
     switch (status) {
-	case STATUS_OK:
-// don't change anything
-break;
+    case STATUS_OK:
     case STATUS_IDLE:
+        machine.pDisplay->setStatus(DISPLAY_WAIT_IDLE);
+        break;
     case STATUS_SERIAL_EOL_WAIT:
-		machine.pDisplay->setStatus(DISPLAY_IDLE);
+        machine.pDisplay->setStatus(DISPLAY_WAIT_EOL);
         break;
-    case STATUS_JSON_PARSED:
-    case STATUS_PROCESSING:
-		machine.pDisplay->setStatus(DISPLAY_PROCESSING);
+    case STATUS_DISPLAY_CAMERA:
+        machine.pDisplay->setStatus(DISPLAY_WAIT_CAMERA);
         break;
-	case STATUS_OPERATOR:
-		machine.pDisplay->setStatus(DISPLAY_OPERATOR);
-		break;
+    case STATUS_DISPLAY_OPERATOR:
+        machine.pDisplay->setStatus(DISPLAY_WAIT_OPERATOR);
+        break;
+    case STATUS_SETUP:
+        machine.pDisplay->setStatus(DISPLAY_BUSY_SETUP);
+        break;
+    case STATUS_DISPLAY_MOVING:
+        machine.pDisplay->setStatus(DISPLAY_BUSY_MOVING);
+        break;
     default:	// errors
-		machine.pDisplay->setStatus(DISPLAY_ERROR);
+        if (status < 0) {
+            machine.pDisplay->setStatus(DISPLAY_WAIT_ERROR);
+        } else {
+            machine.pDisplay->setStatus(DISPLAY_BUSY);
+        }
         break;
     }
 
-	machine.pDisplay->show();
+    machine.pDisplay->show();
 }
 
 void MachineThread::Heartbeat() {
@@ -58,8 +69,9 @@ void MachineThread::Heartbeat() {
         ThreadEnable(true);
     }
 #endif
-	
+
     switch (status) {
+	default:
     case STATUS_IDLE:
         if (Serial.available()) {
             command.clear();
@@ -74,17 +86,19 @@ void MachineThread::Heartbeat() {
     case STATUS_JSON_PARSED:
     case STATUS_PROCESSING:
         status = controller.process(machine, command);
+		if (status != STATUS_PROCESSING) {
+			command.response().printTo(Serial);
+			Serial.println();
+		}
         break;
-    default:	// errors
+	case STATUS_SETUP:
     case STATUS_OK:
-        command.response().printTo(Serial);
-        Serial.println();
         status = STATUS_IDLE;
         break;
     }
 
-	displayStatus();
+    displayStatus();
 
-    nextHeartbeat.ticks = 0;
+    nextHeartbeat.ticks = 0; // Highest priority
 }
 

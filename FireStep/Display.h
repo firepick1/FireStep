@@ -4,12 +4,17 @@
 namespace firestep {
 
 enum DisplayStatus {
-    DISPLAY_IDLE = 0,	
-    DISPLAY_ERROR = 1,
-    DISPLAY_OPERATOR = 2,
-    DISPLAY_PROCESSING = 3,	
-    DISPLAY_MOVING = 4,	
-    DISPLAY_CAMERA = 5,	
+	// Awaiting user input
+    DISPLAY_WAIT_IDLE = 10,	
+	DISPLAY_WAIT_EOL = 11,
+    DISPLAY_WAIT_OPERATOR = 12,
+    DISPLAY_WAIT_CAMERA = 13,	
+    DISPLAY_WAIT_ERROR = 19,
+
+	// Ignoring user input
+    DISPLAY_BUSY_SETUP = 21,	
+    DISPLAY_BUSY = 22,	
+    DISPLAY_BUSY_MOVING = 23,	
 };
 
 enum DisplayLevel {
@@ -26,10 +31,11 @@ typedef class Display {
         uint8_t status;	// DisplayStatus
         uint8_t level; // DisplayLevel
     public:
-        Display() : status(DISPLAY_IDLE), level(DISPLAY_NORMAL) {}
+        Display() : status(DISPLAY_BUSY_SETUP), level(DISPLAY_NORMAL) {}
+		virtual void setup() { show(); }
 		virtual void show() {}
 		inline DisplayStatus getStatus() { return (DisplayStatus) status; }
-		virtual void setStatus(DisplayStatus status=DISPLAY_IDLE) {
+		virtual void setStatus(DisplayStatus status=DISPLAY_WAIT_IDLE) {
 			this->status = status;
 			show();
 		}

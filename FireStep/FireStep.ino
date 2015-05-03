@@ -4,15 +4,21 @@
 #include "MachineThread.h"
 #include "NeoPixel.h"
 
-firestep::MachineThread machineThread;
-firestep::NeoPixel neoPixel(16, DISPLAY_PIN);
+firestep::MachineThread machineThread; // FireStep command interpreter
+firestep::NeoPixel neoPixel(16, DISPLAY_PIN); // NeoPixel display driver
 
 void setup() // run once, when the sketch starts
 {
-  Serial.begin(38400); // decrease if Serial drops characters
+  // Serial I/O has lowest priority, so you may need to 
+  // decrease baud rate to fix Serial I/O problems.
+  Serial.begin(38400); 
+
+  // Bind in NeoPixel display driver
+  machineThread.machine.pDisplay = &neoPixel;	
+
+  // Initialize
   machineThread.setup();
-  neoPixel.begin();
-  machineThread.machine.pDisplay = &neoPixel;
+
   firestep::threadRunner.setup(LED_PIN_RED, LED_PIN_GRN);
 }
 
