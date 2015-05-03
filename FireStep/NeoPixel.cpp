@@ -67,30 +67,27 @@ void NeoPixel::show() {
         break;
     default:
     case DISPLAY_WAIT_ERROR:
-        bg1 = bg0 = strip.Color(intensity / 2, intensity / 4, intensity / 4);
-        fg = strip.Color(255, intensity / 2, intensity / 2);
+        bg1 = bg0 = strip.Color(intensity / 2, 0, 0);
+        fg = strip.Color(255, 0, 0);
         break;
     case DISPLAY_WAIT_OPERATOR:
-        bg1 = bg0 = strip.Color(intensity / 2, intensity / 2, intensity / 4);
-        fg = strip.Color(255, 0, 0);
+        bg1 = bg0 = strip.Color(intensity / 2, 0, 0);
+        fg = strip.Color(0, 255, 0);
         break;
     case DISPLAY_WAIT_CAMERA:
         fg = bg1 = bg0 = strip.Color(intensity, intensity, intensity);
         break;
     case DISPLAY_BUSY_SETUP:
-        bg0 = strip.Color(intensity, 0, 0);
-        bg1 = strip.Color(0, intensity, 0);
-        fg = strip.Color(intensity, intensity, intensity);
+        bg0 = bg1 = strip.Color(intensity/4, intensity / 4, intensity/4);
+        fg = strip.Color(intensity, 0, 0);
         break;
     case DISPLAY_BUSY:
-        bg0 = strip.Color(intensity / 4, 0, 0);
-        bg1 = strip.Color(intensity / 4, intensity / 4, intensity / 2);
-        fg = strip.Color(intensity / 2, intensity / 2, intensity);
+        bg0 = bg1 = strip.Color(intensity/4, intensity / 4, intensity/4);
+        fg = strip.Color(0, 0, intensity);
         break;
     case DISPLAY_BUSY_MOVING:
-        bg0 = strip.Color(intensity / 4, 0, 0);
-        bg1 = strip.Color(intensity / 4, intensity / 2, intensity / 4);
-        fg = strip.Color(intensity, intensity, intensity);
+        bg0 = bg1 = strip.Color(intensity/4, intensity / 4, intensity/4);
+        fg = strip.Color(0, intensity, 0);
         break;
     }
     for (uint16_t i = 0; i < strip.numPixels(); i++) {

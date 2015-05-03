@@ -40,6 +40,10 @@ void MachineThread::displayStatus() {
     case STATUS_SETUP:
         machine.pDisplay->setStatus(DISPLAY_BUSY_SETUP);
         break;
+    case STATUS_DISPLAY_BUSY:
+    case STATUS_PROCESSING:
+        machine.pDisplay->setStatus(DISPLAY_BUSY);
+        break;
     case STATUS_DISPLAY_MOVING:
         machine.pDisplay->setStatus(DISPLAY_BUSY_MOVING);
         break;

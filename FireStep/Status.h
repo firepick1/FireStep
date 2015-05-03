@@ -13,6 +13,7 @@ enum Status {
     STATUS_DISPLAY_CAMERA = 6,		// Display lighting ready for camera
     STATUS_DISPLAY_MOVING = 7,		// Display moving indicator
     STATUS_SETUP = 8,				// Initializing software
+    STATUS_DISPLAY_BUSY = 9,    // Display busy indicator
     STATUS_EMPTY = -1,				// Uninitialized JsonCommand
     STATUS_JSON_BRACE_ERROR = -2,	// Unbalanced JSON braces
     STATUS_JSON_BRACKET_ERROR = -3,	// Unbalanced JSON braces
