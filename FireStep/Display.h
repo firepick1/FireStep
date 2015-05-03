@@ -17,21 +17,13 @@ enum DisplayStatus {
     DISPLAY_BUSY_MOVING = 23,	
 };
 
-enum DisplayLevel {
-	DISPLAY_OFF = 0,
-	DISPLAY_LOW = 4,
-	DISPLAY_NORMAL = 8,
-	DISPLAY_NIGH = 12,
-	DISPLAY_HIGHEST = 16,
-};
-
 typedef class Display {
 	friend class JsonController;
 	protected:
         uint8_t status;	// DisplayStatus
-        uint8_t level; // DisplayLevel
+        uint8_t level; // 0:off, 255:brightest
     public:
-        Display() : status(DISPLAY_BUSY_SETUP), level(DISPLAY_NORMAL) {}
+        Display() : status(DISPLAY_BUSY_SETUP), level(127) {}
 		virtual void setup() { show(); }
 		virtual void show() {}
 		inline DisplayStatus getStatus() { return (DisplayStatus) status; }
@@ -39,8 +31,8 @@ typedef class Display {
 			this->status = status;
 			show();
 		}
-		inline DisplayLevel getLevel() { return (DisplayLevel) level; }
-		virtual void setLevel(DisplayLevel level=DISPLAY_NORMAL) {
+		inline uint8_t getLevel() { return level; }
+		virtual void setLevel(uint8_t level=127) {
 			this->level = level;
 			show();
 		}

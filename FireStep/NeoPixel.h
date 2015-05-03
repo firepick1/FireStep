@@ -42,8 +42,7 @@ typedef class NeoPixel : public Display {
         uint8_t fgIndex;
         Ticks fgTicks;
         uint32_t fg; // foreground color
-        uint32_t bg0; // background color (even LEDs)
-        uint32_t bg1; // background color (odd LEDS)
+        uint32_t bg; // background color 
     public:
         NeoPixel(uint16_t ledCount, PinType pin);
         void setup();

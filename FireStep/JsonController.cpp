@@ -449,7 +449,7 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
 		uint8_t level = machine.pDisplay->getLevel();
         status = processField<uint8_t, long>(jobj, key, level);
 		if (level != machine.pDisplay->getLevel()) {
-			machine.pDisplay->setLevel((DisplayLevel) level);
+			machine.pDisplay->setLevel(level);
 		}
     } else if (strcmp("ds", key) == 0 || strcmp("sysds", key) == 0) {
 		uint8_t dispStatus = machine.pDisplay->getStatus();

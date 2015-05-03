@@ -19,7 +19,7 @@ void NeoPixel::setup() {
     strip.show(); 
     fgIndex = 0;
     fgTicks = 0;
-    curStatus = DISPLAY_OFF;
+    curLevel = 0;
     curStatus = DISPLAY_WAIT_IDLE;
 	show();
 }
@@ -36,67 +36,47 @@ void NeoPixel::show() {
     }
     curLevel = level;
 
-    int intensity;
-    switch (curLevel) {
-    case DISPLAY_OFF:
-        intensity = 0;
-        break;
-    case DISPLAY_LOW:
-        intensity = 63;
-        break;
-    default:
-    case DISPLAY_NORMAL:
-        intensity = 127;
-        break;
-    case DISPLAY_NIGH:
-        intensity = 191;
-        break;
-    case DISPLAY_HIGHEST:
-        intensity = 255;
-        break;
-    }
+    int intensity = curLevel;
     curStatus = status;
     switch (curStatus) {
     case DISPLAY_WAIT_IDLE:
-        bg0 = bg1 = strip.Color(0,0,0);
+        bg = strip.Color(0,0,0);
         fg = strip.Color(intensity, intensity, intensity);
         break;
     case DISPLAY_WAIT_EOL:
-        bg0 = bg1 = strip.Color(intensity / 2, intensity / 2, intensity / 2);
+        bg = strip.Color(intensity / 2, intensity / 2, intensity / 2);
         fg = strip.Color(intensity, intensity, intensity);
         break;
     default:
     case DISPLAY_WAIT_ERROR:
-        bg1 = bg0 = strip.Color(intensity / 2, 0, 0);
+        bg = strip.Color(intensity / 2, 0, 0);
         fg = strip.Color(255, 0, 0);
         break;
     case DISPLAY_WAIT_OPERATOR:
-        bg1 = bg0 = strip.Color(intensity / 2, 0, 0);
+        bg = strip.Color(intensity / 2, 0, 0);
         fg = strip.Color(0, 255, 0);
         break;
     case DISPLAY_WAIT_CAMERA:
-        fg = bg1 = bg0 = strip.Color(intensity, intensity, intensity);
+        fg = bg = strip.Color(intensity, intensity, intensity);
         break;
     case DISPLAY_BUSY_SETUP:
-        bg0 = bg1 = strip.Color(intensity/4, intensity / 4, intensity/4);
+        bg = strip.Color(intensity/4, intensity / 4, intensity/4);
         fg = strip.Color(intensity, 0, 0);
         break;
     case DISPLAY_BUSY:
-        bg0 = bg1 = strip.Color(intensity/4, intensity / 4, intensity/4);
+        bg = strip.Color(intensity/4, intensity / 4, intensity/4);
         fg = strip.Color(0, 0, intensity);
         break;
     case DISPLAY_BUSY_MOVING:
-        bg0 = bg1 = strip.Color(intensity/4, intensity / 4, intensity/4);
+        bg = strip.Color(intensity/4, intensity / 4, intensity/4);
         fg = strip.Color(0, intensity, 0);
         break;
     }
     for (uint16_t i = 0; i < strip.numPixels(); i++) {
         if (i == fgIndex) {
             strip.setPixelColor(i, fg);
-        } else if (i % 2) {
-            strip.setPixelColor(i, bg1);
         } else {
-            strip.setPixelColor(i, bg0);
+            strip.setPixelColor(i, bg);
         }
     }
     strip.show();
