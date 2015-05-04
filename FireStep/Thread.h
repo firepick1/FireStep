@@ -125,6 +125,8 @@ typedef class ThreadRunner {
         void resetGenerations();
     public:
         ThreadRunner();
+	public: 
+		void clear();
     public:
         void setup(int monitorPin1, int monitorPin2);
     public:

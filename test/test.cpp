@@ -936,7 +936,7 @@ void test_DisplayPersistance(MachineThread &mt, DisplayStatus dispStatus, Status
 	// Send partial serial command 
 	threadClock.ticks++;
 	char jsonIn[128];
-	snprintf(jsonIn, sizeof(jsonIn), jsonTemplate("{'sysds':%d}").c_str(), dispStatus);
+	snprintf(jsonIn, sizeof(jsonIn), jsonTemplate("{'dpyds':%d}").c_str(), dispStatus);
 	Serial.push(jsonIn);
 	mt.Heartbeat();
 	ASSERTEQUAL(STATUS_WAIT_EOL, mt.status);
@@ -968,6 +968,7 @@ void test_DisplayPersistance(MachineThread &mt, DisplayStatus dispStatus, Status
 void test_Display() {
     cout << "TEST	: test_Display() =====" << endl;
 
+	threadRunner.clear();
 	MachineThread mt;
 	Serial.clear();
 	ASSERTEQUALS("", testDisplay.message);
@@ -985,6 +986,13 @@ void test_Display() {
 	test_DisplayPersistance(mt, DISPLAY_WAIT_CAMERA, STATUS_WAIT_CAMERA);
 	test_DisplayPersistance(mt, DISPLAY_WAIT_ERROR, STATUS_WAIT_ERROR);
 
+	testJSON(mt.machine, mt.controller, "'\"", 
+		"{'dpycr':10,'dpycg':20,'dpycb':30,'dpyds':12,'dpydl':255}",
+		"{'s':0,'r':{'dpycr':10,'dpycg':20,'dpycb':30,'dpyds':12,'dpydl':255}}\n");
+	testJSON(mt.machine, mt.controller, "'\"", 
+		"{'dpy':{'ds':30,'dl':255,'cr':1,'cg':2,'cb':3}}",
+		"{'s':25,'r':{'dpy':{'ds':30,'dl':255,'cr':1,'cg':2,'cb':3}}}\n", STATUS_WAIT_BUSY);
+
     cout << "TEST	: test_Display() OK " << endl;
 }
 
@@ -993,7 +1001,6 @@ int main(int argc, char *argv[]) {
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
     firelog_level(FIRELOG_TRACE);
 
-	test_Display();
     test_Serial();
     test_Thread();
     test_Quad();
@@ -1004,6 +1011,7 @@ int main(int argc, char *argv[]) {
     test_JsonCommand();
     test_JsonController();
 	test_MachineThread();
+	test_Display();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }

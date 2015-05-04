@@ -166,6 +166,10 @@ void firestep::Error(const char *msg, int value) {
 }
 
 ThreadRunner::ThreadRunner() {
+	clear();
+}
+
+void ThreadRunner::clear() {
 	pThreadList = NULL;
 	threadClock.ticks = 0;
 	nThreads = 0;

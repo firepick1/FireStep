@@ -23,6 +23,9 @@ typedef class Display {
 	protected:
         uint8_t status;	// DisplayStatus
         uint8_t level; // 0:off, 255:brightest
+		uint8_t cameraR; // camera red intensity [0,255]
+		uint8_t cameraG; // camera green intensity [0,255]
+		uint8_t cameraB; // camera blue intensity [0,255]
     public:
         Display() : status(DISPLAY_BUSY), level(127) {}
 		virtual void setup() { show(); }
