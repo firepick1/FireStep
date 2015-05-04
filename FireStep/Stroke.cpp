@@ -154,14 +154,14 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 		dPos += pulse;
 		Status status = stepper.step(pulse);
 		switch (status) {
-			case STATUS_OK:			// operation complete
-			case STATUS_PROCESSING:	// work in progress
+			case STATUS_OK:	// operation complete
+			case STATUS_BUSY_MOVING: // work in progress
 				break;
 			default:
 				return status;	// abnormal return
 		}
 	}
-	return STATUS_PROCESSING;
+	return STATUS_BUSY_MOVING;
 }
 
 

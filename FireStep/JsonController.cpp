@@ -58,13 +58,13 @@ Status JsonCommand::parseCore() {
 		if (kids < 1) {
 			return setError(STATUS_JSON_MEM, "mem");
 		}
-        jResponseRoot["s"] = STATUS_JSON_PARSED;
+        jResponseRoot["s"] = STATUS_BUSY_PARSED;
 		jResponseRoot["r"] = jRequestRoot;
     } else {
 		return setError(STATUS_JSON_PARSE_ERROR, "json");
     }
 
-	return STATUS_JSON_PARSED;
+	return STATUS_BUSY_PARSED;
 }
 
 /**
@@ -74,7 +74,7 @@ Status JsonCommand::parseCore() {
  */
 Status JsonCommand::parse(const char *jsonIn) {
     if (parsed) {
-        return STATUS_JSON_PARSED;
+        return STATUS_BUSY_PARSED;
     }
     if (jsonIn) {
         snprintf(json, sizeof(json), "%s", jsonIn);
@@ -96,7 +96,7 @@ Status JsonCommand::parse(const char *jsonIn) {
 				*pJsonFree++ = c;
 			}
 		}
-		return STATUS_SERIAL_EOL_WAIT;
+		return STATUS_WAIT_EOL;
 	}
 }
 
@@ -288,7 +288,7 @@ Status JsonController::initializeStroke(Machine &machine, JsonCommand &jcmd, Jso
 		return STATUS_STROKE_NULL_ERROR;
 	}
 	machine.stroke.start(ticks());
-	return STATUS_PROCESSING;
+	return STATUS_BUSY_MOVING;
 }
 
 Status JsonController::traverseStroke(Machine &machine, JsonCommand &jcmd, JsonObject &stroke) {
@@ -310,9 +310,9 @@ Status JsonController::processStroke(Machine &machine, JsonCommand &jcmd, JsonOb
 		return STATUS_JSON_STROKE_ERROR;
 	}
 
-    if (status == STATUS_JSON_PARSED) {
+    if (status == STATUS_BUSY_PARSED) {
 		status = initializeStroke(machine, jcmd, stroke);
-    } else if (status == STATUS_PROCESSING) {
+    } else if (status == STATUS_BUSY_MOVING) {
         if (machine.stroke.curSeg < machine.stroke.length) {
 			status = traverseStroke(machine, jcmd, stroke);
         }
@@ -458,25 +458,22 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
 			machine.pDisplay->setStatus((DisplayStatus) dispStatus);
 			switch (dispStatus) {
 				case DISPLAY_WAIT_IDLE:
-					status = STATUS_IDLE;
+					status = STATUS_WAIT_IDLE;
 					break;
 				case DISPLAY_WAIT_ERROR:
-					status = STATUS_DISPLAY_ERROR;
+					status = STATUS_WAIT_ERROR;
 					break;
 				case DISPLAY_WAIT_OPERATOR:
-					status = STATUS_DISPLAY_OPERATOR;
+					status = STATUS_WAIT_OPERATOR;
 					break;
 				case DISPLAY_BUSY_MOVING:
-					status = STATUS_DISPLAY_MOVING;
+					status = STATUS_WAIT_MOVING;
 					break;
 				case DISPLAY_BUSY:
-					status = STATUS_DISPLAY_BUSY;
-					break;
-				case DISPLAY_BUSY_SETUP:
-					status = STATUS_SETUP;
+					status = STATUS_WAIT_BUSY;
 					break;
 				case DISPLAY_WAIT_CAMERA:
-					status = STATUS_DISPLAY_CAMERA;
+					status = STATUS_WAIT_CAMERA;
 					break;
 			}
 		}
@@ -532,6 +529,11 @@ Status JsonController::process(Machine &machine, JsonCommand& jcmd) {
     }
 
     jcmd.setStatus(status);
+
+	if (!isProcessing(status)) {
+		jcmd.response().printTo(Serial);
+		Serial.println();
+	}
 
 	return status;
 }

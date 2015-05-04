@@ -5,15 +5,16 @@ namespace firestep {
 
 enum Status {
     STATUS_OK = 0,					// Operation completed successfully
-    STATUS_JSON_PARSED = 1,			// Json parsed, awaiting processing
-    STATUS_PROCESSING = 2,			// Json parsed, processing in progress
-    STATUS_SERIAL_EOL_WAIT = 3,		// Waiting for EOL on Serial
-    STATUS_IDLE = 4,				// Inactive awaiting input
-    STATUS_DISPLAY_OPERATOR = 5,	// Awaiting operator intervention
-    STATUS_DISPLAY_CAMERA = 6,		// Display lighting ready for camera
-    STATUS_DISPLAY_MOVING = 7,		// Display moving indicator
-    STATUS_SETUP = 8,				// Initializing software
-    STATUS_DISPLAY_BUSY = 9,    // Display busy indicator
+    STATUS_BUSY_PARSED = 10,		// Json parsed, awaiting processing
+    STATUS_BUSY = 11,				// Processing non-motion command
+    STATUS_BUSY_MOVING = 12,		// Processing motion command
+	STATUS_BUSY_SETUP = 13,			// Processing setup
+    STATUS_WAIT_IDLE = 20,			// Awaiting input: inactive
+    STATUS_WAIT_EOL = 21,			// Awaiting input: remainder of EOL-terminated command 
+    STATUS_WAIT_CAMERA = 22,		// Awaiting input: camera ready display
+    STATUS_WAIT_OPERATOR = 23,		// Awaiting input: operator attention required
+    STATUS_WAIT_MOVING = 24,		// Awaiting input: show motion command display
+    STATUS_WAIT_BUSY = 25,    		// Awaiting input: show non-motion command display
     STATUS_EMPTY = -1,				// Uninitialized JsonCommand
     STATUS_JSON_BRACE_ERROR = -2,	// Unbalanced JSON braces
     STATUS_JSON_BRACKET_ERROR = -3,	// Unbalanced JSON braces
@@ -48,8 +49,19 @@ enum Status {
     STATUS_STROKE_PLANMICROS = -116,// Stroke planMicros < TICK_MICROSECONDS
     STATUS_STROKE_START = -117,		// Stroke start() must be called before traverse()
     STATUS_JSON_MEM = -118,			// Internal error: no more JSON memory
-    STATUS_DISPLAY_ERROR = -119,	// Display error indicator
+    STATUS_WAIT_ERROR = -119,		// Display error indicator
 };
+
+inline bool isProcessing(Status status) {
+	switch (status) {
+		case STATUS_BUSY:
+		case STATUS_BUSY_MOVING:
+		case STATUS_BUSY_PARSED:
+			return true;
+		default:
+			return false;
+	}
+}
 
 } // namespace firestep
 

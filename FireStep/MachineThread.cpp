@@ -15,36 +15,33 @@ void MachineThread::setup() {
 #endif
     Thread::setup();
 	machine.pDisplay->setup();
-	status = STATUS_SETUP;
+	status = STATUS_BUSY_SETUP;
 }
 
 MachineThread::MachineThread()
-    : status(STATUS_IDLE) {
+    : status(STATUS_WAIT_IDLE) {
 }
 
 void MachineThread::displayStatus() {
     switch (status) {
     case STATUS_OK:
-    case STATUS_IDLE:
+    case STATUS_WAIT_IDLE:
         machine.pDisplay->setStatus(DISPLAY_WAIT_IDLE);
         break;
-    case STATUS_SERIAL_EOL_WAIT:
+    case STATUS_WAIT_EOL:
         machine.pDisplay->setStatus(DISPLAY_WAIT_EOL);
         break;
-    case STATUS_DISPLAY_CAMERA:
+    case STATUS_WAIT_CAMERA:
         machine.pDisplay->setStatus(DISPLAY_WAIT_CAMERA);
         break;
-    case STATUS_DISPLAY_OPERATOR:
+    case STATUS_WAIT_OPERATOR:
         machine.pDisplay->setStatus(DISPLAY_WAIT_OPERATOR);
         break;
-    case STATUS_SETUP:
-        machine.pDisplay->setStatus(DISPLAY_BUSY_SETUP);
-        break;
-    case STATUS_DISPLAY_BUSY:
-    case STATUS_PROCESSING:
+    case STATUS_WAIT_BUSY:
+    case STATUS_BUSY:
         machine.pDisplay->setStatus(DISPLAY_BUSY);
         break;
-    case STATUS_DISPLAY_MOVING:
+    case STATUS_WAIT_MOVING:
         machine.pDisplay->setStatus(DISPLAY_BUSY_MOVING);
         break;
     default:	// errors
@@ -76,28 +73,29 @@ void MachineThread::Heartbeat() {
 
     switch (status) {
 	default:
-    case STATUS_IDLE:
+    case STATUS_WAIT_IDLE:
+	case STATUS_WAIT_CAMERA:
+	case STATUS_WAIT_OPERATOR:
+	case STATUS_WAIT_MOVING:
+	case STATUS_WAIT_BUSY:
         if (Serial.available()) {
             command.clear();
             status = command.parse();
         }
         break;
-    case STATUS_SERIAL_EOL_WAIT:
+    case STATUS_WAIT_EOL:
         if (Serial.available()) {
             status = command.parse();
         }
         break;
-    case STATUS_JSON_PARSED:
-    case STATUS_PROCESSING:
+    case STATUS_BUSY_PARSED:
+    case STATUS_BUSY:
+    case STATUS_BUSY_MOVING:
         status = controller.process(machine, command);
-		if (status != STATUS_PROCESSING) {
-			command.response().printTo(Serial);
-			Serial.println();
-		}
         break;
-	case STATUS_SETUP:
+	case STATUS_BUSY_SETUP:
     case STATUS_OK:
-        status = STATUS_IDLE;
+        status = STATUS_WAIT_IDLE;
         break;
     }
 
