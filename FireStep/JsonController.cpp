@@ -470,6 +470,7 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
 					status = STATUS_WAIT_MOVING;
 					break;
 				case DISPLAY_BUSY:
+				case DISPLAY_WAIT_BUSY:
 					status = STATUS_WAIT_BUSY;
 					break;
 				case DISPLAY_WAIT_CAMERA:
