@@ -8,7 +8,6 @@ enum DisplayStatus {
     DISPLAY_WAIT_IDLE = 10, // Awaiting EOL-terminated command
 	DISPLAY_WAIT_EOL = 11, // Awaiting remainder of EOL-terminated command
     DISPLAY_WAIT_CAMERA = 12, // Display for camera while awaiting further instructions
-    DISPLAY_WAIT_BUSY = 13, // Display as if busy while awaiting further instructions
 
 	// Awaiting user input
     DISPLAY_WAIT_OPERATOR = 20, // Awaiting EOL-terminated command initiated by operator

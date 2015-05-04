@@ -452,11 +452,11 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
 			machine.pDisplay->setLevel(level);
 		}
     } else if (strcmp("ds", key) == 0 || strcmp("sysds", key) == 0) {
-		uint8_t dispStatus = machine.pDisplay->getStatus();
-        status = processField<uint8_t, long>(jobj, key, dispStatus);
-		if (dispStatus != machine.pDisplay->getStatus()) {
-			machine.pDisplay->setStatus((DisplayStatus) dispStatus);
-			switch (dispStatus) {
+		const char *s;
+		bool isAssignment = (!(s=jobj[key]) || *s!=0);
+        status = processField<uint8_t, long>(jobj, key, machine.pDisplay->status);
+		if (isAssignment) {
+			switch (machine.pDisplay->status) {
 				case DISPLAY_WAIT_IDLE:
 					status = STATUS_WAIT_IDLE;
 					break;
@@ -470,7 +470,6 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
 					status = STATUS_WAIT_MOVING;
 					break;
 				case DISPLAY_BUSY:
-				case DISPLAY_WAIT_BUSY:
 					status = STATUS_WAIT_BUSY;
 					break;
 				case DISPLAY_WAIT_CAMERA:
