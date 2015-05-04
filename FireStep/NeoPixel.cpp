@@ -53,8 +53,8 @@ void NeoPixel::show() {
         fg = strip.Color(255, 0, 0);
         break;
     case DISPLAY_WAIT_OPERATOR:
-        bg = strip.Color(intensity / 2, 0, 0);
-        fg = strip.Color(0, 255, 0);
+        bg = strip.Color(intensity , intensity, intensity );
+        fg = strip.Color(255, 0, 0);
         break;
     case DISPLAY_WAIT_CAMERA:
         fg = bg = strip.Color(intensity, intensity, intensity);
