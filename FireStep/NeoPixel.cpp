@@ -19,9 +19,9 @@ void NeoPixel::setup() {
     strip.show(); 
     fgIndex = 0;
     fgTicks = 0;
-	cameraR = 127;
-	cameraG = 127;
-	cameraB = 127;
+	cameraR = 0;
+	cameraG = 0;
+	cameraB = 0;
     curLevel = 0;
     curStatus = DISPLAY_WAIT_IDLE;
 	show();
@@ -60,7 +60,10 @@ void NeoPixel::show() {
         fg = strip.Color(255, 0, 0);
         break;
     case DISPLAY_WAIT_CAMERA:
-        fg = bg = strip.Color(cameraR, cameraG, cameraB);
+        fg = bg = strip.Color(
+			cameraR?cameraR:intensity, 
+			cameraG?cameraG:intensity, 
+			cameraB?cameraB:intensity);
         break;
     case DISPLAY_BUSY:
         bg = strip.Color(intensity/2, intensity/2, intensity/2);

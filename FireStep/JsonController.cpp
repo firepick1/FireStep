@@ -429,8 +429,6 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
 		const char *s;
 		if ((s = jobj[key]) && *s == 0) {
 			JsonObject& node = jobj.createNestedObject(key);
-			node["dl"] = "";
-			node["ds"] = "";
 			node["fr"] = "";
 			node["li"] = "";
 			node["tc"] = "";
@@ -445,38 +443,6 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
                 }
             }
         }
-    } else if (strcmp("dl", key) == 0 || strcmp("sysdl", key) == 0) {
-		uint8_t level = machine.pDisplay->getLevel();
-        status = processField<uint8_t, long>(jobj, key, level);
-		if (level != machine.pDisplay->getLevel()) {
-			machine.pDisplay->setLevel(level);
-		}
-    } else if (strcmp("ds", key) == 0 || strcmp("sysds", key) == 0) {
-		const char *s;
-		bool isAssignment = (!(s=jobj[key]) || *s!=0);
-        status = processField<uint8_t, long>(jobj, key, machine.pDisplay->status);
-		if (isAssignment) {
-			switch (machine.pDisplay->status) {
-				case DISPLAY_WAIT_IDLE:
-					status = STATUS_WAIT_IDLE;
-					break;
-				case DISPLAY_WAIT_ERROR:
-					status = STATUS_WAIT_ERROR;
-					break;
-				case DISPLAY_WAIT_OPERATOR:
-					status = STATUS_WAIT_OPERATOR;
-					break;
-				case DISPLAY_BUSY_MOVING:
-					status = STATUS_WAIT_MOVING;
-					break;
-				case DISPLAY_BUSY:
-					status = STATUS_WAIT_BUSY;
-					break;
-				case DISPLAY_WAIT_CAMERA:
-					status = STATUS_WAIT_CAMERA;
-					break;
-			}
-		}
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
         jobj[key] = freeRam();
     } else if (strcmp("v", key) == 0 || strcmp("sysv", key) == 0) {
