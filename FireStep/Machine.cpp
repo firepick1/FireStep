@@ -49,13 +49,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
 		if (a.mode==MODE_DISABLE) {
 			continue;
 		}
-        if (a.pinMin != NOPIN) {
-			bool minHigh = digitalRead(a.pinMin);
-            bool atMin = (invertLim == !minHigh);
-            if (atMin != a.atMin) {
-                a.atMin = atMin;
-            }
-        }
+        a.readAtMin(invertLim);
         if (a.pinStep == NOPIN || a.pinDir == NOPIN) {
             continue;
         }

@@ -388,6 +388,7 @@ Status JsonController::processAxis(Machine &machine, JsonCommand &jcmd, JsonObje
     } else if (strcmp("in", key) == 0 || strcmp("in", key + 1) == 0) {
         status = processField<bool, long>(jobj, key, machine.axis[iAxis].invertDir);
     } else if (strcmp("ln", key) == 0 || strcmp("ln", key + 1) == 0) {
+        machine.axis[iAxis].readAtMin(machine.invertLim);
         status = processField<bool, bool>(jobj, key, machine.axis[iAxis].atMin);
     } else if (strcmp("mi", key) == 0 || strcmp("mi", key + 1) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].microsteps);
