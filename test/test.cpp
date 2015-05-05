@@ -57,17 +57,13 @@ void test_Thread() {
     ASSERTEQUAL(65537, tc.ticks - tcLast);
     ASSERTEQUAL(64, TICK_MICROSECONDS);
 
-    threadRunner.setup(LED_PIN_RED, LED_PIN_GRN);
+    threadRunner.setup();
     monitor.verbose = false;
 
     ASSERTEQUAL(16000, MS_CYCLES(1));
     ASSERTEQUAL(15625, MS_TICKS(1000));
     arduino.dump();
     //ASSERTEQUALS(" CLKPR:0 nThreads:1\n", Serial.output().c_str());
-    ASSERTEQUAL(OUTPUT, arduino.getPinMode(LED_PIN_RED));
-    ASSERTEQUAL(LOW, digitalRead(LED_PIN_RED));
-    ASSERTEQUAL(OUTPUT, arduino.getPinMode(LED_PIN_GRN));
-    ASSERTEQUAL(LOW, digitalRead(LED_PIN_GRN));
     ASSERTEQUAL(0x0000, TIMSK1); 	// Timer/Counter1 interrupt mask; no interrupts
     ASSERTEQUAL(0x0000, TCCR1A);	// Timer/Counter1 normal port operation
     ASSERTEQUAL(0x0005, TCCR1B);	// Timer/Counter1 active; prescale 1024
@@ -97,30 +93,11 @@ void test_Machine() {
 
     MachineThread machThread;
     machThread.setup();
-    threadRunner.setup(LED_PIN_RED, LED_PIN_GRN);
+    threadRunner.setup();
     monitor.verbose = false;
 
     arduino.dump();
     Serial.clear();
-#ifdef LEGACY
-    ASSERTEQUALS(" CLKPR:0 nThreads:2\n", Serial.output().c_str());
-    ASSERTEQUAL(OUTPUT, arduino.pinMode[PIN_X]);
-    ASSERTEQUAL(OUTPUT, arduino.pinMode[PIN_Y]);
-    ASSERTEQUAL(OUTPUT, arduino.pinMode[PIN_Z]);
-    ASSERTEQUAL(OUTPUT, arduino.pinMode[PIN_X_DIR]);
-    ASSERTEQUAL(OUTPUT, arduino.pinMode[PIN_Y_DIR]);
-    ASSERTEQUAL(OUTPUT, arduino.pinMode[PIN_Z_DIR]);
-    ASSERTEQUAL(INPUT, arduino.pinMode[PIN_X_LIM]);
-    ASSERTEQUAL(INPUT, arduino.pinMode[PIN_Y_LIM]);
-    ASSERTEQUAL(INPUT, arduino.pinMode[PIN_Z_LIM]);
-    ASSERTEQUAL(HIGH, digitalRead(PIN_X_LIM));	// pull-up enabled
-    ASSERTEQUAL(HIGH, digitalRead(PIN_Y_LIM));	// pull-up enabled
-    ASSERTEQUAL(HIGH, digitalRead(PIN_Z_LIM));	// pull-up enabled
-    ASSERTEQUAL(OUTPUT, arduino.pinMode[LED_PIN_RED]);
-    ASSERTEQUAL(LOW, digitalRead(LED_PIN_RED));
-    ASSERTEQUAL(OUTPUT, arduino.pinMode[LED_PIN_GRN]);
-    ASSERTEQUAL(LOW, digitalRead(LED_PIN_GRN));
-#endif
     ASSERTEQUAL(0x0000, TIMSK1); 	// Timer/Counter1 interrupt mask; no interrupts
     ASSERTEQUAL(0x0000, TCCR1A);	// Timer/Counter1 normal port operation
     ASSERTEQUAL(0x0005, TCCR1B);	// Timer/Counter1 active; no prescale
@@ -432,16 +409,16 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
 
     testJSON(machine, jc, replace,
              "{'x':''}",
-             "{'s':0,'r':{'x':{'am':1,'in':0,'ln':false,'mi':16,'pd':22,'pe':14,'pm':0,"\
-             "'pn':21,'po':0,'ps':23,'sa':1.80,'tm':10000,'tn':0}}}\n");
+             "{'s':0,'r':{'x':{'am':1,'in':0,'ln':false,'mi':16,'pd':55,'pe':38,'pm':0,"\
+             "'pn':3,'po':0,'ps':54,'sa':1.80,'tm':10000,'tn':0}}}\n");
     testJSON(machine, jc, replace,
              "{'y':''}",
-             "{'s':0,'r':{'y':{'am':1,'in':0,'ln':false,'mi':16,'pd':3,'pe':14,'pm':0,"\
-             "'pn':2,'po':0,'ps':4,'sa':1.80,'tm':10000,'tn':0}}}\n");
+             "{'s':0,'r':{'y':{'am':1,'in':0,'ln':false,'mi':16,'pd':61,'pe':56,'pm':0,"\
+             "'pn':14,'po':0,'ps':60,'sa':1.80,'tm':10000,'tn':0}}}\n");
     testJSON(machine, jc, replace,
              "{'z':''}",
-             "{'s':0,'r':{'z':{'am':1,'in':0,'ln':false,'mi':16,'pd':12,'pe':14,'pm':0,"\
-             "'pn':11,'po':0,'ps':13,'sa':1.80,'tm':10000,'tn':0}}}\n");
+             "{'s':0,'r':{'z':{'am':1,'in':0,'ln':false,'mi':16,'pd':48,'pe':62,'pm':0,"\
+             "'pn':18,'po':0,'ps':46,'sa':1.80,'tm':10000,'tn':0}}}\n");
 }
 
 void test_JsonController_machinePosition(Machine& machine, JsonController &jc) {
@@ -522,9 +499,9 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
 	size_t resAvail = jcmd.responseAvailable();
 
     // traverse first stroke segment
-    ASSERTEQUAL(0, digitalRead(11));
+    ASSERTEQUAL(0, digitalRead(Z_MIN_PIN));
     testJSON_process(machine, jc, jcmd, replace, "", STATUS_BUSY_MOVING);
-    ASSERTEQUAL(0, digitalRead(11));
+    ASSERTEQUAL(0, digitalRead(Z_MIN_PIN));
     ASSERTQUAD(Quad<StepCoord>(1, 4, 7, -10), machine.stroke.position());
     ASSERTQUAD(Quad<StepCoord>(6, 9, 12, 5), machine.motorPosition()); // axis a NOPIN inactive
 	ASSERTEQUAL(reqAvail, jcmd.requestAvailable());
@@ -568,6 +545,9 @@ void test_JsonController() {
 
     Machine machine;
     JsonController jc;
+	digitalWrite(X_MIN_PIN, false);
+	digitalWrite(Y_MIN_PIN, false);
+	digitalWrite(Z_MIN_PIN, false);
 
     Serial.clear();
 	machine.pDisplay->setStatus(DISPLAY_WAIT_IDLE);
@@ -968,7 +948,7 @@ void test_DisplayPersistance(MachineThread &mt, DisplayStatus dispStatus, Status
 void test_Display() {
     cout << "TEST	: test_Display() =====" << endl;
 
-	threadRunner.clear();
+    threadRunner.setup();
 	MachineThread mt;
 	Serial.clear();
 	ASSERTEQUALS("", testDisplay.message);

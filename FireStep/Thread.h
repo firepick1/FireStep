@@ -2,7 +2,7 @@
 #define THREAD_H
 
 #include "Arduino.h"
-#include "pins.h"
+#include "pins/pins.h"
 
 namespace firestep {
 
@@ -123,12 +123,11 @@ typedef class ThreadRunner {
         byte		fast;
     protected:
         void resetGenerations();
-    public:
-        ThreadRunner();
-	public: 
 		void clear();
     public:
-        void setup(int monitorPin1, int monitorPin2);
+        ThreadRunner();
+    public:
+        void setup(int monitorPin1=NOPIN, int monitorPin2=NOPIN);
     public:
         void run() {
             // outer loop: bookkeeping

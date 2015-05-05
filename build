@@ -88,7 +88,7 @@ fi
 
 if [ -e CMakeFiles ] ; then 
   echo "STATUS	: removing existing makefiles"
-  rm -rf CMakeCache.txt CMakeFiles CMakeFiles.txt target cmake_install.cmake CPackConfig.cmake CPackSourceConfig.cmake
+  rm -rf core CMakeCache.txt CMakeFiles CMakeFiles.txt target cmake_install.cmake CPackConfig.cmake CPackSourceConfig.cmake
   mkdir target
 fi
 

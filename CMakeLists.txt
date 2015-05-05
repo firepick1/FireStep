@@ -36,6 +36,7 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 include_directories( 
 	${PROJECT_SOURCE_DIR}/FireStep
+	${PROJECT_SOURCE_DIR}/FireStep/pins
 	${BUILD_TARGET_DIR} 
 	test
 	ArduinoJson/include 
