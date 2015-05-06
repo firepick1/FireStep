@@ -203,6 +203,8 @@ typedef class ArduinoType {
 		void timer1(int increment=1);
 		void delay500ns();
 		int16_t getPinMode(int16_t pin);
+		void setPin(int16_t pin, int16_t value);
+		void setPinMode(int16_t pin, int16_t value);
 } ArduinoType;
 
 #define DELAY500NS arduino.delay500ns();

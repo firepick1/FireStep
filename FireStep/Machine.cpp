@@ -40,15 +40,6 @@ void Machine::init() {
 Status Machine::step(const Quad<StepCoord> &pulse) {
     for (int i = 0; i < 4; i++) {
         Axis &a(axis[motor[i].axisMap]);
-		if (a.pinEnable != NOPIN) {
-			bool enable = digitalRead(a.pinEnable);
-			if (!enable) {
-				a.mode = MODE_DISABLE;
-			}
-		}
-		if (a.mode==MODE_DISABLE) {
-			continue;
-		}
         a.readAtMin(invertLim);
         if (a.pinStep == NOPIN || a.pinDir == NOPIN) {
             continue;
@@ -58,6 +49,9 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
             if (a.position >= a.travelMax) {
                 continue;
             }
+			if (!a.enabled) {
+				return STATUS_AXIS_DISABLED;
+			}
             digitalWrite(a.pinDir, a.invertDir ? LOW : HIGH);
             break;
         case 0:
@@ -66,6 +60,9 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
             if (a.atMin || a.position <= a.travelMin) {
                 continue;
             }
+			if (!a.enabled) {
+				return STATUS_AXIS_DISABLED;
+			}
             digitalWrite(a.pinDir, a.invertDir ? HIGH : LOW);
             break;
         default:
@@ -76,7 +73,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
     STEPPER_PULSE_DELAY;
     for (int i = 0; i < 4; i++) {
         Axis &a(axis[motor[i].axisMap]);
-		if (a.mode==MODE_DISABLE || a.pinStep == NOPIN || a.pinDir == NOPIN) {
+		if (!a.enabled || a.pinStep == NOPIN || a.pinDir == NOPIN) {
             continue;
         }
         switch (pulse.value[i]) {

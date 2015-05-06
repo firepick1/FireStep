@@ -384,20 +384,14 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
     testJSON(machine, jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':222}}}\n");
     testJSON(machine, jc, replace, "{'?':{'tm':10000}}", "{'s':0,'r':{'?':{'tm':10000}}}\n");
     testJSON(machine, jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':10000}}}\n");
-    testJSON(machine, jc, replace, "{'?am':''}", "{'s':0,'r':{'?am':1}}\n");  	// default
-    testJSON(machine, jc, replace, "{'?am':333}", "{'s':0,'r':{'?am':77}}\n");	// out of range
-    testJSON(machine, jc, replace, "{'?am':''}", "{'s':0,'r':{'?am':77}}\n");
-    testJSON(machine, jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':77}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'am':1}}", "{'s':0,'r':{'?':{'am':1}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'am':''}}", "{'s':0,'r':{'?':{'am':1}}}\n");
     testJSON(machine, jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':16}}}\n");
     testJSON(machine, jc, replace, "{'?':{'mi':1}}", "{'s':0,'r':{'?':{'mi':1}}}\n");
     testJSON(machine, jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':1}}}\n");
     testJSON(machine, jc, replace, "{'?':{'mi':16}}", "{'s':0,'r':{'?':{'mi':16}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'in':''}}", "{'s':0,'r':{'?':{'in':0}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'in':1}}", "{'s':0,'r':{'?':{'in':1}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'in':''}}", "{'s':0,'r':{'?':{'in':1}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'in':0}}", "{'s':0,'r':{'?':{'in':0}}}\n");
+    testJSON(machine, jc, replace, "{'?':{'in':''}}", "{'s':0,'r':{'?':{'in':false}}}\n");
+    testJSON(machine, jc, replace, "{'?':{'in':true}}", "{'s':0,'r':{'?':{'in':true}}}\n");
+    testJSON(machine, jc, replace, "{'?':{'in':''}}", "{'s':0,'r':{'?':{'in':true}}}\n");
+    testJSON(machine, jc, replace, "{'?':{'in':false}}", "{'s':0,'r':{'?':{'in':false}}}\n");
     testJSON(machine, jc, replace, "{'?':{'pw':''}}", "{'s':0,'r':{'?':{'pw':0}}}\n");
     testJSON(machine, jc, replace, "{'?':{'pw':3}}", "{'s':0,'r':{'?':{'pw':3}}}\n");
     testJSON(machine, jc, replace, "{'?':{'pw':''}}", "{'s':0,'r':{'?':{'pw':3}}}\n");
@@ -409,15 +403,15 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
 
     testJSON(machine, jc, replace,
              "{'x':''}",
-             "{'s':0,'r':{'x':{'am':1,'in':0,'ln':false,'mi':16,'pd':55,'pe':38,'pm':255,"\
+             "{'s':0,'r':{'x':{'en':false,'in':false,'ln':false,'mi':16,'pd':55,'pe':38,'pm':255,"\
              "'pn':3,'po':0,'ps':54,'pw':0,'sa':1.80,'tm':10000,'tn':0}}}\n");
     testJSON(machine, jc, replace,
              "{'y':''}",
-             "{'s':0,'r':{'y':{'am':1,'in':0,'ln':false,'mi':16,'pd':61,'pe':56,'pm':255,"\
+             "{'s':0,'r':{'y':{'en':false,'in':false,'ln':false,'mi':16,'pd':61,'pe':56,'pm':255,"\
              "'pn':14,'po':0,'ps':60,'pw':0,'sa':1.80,'tm':10000,'tn':0}}}\n");
     testJSON(machine, jc, replace,
              "{'z':''}",
-             "{'s':0,'r':{'z':{'am':1,'in':0,'ln':false,'mi':16,'pd':48,'pe':62,'pm':255,"\
+             "{'s':0,'r':{'z':{'en':false,'in':false,'ln':false,'mi':16,'pd':48,'pe':62,'pm':255,"\
              "'pn':18,'po':0,'ps':46,'pw':0,'sa':1.80,'tm':10000,'tn':0}}}\n");
 }
 
@@ -467,12 +461,12 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
 
     // Set machine to known position and state
 	threadClock.ticks = 99;
-    digitalWrite(machine.axis[0].pinMin, 0);
-    digitalWrite(machine.axis[1].pinMin, 0);
-    digitalWrite(machine.axis[2].pinMin, 0);
-    digitalWrite(machine.axis[0].pinEnable, 1);
-    digitalWrite(machine.axis[1].pinEnable, 1);
-    digitalWrite(machine.axis[2].pinEnable, 1);
+    arduino.setPin(machine.axis[0].pinMin, 0);
+    arduino.setPin(machine.axis[1].pinMin, 0);
+    arduino.setPin(machine.axis[2].pinMin, 0);
+    machine.axis[0].enable(true);
+    machine.axis[1].enable(true);
+    machine.axis[2].enable(true);
 #define STROKE_CONFIG "{"\
 			"'xtm':10000,'xtn':0,'xpo':5,'xln':false,"\
 			"'ytm':10000,'ytn':0,'ypo':5,'yln':false,"\
@@ -545,9 +539,9 @@ void test_JsonController() {
 
     Machine machine;
     JsonController jc;
-	digitalWrite(X_MIN_PIN, false);
-	digitalWrite(Y_MIN_PIN, false);
-	digitalWrite(Z_MIN_PIN, false);
+	arduino.setPin(X_MIN_PIN, false);
+	arduino.setPin(Y_MIN_PIN, false);
+	arduino.setPin(Z_MIN_PIN, false);
 
     Serial.clear();
 	machine.pDisplay->setStatus(DISPLAY_WAIT_IDLE);
@@ -780,12 +774,9 @@ void test_Machine_step() {
     cout << "TEST	: test_Machine_step() =====" << endl;
 
     Machine machine;
-    digitalWrite(machine.axis[0].pinMin, 0);
-    digitalWrite(machine.axis[0].pinEnable, 1);
-    digitalWrite(machine.axis[1].pinMin, 0);
-    digitalWrite(machine.axis[1].pinEnable, 1);
-    digitalWrite(machine.axis[2].pinMin, 0);
-    digitalWrite(machine.axis[2].pinEnable, 1);
+    for (int i = 0; i < 4; i++) {
+		arduino.setPin(machine.axis[i].pinMin, 0);
+    }
     machine.axis[0].travelMax = 5;
     machine.axis[1].travelMax = 4;
     machine.axis[2].travelMax = 3;
@@ -796,7 +787,13 @@ void test_Machine_step() {
     ASSERTEQUAL(false, machine.axis[3].atMin);
     Status status;
     ASSERTQUAD(machine.motorPosition(), Quad<StepCoord>(0, 0, 0, 0));
-    ASSERTEQUAL(STATUS_STEP_RANGE_ERROR, machine.step(Quad<StepCoord>(1, 2, 3, 4)));
+    ASSERTEQUAL(STATUS_STEP_RANGE_ERROR, machine.step(Quad<StepCoord>(4, 3, 2, 1)));
+    ASSERTEQUAL(STATUS_AXIS_DISABLED, machine.step(Quad<StepCoord>(1, 1, 1, 1)));
+    for (int i = 0; i < 4; i++) {
+		machine.axis[i].enable(true);
+		arduino.setPinMode(machine.axis[i].pinStep, OUTPUT);
+		arduino.setPinMode(machine.axis[i].pinDir, OUTPUT);
+    }
     ASSERTQUAD(machine.motorPosition(), Quad<StepCoord>(0, 0, 0, 0));
 
     // Test travelMax
@@ -844,7 +841,7 @@ void test_Machine_step() {
 
     // Test atMin
     ASSERTQUAD(Quad<StepCoord>(0, -1, 0, 0), machine.motorPosition());
-    digitalWrite(machine.axis[0].pinMin, 1);
+    arduino.setPin(machine.axis[0].pinMin, 1);
     machine.axis[0].travelMin = -10;
     machine.axis[1].travelMin = -10;
     machine.axis[2].travelMin = -10;
@@ -858,121 +855,138 @@ void test_Machine_step() {
 void test_MachineThread() {
     cout << "TEST	: test_MachineThread() =====" << endl;
 
-	MachineThread mt;
-	ASSERTQUAD(Quad<StepCoord>(0,0,0,0), mt.machine.motorPosition());
+    MachineThread mt;
+    ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.motorPosition());
 
-	threadClock.ticks = 100;
-	Serial.clear();
-	Serial.push("{");
-	mt.Heartbeat();
-	ASSERTEQUAL(STATUS_WAIT_EOL, mt.status);
-	ASSERTEQUALS("", Serial.output().c_str());
+    threadClock.ticks = 100;
+    Serial.clear();
+    Serial.push("{");
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_WAIT_EOL, mt.status);
+    ASSERTEQUALS("", Serial.output().c_str());
 
-	threadClock.ticks++;
-    const char *jsonIn = "'systc':'','dvs':{'us':123,'dp':[10,20],'s1':[1,2],'s2':[4,5],'s3':[7,8],'s4':[-10,-11]}}\n";
-    string ji(jsonTemplate(jsonIn, "'\""));
-	Serial.push(ji.c_str());
-	mt.Heartbeat();
-	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	ASSERTEQUALS("", Serial.output().c_str());
+    threadClock.ticks++;
+    const char *jsonIn = "'systc':'','xen':true,'yen':true,'zen':true,'aen':true}\n";
+    Serial.push(jsonTemplate(jsonIn).c_str());
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    ASSERTEQUALS("", Serial.output().c_str());
 
-	threadClock.ticks++;
-	mt.Heartbeat();
-	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-	ASSERTEQUALS("", Serial.output().c_str());
+    threadClock.ticks++;
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    const char *jsonOut =
+        "{'s':0,'r':{'systc':102,'xen':true,'yen':true,'zen':true,'aen':false}}\n";
+    ASSERTEQUALS(jsonTemplate(jsonOut).c_str(), Serial.output().c_str());
 
-	threadClock.ticks++;
-	mt.Heartbeat();
-	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-	ASSERTEQUALS("", Serial.output().c_str());
+    threadClock.ticks++;
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-	threadClock.ticks++;
-	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-	mt.Heartbeat();
-	ASSERTEQUALS("", Serial.output().c_str());
+    ASSERTEQUALS("", Serial.output().c_str());
+    threadClock.ticks++;
+    jsonIn = "{'systc':'','dvs':{'us':123,'dp':[10,20],'s1':[1,2],'s2':[4,5],'s3':[7,8],'s4':[-10,-11]}}\n";
+    Serial.push(jsonTemplate(jsonIn).c_str());
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    ASSERTEQUALS("", Serial.output().c_str());
 
-	threadClock.ticks++;
-	Serial.clear();
-	mt.Heartbeat();
-	ASSERTEQUAL(STATUS_OK, mt.status);
-    const char *jsonOut = 
-		"{'s':0,'r':{'systc':105,'dvs':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}\n";
-	string jo(jsonTemplate(jsonOut));
-	ASSERTEQUALS(jo.c_str(), Serial.output().c_str());
-	ASSERTQUAD(Quad<StepCoord>(10,20,0,0), mt.machine.motorPosition());
+    threadClock.ticks++;
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUALS("", Serial.output().c_str());
+
+    threadClock.ticks++;
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUALS("", Serial.output().c_str());
+
+    threadClock.ticks++;
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    mt.Heartbeat();
+    ASSERTEQUALS("", Serial.output().c_str());
+
+    threadClock.ticks++;
+    Serial.clear();
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    jsonOut =
+        "{'s':0,'r':{'systc':108,'dvs':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}\n";
+    ASSERTEQUALS(jsonTemplate(jsonOut).c_str(), Serial.output().c_str());
+    ASSERTQUAD(Quad<StepCoord>(10, 20, 0, 0), mt.machine.motorPosition());
 
     cout << "TEST	: test_MachineThread() OK " << endl;
 }
 
 class TestDisplay: public Display {
-	public:
-		char message[100];
-		virtual void show() {
-			snprintf(message, sizeof(message), "status:%d level:%d", status, level);
-		}
+    public:
+        char message[100];
+        virtual void show() {
+            snprintf(message, sizeof(message), "status:%d level:%d", status, level);
+        }
 } testDisplay;
 
 void test_DisplayPersistance(MachineThread &mt, DisplayStatus dispStatus, Status expectedStatus) {
-	// Send partial serial command 
-	threadClock.ticks++;
-	char jsonIn[128];
-	snprintf(jsonIn, sizeof(jsonIn), jsonTemplate("{'dpyds':%d}").c_str(), dispStatus);
-	Serial.push(jsonIn);
-	mt.Heartbeat();
-	ASSERTEQUAL(STATUS_WAIT_EOL, mt.status);
-	ASSERTEQUALS("status:11 level:127", testDisplay.message);
+    // Send partial serial command
+    threadClock.ticks++;
+    char jsonIn[128];
+    snprintf(jsonIn, sizeof(jsonIn), jsonTemplate("{'dpyds':%d}").c_str(), dispStatus);
+    Serial.push(jsonIn);
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_WAIT_EOL, mt.status);
+    ASSERTEQUALS("status:11 level:127", testDisplay.message);
 
-	// Send EOL to complete serial command
-	threadClock.ticks++;
-	Serial.push(jsonTemplate("\n"));
-	mt.Heartbeat();
-	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	ASSERTEQUALS("status:30 level:127", testDisplay.message);
+    // Send EOL to complete serial command
+    threadClock.ticks++;
+    Serial.push(jsonTemplate("\n"));
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    ASSERTEQUALS("status:30 level:127", testDisplay.message);
 
-	// Process command
-	threadClock.ticks++;
-	mt.Heartbeat();
-	ASSERTEQUAL(expectedStatus, mt.status);
-	char expectedDisplay[100];
-	snprintf(expectedDisplay, sizeof(expectedDisplay), "status:%d level:127", dispStatus);
-	ASSERTEQUALS(expectedDisplay, testDisplay.message);
+    // Process command
+    threadClock.ticks++;
+    mt.Heartbeat();
+    ASSERTEQUAL(expectedStatus, mt.status);
+    char expectedDisplay[100];
+    snprintf(expectedDisplay, sizeof(expectedDisplay), "status:%d level:127", dispStatus);
+    ASSERTEQUALS(expectedDisplay, testDisplay.message);
 
-	// Verify display persistence
-	threadClock.ticks++;
-	mt.Heartbeat();
-	ASSERTEQUAL(expectedStatus, mt.status);
-	ASSERTEQUALS(expectedDisplay, testDisplay.message);
+    // Verify display persistence
+    threadClock.ticks++;
+    mt.Heartbeat();
+    ASSERTEQUAL(expectedStatus, mt.status);
+    ASSERTEQUALS(expectedDisplay, testDisplay.message);
 
 }
 
 void test_Display() {
     cout << "TEST	: test_Display() =====" << endl;
 
-	pThreadList = NULL;
+    pThreadList = NULL;
     threadRunner.setup();
-	MachineThread mt;
-	Serial.clear();
-	ASSERTEQUALS("", testDisplay.message);
+    MachineThread mt;
+    Serial.clear();
+    ASSERTEQUALS("", testDisplay.message);
 
-	mt.machine.pDisplay = &testDisplay;
-	mt.setup();
-	ASSERTEQUAL(STATUS_BUSY_SETUP, mt.status);
-	ASSERTEQUALS("status:30 level:127", testDisplay.message);
+    mt.machine.pDisplay = &testDisplay;
+    mt.setup();
+    ASSERTEQUAL(STATUS_BUSY_SETUP, mt.status);
+    ASSERTEQUALS("status:30 level:127", testDisplay.message);
 
-	mt.Heartbeat();
-	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-	ASSERTEQUALS("status:10 level:127", testDisplay.message);
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    ASSERTEQUALS("status:10 level:127", testDisplay.message);
 
-	test_DisplayPersistance(mt, DISPLAY_WAIT_OPERATOR, STATUS_WAIT_OPERATOR);
-	test_DisplayPersistance(mt, DISPLAY_WAIT_CAMERA, STATUS_WAIT_CAMERA);
-	test_DisplayPersistance(mt, DISPLAY_WAIT_ERROR, STATUS_WAIT_ERROR);
+    test_DisplayPersistance(mt, DISPLAY_WAIT_OPERATOR, STATUS_WAIT_OPERATOR);
+    test_DisplayPersistance(mt, DISPLAY_WAIT_CAMERA, STATUS_WAIT_CAMERA);
+    test_DisplayPersistance(mt, DISPLAY_WAIT_ERROR, STATUS_WAIT_ERROR);
 
-	testJSON(mt.machine, mt.controller, "'\"", 
-		"{'dpycr':10,'dpycg':20,'dpycb':30,'dpyds':12,'dpydl':255}",
-		"{'s':0,'r':{'dpycr':10,'dpycg':20,'dpycb':30,'dpyds':12,'dpydl':255}}\n");
-	testJSON(mt.machine, mt.controller, "'\"", 
-		"{'dpy':{'ds':30,'dl':255,'cr':1,'cg':2,'cb':3}}",
-		"{'s':25,'r':{'dpy':{'ds':30,'dl':255,'cr':1,'cg':2,'cb':3}}}\n", STATUS_WAIT_BUSY);
+    testJSON(mt.machine, mt.controller, "'\"",
+             "{'dpycr':10,'dpycg':20,'dpycb':30,'dpyds':12,'dpydl':255}",
+             "{'s':0,'r':{'dpycr':10,'dpycg':20,'dpycb':30,'dpyds':12,'dpydl':255}}\n");
+    testJSON(mt.machine, mt.controller, "'\"",
+             "{'dpy':{'ds':30,'dl':255,'cr':1,'cg':2,'cb':3}}",
+             "{'s':25,'r':{'dpy':{'ds':30,'dl':255,'cr':1,'cg':2,'cb':3}}}\n", STATUS_WAIT_BUSY);
 
     cout << "TEST	: test_Display() OK " << endl;
 }
@@ -991,8 +1005,8 @@ int main(int argc, char *argv[]) {
     test_ArduinoJson();
     test_JsonCommand();
     test_JsonController();
-	test_MachineThread();
-	test_Display();
+    test_MachineThread();
+    test_Display();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }

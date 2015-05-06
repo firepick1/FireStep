@@ -26,14 +26,8 @@ typedef struct Motor {
   Motor() : axisMap(0) {}
 } Motor;
 
-enum AxisMode {
-  MODE_DISABLE = 0,
-  MODE_STANDARD = 1,
-};
-
 typedef class Axis {
   public:
-    uint8_t 	mode;
     PinType 	pinStep;
     PinType 	pinDir;
     PinType 	pinMin;
@@ -47,10 +41,10 @@ typedef class Axis {
     uint8_t		microsteps;
     bool		invertDir;
     uint8_t 	powerManagementMode;
-    bool		atMax;
     bool		atMin;
+    bool		atMax;
+	bool		enabled;
     Axis() :
-      mode((uint8_t)MODE_STANDARD),
       pinStep(NOPIN),
       pinDir(NOPIN),
       pinMin(NOPIN),
@@ -65,8 +59,21 @@ typedef class Axis {
       invertDir(0),				// 0:normal direction, 1:inverted direction
       powerManagementMode(0),	// 0:off, 1:on, 2:on in cycle, 3:on when moving
       atMin(false),
-      atMax(false)
+      atMax(false),
+	  enabled(false)
     {};
+	void enable(bool active) {
+		if (pinEnable != NOPIN) {
+			pinMode(pinEnable, OUTPUT);
+			digitalWrite(pinEnable, active ? HIGH : LOW);
+			enabled = active;
+		}
+	}
+	void pinMode(PinType pin, int mode) {
+		if (pin != NOPIN) {
+			::pinMode(pin, mode);
+		}
+	}
     void readAtMin(bool invertLim) {
       if (pinMin != NOPIN) {
         bool minHigh = digitalRead(pinMin);

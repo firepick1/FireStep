@@ -50,6 +50,7 @@ enum Status {
     STATUS_STROKE_START = -117,		// Stroke start() must be called before traverse()
     STATUS_JSON_MEM = -118,			// Internal error: no more JSON memory
     STATUS_WAIT_ERROR = -119,		// Display error indicator
+	STATUS_AXIS_DISABLED = -120,	// Motion requested for disabled axis
 };
 
 inline bool isProcessing(Status status) {

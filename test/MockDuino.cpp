@@ -70,6 +70,7 @@ void ArduinoType::delay500ns() {
 
 void digitalWrite(int16_t pin, int16_t value) {
 	ASSERT(0 <= pin && pin < ARDUINO_PINS);
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(pin));
 	if (arduino.pin[pin] != value) {
 		if (value == 0) {
 			arduino.pinPulses[pin]++;
@@ -93,6 +94,18 @@ void pinMode(int16_t pin, int16_t inout) {
 int16_t ArduinoType::getPinMode(int16_t pin) {
 	ASSERT(0 <= pin && pin < ARDUINO_PINS);
 	return arduino._pinMode[pin];
+}
+
+void ArduinoType::setPin(int16_t pin, int16_t value) {
+	if (pin != NOPIN) {
+		arduino.pin[pin] = value;
+	}
+}
+
+void ArduinoType::setPinMode(int16_t pin, int16_t value) {
+	if (pin != NOPIN) {
+		arduino._pinMode[pin] = value;
+	}
 }
 
 void delay(int ms) {
