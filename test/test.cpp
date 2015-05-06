@@ -948,6 +948,7 @@ void test_DisplayPersistance(MachineThread &mt, DisplayStatus dispStatus, Status
 void test_Display() {
     cout << "TEST	: test_Display() =====" << endl;
 
+	pThreadList = NULL;
     threadRunner.setup();
 	MachineThread mt;
 	Serial.clear();

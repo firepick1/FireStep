@@ -1,5 +1,5 @@
 #include "NeoPixel.h"
-#include "pins/pins.h"
+#include "pins.h"
 
 using namespace firestep;
 

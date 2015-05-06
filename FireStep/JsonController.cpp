@@ -388,11 +388,8 @@ Status JsonController::processAxis(Machine &machine, JsonCommand &jcmd, JsonObje
         status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].mode);
     } else if (strcmp("in", key) == 0 || strcmp("in", key + 1) == 0) {
         status = processField<bool, long>(jobj, key, machine.axis[iAxis].invertDir);
-    } else if (strcmp("lm", key) == 0 || strcmp("lm", key + 1) == 0) {
-        machine.axis[iAxis].readLimits(machine.invertLim);
-        status = processField<bool, bool>(jobj, key, machine.axis[iAxis].atMax);
     } else if (strcmp("ln", key) == 0 || strcmp("ln", key + 1) == 0) {
-        machine.axis[iAxis].readLimits(machine.invertLim);
+        machine.axis[iAxis].readAtMin(machine.invertLim);
         status = processField<bool, bool>(jobj, key, machine.axis[iAxis].atMin);
     } else if (strcmp("mi", key) == 0 || strcmp("mi", key + 1) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].microsteps);
@@ -401,15 +398,15 @@ Status JsonController::processAxis(Machine &machine, JsonCommand &jcmd, JsonObje
     } else if (strcmp("pe", key) == 0 || strcmp("pe", key + 1) == 0) {
         status = processField<PinType, long>(jobj, key, machine.axis[iAxis].pinEnable);
     } else if (strcmp("pm", key) == 0 || strcmp("pm", key + 1) == 0) {
-        status = processField<PinType, long>(jobj, key, machine.axis[iAxis].pinMax);
+        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].pinMax);
     } else if (strcmp("pn", key) == 0 || strcmp("pn", key + 1) == 0) {
         status = processField<PinType, long>(jobj, key, machine.axis[iAxis].pinMin);
     } else if (strcmp("po", key) == 0 || strcmp("po", key + 1) == 0) {
         status = processField<StepCoord, long>(jobj, key, machine.axis[iAxis].position);
+    } else if (strcmp("pw", key) == 0 || strcmp("pw", key + 1) == 0) {
+        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].powerManagementMode);
     } else if (strcmp("ps", key) == 0 || strcmp("ps", key + 1) == 0) {
         status = processField<PinType, long>(jobj, key, machine.axis[iAxis].pinStep);
-    } else if (strcmp("pw", key) == 0 || strcmp("p2", key + 1) == 0) {
-        status = processField<uint8_t, long>(jobj, key, machine.axis[iAxis].powerManagementMode);
     } else if (strcmp("sa", key) == 0 || strcmp("sa", key + 1) == 0) {
         status = processField<float, double>(jobj, key, machine.axis[iAxis].stepAngle);
     } else if (strcmp("tm", key) == 0 || strcmp("tm", key + 1) == 0) {

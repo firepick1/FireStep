@@ -2,7 +2,7 @@
 #define THREAD_H
 
 #include "Arduino.h"
-#include "pins/pins.h"
+#include "pins.h"
 
 namespace firestep {
 
@@ -89,11 +89,10 @@ typedef class MonitorThread : PulseThread {
 
         void 	LED(byte value);
 
-        void setup(int pin1, int pin2); /* PRIVATE */
+        void setup(int pinLED=NOPIN); /* PRIVATE */
         unsigned int Free(); /* PRIVATE */
         void Heartbeat(); /* PRIVATE */
-        int m_Pin1; /* PRIVATE */
-        int m_Pin2; /* PRIVATE */
+        int pinLED; /* PRIVATE */
 
     public:
         boolean verbose;
@@ -123,11 +122,12 @@ typedef class ThreadRunner {
         byte		fast;
     protected:
         void resetGenerations();
-		void clear();
     public:
         ThreadRunner();
+	public: 
+		void clear();
     public:
-        void setup(int monitorPin1=NOPIN, int monitorPin2=NOPIN);
+        void setup(int pinLED=NOPIN);
     public:
         void run() {
             // outer loop: bookkeeping

@@ -19,7 +19,7 @@ void setup() // run once, when the sketch starts
   // Initialize
   machineThread.setup();
 
-  firestep::threadRunner.setup(LED_PIN_RED, LED_PIN_GRN);
+  firestep::threadRunner.setup(LED_PIN);
 }
 
 void loop()	// run over and over again

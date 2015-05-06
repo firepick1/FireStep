@@ -58,18 +58,14 @@ void PulseThread::Heartbeat() {
 
 unsigned long totalHeartbeats;
 
-void MonitorThread::setup(int pin1, int pin2) {
+void MonitorThread::setup(int pinLED) {
     id = 'Z';
     // set monitor interval to not coincide with timer overflow
     PulseThread::setup(MS_TICKS(1000), MS_TICKS(250));
-    m_Pin1 = pin1;
-    m_Pin2 = pin2;
+    this->pinLED = pinLED;
     verbose = false;
-    if (pin1 != NOPIN) {
-		pinMode(pin1, OUTPUT);
-	}
-	if (pin2 != NOPIN) {
-		pinMode(pin2, OUTPUT);
+	if (pinLED != NOPIN) {
+		pinMode(pinLED, OUTPUT);
 	}
     blinkLED = true;
 
@@ -82,11 +78,8 @@ void MonitorThread::setup(int pin1, int pin2) {
 }
 
 void MonitorThread::LED(byte value) {
-	if (m_Pin1 != NOPIN) {
-		digitalWrite(m_Pin1, (value == 1 || value == 2) ? HIGH : LOW);
-	}
-	if (m_Pin2 != NOPIN) {
-		digitalWrite(m_Pin2, (value == 3 || value == 2) ? HIGH : LOW);
+	if (pinLED != NOPIN) {
+		digitalWrite(pinLED, value ? HIGH : LOW);
 	}
 }
 
@@ -179,9 +172,11 @@ void ThreadRunner::clear() {
 	fast = 255;
 }
 
-void ThreadRunner::setup(int monitorPin1, int monitorPin2) {
-	clear();
-    monitor.setup(monitorPin1, monitorPin2);
+void ThreadRunner::setup(int pinLED) {
+    monitor.setup(pinLED);
+    //DEBUG_DEC("CLKPR", CLKPR);
+    //DEBUG_DEC("nThreads", nThreads);
+    //DEBUG_EOL();
 
     TCCR1A = 0; // Timer mode
     TIMSK1 = 0 << TOIE1;	// disable interrupts
