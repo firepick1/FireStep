@@ -350,6 +350,13 @@ Status JsonController::processMotor(Machine &machine, JsonCommand &jcmd, JsonObj
     return status;
 }
 
+Status JsonController::processPin(Machine &machine, JsonObject& jobj, const char *key, PinType &pin, int16_t mode, int16_t value) {
+    PinType newPin = pin;
+    Status status = processField<PinType, long>(jobj, key, newPin);
+    machine.setPin(pin, newPin, mode, value);
+	return status;
+}
+
 Status JsonController::processAxis(Machine &machine, JsonCommand &jcmd, JsonObject& jobj, const char* key, char group) {
     Status status = STATUS_OK;
     const char *s;
@@ -357,13 +364,13 @@ Status JsonController::processAxis(Machine &machine, JsonCommand &jcmd, JsonObje
     if (iAxis < 0) {
         return STATUS_AXIS_ERROR;
     }
-	Axis &axis = machine.axis[iAxis];
+    Axis &axis = machine.axis[iAxis];
     if (strlen(key) == 1) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
             node["en"] = "";
-			node["in"] = "";
-			node["ln"] = "";
+            node["in"] = "";
+            node["ln"] = "";
             node["mi"] = "";
             node["pd"] = "";
             node["pe"] = "";
@@ -386,12 +393,12 @@ Status JsonController::processAxis(Machine &machine, JsonCommand &jcmd, JsonObje
             }
         }
     } else if (strcmp("en", key) == 0 || strcmp("en", key + 1) == 0) {
-		bool active = axis.enabled;
+        bool active = axis.enabled;
         status = processField<bool, bool>(jobj, key, active);
-		if (status == STATUS_OK) {
-			axis.enable(active);
-			status = (jobj[key] = axis.enabled).success() ? status : STATUS_FIELD_ERROR;
-		}
+        if (status == STATUS_OK) {
+            axis.enable(active);
+            status = (jobj[key] = axis.enabled).success() ? status : STATUS_FIELD_ERROR;
+        }
     } else if (strcmp("in", key) == 0 || strcmp("in", key + 1) == 0) {
         status = processField<bool, bool>(jobj, key, axis.invertDir);
     } else if (strcmp("ln", key) == 0 || strcmp("ln", key + 1) == 0) {
@@ -400,22 +407,19 @@ Status JsonController::processAxis(Machine &machine, JsonCommand &jcmd, JsonObje
     } else if (strcmp("mi", key) == 0 || strcmp("mi", key + 1) == 0) {
         status = processField<uint8_t, long>(jobj, key, axis.microsteps);
     } else if (strcmp("pd", key) == 0 || strcmp("pd", key + 1) == 0) {
-        status = processField<PinType, long>(jobj, key, axis.pinDir);
-		axis.pinMode(axis.pinDir, OUTPUT);
+        status = processPin(machine, jobj, key, axis.pinDir, OUTPUT);
     } else if (strcmp("pe", key) == 0 || strcmp("pe", key + 1) == 0) {
-        status = processField<PinType, long>(jobj, key, axis.pinEnable);
-		axis.pinMode(axis.pinEnable, OUTPUT);
+        status = processPin(machine, jobj, key, axis.pinEnable, OUTPUT, HIGH);
     } else if (strcmp("pm", key) == 0 || strcmp("pm", key + 1) == 0) {
-        status = processField<uint8_t, long>(jobj, key, axis.pinMax);
+        status = processPin(machine, jobj, key, axis.pinMax, INPUT);
     } else if (strcmp("pn", key) == 0 || strcmp("pn", key + 1) == 0) {
-        status = processField<PinType, long>(jobj, key, axis.pinMin);
+        status = processPin(machine, jobj, key, axis.pinMin, INPUT);
     } else if (strcmp("po", key) == 0 || strcmp("po", key + 1) == 0) {
         status = processField<StepCoord, long>(jobj, key, axis.position);
     } else if (strcmp("pw", key) == 0 || strcmp("pw", key + 1) == 0) {
         status = processField<uint8_t, long>(jobj, key, axis.powerManagementMode);
     } else if (strcmp("ps", key) == 0 || strcmp("ps", key + 1) == 0) {
-        status = processField<PinType, long>(jobj, key, axis.pinStep);
-		axis.pinMode(axis.pinStep, OUTPUT);
+        status = processPin(machine, jobj, key, axis.pinStep, OUTPUT);
     } else if (strcmp("sa", key) == 0 || strcmp("sa", key + 1) == 0) {
         status = processField<float, double>(jobj, key, axis.stepAngle);
     } else if (strcmp("tm", key) == 0 || strcmp("tm", key + 1) == 0) {
@@ -428,7 +432,7 @@ Status JsonController::processAxis(Machine &machine, JsonCommand &jcmd, JsonObje
 
 int freeRam () {
 #ifdef TEST
-	return 1000;
+    return 1000;
 #else
     extern int __heap_start, *__brkval;
     int v;
@@ -436,17 +440,35 @@ int freeRam () {
 #endif
 }
 
+Status JsonController::processTest(Machine &machine, JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = STATUS_OK;
+    if (strcmp("sys", key) == 0) {
+		JsonObject& tst = jobj[key];
+		if (!tst.success()) {
+			return jcmd.setError(STATUS_JSON_OBJECT, key);
+		}
+		for (JsonObject::iterator it = tst.begin(); it != tst.end(); ++it) {
+			status = processTest(machine, jcmd, tst, it->key);
+			if (status != STATUS_OK) {
+				return status;
+			}
+		}
+	} else if (strcmp("xs", key) == 0 || strcmp("tstxs", key) == 0) {
+		int32_t steps = jobj[key];
+	}
+}
+
 Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("sys", key) == 0) {
-		const char *s;
-		if ((s = jobj[key]) && *s == 0) {
-			JsonObject& node = jobj.createNestedObject(key);
-			node["fr"] = "";
-			node["li"] = "";
-			node["tc"] = "";
-			node["v"] = "";
-		}	
+        const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+            node["fr"] = "";
+            node["li"] = "";
+            node["tc"] = "";
+            node["v"] = "";
+        }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
@@ -463,9 +485,9 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
     } else if (strcmp("li", key) == 0 || strcmp("sysli", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.invertLim);
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
-		jobj[key] = threadClock.ticks;
-	} else {
-		status = jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+        jobj[key] = threadClock.ticks;
+    } else {
+        status = jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
     return status;
 }
@@ -473,15 +495,15 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
 Status JsonController::processDisplay(Machine &machine, JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("dpy", key) == 0) {
-		const char *s;
-		if ((s = jobj[key]) && *s == 0) {
-			JsonObject& node = jobj.createNestedObject(key);
-			node["cb"] = "";
-			node["cg"] = "";
-			node["cr"] = "";
-			node["dl"] = "";
-			node["ds"] = "";
-		}	
+        const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+            node["cb"] = "";
+            node["cg"] = "";
+            node["cr"] = "";
+            node["dl"] = "";
+            node["ds"] = "";
+        }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
@@ -500,35 +522,45 @@ Status JsonController::processDisplay(Machine &machine, JsonCommand& jcmd, JsonO
     } else if (strcmp("dl", key) == 0 || strcmp("dpydl", key) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.pDisplay->level);
     } else if (strcmp("ds", key) == 0 || strcmp("dpyds", key) == 0) {
-		const char *s;
-		bool isAssignment = (!(s=jobj[key]) || *s!=0);
+        const char *s;
+        bool isAssignment = (!(s = jobj[key]) || *s != 0);
         status = processField<uint8_t, long>(jobj, key, machine.pDisplay->status);
-		if (isAssignment) {
-			switch (machine.pDisplay->status) {
-				case DISPLAY_WAIT_IDLE:
-					status = STATUS_WAIT_IDLE;
-					break;
-				case DISPLAY_WAIT_ERROR:
-					status = STATUS_WAIT_ERROR;
-					break;
-				case DISPLAY_WAIT_OPERATOR:
-					status = STATUS_WAIT_OPERATOR;
-					break;
-				case DISPLAY_BUSY_MOVING:
-					status = STATUS_WAIT_MOVING;
-					break;
-				case DISPLAY_BUSY:
-					status = STATUS_WAIT_BUSY;
-					break;
-				case DISPLAY_WAIT_CAMERA:
-					status = STATUS_WAIT_CAMERA;
-					break;
-			}
-		}
-	} else {
-		status = jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+        if (isAssignment) {
+            switch (machine.pDisplay->status) {
+            case DISPLAY_WAIT_IDLE:
+                status = STATUS_WAIT_IDLE;
+                break;
+            case DISPLAY_WAIT_ERROR:
+                status = STATUS_WAIT_ERROR;
+                break;
+            case DISPLAY_WAIT_OPERATOR:
+                status = STATUS_WAIT_OPERATOR;
+                break;
+            case DISPLAY_BUSY_MOVING:
+                status = STATUS_WAIT_MOVING;
+                break;
+            case DISPLAY_BUSY:
+                status = STATUS_WAIT_BUSY;
+                break;
+            case DISPLAY_WAIT_CAMERA:
+                status = STATUS_WAIT_CAMERA;
+                break;
+            }
+        }
+    } else {
+        status = jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
     return status;
+}
+
+Status JsonController::cancel(JsonCommand& jcmd, Status status) {
+    if (isProcessing(status)) {
+		jcmd.setStatus(status);
+        jcmd.response().printTo(Serial);
+        Serial.println();
+		return status;
+    }
+	return STATUS_WAIT_IDLE;
 }
 
 Status JsonController::process(Machine &machine, JsonCommand& jcmd) {
@@ -541,6 +573,8 @@ Status JsonController::process(Machine &machine, JsonCommand& jcmd) {
     for (JsonObject::iterator it = root.begin(); it != root.end(); ++it) {
         if (strcmp("dvs", it->key) == 0) {
             status = processStroke(machine, jcmd, root, it->key);
+        } else if (strncmp("tst", it->key, 3) == 0) {
+            status = processTest(machine, jcmd, root, it->key);
         } else if (strncmp("sys", it->key, 3) == 0) {
             status = processSys(machine, jcmd, root, it->key);
         } else if (strncmp("dpy", it->key, 3) == 0) {
@@ -572,11 +606,11 @@ Status JsonController::process(Machine &machine, JsonCommand& jcmd) {
 
     jcmd.setStatus(status);
 
-	if (!isProcessing(status)) {
-		jcmd.response().printTo(Serial);
-		Serial.println();
-	}
+    if (!isProcessing(status)) {
+        jcmd.response().printTo(Serial);
+        Serial.println();
+    }
 
-	return status;
+    return status;
 }
 

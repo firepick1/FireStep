@@ -91,7 +91,11 @@ void MachineThread::Heartbeat() {
     case STATUS_BUSY_PARSED:
     case STATUS_BUSY:
     case STATUS_BUSY_MOVING:
-        status = controller.process(machine, command);
+		if (Serial.available()) {
+			status = controller.cancel(command, STATUS_SERIAL_CANCEL);
+		} else {
+			status = controller.process(machine, command);
+		}
         break;
 	case STATUS_BUSY_SETUP:
     case STATUS_OK:

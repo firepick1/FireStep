@@ -57,7 +57,9 @@ typedef class JsonController {
 		Status processAxis(Machine& machine, JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
 		Status processStroke(Machine& machine, JsonCommand &jcmd, JsonObject& jobj, const char* key);
 		Status processSys(Machine& machine, JsonCommand& jcmd, JsonObject& jobj, const char* key);
+		Status processTest(Machine& machine, JsonCommand& jcmd, JsonObject& jobj, const char* key);
 		Status processDisplay(Machine& machine, JsonCommand& jcmd, JsonObject& jobj, const char* key);
+		Status processPin(Machine &machine, JsonObject& jobj, const char *key, PinType &pin, int16_t mode, int16_t value=LOW);
 		Status initializeStroke(Machine& machine, JsonCommand &jcmd, JsonObject& stroke);
 		Status traverseStroke(Machine& machine, JsonCommand &jcmd, JsonObject &stroke);
 
@@ -65,6 +67,7 @@ typedef class JsonController {
         JsonController();
 	public: 
 		Status process(Machine& machine, JsonCommand& jcmd);
+		Status cancel(JsonCommand &jcmd, Status status);
 } JsonController;
 
 } // namespace firestep

@@ -89,7 +89,30 @@ void test_command(const char *cmd, const char* expected) {
 
 void test_Machine() {
     cout << "TEST	: test_Machine() =====" << endl;
+
     arduino.clear();
+	Machine machine;
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(X_STEP_PIN));
+	ASSERTEQUAL(LOW, arduino.getPin(X_STEP_PIN));
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(X_DIR_PIN));
+	ASSERTEQUAL(LOW, arduino.getPin(X_DIR_PIN));
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(X_ENABLE_PIN));
+	ASSERTEQUAL(HIGH, arduino.getPin(X_ENABLE_PIN));
+	ASSERTEQUAL(INPUT, arduino.getPinMode(X_MIN_PIN));
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(Y_STEP_PIN));
+	ASSERTEQUAL(LOW, arduino.getPin(Y_STEP_PIN));
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(Y_DIR_PIN));
+	ASSERTEQUAL(LOW, arduino.getPin(Y_DIR_PIN));
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(Y_ENABLE_PIN));
+	ASSERTEQUAL(HIGH, arduino.getPin(Y_ENABLE_PIN));
+	ASSERTEQUAL(INPUT, arduino.getPinMode(Y_MIN_PIN));
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(Z_STEP_PIN));
+	ASSERTEQUAL(LOW, arduino.getPin(Z_STEP_PIN));
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(Z_DIR_PIN));
+	ASSERTEQUAL(LOW, arduino.getPin(Z_DIR_PIN));
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(Z_ENABLE_PIN));
+	ASSERTEQUAL(HIGH, arduino.getPin(Z_ENABLE_PIN));
+	ASSERTEQUAL(INPUT, arduino.getPinMode(Z_MIN_PIN));
 
     MachineThread machThread;
     machThread.setup();
@@ -785,6 +808,15 @@ void test_Machine_step() {
     ASSERTEQUAL(false, machine.axis[1].atMin);
     ASSERTEQUAL(false, machine.axis[2].atMin);
     ASSERTEQUAL(false, machine.axis[3].atMin);
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(machine.axis[0].pinEnable));
+	ASSERTEQUAL(HIGH, arduino.getPin(machine.axis[0].pinEnable));
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(machine.axis[1].pinEnable));
+	ASSERTEQUAL(HIGH, arduino.getPin(machine.axis[1].pinEnable));
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(machine.axis[2].pinEnable));
+	ASSERTEQUAL(HIGH, arduino.getPin(machine.axis[2].pinEnable));
+	for (int i=0; i<AXIS_COUNT; i++) {
+		ASSERTEQUAL(false, machine.axis[i].enabled);
+	}
     Status status;
     ASSERTQUAD(machine.motorPosition(), Quad<StepCoord>(0, 0, 0, 0));
     ASSERTEQUAL(STATUS_STEP_RANGE_ERROR, machine.step(Quad<StepCoord>(4, 3, 2, 1)));

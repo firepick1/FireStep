@@ -96,6 +96,11 @@ int16_t ArduinoType::getPinMode(int16_t pin) {
 	return arduino._pinMode[pin];
 }
 
+int16_t ArduinoType::getPin(int16_t pin) {
+	ASSERT(pin != NOPIN);
+	return arduino.pin[pin];
+}
+
 void ArduinoType::setPin(int16_t pin, int16_t value) {
 	if (pin != NOPIN) {
 		arduino.pin[pin] = value;

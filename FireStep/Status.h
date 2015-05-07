@@ -21,6 +21,7 @@ enum Status {
     STATUS_UNRECOGNIZED_NAME = -4,	// Parse didn't recognize thecommand
     STATUS_JSON_PARSE_ERROR = -5,	// JSON invalid or too long
     STATUS_JSON_TOO_LONG = -6,		// JSON exceeds buffer size
+    STATUS_JSON_OBJECT = -7,		// JSON object expected
     STATUS_JSON_STROKE_ERROR = -20,	// Expected JSON object for stroke
     STATUS_S1_RANGE_ERROR = -21,	// Stroke segment s1 value out of range [-127,127]
     STATUS_S2_RANGE_ERROR = -22,	// Stroke segment s2 value out of range [-127,127]
@@ -51,6 +52,9 @@ enum Status {
     STATUS_JSON_MEM = -118,			// Internal error: no more JSON memory
     STATUS_WAIT_ERROR = -119,		// Display error indicator
 	STATUS_AXIS_DISABLED = -120,	// Motion requested for disabled axis
+	STATUS_NOPIN = -121,			// Attempt to change NOPIN
+	STATUS_ESTOP = -122,			// Emergency hardware stop
+	STATUS_SERIAL_CANCEL = -123,	// Command cancelled by serial input
 };
 
 inline bool isProcessing(Status status) {
@@ -58,6 +62,7 @@ inline bool isProcessing(Status status) {
 		case STATUS_BUSY:
 		case STATUS_BUSY_MOVING:
 		case STATUS_BUSY_PARSED:
+		case STATUS_BUSY_SETUP:
 			return true;
 		default:
 			return false;
