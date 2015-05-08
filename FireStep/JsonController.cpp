@@ -8,7 +8,8 @@
 
 using namespace firestep;
 
-JsonController::JsonController() {
+JsonController::JsonController(Machine& machine)
+	: machine(machine) {
 	lastProcessed = 0;
 }
 
@@ -55,7 +56,7 @@ int axisOf(char c) {
 	}
 }
 
-Status JsonController::processStepperPosition(Machine &machine, JsonCommand &jcmd, JsonObject& jobj, const char* key) {
+Status JsonController::processStepperPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
 	Status status = STATUS_OK;
 	const char *s;
 	if (strlen(key) == 3) {
@@ -73,7 +74,7 @@ Status JsonController::processStepperPosition(Machine &machine, JsonCommand &jcm
 			return STATUS_POSITION_ERROR;
 		}
 		for (JsonObject::iterator it=kidObj.begin(); it!=kidObj.end(); ++it) {
-			status = processStepperPosition(machine, jcmd, kidObj, it->key);
+			status = processStepperPosition(jcmd, kidObj, it->key);
 			if (status != STATUS_OK) {
 				return status;
 			}
@@ -94,7 +95,7 @@ Status JsonController::processStepperPosition(Machine &machine, JsonCommand &jcm
 	return status;
 }
 
-Status JsonController::initializeStroke(Machine &machine, JsonCommand &jcmd, JsonObject& stroke) {
+Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
 	int s1len = 0;
 	int s2len = 0;
 	int s3len = 0;
@@ -200,7 +201,7 @@ Status JsonController::initializeStroke(Machine &machine, JsonCommand &jcmd, Jso
 	return STATUS_BUSY_MOVING;
 }
 
-Status JsonController::traverseStroke(Machine &machine, JsonCommand &jcmd, JsonObject &stroke) {
+Status JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
 	Status status =  machine.stroke.traverse(ticks(), machine);
 
 	Quad<StepCoord> &pos = machine.stroke.position();
@@ -212,7 +213,7 @@ Status JsonController::traverseStroke(Machine &machine, JsonCommand &jcmd, JsonO
 	return status;
 }
 
-Status JsonController::processStroke(Machine &machine, JsonCommand &jcmd, JsonObject& jobj, const char* key) {
+Status JsonController::processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
     Status status = jcmd.getStatus();
 	JsonObject &stroke = jobj[key];
 	if (!stroke.success()) {
@@ -220,10 +221,10 @@ Status JsonController::processStroke(Machine &machine, JsonCommand &jcmd, JsonOb
 	}
 
     if (status == STATUS_BUSY_PARSED) {
-		status = initializeStroke(machine, jcmd, stroke);
+		status = initializeStroke(jcmd, stroke);
     } else if (status == STATUS_BUSY_MOVING) {
         if (machine.stroke.curSeg < machine.stroke.length) {
-			status = traverseStroke(machine, jcmd, stroke);
+			status = traverseStroke(jcmd, stroke);
         }
         if (machine.stroke.curSeg >= machine.stroke.length) {
             status = STATUS_OK;
@@ -232,7 +233,7 @@ Status JsonController::processStroke(Machine &machine, JsonCommand &jcmd, JsonOb
     return status;
 }
 
-Status JsonController::processMotor(Machine &machine, JsonCommand &jcmd, JsonObject& jobj, const char* key, char group) {
+Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group) {
     Status status = STATUS_OK;
     const char *s;
     int iMotor = group - '1';
@@ -247,7 +248,7 @@ Status JsonController::processMotor(Machine &machine, JsonCommand &jcmd, JsonObj
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-                status = processMotor(machine, jcmd, kidObj, it->key, group);
+                status = processMotor(jcmd, kidObj, it->key, group);
                 if (status != STATUS_OK) {
                     return status;
                 }
@@ -259,14 +260,14 @@ Status JsonController::processMotor(Machine &machine, JsonCommand &jcmd, JsonObj
     return status;
 }
 
-Status JsonController::processPin(Machine &machine, JsonObject& jobj, const char *key, PinType &pin, int16_t mode, int16_t value) {
+Status JsonController::processPin(JsonObject& jobj, const char *key, PinType &pin, int16_t mode, int16_t value) {
     PinType newPin = pin;
     Status status = processField<PinType, long>(jobj, key, newPin);
     machine.setPin(pin, newPin, mode, value);
 	return status;
 }
 
-Status JsonController::processAxis(Machine &machine, JsonCommand &jcmd, JsonObject& jobj, const char* key, char group) {
+Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group) {
     Status status = STATUS_OK;
     const char *s;
     int iAxis = axisOf(group);
@@ -295,7 +296,7 @@ Status JsonController::processAxis(Machine &machine, JsonCommand &jcmd, JsonObje
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-                status = processAxis(machine, jcmd, kidObj, it->key, group);
+                status = processAxis(jcmd, kidObj, it->key, group);
                 if (status != STATUS_OK) {
                     return status;
                 }
@@ -316,19 +317,19 @@ Status JsonController::processAxis(Machine &machine, JsonCommand &jcmd, JsonObje
     } else if (strcmp("mi", key) == 0 || strcmp("mi", key + 1) == 0) {
         status = processField<uint8_t, long>(jobj, key, axis.microsteps);
     } else if (strcmp("pd", key) == 0 || strcmp("pd", key + 1) == 0) {
-        status = processPin(machine, jobj, key, axis.pinDir, OUTPUT);
+        status = processPin(jobj, key, axis.pinDir, OUTPUT);
     } else if (strcmp("pe", key) == 0 || strcmp("pe", key + 1) == 0) {
-        status = processPin(machine, jobj, key, axis.pinEnable, OUTPUT, HIGH);
+        status = processPin(jobj, key, axis.pinEnable, OUTPUT, HIGH);
     } else if (strcmp("pm", key) == 0 || strcmp("pm", key + 1) == 0) {
-        status = processPin(machine, jobj, key, axis.pinMax, INPUT);
+        status = processPin(jobj, key, axis.pinMax, INPUT);
     } else if (strcmp("pn", key) == 0 || strcmp("pn", key + 1) == 0) {
-        status = processPin(machine, jobj, key, axis.pinMin, INPUT);
+        status = processPin(jobj, key, axis.pinMin, INPUT);
     } else if (strcmp("po", key) == 0 || strcmp("po", key + 1) == 0) {
         status = processField<StepCoord, long>(jobj, key, axis.position);
     } else if (strcmp("pw", key) == 0 || strcmp("pw", key + 1) == 0) {
         status = processField<uint8_t, long>(jobj, key, axis.powerManagementMode);
     } else if (strcmp("ps", key) == 0 || strcmp("ps", key + 1) == 0) {
-        status = processPin(machine, jobj, key, axis.pinStep, OUTPUT);
+        status = processPin(jobj, key, axis.pinStep, OUTPUT);
     } else if (strcmp("sa", key) == 0 || strcmp("sa", key + 1) == 0) {
         status = processField<float, double>(jobj, key, axis.stepAngle);
     } else if (strcmp("tm", key) == 0 || strcmp("tm", key + 1) == 0) {
@@ -349,7 +350,7 @@ int freeRam () {
 #endif
 }
 
-void JsonController::processRawSteps(Machine &machine, Quad<StepCoord> &steps) {
+void JsonController::processRawSteps(Quad<StepCoord> &steps) {
     while (!steps.isZero()) {
         Quad<StepCoord> pulse(steps.sgn());
         machine.step(pulse);
@@ -360,7 +361,7 @@ void JsonController::processRawSteps(Machine &machine, Quad<StepCoord> &steps) {
     }
 }
 
-Status JsonController::processTest(Machine &machine, JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = jcmd.getStatus();
 
     switch (status) {
@@ -372,7 +373,7 @@ Status JsonController::processTest(Machine &machine, JsonCommand& jcmd, JsonObje
                 return jcmd.setError(STATUS_JSON_OBJECT, key);
             }
             for (JsonObject::iterator it = tst.begin(); it != tst.end(); ++it) {
-                status = processTest(machine, jcmd, tst, it->key);
+                status = processTest(jcmd, tst, it->key);
             }
         } else if (strcmp("rv", key) == 0 || strcmp("tstrv", key) == 0) { // revolution steps
             JsonArray &jarr = jobj[key];
@@ -385,7 +386,7 @@ Status JsonController::processTest(Machine &machine, JsonCommand& jcmd, JsonObje
                     steps.value[i] = jarr[i];
                 }
             }
-			processRawSteps(machine, steps);
+			processRawSteps(steps);
 			delay(500);
         } else if (strcmp("sr", key) == 0 || strcmp("tstsr", key) == 0) { // step rate
             JsonArray &jarr = jobj[key];
@@ -401,7 +402,7 @@ Status JsonController::processTest(Machine &machine, JsonCommand& jcmd, JsonObje
                                      (ticksElapsed * stepsPerSecond / TICKS_PER_SECOND) : 0;
                 }
             }
-			processRawSteps(machine, steps);
+			processRawSteps(steps);
         }
         status = STATUS_BUSY_MOVING;
         break;
@@ -409,7 +410,7 @@ Status JsonController::processTest(Machine &machine, JsonCommand& jcmd, JsonObje
     return status;
 }
 
-Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("sys", key) == 0) {
         const char *s;
@@ -423,7 +424,7 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-                status = processSys(machine, jcmd, kidObj, it->key);
+                status = processSys(jcmd, kidObj, it->key);
                 if (status != STATUS_OK) {
                     return status;
                 }
@@ -443,7 +444,7 @@ Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObjec
     return status;
 }
 
-Status JsonController::processDisplay(Machine &machine, JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("dpy", key) == 0) {
         const char *s;
@@ -458,7 +459,7 @@ Status JsonController::processDisplay(Machine &machine, JsonCommand& jcmd, JsonO
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-                status = processDisplay(machine, jcmd, kidObj, it->key);
+                status = processDisplay(jcmd, kidObj, it->key);
                 if (status != STATUS_OK) {
                     return status;
                 }
@@ -514,7 +515,7 @@ Status JsonController::cancel(JsonCommand& jcmd, Status status) {
     return STATUS_WAIT_IDLE;
 }
 
-Status JsonController::process(Machine &machine, JsonCommand& jcmd) {
+Status JsonController::process(JsonCommand& jcmd) {
     const char *s;
     JsonObject& root = jcmd.requestRoot();
     JsonVariant node;
@@ -523,22 +524,22 @@ Status JsonController::process(Machine &machine, JsonCommand& jcmd) {
 
     for (JsonObject::iterator it = root.begin(); it != root.end(); ++it) {
         if (strcmp("dvs", it->key) == 0) {
-            status = processStroke(machine, jcmd, root, it->key);
+            status = processStroke(jcmd, root, it->key);
         } else if (strncmp("tst", it->key, 3) == 0) {
-            status = processTest(machine, jcmd, root, it->key);
+            status = processTest(jcmd, root, it->key);
         } else if (strncmp("sys", it->key, 3) == 0) {
-            status = processSys(machine, jcmd, root, it->key);
+            status = processSys(jcmd, root, it->key);
         } else if (strncmp("dpy", it->key, 3) == 0) {
-            status = processDisplay(machine, jcmd, root, it->key);
+            status = processDisplay(jcmd, root, it->key);
         } else if (strncmp("spo", it->key, 3) == 0) {
-            status = processStepperPosition(machine, jcmd, root, it->key);
+            status = processStepperPosition(jcmd, root, it->key);
         } else {
             switch (it->key[0]) {
             case '1':
             case '2':
             case '3':
             case '4':
-                status = processMotor(machine, jcmd, root, it->key, it->key[0]);
+                status = processMotor(jcmd, root, it->key, it->key[0]);
                 break;
             case 'x':
             case 'y':
@@ -546,7 +547,7 @@ Status JsonController::process(Machine &machine, JsonCommand& jcmd) {
             case 'a':
             case 'b':
             case 'c':
-                status = processAxis(machine, jcmd, root, it->key, it->key[0]);
+                status = processAxis(jcmd, root, it->key, it->key[0]);
                 break;
             default:
                 status = jcmd.setError(STATUS_UNRECOGNIZED_NAME, it->key);

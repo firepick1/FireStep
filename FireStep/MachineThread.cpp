@@ -20,7 +20,7 @@ void MachineThread::setup() {
 }
 
 MachineThread::MachineThread()
-    : status(STATUS_WAIT_IDLE) {
+    : status(STATUS_WAIT_IDLE) , controller(machine) {
 }
 
 void MachineThread::displayStatus() {
@@ -95,7 +95,7 @@ void MachineThread::Heartbeat() {
 		if (Serial.available()) {
 			status = controller.cancel(command, STATUS_SERIAL_CANCEL);
 		} else {
-			status = controller.process(machine, command);
+			status = controller.process(command);
 		}
         break;
 	case STATUS_BUSY_SETUP:

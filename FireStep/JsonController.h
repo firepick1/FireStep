@@ -12,25 +12,26 @@ namespace firestep {
 
 typedef class JsonController {	
 	private:
-		void processRawSteps(Machine& machine, Quad<StepCoord> &steps);
+		void processRawSteps(Quad<StepCoord> &steps);
 		Ticks lastProcessed;
 	protected:
-		Status processStepperPosition(Machine& machine, JsonCommand &jcmd, JsonObject& jobj, const char* key);
-		Status processMotor(Machine& machine, JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
-		Status processAxis(Machine& machine, JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
-		Status processStroke(Machine& machine, JsonCommand &jcmd, JsonObject& jobj, const char* key);
-		Status processSys(Machine& machine, JsonCommand& jcmd, JsonObject& jobj, const char* key);
-		Status processTest(Machine& machine, JsonCommand& jcmd, JsonObject& jobj, const char* key);
-		Status processDisplay(Machine& machine, JsonCommand& jcmd, JsonObject& jobj, const char* key);
-		Status processPin(Machine &machine, JsonObject& jobj, const char *key, PinType &pin, int16_t mode, int16_t value=LOW);
-		Status initializeStroke(Machine& machine, JsonCommand &jcmd, JsonObject& stroke);
-		Status traverseStroke(Machine& machine, JsonCommand &jcmd, JsonObject &stroke);
+		Machine &machine;
+		Status processStepperPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);
+		Status processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
+		Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
+		Status processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key);
+		Status processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+		Status processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+		Status processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+		Status processPin(JsonObject& jobj, const char *key, PinType &pin, int16_t mode, int16_t value=LOW);
+		Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);
+		Status traverseStroke(JsonCommand &jcmd, JsonObject &stroke);
 
     public:
-        JsonController();
+        JsonController(Machine& machine);
 	public: 
 		Status setup();
-		Status process(Machine& machine, JsonCommand& jcmd);
+		Status process(JsonCommand& jcmd);
 		Status cancel(JsonCommand &jcmd, Status status);
 		Ticks getLastProcessed() { return lastProcessed; }
 } JsonController;

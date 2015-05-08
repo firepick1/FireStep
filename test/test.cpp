@@ -362,7 +362,7 @@ void testJSON_process(Machine& machine, JsonController&jc, JsonCommand &jcmd, st
     }
     arduino.timer1(1);
     threadClock.ticks++;
-    Status actualStatus = jc.process(machine, jcmd);
+    Status actualStatus = jc.process(jcmd);
 	ASSERTEQUAL(status, actualStatus);
     ASSERTEQUALS(jo.c_str(), Serial.output().c_str());
 }
@@ -661,7 +661,7 @@ void test_JsonController() {
     cout << "TEST	: test_JsonController() =====" << endl;
 
     Machine machine;
-    JsonController jc;
+    JsonController jc(machine);
 	arduino.setPin(X_MIN_PIN, false);
 	arduino.setPin(Y_MIN_PIN, false);
 	arduino.setPin(Z_MIN_PIN, false);
@@ -671,7 +671,7 @@ void test_JsonController() {
     JsonCommand jcmd;
     ASSERTEQUAL(STATUS_BUSY_PARSED, jcmd.parse("{\"sys\":\"\"}"));
     threadClock.ticks = 12345;
-    jc.process(machine, jcmd);
+    jc.process(jcmd);
     char sysbuf[500];
 	const char *fmt = "{'s':%d,'r':{'sys':{'fr':1000,'li':false,'tc':12345,'v':%.2f}}}\n";
     snprintf(sysbuf, sizeof(sysbuf), jsonTemplate(fmt).c_str(),
