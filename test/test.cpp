@@ -519,7 +519,7 @@ void test_JsonController_tst() {
 	ASSERTEQUAL(1, arduino.pulses(Y_STEP_PIN));
 	ASSERTEQUAL(1, arduino.pulses(Z_STEP_PIN));
 
-	Serial.push("{\"tstst\":[1,2,3,0]}\n");
+	Serial.push("{\"tstsr\":[1,2,3]}\n"); // tstsr: test step rate
 	ASSERTEQUAL(threadClock.ticks, mt.controller.getLastProcessed());
 	threadClock.ticks++;
 	mt.Heartbeat();	// command.parse

@@ -349,45 +349,64 @@ int freeRam () {
 #endif
 }
 
+void JsonController::processRawSteps(Machine &machine, Quad<StepCoord> &steps) {
+    while (!steps.isZero()) {
+        Quad<StepCoord> pulse(steps.sgn());
+        machine.step(pulse);
+        steps -= pulse;
+        for (int i = 0; i < MOTOR_COUNT; i++) { // cancel positioning for infinite travel
+            machine.axis[machine.motor[i].axisMap].position -= pulse.value[i];
+        }
+    }
+}
+
 Status JsonController::processTest(Machine &machine, JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = jcmd.getStatus();
 
-	switch (status) {
+    switch (status) {
     case STATUS_BUSY_PARSED:
     case STATUS_BUSY_MOVING:
-		if (strcmp("tst", key) == 0) {
-			JsonObject& tst = jobj[key];
-			if (!tst.success()) {
-				return jcmd.setError(STATUS_JSON_OBJECT, key);
-			}
-			for (JsonObject::iterator it = tst.begin(); it != tst.end(); ++it) {
-				status = processTest(machine, jcmd, tst, it->key);
-			}
-		} else if (strcmp("st", key) == 0 || strcmp("tstst", key) == 0) {
-			JsonArray &jarr = jobj[key];
-			if (!jarr.success()) {
-				return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, key);
-			}
-			Ticks ticksElapsed = threadClock.ticks - lastProcessed;
-			Quad<StepCoord> steps;
-			for (int i=0; i<4; i++) {
-				if (!jarr[i].success()) {
-					return jcmd.setError(STATUS_JSON_ARRAY_LEN, key);
-				}
-				int32_t stepsPerSecond = jarr[i];
-				steps.value[i] = stepsPerSecond ?
-					(ticksElapsed*stepsPerSecond/TICKS_PER_SECOND) : 0;
-			}
-			while(!steps.isZero()) {
-				Quad<StepCoord> pulse(steps.sgn());
-				machine.step(pulse);
-				steps -= pulse;
-			}
-		}
-		status = STATUS_BUSY_MOVING;
-		break;
+        if (strcmp("tst", key) == 0) {
+            JsonObject& tst = jobj[key];
+            if (!tst.success()) {
+                return jcmd.setError(STATUS_JSON_OBJECT, key);
+            }
+            for (JsonObject::iterator it = tst.begin(); it != tst.end(); ++it) {
+                status = processTest(machine, jcmd, tst, it->key);
+            }
+        } else if (strcmp("rv", key) == 0 || strcmp("tstrv", key) == 0) { // revolution steps
+            JsonArray &jarr = jobj[key];
+            if (!jarr.success()) {
+                return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, key);
+            }
+            Quad<StepCoord> steps;
+            for (int i = 0; i < 4; i++) {
+                if (jarr[i].success()) {
+                    steps.value[i] = jarr[i];
+                }
+            }
+			processRawSteps(machine, steps);
+			delay(500);
+        } else if (strcmp("sr", key) == 0 || strcmp("tstsr", key) == 0) { // step rate
+            JsonArray &jarr = jobj[key];
+            if (!jarr.success()) {
+                return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, key);
+            }
+            Ticks ticksElapsed = threadClock.ticks - lastProcessed;
+            Quad<StepCoord> steps;
+            for (int i = 0; i < 4; i++) {
+                if (jarr[i].success()) {
+                    int32_t stepsPerSecond = jarr[i];
+                    steps.value[i] = stepsPerSecond ?
+                                     (ticksElapsed * stepsPerSecond / TICKS_PER_SECOND) : 0;
+                }
+            }
+			processRawSteps(machine, steps);
+        }
+        status = STATUS_BUSY_MOVING;
+        break;
     }
-	return status;
+    return status;
 }
 
 Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObject& jobj, const char* key) {
@@ -487,12 +506,12 @@ Status JsonController::processDisplay(Machine &machine, JsonCommand& jcmd, JsonO
 
 Status JsonController::cancel(JsonCommand& jcmd, Status status) {
     if (isProcessing(status)) {
-		jcmd.setStatus(status);
+        jcmd.setStatus(status);
         jcmd.response().printTo(Serial);
         Serial.println();
-		return status;
+        return status;
     }
-	return STATUS_WAIT_IDLE;
+    return STATUS_WAIT_IDLE;
 }
 
 Status JsonController::process(Machine &machine, JsonCommand& jcmd) {
@@ -542,7 +561,7 @@ Status JsonController::process(Machine &machine, JsonCommand& jcmd) {
         jcmd.response().printTo(Serial);
         Serial.println();
     }
-	lastProcessed = threadClock.ticks;
+    lastProcessed = threadClock.ticks;
 
     return status;
 }

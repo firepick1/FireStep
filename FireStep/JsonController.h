@@ -11,7 +11,8 @@
 namespace firestep {
 
 typedef class JsonController {	
-	protected:
+	private:
+		void processRawSteps(Machine& machine, Quad<StepCoord> &steps);
 		Ticks lastProcessed;
 	protected:
 		Status processStepperPosition(Machine& machine, JsonCommand &jcmd, JsonObject& jobj, const char* key);
