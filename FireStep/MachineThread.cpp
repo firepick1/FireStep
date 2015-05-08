@@ -106,7 +106,14 @@ void MachineThread::Heartbeat() {
 			status = controller.process(command);
 		}
         break;
-	case STATUS_BUSY_SETUP:
+	case STATUS_BUSY_SETUP: {
+		char buf[100];
+		snprintf(buf, sizeof(buf), "FireStep %d.%d.%d", 
+			VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+		Serial.println(buf);
+        status = STATUS_WAIT_IDLE;
+        break;
+	}
     case STATUS_OK:
         status = STATUS_WAIT_IDLE;
         break;
