@@ -79,6 +79,7 @@ void MachineThread::Heartbeat() {
 	case STATUS_WAIT_OPERATOR:
 	case STATUS_WAIT_MOVING:
 	case STATUS_WAIT_BUSY:
+	case STATUS_WAIT_CANCELLED:
         if (Serial.available()) {
             command.clear();
             status = command.parse();

@@ -15,6 +15,7 @@ enum Status {
     STATUS_WAIT_OPERATOR = 23,		// Awaiting input: operator attention required
     STATUS_WAIT_MOVING = 24,		// Awaiting input: show motion command display
     STATUS_WAIT_BUSY = 25,    		// Awaiting input: show non-motion command display
+    STATUS_WAIT_CANCELLED = 26, 	// Awaiting input: command interrupted by serial input
     STATUS_EMPTY = -1,				// Uninitialized JsonCommand
     STATUS_JSON_BRACE_ERROR = -2,	// Unbalanced JSON braces
     STATUS_JSON_BRACKET_ERROR = -3,	// Unbalanced JSON braces

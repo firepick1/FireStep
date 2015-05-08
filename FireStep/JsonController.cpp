@@ -350,7 +350,7 @@ int freeRam () {
 #endif
 }
 
-void JsonController::processRawSteps(Quad<StepCoord> &steps) {
+void JsonController::processRawSteps(Quad<StepCoord> &steps, int16_t msDelay) {
     while (!steps.isZero()) {
         Quad<StepCoord> pulse(steps.sgn());
         machine.step(pulse);
@@ -358,6 +358,9 @@ void JsonController::processRawSteps(Quad<StepCoord> &steps) {
         for (int i = 0; i < MOTOR_COUNT; i++) { // cancel positioning for infinite travel
             machine.axis[machine.motor[i].axisMap].position -= pulse.value[i];
         }
+		while (msDelay-- > 0) {
+			delay(1);
+		}
     }
 }
 
@@ -386,8 +389,9 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
                     steps.value[i] = jarr[i];
                 }
             }
-			processRawSteps(steps);
+			processRawSteps(steps,1);
 			delay(500);
+			status = STATUS_BUSY_MOVING;
         } else if (strcmp("sr", key) == 0 || strcmp("tstsr", key) == 0) { // step rate
             JsonArray &jarr = jobj[key];
             if (!jarr.success()) {
@@ -403,8 +407,10 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
                 }
             }
 			processRawSteps(steps);
+			status = STATUS_BUSY_MOVING;
+		} else {
+			return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
         }
-        status = STATUS_BUSY_MOVING;
         break;
     }
     return status;
@@ -439,7 +445,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
         jobj[key] = threadClock.ticks;
     } else {
-        status = jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
     return status;
 }
@@ -500,19 +506,16 @@ Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const
             }
         }
     } else {
-        status = jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
     return status;
 }
 
-Status JsonController::cancel(JsonCommand& jcmd, Status status) {
-    if (isProcessing(status)) {
-        jcmd.setStatus(status);
-        jcmd.response().printTo(Serial);
-        Serial.println();
-        return status;
-    }
-    return STATUS_WAIT_IDLE;
+Status JsonController::cancel(JsonCommand& jcmd, Status cause) {
+	jcmd.setStatus(cause);
+	jcmd.response().printTo(Serial);
+	Serial.println();
+    return STATUS_WAIT_CANCELLED;
 }
 
 Status JsonController::process(JsonCommand& jcmd) {

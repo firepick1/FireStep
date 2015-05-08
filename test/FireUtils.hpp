@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <iostream>
 #include "FireLog.h"
-#include "string.h"
+#include <string>
 #include <errno.h>
 #include <signal.h>
 
@@ -121,7 +121,7 @@ assertEqual(double expected, double actual, double tolerance, const char* contex
 #define ASSERTEQUALS(e,a) assertEqual(e,a,__FILE__,__LINE__)
 #define ASSERTNOERRSTR(a) assertEqual("",a,__FILE__,__LINE__)
 inline void
-assertEqual(const char* expected, const char* actual, const char* context, int line) {
+assertEqual(const char * expected, const char * actual, const char* context, int line) {
 	if (actual == NULL) {
 		if (expected == NULL || *expected == '\0') {
 			return;

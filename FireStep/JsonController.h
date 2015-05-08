@@ -12,7 +12,7 @@ namespace firestep {
 
 typedef class JsonController {	
 	private:
-		void processRawSteps(Quad<StepCoord> &steps);
+		void processRawSteps(Quad<StepCoord> &steps, int16_t msDelay=0);
 		Ticks lastProcessed;
 	protected:
 		Machine &machine;
@@ -32,7 +32,7 @@ typedef class JsonController {
 	public: 
 		Status setup();
 		Status process(JsonCommand& jcmd);
-		Status cancel(JsonCommand &jcmd, Status status);
+		Status cancel(JsonCommand &jcmd, Status cause);
 		Ticks getLastProcessed() { return lastProcessed; }
 } JsonController;
 
