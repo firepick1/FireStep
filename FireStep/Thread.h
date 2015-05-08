@@ -15,7 +15,6 @@ namespace firestep {
 #define FREQ_CYCLES(freq) (CLOCK_HZ/(freq))
 #define MS_CYCLES(ms) FREQ_CYCLES(1000.0 / (ms))
 #define MS_TICKS(ms) (FREQ_CYCLES(1000.0 / (ms))/TIMER_PRESCALE)
-#define GENERATION_CYCLES (CLOCK_HZ / 65536)
 #define MAX_GENERATIONS 50010
 #define GENERATION_RESET 50000
 #define TIMER_ENABLED (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10))
@@ -168,8 +167,8 @@ typedef class ThreadRunner {
             threadClock.age = age = TCNT1;
             if (age < lastAge) {
                 // 1) a generation is 4.194304s 
-				// 1) generation is incremented when TCNT1 overflows
-                // 1) innerLoop MUST complete within a generation
+				// 2) generation is incremented when TCNT1 overflows
+                // 3) innerLoop MUST complete within a generation
                 lastAge = age;
                 threadClock.generation = ++generation;
                 if (generation > MAX_GENERATIONS) {

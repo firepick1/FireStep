@@ -49,9 +49,9 @@ void PulseThread::setup(Ticks period, Ticks pulseWidth) {
 void PulseThread::Heartbeat() {
     isHigh = !isHigh;
     if (isHigh) {
-        nextHeartbeat.ticks += m_HighPeriod;
+        nextHeartbeat.ticks = threadClock.ticks+m_HighPeriod;
     } else {
-        nextHeartbeat.ticks += m_LowPeriod;
+        nextHeartbeat.ticks = threadClock.ticks+m_LowPeriod;
     }
 }
 
@@ -184,7 +184,8 @@ void ThreadRunner::setup(int pinLED) {
 }
 
 /**
- * The generation count has exceeded the maximum (~3.5minutes @ 16MHZ).
+ * The generation count has exceeded the maximum.
+ * Give the machine a rest and power-cycle it.
  */ 
 void ThreadRunner::resetGenerations() {
     threadClock.generation -= GENERATION_RESET;
