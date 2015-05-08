@@ -22,6 +22,7 @@ enum Status {
     STATUS_JSON_PARSE_ERROR = -5,	// JSON invalid or too long
     STATUS_JSON_TOO_LONG = -6,		// JSON exceeds buffer size
     STATUS_JSON_OBJECT = -7,		// JSON object expected
+    STATUS_JSON_POSITIVE = -8,		// JSON value >= 0 expected
     STATUS_JSON_STROKE_ERROR = -20,	// Expected JSON object for stroke
     STATUS_S1_RANGE_ERROR = -21,	// Stroke segment s1 value out of range [-127,127]
     STATUS_S2_RANGE_ERROR = -22,	// Stroke segment s2 value out of range [-127,127]
@@ -55,6 +56,8 @@ enum Status {
 	STATUS_NOPIN = -121,			// Attempt to change NOPIN
 	STATUS_ESTOP = -122,			// Emergency hardware stop
 	STATUS_SERIAL_CANCEL = -123,	// Command cancelled by serial input
+	STATUS_TRAVEL_MAX = -124,		// Travel would exceed maximum
+	STATUS_TRAVEL_MIN = -125,		// Travel would be below minimum
 };
 
 inline bool isProcessing(Status status) {

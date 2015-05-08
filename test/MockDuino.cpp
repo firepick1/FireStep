@@ -36,6 +36,11 @@ void ArduinoType::clear() {
 	CLKPR = 0;	// Clock prescale register
 }
 
+int16_t ArduinoType::pulses(int16_t pin) {
+	ASSERT(0 <= pin && pin < ARDUINO_PINS);
+	return pinPulses[pin];
+}
+
 void ArduinoType::dump() {
 	for (int i=0; i<ARDUINO_MEM; i+=16) {
 		int dead = true;
@@ -75,7 +80,6 @@ void digitalWrite(int16_t pin, int16_t value) {
 		if (value == 0) {
 			arduino.pinPulses[pin]++;
 		}
-		//cout << "digitalWrite(" << pin << ", " << value << ")" << endl;
 		arduino.pin[pin] = value ? HIGH : LOW;
 	}
 }

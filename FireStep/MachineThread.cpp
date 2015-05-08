@@ -16,6 +16,7 @@ void MachineThread::setup() {
     Thread::setup();
 	machine.pDisplay->setup();
 	status = STATUS_BUSY_SETUP;
+	controller.setup();
 }
 
 MachineThread::MachineThread()

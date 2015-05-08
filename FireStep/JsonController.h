@@ -50,7 +50,9 @@ typedef class JsonCommand {
 		size_t responseAvailable();
 } JsonCommand;
 
-typedef class JsonController {
+typedef class JsonController {	
+	protected:
+		Ticks lastProcessed;
 	protected:
 		Status processStepperPosition(Machine& machine, JsonCommand &jcmd, JsonObject& jobj, const char* key);
 		Status processMotor(Machine& machine, JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
@@ -66,8 +68,10 @@ typedef class JsonController {
     public:
         JsonController();
 	public: 
+		Status setup();
 		Status process(Machine& machine, JsonCommand& jcmd);
 		Status cancel(JsonCommand &jcmd, Status status);
+		Ticks getLastProcessed() { return lastProcessed; }
 } JsonController;
 
 } // namespace firestep

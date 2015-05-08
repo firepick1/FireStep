@@ -21,6 +21,7 @@ namespace firestep {
 #define TIMER_ENABLED (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10))
 #define MAX_ThreadS 32
 #define TICK_MICROSECONDS ((TIMER_PRESCALE * 1000L)/(CLOCK_HZ/1000))
+#define TICKS_PER_SECOND ((int32_t)MS_TICKS(1000))
 
 typedef int32_t Ticks;
 

@@ -64,14 +64,7 @@ typedef class Axis {
             atMax(false),
             enabled(false)
         {};
-        inline Status enable(bool active) {
-            if (pinEnable == NOPIN) {
-                return STATUS_NOPIN;
-            }
-            digitalWrite(pinEnable, active ? PIN_ENABLE : PIN_DISABLE);
-            enabled = active;
-            return STATUS_OK;
-        }
+        Status enable(bool active);
         inline Status pinMode(PinType pin, int mode) {
             if (pin == NOPIN) {
                 return STATUS_NOPIN;

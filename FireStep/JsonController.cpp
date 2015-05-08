@@ -106,7 +106,14 @@ bool JsonCommand::isValid() {
 
 //////////////////// JsonController ///////////////
 
-JsonController::JsonController() {}
+JsonController::JsonController() {
+	lastProcessed = 0;
+}
+
+Status JsonController::setup() {
+	lastProcessed = threadClock.ticks;
+	return STATUS_OK;
+}
 
 template<class TF, class TJ>
 Status processField(JsonObject& jobj, const char* key, TF& field) {
@@ -441,21 +448,44 @@ int freeRam () {
 }
 
 Status JsonController::processTest(Machine &machine, JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-    Status status = STATUS_OK;
-    if (strcmp("sys", key) == 0) {
-		JsonObject& tst = jobj[key];
-		if (!tst.success()) {
-			return jcmd.setError(STATUS_JSON_OBJECT, key);
-		}
-		for (JsonObject::iterator it = tst.begin(); it != tst.end(); ++it) {
-			status = processTest(machine, jcmd, tst, it->key);
-			if (status != STATUS_OK) {
-				return status;
+    Status status = jcmd.getStatus();
+
+	switch (status) {
+    case STATUS_BUSY_PARSED:
+    case STATUS_BUSY_MOVING:
+		if (strcmp("tst", key) == 0) {
+			JsonObject& tst = jobj[key];
+			if (!tst.success()) {
+				return jcmd.setError(STATUS_JSON_OBJECT, key);
+			}
+			for (JsonObject::iterator it = tst.begin(); it != tst.end(); ++it) {
+				status = processTest(machine, jcmd, tst, it->key);
+			}
+		} else if (strcmp("st", key) == 0 || strcmp("tstst", key) == 0) {
+			JsonArray &jarr = jobj[key];
+			if (!jarr.success()) {
+				return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, key);
+			}
+			Ticks ticksElapsed = threadClock.ticks - lastProcessed;
+			Quad<StepCoord> steps;
+			for (int i=0; i<4; i++) {
+				if (!jarr[i].success()) {
+					return jcmd.setError(STATUS_JSON_ARRAY_LEN, key);
+				}
+				int32_t stepsPerSecond = jarr[i];
+				steps.value[i] = stepsPerSecond ?
+					(ticksElapsed*stepsPerSecond/TICKS_PER_SECOND) : 0;
+			}
+			while(!steps.isZero()) {
+				Quad<StepCoord> pulse(steps.sgn());
+				machine.step(pulse);
+				steps -= pulse;
 			}
 		}
-	} else if (strcmp("xs", key) == 0 || strcmp("tstxs", key) == 0) {
-		int32_t steps = jobj[key];
-	}
+		status = STATUS_BUSY_MOVING;
+		break;
+    }
+	return status;
 }
 
 Status JsonController::processSys(Machine &machine, JsonCommand& jcmd, JsonObject& jobj, const char* key) {
@@ -610,6 +640,7 @@ Status JsonController::process(Machine &machine, JsonCommand& jcmd) {
         jcmd.response().printTo(Serial);
         Serial.println();
     }
+	lastProcessed = threadClock.ticks;
 
     return status;
 }
