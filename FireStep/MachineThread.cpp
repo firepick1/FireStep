@@ -16,6 +16,8 @@ void MachineThread::setup() {
     Thread::setup();
 	machine.pDisplay->setup();
 	status = STATUS_BUSY_SETUP;
+	displayStatus();
+	machine.setup();
 	controller.setup();
 }
 
@@ -38,10 +40,15 @@ void MachineThread::displayStatus() {
     case STATUS_WAIT_OPERATOR:
         machine.pDisplay->setStatus(DISPLAY_WAIT_OPERATOR);
         break;
+	case STATUS_BUSY_SETUP:
     case STATUS_WAIT_BUSY:
     case STATUS_BUSY:
         machine.pDisplay->setStatus(DISPLAY_BUSY);
         break;
+	case STATUS_WAIT_CANCELLED:
+        machine.pDisplay->setStatus(DISPLAY_WAIT_CANCELLED);
+        break;
+    case STATUS_BUSY_MOVING:
     case STATUS_WAIT_MOVING:
         machine.pDisplay->setStatus(DISPLAY_BUSY_MOVING);
         break;

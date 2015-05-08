@@ -42,9 +42,6 @@ Machine::Machine()
     for (int i = 0; i < MOTOR_COUNT; i++) {
         motor[i].axisMap = i;
     }
-    for (int i = 0; i < AXIS_COUNT; i++) {
-        axis[i].enable(true);
-    }
 }
 
 void Machine::setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value) {
@@ -57,7 +54,10 @@ void Machine::setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t valu
     }
 }
 
-void Machine::init() {
+void Machine::setup() {
+    for (int i = 0; i < AXIS_COUNT; i++) {
+        axis[i].enable(true);
+    }
 }
 
 // The step() method is the "stepper inner loop" that creates the

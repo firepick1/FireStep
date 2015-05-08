@@ -12,6 +12,7 @@ enum DisplayStatus {
 	// Awaiting user input
     DISPLAY_WAIT_OPERATOR = 20, // Awaiting EOL-terminated command initiated by operator
     DISPLAY_WAIT_ERROR = 21, // Could not proceed. Awaiting instructions
+    DISPLAY_WAIT_CANCELLED = 22, // Request cancelled. Awaiting instructions
 
 	// Ignoring input
     DISPLAY_BUSY = 30, // FireStep is busy but not moving

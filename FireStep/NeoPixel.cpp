@@ -57,7 +57,11 @@ void NeoPixel::show() {
         break;
     case DISPLAY_WAIT_OPERATOR:
         bg = strip.Color(intensity , intensity, intensity );
-        fg = strip.Color(255, 0, 0);
+        fg = strip.Color(255, 0, 0);	// red
+        break;
+    case DISPLAY_WAIT_CANCELLED:
+        bg = strip.Color(intensity , intensity, intensity );
+        fg = strip.Color(255, 255, 0);	// yellow
         break;
     case DISPLAY_WAIT_CAMERA:
         fg = bg = strip.Color(
@@ -67,11 +71,11 @@ void NeoPixel::show() {
         break;
     case DISPLAY_BUSY:
         bg = strip.Color(intensity/2, intensity/2, intensity/2);
-        fg = strip.Color(0, 0, intensity);
+        fg = strip.Color(0, 0, intensity);	// blue
         break;
     case DISPLAY_BUSY_MOVING:
         bg = strip.Color(intensity/4, intensity / 4, intensity/4);
-        fg = strip.Color(0, intensity, 0);
+        fg = strip.Color(0, intensity, 0);	// green
         break;
     }
     for (uint16_t i = 0; i < strip.numPixels(); i++) {

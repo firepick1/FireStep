@@ -16,6 +16,17 @@ using namespace ArduinoJson;
 
 #define ASSERTQUAD(expected,actual) ASSERTEQUALS( expected.toString().c_str(), actual.toString().c_str() );
 
+class TestDisplay: public Display {
+    public:
+        char message[100];
+        virtual void show() {
+            snprintf(message, sizeof(message), "status:%d level:%d", status, level);
+        }
+		void clear() {
+			memset(message, 0, sizeof(message));
+		}
+} testDisplay;
+
 void test_tick(int ticks) {
     arduino.timer1(ticks);
     threadRunner.outerLoop();
@@ -97,6 +108,7 @@ void test_Machine() {
 	arduino.setPin(Y_MIN_PIN, 0);
 	arduino.setPin(Z_MIN_PIN, 0);
 	Machine machine;
+	machine.setup();
 	ASSERTEQUAL(OUTPUT, arduino.getPinMode(X_STEP_PIN));
 	ASSERTEQUAL(LOW, arduino.getPin(X_STEP_PIN));
 	ASSERTEQUAL(OUTPUT, arduino.getPinMode(X_DIR_PIN));
@@ -504,6 +516,8 @@ MachineThread test_setup() {
 	arduino.clear();
 	threadRunner.clear();
 	MachineThread mt;
+	mt.machine.pDisplay = &testDisplay;
+	testDisplay.clear();
 	mt.setup();
     Serial.clear();
     arduino.setPin(mt.machine.axis[0].pinMin, 0);
@@ -521,9 +535,11 @@ void test_JsonController_tst() {
 	int32_t zpulses;
 	Ticks ticks;
 
-	ASSERTEQUAL(1, arduino.pulses(X_STEP_PIN));
-	ASSERTEQUAL(1, arduino.pulses(Y_STEP_PIN));
-	ASSERTEQUAL(1, arduino.pulses(Z_STEP_PIN));
+	threadClock.ticks++;
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	ASSERTEQUAL(0, Serial.available()); // expected parse
+	ASSERTEQUAL(DISPLAY_WAIT_IDLE, mt.machine.pDisplay->getStatus());
 
 	threadClock.ticks++;
 	ticks = mt.controller.getLastProcessed();
@@ -532,6 +548,7 @@ void test_JsonController_tst() {
 	ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
 	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 	ASSERTEQUAL(0, Serial.available()); // expected parse
+	ASSERTEQUAL(DISPLAY_BUSY, mt.machine.pDisplay->getStatus());
 	xpulses = arduino.pulses(X_STEP_PIN);
 	ypulses = arduino.pulses(Y_STEP_PIN);
 	zpulses = arduino.pulses(Z_STEP_PIN);
@@ -540,6 +557,7 @@ void test_JsonController_tst() {
 	mt.Heartbeat();	// controller.process
 	ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
 	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+	ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
 	ASSERTEQUAL(xpulses+200, arduino.pulses(X_STEP_PIN));
 	ASSERTEQUAL(ypulses+400, arduino.pulses(Y_STEP_PIN));
 	ASSERTEQUAL(zpulses, arduino.pulses(Z_STEP_PIN));
@@ -550,6 +568,7 @@ void test_JsonController_tst() {
 	mt.Heartbeat();	// cancel existing command
 	ASSERTEQUAL(ticks, mt.controller.getLastProcessed());	// parsing doesn't update lastProcessed
 	ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
+	ASSERTEQUAL(DISPLAY_WAIT_CANCELLED, mt.machine.pDisplay->getStatus());
 	ASSERTEQUALS(JT("{'s':-123,'r':{'tstrv':[200,400]}}\n"), Serial.output().c_str());
 
 	++threadClock.ticks;
@@ -721,6 +740,7 @@ void test_JsonController() {
     cout << "TEST	: test_JsonController() =====" << endl;
 
     Machine machine;
+	machine.setup();
     JsonController jc(machine);
 	arduino.setPin(X_MIN_PIN, false);
 	arduino.setPin(Y_MIN_PIN, false);
@@ -967,6 +987,7 @@ void test_Machine_step() {
     for (int i = 0; i < 4; i++) {
 		arduino.setPin(machine.axis[i].pinMin, 0);
     }
+	machine.setup();
     machine.axis[0].travelMax = 5;
     machine.axis[1].travelMax = 4;
     machine.axis[2].travelMax = 3;
@@ -1115,15 +1136,7 @@ void test_MachineThread() {
     cout << "TEST	: test_MachineThread() OK " << endl;
 }
 
-class TestDisplay: public Display {
-    public:
-        char message[100];
-        virtual void show() {
-            snprintf(message, sizeof(message), "status:%d level:%d", status, level);
-        }
-} testDisplay;
-
-void test_DisplayPersistance(MachineThread &mt, DisplayStatus dispStatus, Status expectedStatus) {
+void test_DisplayPersistence(MachineThread &mt, DisplayStatus dispStatus, Status expectedStatus) {
     // Send partial serial command
     threadClock.ticks++;
     char jsonIn[128];
@@ -1163,6 +1176,7 @@ void test_Display() {
     threadRunner.setup();
     MachineThread mt;
     Serial.clear();
+	testDisplay.clear();
     ASSERTEQUALS("", testDisplay.message);
 
     mt.machine.pDisplay = &testDisplay;
@@ -1174,9 +1188,9 @@ void test_Display() {
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     ASSERTEQUALS("status:10 level:127", testDisplay.message);
 
-    test_DisplayPersistance(mt, DISPLAY_WAIT_OPERATOR, STATUS_WAIT_OPERATOR);
-    test_DisplayPersistance(mt, DISPLAY_WAIT_CAMERA, STATUS_WAIT_CAMERA);
-    test_DisplayPersistance(mt, DISPLAY_WAIT_ERROR, STATUS_WAIT_ERROR);
+    test_DisplayPersistence(mt, DISPLAY_WAIT_OPERATOR, STATUS_WAIT_OPERATOR);
+    test_DisplayPersistence(mt, DISPLAY_WAIT_CAMERA, STATUS_WAIT_CAMERA);
+    test_DisplayPersistence(mt, DISPLAY_WAIT_ERROR, STATUS_WAIT_ERROR);
 
     testJSON(mt.machine, mt.controller, "'\"",
              "{'dpycr':10,'dpycg':20,'dpycb':30,'dpyds':12,'dpydl':255}",
