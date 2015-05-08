@@ -125,13 +125,22 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
 /**
  * Return position of currently driven axes bound to motors
  */
-Quad<StepCoord> Machine::motorPosition() {
+Quad<StepCoord> Machine::getMotorPosition() {
     return Quad<StepCoord>(
                axis[motor[0].axisMap].position,
                axis[motor[1].axisMap].position,
                axis[motor[2].axisMap].position,
                axis[motor[3].axisMap].position
            );
+}
+
+/**
+ * Set position of currently driven axes bound to motors
+ */
+void Machine::setMotorPosition(const Quad<StepCoord> &position) {
+    for (int i = 0; i < 4; i++) {
+        axis[motor[i].axisMap].position = position.value[i];
+    }
 }
 
 

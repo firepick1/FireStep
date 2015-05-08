@@ -113,7 +113,8 @@ typedef class Machine : public QuadStepper {
         void setup();
         virtual Status step(const Quad<StepCoord> &pulse);
 		void setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value=LOW);
-        Quad<StepCoord> motorPosition();
+        Quad<StepCoord> getMotorPosition();
+		void setMotorPosition(const Quad<StepCoord> &position);
 } Machine;
 
 } // namespace firestep
