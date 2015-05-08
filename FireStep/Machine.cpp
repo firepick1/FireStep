@@ -60,9 +60,25 @@ void Machine::setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t valu
 void Machine::init() {
 }
 
+// The step() method is the "stepper inner loop" that creates the
+// stepper pulse train to 4 steppers. The pulse parameter
+// must have a value of -1, 0, or 1 for each stepper.
+//
+// A stepper pulse cycle requires 3 digitalWrite()'s for 
+// step direction, pulse high, and pulse low.
+// Arduino 16-MHz digitalWrite pair takes 3.833 microseconds,
+// so a full stepper pulse cycle should take ~5.7 microseconds:
+//   http://skpang.co.uk/blog/archives/323
+// A4983 stepper driver pulse cycle requires 2 microseconds
+// DRV8825 stepper driver requires 3.8 microseconds
+//   http://www.ti.com/lit/ds/symlink/drv8825.pdf
+// Therefore, for currently fashionable stepper driver chips,
+// Arduino digitalWrite() is slow enough to be its own delay (feature!)
+// If you need longer pulse time, just add a delay:
+// #define PULSE_DELAY DELAY500NS /* increase pulse cycle by 1 microsecond */
+#define PULSE_DELAY /* no delay */
 Status Machine::step(const Quad<StepCoord> &pulse) {
-    // Pulse leading edge
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) { // Pulse leading edges
         Axis &a(axis[motor[i].axisMap]);
         switch (pulse.value[i]) {
         case 1:
@@ -73,7 +89,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
                 return STATUS_TRAVEL_MAX;
             }
             digitalWrite(a.pinDir, a.invertDir ? LOW : HIGH);
-			digitalWrite(a.pinStep, HIGH);
+            digitalWrite(a.pinStep, HIGH);
             break;
         case 0:
             break;
@@ -81,28 +97,27 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
             if (!a.enabled) {
                 return STATUS_AXIS_DISABLED;
             }
-			a.readAtMin(invertLim);
+            a.readAtMin(invertLim);
             if (a.atMin || a.position <= a.travelMin) {
                 return STATUS_TRAVEL_MIN;
             }
             digitalWrite(a.pinDir, a.invertDir ? HIGH : LOW);
-			digitalWrite(a.pinStep, HIGH);
+            digitalWrite(a.pinStep, HIGH);
             break;
         default:
             return STATUS_STEP_RANGE_ERROR;
         }
     }
-    STEPPER_PULSE_DELAY;
+    PULSE_DELAY;
 
-    // Pulse trailing edge
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) { // Pulse trailing edges
         if (pulse.value[i]) {
-			Axis &a(axis[motor[i].axisMap]);
-			digitalWrite(a.pinStep, LOW);
-			a.position += pulse.value[i];
+            Axis &a(axis[motor[i].axisMap]);
+            digitalWrite(a.pinStep, LOW);
+            a.position += pulse.value[i];
         }
     }
-    STEPPER_PULSE_DELAY;
+    PULSE_DELAY;
 
     return STATUS_OK;
 }
