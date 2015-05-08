@@ -73,6 +73,7 @@ link_directories(
 )
 
 add_executable(test 
+	FireStep/JsonCommand.cpp
 	FireStep/JsonController.cpp
 	FireStep/NeoPixel.cpp
 	FireStep/Thread.cpp

@@ -128,6 +128,30 @@ test/fast:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
 .PHONY : test/fast
 
+FireStep/JsonCommand.o: FireStep/JsonCommand.cpp.o
+.PHONY : FireStep/JsonCommand.o
+
+# target to build an object file
+FireStep/JsonCommand.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/JsonCommand.cpp.o
+.PHONY : FireStep/JsonCommand.cpp.o
+
+FireStep/JsonCommand.i: FireStep/JsonCommand.cpp.i
+.PHONY : FireStep/JsonCommand.i
+
+# target to preprocess a source file
+FireStep/JsonCommand.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/JsonCommand.cpp.i
+.PHONY : FireStep/JsonCommand.cpp.i
+
+FireStep/JsonCommand.s: FireStep/JsonCommand.cpp.s
+.PHONY : FireStep/JsonCommand.s
+
+# target to generate assembly for a file
+FireStep/JsonCommand.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FireStep/JsonCommand.cpp.s
+.PHONY : FireStep/JsonCommand.cpp.s
+
 FireStep/JsonController.o: FireStep/JsonController.cpp.o
 .PHONY : FireStep/JsonController.o
 
@@ -355,6 +379,9 @@ help:
 	@echo "... package_source"
 	@echo "... rebuild_cache"
 	@echo "... test"
+	@echo "... FireStep/JsonCommand.o"
+	@echo "... FireStep/JsonCommand.i"
+	@echo "... FireStep/JsonCommand.s"
 	@echo "... FireStep/JsonController.o"
 	@echo "... FireStep/JsonController.i"
 	@echo "... FireStep/JsonController.s"

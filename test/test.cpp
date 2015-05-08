@@ -521,30 +521,57 @@ void test_JsonController_tst() {
 
 	Serial.push("{\"tstst\":[1,2,3,0]}\n");
 	ASSERTEQUAL(threadClock.ticks, mt.controller.getLastProcessed());
-	mt.Heartbeat();
-	ASSERTEQUAL(threadClock.ticks, mt.controller.getLastProcessed());
+	threadClock.ticks++;
+	mt.Heartbeat();	// command.parse
+	ASSERTEQUAL(threadClock.ticks-1, mt.controller.getLastProcessed());
 	ASSERTEQUAL(0,Serial.available());
 	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 	ASSERTEQUAL(1, arduino.pulses(X_STEP_PIN));
 	ASSERTEQUAL(1, arduino.pulses(Y_STEP_PIN));
 	ASSERTEQUAL(1, arduino.pulses(Z_STEP_PIN));
 
+	threadClock.ticks++;
+	mt.Heartbeat();	// controller.process
+	ASSERTEQUAL(threadClock.ticks, mt.controller.getLastProcessed());
+	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+	ASSERTEQUAL(1, arduino.pulses(X_STEP_PIN));
+	ASSERTEQUAL(1, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(1, arduino.pulses(Z_STEP_PIN));
+
 	threadClock.ticks += TICKS_PER_SECOND;
+	mt.Heartbeat();	// controller.process
+	ASSERTEQUAL(threadClock.ticks, mt.controller.getLastProcessed());
+	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+	ASSERTEQUAL(2, arduino.pulses(X_STEP_PIN));
+	ASSERTEQUAL(3, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(4, arduino.pulses(Z_STEP_PIN));
+
+	threadClock.ticks++;
 	mt.Heartbeat();
 	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
 	ASSERTEQUAL(2, arduino.pulses(X_STEP_PIN));
 	ASSERTEQUAL(3, arduino.pulses(Y_STEP_PIN));
 	ASSERTEQUAL(4, arduino.pulses(Z_STEP_PIN));
 
-	mt.Heartbeat();
-	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-	ASSERTEQUAL(2, arduino.pulses(X_STEP_PIN));
-	ASSERTEQUAL(3, arduino.pulses(Y_STEP_PIN));
-	ASSERTEQUAL(4, arduino.pulses(Z_STEP_PIN));
-
 	threadClock.ticks += TICKS_PER_SECOND;
 	mt.Heartbeat();
 	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+	ASSERTEQUAL(3, arduino.pulses(X_STEP_PIN));
+	ASSERTEQUAL(5, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(7, arduino.pulses(Z_STEP_PIN));
+
+	threadClock.ticks++;
+	Serial.push("\n"); // cancel current command
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	ASSERTEQUAL(3, arduino.pulses(X_STEP_PIN));
+	ASSERTEQUAL(5, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(7, arduino.pulses(Z_STEP_PIN));
+
+	threadClock.ticks++;
+	Serial.push("\n"); // cancel current command
+	mt.Heartbeat();
+	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 	ASSERTEQUAL(3, arduino.pulses(X_STEP_PIN));
 	ASSERTEQUAL(5, arduino.pulses(Y_STEP_PIN));
 	ASSERTEQUAL(7, arduino.pulses(Z_STEP_PIN));
