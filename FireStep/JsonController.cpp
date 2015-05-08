@@ -390,7 +390,7 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
                     steps.value[i] = jarr[i];
                 }
             }
-			processRawSteps(steps,1);
+			processRawSteps(steps,5);
 			delay(500);
 			status = STATUS_BUSY_MOVING;
         } else if (strcmp("sr", key) == 0 || strcmp("tstsr", key) == 0) { // step rate
