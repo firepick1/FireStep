@@ -352,11 +352,13 @@ int freeRam () {
 
 void JsonController::processRawSteps(Quad<StepCoord> &steps, int16_t msDelay) {
     while (!steps.isZero()) {
-		Quad<StepCoord> motorPos = machine.getMotorPosition(); // save position
+		Quad<StepCoord> motorPos = machine.getMotorPosition(); 
         Quad<StepCoord> pulse(steps.sgn());
+		motorPos -= pulse;
+		machine.setMotorPosition(motorPos); // permit infinite travel
+
         machine.step(pulse);
         steps -= pulse;
-		machine.setMotorPosition(motorPos); // restore position for infinite travel
 		while (msDelay-- > 0) {
 			delay(1);
 		}
