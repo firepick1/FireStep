@@ -576,7 +576,7 @@ void test_JsonController_tst() {
 	ASSERTEQUAL(HIGH, arduino.getPin(Y_DIR_PIN));
 
 	++threadClock.ticks;
-	Serial.push(JT("{'tstsr':[1,2,3]}\n")); // tstsr: test step rate
+	Serial.push(JT("{'tstsr':[1,100,1000]}\n")); // tstsr: test step rate
 	ticks = mt.controller.getLastProcessed();
 	mt.Heartbeat();	// cancel existing command
 	ASSERTEQUAL(ticks, mt.controller.getLastProcessed());	// parsing doesn't update lastProcessed
@@ -611,24 +611,24 @@ void test_JsonController_tst() {
 	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
 	ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
 	ASSERTEQUAL(xpulses+1, arduino.pulses(X_STEP_PIN));
-	ASSERTEQUAL(ypulses+2, arduino.pulses(Y_STEP_PIN));
-	ASSERTEQUAL(zpulses+3, arduino.pulses(Z_STEP_PIN));
+	ASSERTEQUAL(ypulses+100, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(zpulses+1000, arduino.pulses(Z_STEP_PIN));
 
 	threadClock.ticks++;
 	mt.Heartbeat();
 	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
 	ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
 	ASSERTEQUAL(xpulses+1, arduino.pulses(X_STEP_PIN));
-	ASSERTEQUAL(ypulses+2, arduino.pulses(Y_STEP_PIN));
-	ASSERTEQUAL(zpulses+3, arduino.pulses(Z_STEP_PIN));
+	ASSERTEQUAL(ypulses+100, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(zpulses+1000, arduino.pulses(Z_STEP_PIN));
 
 	threadClock.ticks += TICKS_PER_SECOND;
 	mt.Heartbeat();
 	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
 	ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
 	ASSERTEQUAL(xpulses+2*1, arduino.pulses(X_STEP_PIN));
-	ASSERTEQUAL(ypulses+2*2, arduino.pulses(Y_STEP_PIN));
-	ASSERTEQUAL(zpulses+2*3, arduino.pulses(Z_STEP_PIN));
+	ASSERTEQUAL(ypulses+2*100, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(zpulses+2*1000, arduino.pulses(Z_STEP_PIN));
 
 	threadClock.ticks++;
 	Serial.push("\n"); // cancel current command
@@ -636,17 +636,17 @@ void test_JsonController_tst() {
 	ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
 	ASSERTEQUAL(DISPLAY_WAIT_CANCELLED, mt.machine.pDisplay->getStatus());
 	ASSERTEQUAL(xpulses+2*1, arduino.pulses(X_STEP_PIN));
-	ASSERTEQUAL(ypulses+2*2, arduino.pulses(Y_STEP_PIN));
-	ASSERTEQUAL(zpulses+2*3, arduino.pulses(Z_STEP_PIN));
-	ASSERTEQUALS(JT("{'s':-123,'r':{'tstsr':[1,2,3]}}\n"), Serial.output().c_str());
+	ASSERTEQUAL(ypulses+2*100, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(zpulses+2*1000, arduino.pulses(Z_STEP_PIN));
+	ASSERTEQUALS(JT("{'s':-123,'r':{'tstsr':[1,100,1000]}}\n"), Serial.output().c_str());
 
 	threadClock.ticks++;
 	mt.Heartbeat();
 	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 	ASSERTEQUAL(DISPLAY_WAIT_IDLE, mt.machine.pDisplay->getStatus());
 	ASSERTEQUAL(xpulses+2*1, arduino.pulses(X_STEP_PIN));
-	ASSERTEQUAL(ypulses+2*2, arduino.pulses(Y_STEP_PIN));
-	ASSERTEQUAL(zpulses+2*3, arduino.pulses(Z_STEP_PIN));
+	ASSERTEQUAL(ypulses+2*100, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(zpulses+2*1000, arduino.pulses(Z_STEP_PIN));
 	ASSERTEQUALS("", Serial.output().c_str());
 
 	threadClock.ticks++;
