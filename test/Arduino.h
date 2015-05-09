@@ -210,6 +210,7 @@ typedef class ArduinoType {
 } ArduinoType;
 
 #define DELAY500NS arduino.delay500ns();
+#define delayMicroseconds(x)
 
 extern ArduinoType arduino;
 

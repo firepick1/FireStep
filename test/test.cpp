@@ -462,15 +462,15 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
     testJSON(machine, jc, replace,
              "{'x':''}",
              "{'s':0,'r':{'x':{'en':true,'in':false,'ln':false,'mi':16,'pd':55,'pe':38,'pm':255,"\
-             "'pn':3,'po':0,'ps':54,'pw':0,'sa':1.80,'tm':10000,'tn':0}}}\n");
+             "'pn':3,'po':0,'ps':54,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':80}}}\n");
     testJSON(machine, jc, replace,
              "{'y':''}",
              "{'s':0,'r':{'y':{'en':true,'in':false,'ln':false,'mi':16,'pd':61,'pe':56,'pm':255,"\
-             "'pn':14,'po':0,'ps':60,'pw':0,'sa':1.80,'tm':10000,'tn':0}}}\n");
+             "'pn':14,'po':0,'ps':60,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':80}}}\n");
     testJSON(machine, jc, replace,
              "{'z':''}",
              "{'s':0,'r':{'z':{'en':true,'in':false,'ln':false,'mi':16,'pd':48,'pe':62,'pm':255,"\
-             "'pn':18,'po':0,'ps':46,'pw':0,'sa':1.80,'tm':10000,'tn':0}}}\n");
+             "'pn':18,'po':0,'ps':46,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':80}}}\n");
 }
 
 void test_JsonController_machinePosition(Machine& machine, JsonController &jc) {
@@ -542,11 +542,12 @@ void test_JsonController_tst() {
 	mt.Heartbeat();
 	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 	ASSERTEQUAL(0, Serial.available()); // expected parse
+	ASSERTEQUALS("FireStep 0.1.2\n", Serial.output().c_str());
 	ASSERTEQUAL(DISPLAY_WAIT_IDLE, mt.machine.pDisplay->getStatus());
 
 	threadClock.ticks++;
 	ticks = mt.controller.getLastProcessed();
-	Serial.push(JT("{'tstrv':[200,400]}\n")); // tstrv: test revolutions steps
+	Serial.push(JT("{'tstrv':[1,2]}\n")); // tstrv: test revolutions steps
 	mt.Heartbeat();	// command.parse
 	ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
 	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -566,8 +567,8 @@ void test_JsonController_tst() {
 	ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
 	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
 	ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
-	ASSERTEQUAL(xpulses+200, arduino.pulses(X_STEP_PIN));
-	ASSERTEQUAL(ypulses+400, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(xpulses+3200, arduino.pulses(X_STEP_PIN));
+	ASSERTEQUAL(ypulses+6400, arduino.pulses(Y_STEP_PIN));
 	ASSERTEQUAL(zpulses, arduino.pulses(Z_STEP_PIN));
 	ASSERTEQUAL(xdirpulses, arduino.pulses(X_DIR_PIN));
 	ASSERTEQUAL(ydirpulses, arduino.pulses(Y_DIR_PIN));
@@ -582,7 +583,7 @@ void test_JsonController_tst() {
 	ASSERTEQUAL(ticks, mt.controller.getLastProcessed());	// parsing doesn't update lastProcessed
 	ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
 	ASSERTEQUAL(DISPLAY_WAIT_CANCELLED, mt.machine.pDisplay->getStatus());
-	ASSERTEQUALS(JT("{'s':-123,'r':{'tstrv':[200,400]}}\n"), Serial.output().c_str());
+	ASSERTEQUALS(JT("{'s':-123,'r':{'tstrv':[1,2]}}\n"), Serial.output().c_str());
 
 	++threadClock.ticks;
 	mt.Heartbeat();	// parse
@@ -651,7 +652,7 @@ void test_JsonController_tst() {
 
 	threadClock.ticks++;
 	ticks = mt.controller.getLastProcessed();
-	Serial.push(JT("{'tstrv':[-200,-400]}\n")); // tstrv: test revolutions steps
+	Serial.push(JT("{'tstrv':[-1,-2]}\n")); // tstrv: test revolutions steps
 	mt.Heartbeat();	// command.parse
 	ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
 	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -666,8 +667,8 @@ void test_JsonController_tst() {
 	ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
 	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
 	ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
-	ASSERTEQUAL(xpulses+200, arduino.pulses(X_STEP_PIN));
-	ASSERTEQUAL(ypulses+400, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(xpulses+3200, arduino.pulses(X_STEP_PIN));
+	ASSERTEQUAL(ypulses+6400, arduino.pulses(Y_STEP_PIN));
 	ASSERTEQUAL(zpulses, arduino.pulses(Z_STEP_PIN));
 
 	ticks = ++threadClock.ticks;
@@ -675,8 +676,8 @@ void test_JsonController_tst() {
 	ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
 	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
 	ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
-	ASSERTEQUAL(xpulses+2*200, arduino.pulses(X_STEP_PIN));
-	ASSERTEQUAL(ypulses+2*400, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(xpulses+2*3200, arduino.pulses(X_STEP_PIN));
+	ASSERTEQUAL(ypulses+2*6400, arduino.pulses(Y_STEP_PIN));
 	ASSERTEQUAL(zpulses, arduino.pulses(Z_STEP_PIN));
 	ASSERTEQUAL(xdirpulses+1, arduino.pulses(X_DIR_PIN));
 	ASSERTEQUAL(ydirpulses+1, arduino.pulses(Y_DIR_PIN));

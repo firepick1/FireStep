@@ -292,6 +292,7 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             node["sa"] = "";
             node["tm"] = "";
             node["tn"] = "";
+            node["ud"] = "";
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -336,6 +337,8 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
         status = processField<StepCoord, long>(jobj, key, axis.travelMax);
     } else if (strcmp("tn", key) == 0 || strcmp("tn", key + 1) == 0) {
         status = processField<StepCoord, long>(jobj, key, axis.travelMin);
+    } else if (strcmp("ud", key) == 0 || strcmp("ud", key + 1) == 0) {
+        status = processField<int16_t, long>(jobj, key, axis.usDelay);
     }
     return status;
 }
@@ -350,7 +353,7 @@ int freeRam () {
 #endif
 }
 
-void JsonController::processRawSteps(Quad<StepCoord> &steps, int16_t msDelay) {
+void JsonController::processRawSteps(Quad<StepCoord> &steps) {
     while (!steps.isZero()) {
 		Quad<StepCoord> motorPos = machine.getMotorPosition(); 
         Quad<StepCoord> pulse(steps.sgn());
@@ -359,7 +362,6 @@ void JsonController::processRawSteps(Quad<StepCoord> &steps, int16_t msDelay) {
 
         machine.step(pulse);
         steps -= pulse;
-        delayMicroseconds(800);
     }
 }
 
@@ -385,10 +387,15 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
             Quad<StepCoord> steps;
             for (int i = 0; i < 4; i++) {
                 if (jarr[i].success()) {
-                    steps.value[i] = jarr[i];
+					Axis &a = machine.axis[machine.motor[i].axisMap];
+					int16_t revs = jarr[i];
+					int16_t revSteps = 360 / a.stepAngle;
+					int16_t revMicrosteps = revSteps * a.microsteps;
+					int16_t msRev = (a.usDelay * revMicrosteps)/1000;
+                    steps.value[i] = revs * revMicrosteps;
                 }
             }
-			processRawSteps(steps,5);
+			processRawSteps(steps);
 			delay(500);
 			status = STATUS_BUSY_MOVING;
         } else if (strcmp("sr", key) == 0 || strcmp("tstsr", key) == 0) { // step rate

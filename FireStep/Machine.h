@@ -30,15 +30,16 @@ typedef struct Motor {
 
 typedef class Axis {
     public:
-        PinType 	pinStep;
-        PinType 	pinDir;
-        PinType 	pinMin;
-        PinType 	pinMax;
-        PinType 	pinEnable;
-        StepCoord 	travelMin;
-        StepCoord 	travelMax;
-        StepCoord 	searchVelocity;
-        StepCoord 	position;
+        PinType 	pinStep; // step pin
+        PinType 	pinDir;	// step direction pin
+        PinType 	pinMin; // homing minimum limit switch
+        PinType 	pinMax;	// maximum limit switch (optional)
+        PinType 	pinEnable; // stepper driver enable pin (nENBL)
+        StepCoord 	travelMin; // soft minimum travel limit
+        StepCoord 	travelMax; // soft maximum travel limit
+        StepCoord 	searchVelocity; // homing velocity (pulses/second)
+        StepCoord 	position; // current position (pulses)
+		int16_t		usDelay; // minimum time between stepper pulses
         float		stepAngle;
         uint8_t		microsteps;
         bool		invertDir;
@@ -56,6 +57,7 @@ typedef class Axis {
             travelMax(10000),
             searchVelocity(200),
             position(0),
+			usDelay(80), // 12.8kHz conservative 
             stepAngle(1.8),
             microsteps(16),
             invertDir(0),				// 0:normal direction, 1:inverted direction

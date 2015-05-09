@@ -78,6 +78,7 @@ void Machine::setup() {
 // #define PULSE_DELAY DELAY500NS /* increase pulse cycle by 1 microsecond */
 #define PULSE_DELAY /* no delay */
 Status Machine::step(const Quad<StepCoord> &pulse) {
+	int16_t usDelay = 0;
     for (int i = 0; i < 4; i++) { // Pulse leading edges
         Axis &a(axis[motor[i].axisMap]);
         switch (pulse.value[i]) {
@@ -90,6 +91,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
             }
             digitalWrite(a.pinDir, a.invertDir ? LOW : HIGH);
             digitalWrite(a.pinStep, HIGH);
+			usDelay = max(usDelay, a.usDelay);
             break;
         case 0:
             break;
@@ -108,7 +110,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
             return STATUS_STEP_RANGE_ERROR;
         }
     }
-    PULSE_DELAY;
+	delayMicroseconds(usDelay);
 
     for (int i = 0; i < 4; i++) { // Pulse trailing edges
         if (pulse.value[i]) {
