@@ -105,12 +105,13 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
             }
             digitalWrite(a.pinDir, a.invertDir ? HIGH : LOW);
             digitalWrite(a.pinStep, HIGH);
+			usDelay = max(usDelay, a.usDelay);
             break;
         default:
             return STATUS_STEP_RANGE_ERROR;
         }
     }
-	delayMicroseconds(usDelay);
+	PULSE_DELAY;
 
     for (int i = 0; i < 4; i++) { // Pulse trailing edges
         if (pulse.value[i]) {
@@ -119,7 +120,8 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
             a.position += pulse.value[i];
         }
     }
-    PULSE_DELAY;
+
+	delayMicroseconds(usDelay); // maximum pulse rate throttle
 
     return STATUS_OK;
 }

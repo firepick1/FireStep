@@ -395,7 +395,10 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
                     steps.value[i] = revs * revMicrosteps;
                 }
             }
-			processRawSteps(steps);
+			Quad<StepCoord> steps1(steps);
+			processRawSteps(steps1);
+			Quad<StepCoord> steps2(steps.abs());
+			processRawSteps(steps2);
 			delay(500);
 			status = STATUS_BUSY_MOVING;
         } else if (strcmp("sr", key) == 0 || strcmp("tstsr", key) == 0) { // step rate

@@ -176,6 +176,7 @@ typedef class SerialType : public Print {
 
 
 void digitalWrite(int16_t dirPin, int16_t value);
+void delayMicroseconds(uint16_t usDelay);
 int16_t digitalRead(int16_t dirPin);
 void pinMode(int16_t pin, int16_t inout);
 void delay(int ms);
@@ -185,6 +186,7 @@ extern SerialType Serial;
 #define ARDUINO_PINS 127
 #define ARDUINO_MEM 1024
 typedef class ArduinoType {
+	friend void delayMicroseconds(uint16_t us);
 	friend void digitalWrite(int16_t pin, int16_t value);
 	friend int16_t digitalRead(int16_t pin);
 	friend void pinMode(int16_t pin, int16_t inout);
@@ -193,6 +195,7 @@ typedef class ArduinoType {
         uint16_t _pinMode[ARDUINO_PINS];
 		uint32_t pinPulses[ARDUINO_PINS];
         uint16_t mem[ARDUINO_MEM];
+		uint32_t usDelay;
     public:
 
     public:
@@ -206,11 +209,12 @@ typedef class ArduinoType {
 		int16_t getPin(int16_t pin);
 		void setPin(int16_t pin, int16_t value);
 		void setPinMode(int16_t pin, int16_t value);
-		int16_t pulses(int16_t pin);
+		uint32_t pulses(int16_t pin);
+		uint32_t get_usDelay() {return usDelay;}
 } ArduinoType;
 
 #define DELAY500NS arduino.delay500ns();
-#define delayMicroseconds(x)
+
 
 extern ArduinoType arduino;
 

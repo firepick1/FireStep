@@ -537,6 +537,7 @@ void test_JsonController_tst() {
 	int32_t ypulses;
 	int32_t zpulses;
 	Ticks ticks;
+	uint32_t usDelay;
 
 	threadClock.ticks++;
 	mt.Heartbeat();
@@ -546,6 +547,7 @@ void test_JsonController_tst() {
 	ASSERTEQUAL(DISPLAY_WAIT_IDLE, mt.machine.pDisplay->getStatus());
 
 	threadClock.ticks++;
+	usDelay = arduino.get_usDelay();
 	ticks = mt.controller.getLastProcessed();
 	Serial.push(JT("{'tstrv':[1,2]}\n")); // tstrv: test revolutions steps
 	mt.Heartbeat();	// command.parse
@@ -555,6 +557,7 @@ void test_JsonController_tst() {
 	ASSERTEQUAL(DISPLAY_BUSY, mt.machine.pDisplay->getStatus());
 	ASSERTEQUAL(LOW, arduino.getPin(X_DIR_PIN));
 	ASSERTEQUAL(LOW, arduino.getPin(Y_DIR_PIN));
+	ASSERTEQUAL(usDelay, arduino.get_usDelay());
 	xpulses = arduino.pulses(X_STEP_PIN);
 	ypulses = arduino.pulses(Y_STEP_PIN);
 	zpulses = arduino.pulses(Z_STEP_PIN);
@@ -567,14 +570,15 @@ void test_JsonController_tst() {
 	ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
 	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
 	ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
-	ASSERTEQUAL(xpulses+3200, arduino.pulses(X_STEP_PIN));
-	ASSERTEQUAL(ypulses+6400, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(xpulses+2*3200, arduino.pulses(X_STEP_PIN));
+	ASSERTEQUAL(ypulses+2*6400, arduino.pulses(Y_STEP_PIN));
 	ASSERTEQUAL(zpulses, arduino.pulses(Z_STEP_PIN));
 	ASSERTEQUAL(xdirpulses, arduino.pulses(X_DIR_PIN));
 	ASSERTEQUAL(ydirpulses, arduino.pulses(Y_DIR_PIN));
 	ASSERTEQUAL(zdirpulses, arduino.pulses(Z_DIR_PIN));
 	ASSERTEQUAL(HIGH, arduino.getPin(X_DIR_PIN));
 	ASSERTEQUAL(HIGH, arduino.getPin(Y_DIR_PIN));
+	ASSERTEQUAL(usDelay+2*6400L*80L, arduino.get_usDelay());
 
 	++threadClock.ticks;
 	Serial.push(JT("{'tstsr':[1,100,1000]}\n")); // tstsr: test step rate
@@ -651,6 +655,7 @@ void test_JsonController_tst() {
 	ASSERTEQUALS("", Serial.output().c_str());
 
 	threadClock.ticks++;
+	usDelay = arduino.get_usDelay();
 	ticks = mt.controller.getLastProcessed();
 	Serial.push(JT("{'tstrv':[-1,-2]}\n")); // tstrv: test revolutions steps
 	mt.Heartbeat();	// command.parse
@@ -667,23 +672,25 @@ void test_JsonController_tst() {
 	ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
 	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
 	ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
-	ASSERTEQUAL(xpulses+3200, arduino.pulses(X_STEP_PIN));
-	ASSERTEQUAL(ypulses+6400, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(xpulses+2*3200, arduino.pulses(X_STEP_PIN));
+	ASSERTEQUAL(ypulses+2*6400, arduino.pulses(Y_STEP_PIN));
 	ASSERTEQUAL(zpulses, arduino.pulses(Z_STEP_PIN));
+	ASSERTEQUAL(usDelay+2*6400L*80L, arduino.get_usDelay());
 
 	ticks = ++threadClock.ticks;
 	mt.Heartbeat();	// controller.process
 	ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
 	ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
 	ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
-	ASSERTEQUAL(xpulses+2*3200, arduino.pulses(X_STEP_PIN));
-	ASSERTEQUAL(ypulses+2*6400, arduino.pulses(Y_STEP_PIN));
+	ASSERTEQUAL(xpulses+4*3200L, arduino.pulses(X_STEP_PIN));
+	ASSERTEQUAL(ypulses+4*6400L, arduino.pulses(Y_STEP_PIN));
 	ASSERTEQUAL(zpulses, arduino.pulses(Z_STEP_PIN));
-	ASSERTEQUAL(xdirpulses+1, arduino.pulses(X_DIR_PIN));
-	ASSERTEQUAL(ydirpulses+1, arduino.pulses(Y_DIR_PIN));
+	ASSERTEQUAL(xdirpulses+2, arduino.pulses(X_DIR_PIN));
+	ASSERTEQUAL(ydirpulses+2, arduino.pulses(Y_DIR_PIN));
 	ASSERTEQUAL(zdirpulses, arduino.pulses(Z_DIR_PIN));
-	ASSERTEQUAL(LOW, arduino.getPin(X_DIR_PIN));
-	ASSERTEQUAL(LOW, arduino.getPin(Y_DIR_PIN));
+	ASSERTEQUAL(HIGH, arduino.getPin(X_DIR_PIN));
+	ASSERTEQUAL(HIGH, arduino.getPin(Y_DIR_PIN));
+	ASSERTEQUAL(usDelay+4*6400L*80L, arduino.get_usDelay());
 }
 
 void test_JsonController_stroke(Machine& machine, JsonController &jc) {

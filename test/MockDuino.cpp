@@ -31,12 +31,13 @@ void ArduinoType::clear() {
 		mem[i] = NOVALUE;
 	}
 	memset(pinPulses, 0, sizeof(pinPulses));
+	usDelay = 0;
 	ADCSRA = 0;	// ADC control and status register A (disabled)
 	TCNT1 = 0; 	// Timer/Counter1
 	CLKPR = 0;	// Clock prescale register
 }
 
-int16_t ArduinoType::pulses(int16_t pin) {
+uint32_t ArduinoType::pulses(int16_t pin) {
 	ASSERT(0 <= pin && pin < ARDUINO_PINS);
 	return pinPulses[pin];
 }
@@ -71,6 +72,10 @@ void ArduinoType::timer1(int increment) {
 }
 
 void ArduinoType::delay500ns() {
+}
+
+void delayMicroseconds(uint16_t usDelay) {
+	arduino.usDelay += usDelay;
 }
 
 void digitalWrite(int16_t pin, int16_t value) {
