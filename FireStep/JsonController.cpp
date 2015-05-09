@@ -359,9 +359,7 @@ void JsonController::processRawSteps(Quad<StepCoord> &steps, int16_t msDelay) {
 
         machine.step(pulse);
         steps -= pulse;
-		while (msDelay-- > 0) {
-			delay(1);
-		}
+        delayMicroseconds(800);
     }
 }
 
