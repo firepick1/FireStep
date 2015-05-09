@@ -76,6 +76,10 @@ void Machine::setup() {
 // Arduino digitalWrite() is slow enough to be its own delay (feature!)
 // If you need longer pulse time, just add a delay:
 // #define PULSE_DELAY DELAY500NS /* increase pulse cycle by 1 microsecond */
+//
+// Steppers can't be driven too quickly--they stall. Each
+// axis has a usDelay field that specifies a minimum delay
+// between pulses.
 #define PULSE_DELAY /* no delay */
 Status Machine::step(const Quad<StepCoord> &pulse) {
 	int16_t usDelay = 0;

@@ -12,7 +12,7 @@ namespace firestep {
 
 typedef class JsonController {	
 	private:
-		void processRawSteps(Quad<StepCoord> &steps);
+		Status processRawSteps(Quad<StepCoord> &steps);
 		Ticks lastProcessed;
 	protected:
 		Machine &machine;

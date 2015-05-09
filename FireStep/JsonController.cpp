@@ -353,16 +353,21 @@ int freeRam () {
 #endif
 }
 
-void JsonController::processRawSteps(Quad<StepCoord> &steps) {
+Status JsonController::processRawSteps(Quad<StepCoord> &steps) {
     while (!steps.isZero()) {
 		Quad<StepCoord> motorPos = machine.getMotorPosition(); 
         Quad<StepCoord> pulse(steps.sgn());
 		motorPos -= pulse;
 		machine.setMotorPosition(motorPos); // permit infinite travel
 
-        machine.step(pulse);
+        Status status = machine.step(pulse);
+		if (status != STATUS_OK) {
+			return status;
+		}
         steps -= pulse;
     }
+
+	return STATUS_OK;
 }
 
 Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
@@ -396,27 +401,27 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
                 }
             }
 			Quad<StepCoord> steps1(steps);
-			processRawSteps(steps1);
-			Quad<StepCoord> steps2(steps.abs());
-			processRawSteps(steps2);
-			delay(500);
-			status = STATUS_BUSY_MOVING;
-        } else if (strcmp("sr", key) == 0 || strcmp("tstsr", key) == 0) { // step rate
+			status = processRawSteps(steps1);
+			if (status == STATUS_OK) {
+				Quad<StepCoord> steps2(steps.abs());
+				status = processRawSteps(steps2);
+				delay(500);
+			}
+			if (status == STATUS_OK) {
+				status = STATUS_BUSY_MOVING;
+			}
+        } else if (strcmp("sp", key) == 0 || strcmp("tstsp", key) == 0) { // step pulses 
             JsonArray &jarr = jobj[key];
             if (!jarr.success()) {
                 return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, key);
             }
-            Ticks ticksElapsed = threadClock.ticks - lastProcessed;
             Quad<StepCoord> steps;
             for (int i = 0; i < 4; i++) {
                 if (jarr[i].success()) {
-                    int32_t stepsPerSecond = jarr[i];
-                    steps.value[i] = stepsPerSecond ?
-                                     (ticksElapsed * stepsPerSecond / TICKS_PER_SECOND) : 0;
+                    steps.value[i] = jarr[i];
                 }
             }
-			processRawSteps(steps);
-			status = STATUS_BUSY_MOVING;
+			status = processRawSteps(steps);
 		} else {
 			return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
         }
