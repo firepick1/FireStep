@@ -209,12 +209,12 @@ Status JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
 }
 
 Status JsonController::processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
-    Status status = jcmd.getStatus();
 	JsonObject &stroke = jobj[key];
 	if (!stroke.success()) {
 		return STATUS_JSON_STROKE_ERROR;
 	}
 
+    Status status = jcmd.getStatus();
     if (status == STATUS_BUSY_PARSED) {
 		status = initializeStroke(jcmd, stroke);
     } else if (status == STATUS_BUSY_MOVING) {
@@ -464,6 +464,69 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     return status;
 }
 
+Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = STATUS_OK;
+    if (strcmp("ho", key) == 0) {
+        const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+            node["m1"] = "";
+            node["m2"] = "";
+            node["m3"] = "";
+            node["m4"] = "";
+        }
+        JsonObject& kidObj = jobj[key];
+        if (kidObj.success()) {
+            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+                status = initializeHome(jcmd, kidObj, it->key);
+                if (status != STATUS_BUSY_MOVING) {
+                    return status;
+                }
+            }
+        }
+    } else if (strcmp("m1", key) == 0 || strcmp("hom1", key) == 0) {
+        status = processField<StepCoord, long>(jobj, key, machine.axis[machine.motor[0].axisMap].home);
+    } else if (strcmp("m2", key) == 0 || strcmp("hom2", key) == 0) {
+        status = processField<StepCoord, long>(jobj, key, machine.axis[machine.motor[1].axisMap].home);
+    } else if (strcmp("m3", key) == 0 || strcmp("hom3", key) == 0) {
+        status = processField<StepCoord, long>(jobj, key, machine.axis[machine.motor[2].axisMap].home);
+    } else if (strcmp("m4", key) == 0 || strcmp("hom4", key) == 0) {
+        status = processField<StepCoord, long>(jobj, key, machine.axis[machine.motor[3].axisMap].home);
+    } else {
+        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+    }
+    return status == STATUS_OK ? STATUS_BUSY_MOVING : status;
+}
+
+Status JsonController::processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = jcmd.getStatus();
+    if (status == STATUS_BUSY_PARSED) {
+		status = initializeHome(jcmd, jobj, key);
+	} else if (status == STATUS_BUSY_MOVING) {
+		if (jobj.at(key).is<const JsonObject&>()) {
+			JsonObject &ho = jobj[key];
+			status = machine.home(
+				ho.at("m1").success(),
+				ho.at("m2").success(),
+				ho.at("m3").success(),
+				ho.at("m4").success());
+		} else if (strcmp("m1", key) == 0 || strcmp("hom1", key) == 0) {
+			status = machine.home(true, false, false, false);
+		} else if (strcmp("m2", key) == 0 || strcmp("hom2", key) == 0) {
+			status = machine.home(false, true, false, false);
+		} else if (strcmp("m3", key) == 0 || strcmp("hom3", key) == 0) {
+			status = machine.home(false, false, true, false);
+		} else if (strcmp("m4", key) == 0 || strcmp("hom4", key) == 0) {
+			status = machine.home(false, false, false, true);
+		} else {
+			return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+		}
+	} else {
+		return jcmd.setError(STATUS_STATE, key);
+	}
+    return status;
+}
+
 Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("dpy", key) == 0) {
@@ -542,6 +605,8 @@ Status JsonController::process(JsonCommand& jcmd) {
     for (JsonObject::iterator it = root.begin(); it != root.end(); ++it) {
         if (strcmp("dvs", it->key) == 0) {
             status = processStroke(jcmd, root, it->key);
+        } else if (strncmp("hom", it->key, 3) == 0) {
+            status = processHome(jcmd, root, it->key);
         } else if (strncmp("tst", it->key, 3) == 0) {
             status = processTest(jcmd, root, it->key);
         } else if (strncmp("sys", it->key, 3) == 0) {

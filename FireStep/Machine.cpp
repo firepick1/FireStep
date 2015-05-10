@@ -44,6 +44,10 @@ Machine::Machine()
     }
 }
 
+Status Machine::home(bool h1, bool h2, bool h3, bool h4) {
+	return STATUS_STATE;
+}
+
 void Machine::setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value) {
     pinDst = pinSrc;
     if (pinDst != NOPIN) {

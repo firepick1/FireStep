@@ -35,6 +35,7 @@ typedef class Axis {
         PinType 	pinMin; // homing minimum limit switch
         PinType 	pinMax;	// maximum limit switch (optional)
         PinType 	pinEnable; // stepper driver enable pin (nENBL)
+		StepCoord	home; // home position
         StepCoord 	travelMin; // soft minimum travel limit
         StepCoord 	travelMax; // soft maximum travel limit
         StepCoord 	searchVelocity; // homing velocity (pulses/second)
@@ -53,6 +54,7 @@ typedef class Axis {
             pinMin(NOPIN),
             pinMax(NOPIN),
             pinEnable(NOPIN),
+			home(0),
             travelMin(0),
             travelMax(10000),
             searchVelocity(200),
@@ -117,6 +119,7 @@ typedef class Machine : public QuadStepper {
 		void setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value=LOW);
         Quad<StepCoord> getMotorPosition();
 		void setMotorPosition(const Quad<StepCoord> &position);
+		virtual Status home(bool h1, bool h2, bool h3, bool h4);
 } Machine;
 
 } // namespace firestep

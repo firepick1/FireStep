@@ -16,15 +16,17 @@ typedef class JsonController {
 		Ticks lastProcessed;
 	protected:
 		Machine &machine;
-		Status processStepperPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);
-		Status processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
+		Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);
+		Status initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key);
 		Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
+		Status processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+		Status processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+		Status processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
+		Status processPin(JsonObject& jobj, const char *key, PinType &pin, int16_t mode, int16_t value=LOW);
+		Status processStepperPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);
 		Status processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key);
 		Status processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key);
 		Status processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-		Status processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-		Status processPin(JsonObject& jobj, const char *key, PinType &pin, int16_t mode, int16_t value=LOW);
-		Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);
 		Status traverseStroke(JsonCommand &jcmd, JsonObject &stroke);
 
     public:

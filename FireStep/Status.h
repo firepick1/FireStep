@@ -62,6 +62,7 @@ enum Status {
 	STATUS_TRAVEL_MIN = -125,		// Travel would be below minimum
 	STATUS_LIMIT_MAX = -126,		// Minimum limit switch tripped
 	STATUS_LIMIT_MIN = -127,		// Maximum limit switch tripped
+	STATUS_STATE = -128,			// Internal error: unknown processing state
 };
 
 inline bool isProcessing(Status status) {
