@@ -101,7 +101,6 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
 	int s3len = 0;
 	int s4len = 0;
 	bool us_ok = false;
-	bool dp_ok = false;
 	for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
 		if (strcmp("us", it->key) == 0) {
 			Status status = processField<int32_t, long>(stroke, it->key, machine.stroke.planMicros);
@@ -117,7 +116,6 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
 			if (!jarr[0].success()) {
 				return jcmd.setError(STATUS_JSON_ARRAY_LEN, it->key);
 			}
-			dp_ok = true;
 			for (int i=0; i<4 && jarr[i].success(); i++) {
 				machine.stroke.dEndPos.value[i] = jarr[i];
 			}
@@ -180,9 +178,6 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
 	}
 	if (!us_ok) {
 		return jcmd.setError(STATUS_FIELD_REQUIRED, "us");
-	}
-	if (!dp_ok) {
-		//return jcmd.setError(STATUS_FIELD_REQUIRED, "dp");
 	}
 	if (s1len && s2len && s1len != s2len) {
 		return STATUS_S1S2LEN_ERROR;
