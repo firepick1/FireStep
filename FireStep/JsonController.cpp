@@ -433,7 +433,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
             node["fr"] = "";
-            node["li"] = "";
+            node["lh"] = "";
             node["tc"] = "";
             node["v"] = "";
         }
@@ -450,7 +450,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         jobj[key] = freeRam();
     } else if (strcmp("v", key) == 0 || strcmp("sysv", key) == 0) {
         jobj[key] = VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0;
-    } else if (strcmp("li", key) == 0 || strcmp("sysli", key) == 0) {
+    } else if (strcmp("lh", key) == 0 || strcmp("syslh", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.invertLim);
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
         jobj[key] = threadClock.ticks;

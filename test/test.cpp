@@ -803,7 +803,7 @@ void test_JsonController() {
     threadClock.ticks = 12345;
     jc.process(jcmd);
     char sysbuf[500];
-    const char *fmt = "{'s':%d,'r':{'sys':{'fr':1000,'li':false,'tc':12345,'v':%.2f}}}\n";
+    const char *fmt = "{'s':%d,'r':{'sys':{'fr':1000,'lh':false,'tc':12345,'v':%.2f}}}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
              STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
     ASSERTEQUALS(sysbuf, Serial.output().c_str());
