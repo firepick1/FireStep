@@ -59,6 +59,8 @@ enum Status {
 	STATUS_SERIAL_CANCEL = -123,	// Command cancelled by serial input
 	STATUS_TRAVEL_MAX = -124,		// Travel would exceed maximum
 	STATUS_TRAVEL_MIN = -125,		// Travel would be below minimum
+	STATUS_LIMIT_MAX = -126,		// Minimum limit switch tripped
+	STATUS_LIMIT_MIN = -127,		// Maximum limit switch tripped
 };
 
 inline bool isProcessing(Status status) {

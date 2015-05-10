@@ -83,7 +83,7 @@ void Machine::enable(bool active) {
 #define PULSE_DELAY /* no delay */
 Status Machine::step(const Quad<StepCoord> &pulse) {
 	int16_t usDelay = 0;
-    for (int i = 0; i < 4; i++) { // Pulse leading edges
+    for (uint8_t i = 0; i < 4; i++) { // Pulse leading edges
         Axis &a(axis[motor[i].axisMap]);
         switch (pulse.value[i]) {
         case 1:
@@ -95,7 +95,6 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
             }
             digitalWrite(a.pinDir, a.invertDir ? LOW : HIGH);
             digitalWrite(a.pinStep, HIGH);
-			usDelay = max(usDelay, a.usDelay);
             break;
         case 0:
             break;
@@ -104,12 +103,14 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
                 return STATUS_AXIS_DISABLED;
             }
             a.readAtMin(invertLim);
-            if (a.atMin || a.position <= a.travelMin) {
+            if (a.atMin) {
+                return STATUS_LIMIT_MIN;
+            }
+            if (a.position <= a.travelMin) {
                 return STATUS_TRAVEL_MIN;
             }
             digitalWrite(a.pinDir, a.invertDir ? HIGH : LOW);
             digitalWrite(a.pinStep, HIGH);
-			usDelay = max(usDelay, a.usDelay);
             break;
         default:
             return STATUS_STEP_RANGE_ERROR;
@@ -117,15 +118,20 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
     }
 	PULSE_DELAY;
 
-    for (int i = 0; i < 4; i++) { // Pulse trailing edges
+    for (uint8_t i = 0; i < 4; i++) { // Pulse trailing edges
         if (pulse.value[i]) {
             Axis &a(axis[motor[i].axisMap]);
             digitalWrite(a.pinStep, LOW);
             a.position += pulse.value[i];
+			usDelay = max(usDelay, a.usDelay);
         }
     }
 
-	delayMicroseconds(usDelay); // maximum pulse rate throttle
+	// maximum pulse rate throttle
+	while (usDelay-- > 0) {
+		DELAY500NS;
+		DELAY500NS;
+	}
 
     return STATUS_OK;
 }
