@@ -306,7 +306,7 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             status = (jobj[key] = axis.enabled).success() ? status : STATUS_FIELD_ERROR;
         }
     } else if (strcmp("dh", key) == 0 || strcmp("dh", key + 1) == 0) {
-        status = processField<bool, bool>(jobj, key, axis.invertDir);
+        status = processField<bool, bool>(jobj, key, axis.dirHIGH);
     } else if (strcmp("ln", key) == 0 || strcmp("ln", key + 1) == 0) {
         axis.readAtMin(machine.invertLim);
         status = processField<bool, bool>(jobj, key, axis.atMin);

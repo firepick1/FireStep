@@ -42,7 +42,7 @@ typedef class Axis {
 		int16_t		usDelay; // minimum time between stepper pulses
         float		stepAngle;
         uint8_t		microsteps;
-        bool		invertDir;
+        bool		dirHIGH;
         uint8_t 	powerManagementMode;
         bool		atMin;
         bool		atMax;
@@ -60,7 +60,7 @@ typedef class Axis {
 			usDelay(0), // Suggest 80us (12.8kHz) for microsteps 1
             stepAngle(1.8),
             microsteps(16),
-            invertDir(0),				// 0:normal direction, 1:inverted direction
+            dirHIGH(true), // true:advance on HIGH; false:advance on LOW
             powerManagementMode(0),	// 0:off, 1:on, 2:on in cycle, 3:on when moving
             atMin(false),
             atMax(false),

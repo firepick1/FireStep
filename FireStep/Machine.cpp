@@ -93,7 +93,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
             if (a.position >= a.travelMax) {
                 return STATUS_TRAVEL_MAX;
             }
-            digitalWrite(a.pinDir, a.invertDir ? LOW : HIGH);
+            digitalWrite(a.pinDir, a.dirHIGH ? HIGH : LOW);
             digitalWrite(a.pinStep, HIGH);
             break;
         case 0:
@@ -109,7 +109,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
             if (a.position <= a.travelMin) {
                 return STATUS_TRAVEL_MIN;
             }
-            digitalWrite(a.pinDir, a.invertDir ? HIGH : LOW);
+            digitalWrite(a.pinDir, a.dirHIGH ? LOW : HIGH);
             digitalWrite(a.pinStep, HIGH);
             break;
         default:
