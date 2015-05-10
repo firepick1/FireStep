@@ -36,7 +36,7 @@ template<class T> class Quad { // a 4 element vector
 				value[2] < 0 ? -1 : (value[2] == 0 ? 0 : 1),
 				value[3] < 0 ? -1 : (value[3] == 0 ? 0 : 1));
 		}
-		Quad<T> abs() {
+		Quad<T> absoluteValue() { // Arduino unkindly uses abs
 			return Quad<T>(
 				value[0] < 0 ? -value[0] : value[0],
 				value[1] < 0 ? -value[1] : value[1],

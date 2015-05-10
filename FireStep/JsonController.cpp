@@ -403,7 +403,7 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
 			Quad<StepCoord> steps1(steps);
 			status = processRawSteps(steps1);
 			if (status == STATUS_OK) {
-				Quad<StepCoord> steps2(steps.abs());
+				Quad<StepCoord> steps2(steps.absoluteValue());
 				status = processRawSteps(steps2);
 				delay(500);
 			}
