@@ -78,17 +78,18 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 	Ticks dtSegStart = goalStartTicks(t);
 	Ticks dtSegEnd = goalEndTicks(t);
 	Ticks dtSeg = dtSegEnd - dtSegStart;
-	if (t <= tStart || dtTotal <= 0 || length <= 0 || dtSeg <= 0) {
+	Ticks dt = t - tStart;
+	if (dt <= 0 || dtTotal <= 0 || length <= 0 || dtSeg <= 0) {
 		// do nothing
-	} else if (tStart+dtTotal <= t) {
+	} else if (dtTotal <= dt && !dEndPos.isZero()) {
 		dGoal = dEndPos;
 	} else {
+		dt = min(dtTotal, dt);
 		Quad<StepCoord> posSegStart;
 		for (SegIndex s=0; s<sGoal; s++) {
 			v += seg[s]*scale;
 			posSegStart += v;
 		}
-		Ticks dt = t - tStart;
 		Ticks tNum = (dt>dtSegEnd ? dtSegEnd:dt) - dtSegStart;
 		v += seg[sGoal]*scale;
 		v *= tNum;

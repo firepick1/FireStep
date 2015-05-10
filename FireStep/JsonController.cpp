@@ -182,7 +182,7 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
 		return jcmd.setError(STATUS_FIELD_REQUIRED, "us");
 	}
 	if (!dp_ok) {
-		return jcmd.setError(STATUS_FIELD_REQUIRED, "dp");
+		//return jcmd.setError(STATUS_FIELD_REQUIRED, "dp");
 	}
 	if (s1len && s2len && s1len != s2len) {
 		return STATUS_S1S2LEN_ERROR;
