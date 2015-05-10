@@ -273,8 +273,8 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
     if (strlen(key) == 1) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
+            node["dh"] = "";
             node["en"] = "";
-            node["in"] = "";
             node["ln"] = "";
             node["mi"] = "";
             node["pd"] = "";
@@ -305,7 +305,7 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             axis.enable(active);
             status = (jobj[key] = axis.enabled).success() ? status : STATUS_FIELD_ERROR;
         }
-    } else if (strcmp("in", key) == 0 || strcmp("in", key + 1) == 0) {
+    } else if (strcmp("dh", key) == 0 || strcmp("dh", key + 1) == 0) {
         status = processField<bool, bool>(jobj, key, axis.invertDir);
     } else if (strcmp("ln", key) == 0 || strcmp("ln", key + 1) == 0) {
         axis.readAtMin(machine.invertLim);

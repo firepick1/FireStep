@@ -444,10 +444,10 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
     testJSON(machine, jc, replace, "{'?':{'mi':1}}", "{'s':0,'r':{'?':{'mi':1}}}\n");
     testJSON(machine, jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':1}}}\n");
     testJSON(machine, jc, replace, "{'?':{'mi':16}}", "{'s':0,'r':{'?':{'mi':16}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'in':''}}", "{'s':0,'r':{'?':{'in':false}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'in':true}}", "{'s':0,'r':{'?':{'in':true}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'in':''}}", "{'s':0,'r':{'?':{'in':true}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'in':false}}", "{'s':0,'r':{'?':{'in':false}}}\n");
+    testJSON(machine, jc, replace, "{'?':{'dh':''}}", "{'s':0,'r':{'?':{'dh':false}}}\n");
+    testJSON(machine, jc, replace, "{'?':{'dh':true}}", "{'s':0,'r':{'?':{'dh':true}}}\n");
+    testJSON(machine, jc, replace, "{'?':{'dh':''}}", "{'s':0,'r':{'?':{'dh':true}}}\n");
+    testJSON(machine, jc, replace, "{'?':{'dh':false}}", "{'s':0,'r':{'?':{'dh':false}}}\n");
     testJSON(machine, jc, replace, "{'?':{'pw':''}}", "{'s':0,'r':{'?':{'pw':0}}}\n");
     testJSON(machine, jc, replace, "{'?':{'pw':3}}", "{'s':0,'r':{'?':{'pw':3}}}\n");
     testJSON(machine, jc, replace, "{'?':{'pw':''}}", "{'s':0,'r':{'?':{'pw':3}}}\n");
@@ -459,15 +459,15 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
 
     testJSON(machine, jc, replace,
              "{'x':''}",
-             "{'s':0,'r':{'x':{'en':true,'in':false,'ln':false,'mi':16,'pd':55,'pe':38,'pm':255,"\
+             "{'s':0,'r':{'x':{'dh':false,'en':true,'ln':false,'mi':16,'pd':55,'pe':38,'pm':255,"\
              "'pn':3,'po':0,'ps':54,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':80}}}\n");
     testJSON(machine, jc, replace,
              "{'y':''}",
-             "{'s':0,'r':{'y':{'en':true,'in':false,'ln':false,'mi':16,'pd':61,'pe':56,'pm':255,"\
+             "{'s':0,'r':{'y':{'dh':false,'en':true,'ln':false,'mi':16,'pd':61,'pe':56,'pm':255,"\
              "'pn':14,'po':0,'ps':60,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':80}}}\n");
     testJSON(machine, jc, replace,
              "{'z':''}",
-             "{'s':0,'r':{'z':{'en':true,'in':false,'ln':false,'mi':16,'pd':48,'pe':62,'pm':255,"\
+             "{'s':0,'r':{'z':{'dh':false,'en':true,'ln':false,'mi':16,'pd':48,'pe':62,'pm':255,"\
              "'pn':18,'po':0,'ps':46,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':80}}}\n");
 }
 
