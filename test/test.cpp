@@ -108,7 +108,7 @@ void test_Machine() {
 	arduino.setPin(Y_MIN_PIN, 0);
 	arduino.setPin(Z_MIN_PIN, 0);
 	Machine machine;
-	machine.setup();
+	machine.enable(true);
 	ASSERTEQUAL(OUTPUT, arduino.getPinMode(X_STEP_PIN));
 	ASSERTEQUAL(LOW, arduino.getPin(X_STEP_PIN));
 	ASSERTEQUAL(OUTPUT, arduino.getPinMode(X_DIR_PIN));
@@ -746,7 +746,7 @@ void test_JsonController() {
     cout << "TEST	: test_JsonController() =====" << endl;
 
     Machine machine;
-	machine.setup();
+	machine.enable(true);
     JsonController jc(machine);
 	arduino.setPin(X_MIN_PIN, false);
 	arduino.setPin(Y_MIN_PIN, false);
@@ -993,7 +993,8 @@ void test_Machine_step() {
     for (int i = 0; i < 4; i++) {
 		arduino.setPin(machine.axis[i].pinMin, 0);
     }
-	machine.setup();
+	machine.enable(true);
+
     machine.axis[0].travelMax = 5;
     machine.axis[1].travelMax = 4;
     machine.axis[2].travelMax = 3;
@@ -1019,11 +1020,6 @@ void test_Machine_step() {
     ASSERTQUAD(machine.getMotorPosition(), Quad<StepCoord>(0, 0, 0, 0));
     ASSERTEQUAL(STATUS_STEP_RANGE_ERROR, machine.step(Quad<StepCoord>(4, 3, 2, 1)));
     ASSERTEQUAL(STATUS_AXIS_DISABLED, machine.step(Quad<StepCoord>(1, 1, 1, 1)));
-    //for (int i = 0; i < 4; i++) {
-		//machine.axis[i].enable(true);
-		//arduino.setPinMode(machine.axis[i].pinStep, OUTPUT);
-		//arduino.setPinMode(machine.axis[i].pinDir, OUTPUT);
-    //}
     ASSERTQUAD(machine.getMotorPosition(), Quad<StepCoord>(0, 0, 0, 0));
 
     // Test travelMax

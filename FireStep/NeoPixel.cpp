@@ -70,8 +70,7 @@ void NeoPixel::show() {
 			cameraB?cameraB:intensity);
         break;
     case DISPLAY_BUSY:
-        bg = strip.Color(intensity/2, intensity/2, intensity/2);
-        fg = strip.Color(0, 0, intensity);	// blue
+        fg = bg = strip.Color(intensity, intensity, 0); // yellow
         break;
     case DISPLAY_BUSY_MOVING:
         bg = strip.Color(intensity/4, intensity / 4, intensity/4);

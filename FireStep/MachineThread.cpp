@@ -17,7 +17,6 @@ void MachineThread::setup() {
 	machine.pDisplay->setup();
 	status = STATUS_BUSY_SETUP;
 	displayStatus();
-	machine.setup();
 	controller.setup();
 }
 
@@ -108,6 +107,7 @@ void MachineThread::Heartbeat() {
         break;
 	case STATUS_BUSY_SETUP: {
 		char buf[100];
+		machine.enable(true);
 		snprintf(buf, sizeof(buf), "FireStep %d.%d.%d", 
 			VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 		Serial.println(buf);

@@ -112,7 +112,7 @@ typedef class Machine : public QuadStepper {
 
     public:
         Machine();
-        void setup();
+        void enable(bool active);
         virtual Status step(const Quad<StepCoord> &pulse);
 		void setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value=LOW);
         Quad<StepCoord> getMotorPosition();

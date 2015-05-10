@@ -54,10 +54,10 @@ void Machine::setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t valu
     }
 }
 
-void Machine::setup() {
-    for (int i = 0; i < AXIS_COUNT; i++) {
-        axis[i].enable(true);
-    }
+void Machine::enable(bool active) {
+	for (int i = 0; i < AXIS_COUNT; i++) {
+		axis[i].enable(active);
+	}
 }
 
 // The step() method is the "stepper inner loop" that creates the

@@ -403,9 +403,10 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
 			Quad<StepCoord> steps1(steps);
 			status = processRawSteps(steps1);
 			if (status == STATUS_OK) {
+				delay(250);
 				Quad<StepCoord> steps2(steps.absoluteValue());
 				status = processRawSteps(steps2);
-				delay(500);
+				delay(250);
 			}
 			if (status == STATUS_OK) {
 				status = STATUS_BUSY_MOVING;
