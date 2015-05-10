@@ -312,6 +312,10 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
         status = processField<bool, bool>(jobj, key, axis.atMin);
     } else if (strcmp("mi", key) == 0 || strcmp("mi", key + 1) == 0) {
         status = processField<uint8_t, long>(jobj, key, axis.microsteps);
+		if (axis.microsteps < 1) {
+			axis.microsteps = 1;
+			return STATUS_JSON_POSITIVE1;
+		}
     } else if (strcmp("pd", key) == 0 || strcmp("pd", key + 1) == 0) {
         status = processPin(jobj, key, axis.pinDir, OUTPUT);
     } else if (strcmp("pe", key) == 0 || strcmp("pe", key + 1) == 0) {

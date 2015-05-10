@@ -57,7 +57,7 @@ typedef class Axis {
             travelMax(10000),
             searchVelocity(200),
             position(0),
-			usDelay(80), // 12.8kHz conservative 
+			usDelay(0), // Suggest 80us (12.8kHz) for microsteps 1
             stepAngle(1.8),
             microsteps(16),
             invertDir(0),				// 0:normal direction, 1:inverted direction

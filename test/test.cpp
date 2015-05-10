@@ -459,13 +459,13 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
 
     testJSON(machine, jc, replace, "{'x':''}",
              "{'s':0,'r':{'x':{'dh':false,'en':true,'ln':false,'mi':16,'pd':55,'pe':38,'pm':255,"\
-             "'pn':3,'po':0,'ps':54,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':80}}}\n");
+             "'pn':3,'po':0,'ps':54,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':0}}}\n");
     testJSON(machine, jc, replace, "{'y':''}",
              "{'s':0,'r':{'y':{'dh':false,'en':true,'ln':false,'mi':16,'pd':61,'pe':56,'pm':255,"\
-             "'pn':14,'po':0,'ps':60,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':80}}}\n");
+             "'pn':14,'po':0,'ps':60,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':0}}}\n");
     testJSON(machine, jc, replace, "{'z':''}",
              "{'s':0,'r':{'z':{'dh':false,'en':true,'ln':false,'mi':16,'pd':48,'pe':62,'pm':255,"\
-             "'pn':18,'po':0,'ps':46,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':80}}}\n");
+             "'pn':18,'po':0,'ps':46,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':0}}}\n");
 }
 
 void test_JsonController_machinePosition(Machine& machine, JsonController &jc) {
