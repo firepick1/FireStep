@@ -8,9 +8,11 @@
 
 namespace firestep {
 
-template<class T> class Quad { // a 4 element vector
+#define QUAD_ELEMENTS 4
+
+template<class T> class Quad { // a QUAD_ELEMENTS vector
     public:
-        T value[4];
+        T value[QUAD_ELEMENTS];
     public:
         Quad(T v1 = 0, T v2 = 0, T v3 = 0, T v4 = 0) {
             value[0] = v1;

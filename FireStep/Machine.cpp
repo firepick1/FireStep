@@ -44,7 +44,19 @@ Machine::Machine()
     }
 }
 
-Status Machine::home(bool h1, bool h2, bool h3, bool h4) {
+Status Machine::home(Quad<bool> homing) {
+	for (int i=0; i<QUAD_ELEMENTS; i++) {
+		Axis &a = axis[motor[i].axisMap];
+		homing.value[i] = homing.value[i] &&
+			a.enabled &&
+			a.pinMin != NOPIN;
+		if (homing.value[i]) {
+			a.position = a.home;
+		}
+	}
+	
+	while (stepHome(homing) > 0) {}
+
 	return STATUS_STATE;
 }
 
@@ -64,8 +76,18 @@ void Machine::enable(bool active) {
 	}
 }
 
+/**
+ * inline replacement for Arduino delayMicroseconds()
+ */
+inline void delayMics(int16_t usDelay) { 
+	while (usDelay-- > 0) {
+		DELAY500NS;
+		DELAY500NS;
+	}
+}
+
 // The step() method is the "stepper inner loop" that creates the
-// stepper pulse train to 4 steppers. The pulse parameter
+// stepper pulse train to QUAD_ELEMENTS steppers. The pulse parameter
 // must have a value of -1, 0, or 1 for each stepper.
 //
 // A stepper pulse cycle requires 3 digitalWrite()'s for 
@@ -87,7 +109,7 @@ void Machine::enable(bool active) {
 #define PULSE_DELAY /* no delay */
 Status Machine::step(const Quad<StepCoord> &pulse) {
 	int16_t usDelay = 0;
-    for (uint8_t i = 0; i < 4; i++) { // Pulse leading edges
+    for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse leading edges
         Axis &a(axis[motor[i].axisMap]);
         switch (pulse.value[i]) {
         case 1:
@@ -122,7 +144,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
     }
 	PULSE_DELAY;
 
-    for (uint8_t i = 0; i < 4; i++) { // Pulse trailing edges
+    for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse trailing edges
         if (pulse.value[i]) {
             Axis &a(axis[motor[i].axisMap]);
             digitalWrite(a.pinStep, LOW);
@@ -131,13 +153,35 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
         }
     }
 
-	// maximum pulse rate throttle
-	while (usDelay-- > 0) {
-		DELAY500NS;
-		DELAY500NS;
-	}
+	delayMics(usDelay); // maximum pulse rate throttle
 
     return STATUS_OK;
+}
+
+int8_t Machine::stepHome(Quad<bool> &homing) {
+	int16_t usDelay = 0;
+	int8_t pulses = 0;
+    for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse leading edges
+        Axis &a(axis[motor[i].axisMap]);
+        if (homing.value[i]) {
+			if (a.enabled) {
+				a.readAtMin(invertLim);
+				if (a.atMin) {
+					homing.value[i] = false;
+				} else {
+					digitalWrite(a.pinDir, a.dirHIGH ? LOW : HIGH);
+					digitalWrite(a.pinStep, HIGH);
+					PULSE_DELAY;
+					pulses++;
+					digitalWrite(a.pinStep, LOW);
+					usDelay = max(usDelay, a.usDelay);
+				}
+			}
+        }
+    }
+
+	delayMics(usDelay); // maximum pulse rate throttle
+	return pulses;
 }
 
 /**
@@ -156,7 +200,7 @@ Quad<StepCoord> Machine::getMotorPosition() {
  * Set position of currently driven axes bound to motors
  */
 void Machine::setMotorPosition(const Quad<StepCoord> &position) {
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < QUAD_ELEMENTS; i++) {
         axis[motor[i].axisMap].position = position.value[i];
     }
 }

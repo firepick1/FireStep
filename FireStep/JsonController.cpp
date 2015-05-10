@@ -275,6 +275,7 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             JsonObject& node = jobj.createNestedObject(key);
             node["dh"] = "";
             node["en"] = "";
+            node["ho"] = "";
             node["ln"] = "";
             node["mi"] = "";
             node["pd"] = "";
@@ -307,6 +308,8 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
         }
     } else if (strcmp("dh", key) == 0 || strcmp("dh", key + 1) == 0) {
         status = processField<bool, bool>(jobj, key, axis.dirHIGH);
+    } else if (strcmp("ho", key) == 0 || strcmp("ho", key + 1) == 0) {
+        status = processField<StepCoord, long>(jobj, key, axis.home);
     } else if (strcmp("ln", key) == 0 || strcmp("ln", key + 1) == 0) {
         axis.readAtMin(machine.invertLim);
         status = processField<bool, bool>(jobj, key, axis.atMin);
@@ -505,19 +508,19 @@ Status JsonController::processHome(JsonCommand& jcmd, JsonObject& jobj, const ch
 	} else if (status == STATUS_BUSY_MOVING) {
 		if (jobj.at(key).is<const JsonObject&>()) {
 			JsonObject &ho = jobj[key];
-			status = machine.home(
+			status = machine.home(Quad<bool>(
 				ho.at("m1").success(),
 				ho.at("m2").success(),
 				ho.at("m3").success(),
-				ho.at("m4").success());
+				ho.at("m4").success()));
 		} else if (strcmp("m1", key) == 0 || strcmp("hom1", key) == 0) {
-			status = machine.home(true, false, false, false);
+			status = machine.home(Quad<bool>(true, false, false, false));
 		} else if (strcmp("m2", key) == 0 || strcmp("hom2", key) == 0) {
-			status = machine.home(false, true, false, false);
+			status = machine.home(Quad<bool>(false, true, false, false));
 		} else if (strcmp("m3", key) == 0 || strcmp("hom3", key) == 0) {
-			status = machine.home(false, false, true, false);
+			status = machine.home(Quad<bool>(false, false, true, false));
 		} else if (strcmp("m4", key) == 0 || strcmp("hom4", key) == 0) {
-			status = machine.home(false, false, false, true);
+			status = machine.home(Quad<bool>(false, false, false, true));
 		} else {
 			return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
 		}
