@@ -108,6 +108,8 @@ typedef class Axis {
             return STATUS_OK;
         }
 } Axis;
+typedef uint8_t AxisIndex;
+typedef QuadIndex MotorIndex;
 
 typedef class Machine : public QuadStepper {
         friend class JsonController;
@@ -116,6 +118,7 @@ typedef class Machine : public QuadStepper {
         bool	pinEnableHigh;
         Display nullDisplay;
         int8_t 	stepHome();
+		Axis *	motorAxis[MOTOR_COUNT];
     public:
         Display	*pDisplay;
         Motor motor[MOTOR_COUNT];
@@ -130,6 +133,7 @@ typedef class Machine : public QuadStepper {
         Quad<StepCoord> getMotorPosition();
         void setMotorPosition(const Quad<StepCoord> &position);
         virtual Status home(Quad<bool> homing);
+		Status mapMotor(MotorIndex iMotor, AxisIndex iAxis);
 } Machine;
 
 } // namespace firestep

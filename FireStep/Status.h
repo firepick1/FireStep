@@ -63,6 +63,7 @@ enum Status {
 	STATUS_LIMIT_MAX = -126,		// Minimum limit switch tripped
 	STATUS_LIMIT_MIN = -127,		// Maximum limit switch tripped
 	STATUS_STATE = -128,			// Internal error: unknown processing state
+	STATUS_MOTOR_ERROR = -129,		// Internal error: invalid motor index
 };
 
 inline bool isProcessing(Status status) {

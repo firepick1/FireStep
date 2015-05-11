@@ -10,6 +10,8 @@ namespace firestep {
 
 #define QUAD_ELEMENTS 4
 
+typedef uint8_t QuadIndex;
+
 template<class T> class Quad { // a QUAD_ELEMENTS vector
     public:
         T value[QUAD_ELEMENTS];

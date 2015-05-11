@@ -26,6 +26,9 @@ Status Axis::enable(bool active) {
 Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay) {
     pinEnableHigh = false;
+	for (int i=0; i<QUAD_ELEMENTS; i++) {
+		mapMotor(i, i);
+	}
     setPin(axis[0].pinStep, X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, X_DIR_PIN, OUTPUT);
     setPin(axis[0].pinMin, X_MIN_PIN, INPUT);
@@ -42,6 +45,17 @@ Machine::Machine()
     for (int i = 0; i < MOTOR_COUNT; i++) {
         motor[i].axisMap = i;
     }
+}
+
+Status Machine::mapMotor(MotorIndex iMotor, AxisIndex iAxis) {
+	if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
+		return STATUS_MOTOR_ERROR;
+	}
+	if (iAxis < 0 || AXIS_COUNT <= iAxis) {
+		return STATUS_AXIS_ERROR;
+	}
+	motorAxis[iMotor] = &axis[iAxis];
+	return STATUS_OK;
 }
 
 Status Machine::home(Quad<bool> homing) {
