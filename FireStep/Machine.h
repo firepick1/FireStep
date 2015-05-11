@@ -5,6 +5,8 @@
 #include "Display.h"
 #include "pins.h"
 
+extern void test_Home();
+
 namespace firestep {
 
 // #define THROTTLE_SPEED /* Throttles driver speed from high (255) to low (0) */
@@ -29,38 +31,42 @@ typedef struct Motor {
 } Motor;
 
 typedef class Axis {
+        friend void ::test_Home();
+        friend class Machine;
+    private:
+        bool		homing; // private: homing flag
+        bool		enabled; // true: stepper drivers are enabled and powered
     public:
         PinType 	pinStep; // step pin
         PinType 	pinDir;	// step direction pin
         PinType 	pinMin; // homing minimum limit switch
         PinType 	pinMax;	// maximum limit switch (optional)
         PinType 	pinEnable; // stepper driver enable pin (nENBL)
-		StepCoord	home; // home position
+        StepCoord	home; // home position
         StepCoord 	travelMin; // soft minimum travel limit
         StepCoord 	travelMax; // soft maximum travel limit
         StepCoord 	searchVelocity; // homing velocity (pulses/second)
         StepCoord 	position; // current position (pulses)
-		int16_t		usDelay; // minimum time between stepper pulses
-        float		stepAngle;
-        uint8_t		microsteps;
-        bool		dirHIGH;
+        int16_t		usDelay; // minimum time between stepper pulses
+        float		stepAngle; // 1.8:200 steps/rev; 0.9:400 steps/rev
+        uint8_t		microsteps;	// normally 1,2,4,8,16 or 32
+        bool		dirHIGH; // advance on HIGH
         uint8_t 	powerManagementMode;
-        bool		atMin;
-        bool		atMax;
-        bool		enabled;
-		bool		homing;
+        bool		atMin; // minimum limit switch (last value read)
+        bool		atMax; // maximum limit switch (last value read)
+
         Axis() :
             pinStep(NOPIN),
             pinDir(NOPIN),
             pinMin(NOPIN),
             pinMax(NOPIN),
             pinEnable(NOPIN),
-			home(0),
+            home(0),
             travelMin(0),
             travelMax(10000),
             searchVelocity(200),
             position(0),
-			usDelay(0), // Suggest 80us (12.8kHz) for microsteps 1
+            usDelay(0), // Suggest 80us (12.8kHz) for microsteps 1
             stepAngle(1.8),
             microsteps(16),
             dirHIGH(true), // true:advance on HIGH; false:advance on LOW
@@ -68,9 +74,10 @@ typedef class Axis {
             atMin(false),
             atMax(false),
             enabled(false),
-			homing(false)
+            homing(false)
         {};
         Status enable(bool active);
+		bool isEnabled() { return enabled; }
         inline Status pinMode(PinType pin, int mode) {
             if (pin == NOPIN) {
                 return STATUS_NOPIN;
@@ -87,18 +94,18 @@ typedef class Axis {
             if (atMinNew != atMin) {
                 atMin = atMinNew;
             }
-			return STATUS_OK;
+            return STATUS_OK;
         }
         inline Status readAtMax(bool invertLim) {
             if (pinMax == NOPIN) {
-				return STATUS_NOPIN;
-			}
-			bool maxHigh = digitalRead(pinMax);
-			bool atMaxNew = (invertLim == !maxHigh);
-			if (atMaxNew != atMax) {
-				atMax = atMaxNew;
+                return STATUS_NOPIN;
             }
-			return STATUS_OK;
+            bool maxHigh = digitalRead(pinMax);
+            bool atMaxNew = (invertLim == !maxHigh);
+            if (atMaxNew != atMax) {
+                atMax = atMaxNew;
+            }
+            return STATUS_OK;
         }
 } Axis;
 
@@ -108,7 +115,7 @@ typedef class Machine : public QuadStepper {
         bool	invertLim;
         bool	pinEnableHigh;
         Display nullDisplay;
-		int8_t 	stepHome();
+        int8_t 	stepHome();
     public:
         Display	*pDisplay;
         Motor motor[MOTOR_COUNT];
@@ -119,10 +126,10 @@ typedef class Machine : public QuadStepper {
         Machine();
         void enable(bool active);
         virtual Status step(const Quad<StepCoord> &pulse);
-		void setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value=LOW);
+        void setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value = LOW);
         Quad<StepCoord> getMotorPosition();
-		void setMotorPosition(const Quad<StepCoord> &position);
-		virtual Status home(Quad<bool> homing);
+        void setMotorPosition(const Quad<StepCoord> &position);
+        virtual Status home(Quad<bool> homing);
 } Machine;
 
 } // namespace firestep

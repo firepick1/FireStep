@@ -6,6 +6,9 @@
 #include "FireUtils.hpp"
 #include "version.h"
 #include "Arduino.h"
+
+extern void test_Home();
+
 #include "MachineThread.h"
 #include "Display.h"
 
@@ -134,9 +137,9 @@ void test_Machine() {
     ASSERTEQUAL(1, arduino.pulses(Y_STEP_PIN));
     ASSERTEQUAL(1, arduino.pulses(Z_STEP_PIN));
 
-    ASSERT(machine.axis[0].enabled);
-    ASSERT(machine.axis[1].enabled);
-    ASSERT(machine.axis[2].enabled);
+    ASSERT(machine.axis[0].isEnabled());
+    ASSERT(machine.axis[1].isEnabled());
+    ASSERT(machine.axis[2].isEnabled());
     ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1, 1, 1, 0)));
     ASSERTEQUAL(2, arduino.pulses(X_STEP_PIN));
     ASSERTEQUAL(2, arduino.pulses(Y_STEP_PIN));
@@ -1049,12 +1052,12 @@ void test_Machine_step() {
     ASSERTEQUAL(LOW, arduino.getPin(machine.axis[1].pinEnable));
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(machine.axis[2].pinEnable));
     ASSERTEQUAL(LOW, arduino.getPin(machine.axis[2].pinEnable));
-    ASSERTEQUAL(true, machine.axis[0].enabled);
-    ASSERTEQUAL(true, machine.axis[1].enabled);
-    ASSERTEQUAL(true, machine.axis[2].enabled);
-    ASSERTEQUAL(false, machine.axis[3].enabled);
-    ASSERTEQUAL(false, machine.axis[4].enabled);
-    ASSERTEQUAL(false, machine.axis[5].enabled);
+    ASSERTEQUAL(true, machine.axis[0].isEnabled());
+    ASSERTEQUAL(true, machine.axis[1].isEnabled());
+    ASSERTEQUAL(true, machine.axis[2].isEnabled());
+    ASSERTEQUAL(false, machine.axis[3].isEnabled());
+    ASSERTEQUAL(false, machine.axis[4].isEnabled());
+    ASSERTEQUAL(false, machine.axis[5].isEnabled());
 
     Status status;
     ASSERTQUAD(machine.getMotorPosition(), Quad<StepCoord>(0, 0, 0, 0));

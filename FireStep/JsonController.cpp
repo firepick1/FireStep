@@ -300,11 +300,11 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             }
         }
     } else if (strcmp("en", key) == 0 || strcmp("en", key + 1) == 0) {
-        bool active = axis.enabled;
+        bool active = axis.isEnabled();
         status = processField<bool, bool>(jobj, key, active);
         if (status == STATUS_OK) {
             axis.enable(active);
-            status = (jobj[key] = axis.enabled).success() ? status : STATUS_FIELD_ERROR;
+            status = (jobj[key] = axis.isEnabled()).success() ? status : STATUS_FIELD_ERROR;
         }
     } else if (strcmp("dh", key) == 0 || strcmp("dh", key + 1) == 0) {
         status = processField<bool, bool>(jobj, key, axis.dirHIGH);
