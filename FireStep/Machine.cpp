@@ -47,15 +47,17 @@ Machine::Machine()
 Status Machine::home(Quad<bool> homing) {
 	for (int i=0; i<QUAD_ELEMENTS; i++) {
 		Axis &a = axis[motor[i].axisMap];
-		homing.value[i] = homing.value[i] &&
+		a.homing = homing.value[i] = homing.value[i] &&
 			a.enabled &&
 			a.pinMin != NOPIN;
-		if (homing.value[i]) {
+		if (a.homing) {
 			a.position = a.home;
 		}
 	}
 	
-	while (stepHome(homing) > 0) {}
+	if (stepHome() > 0) {
+		return STATUS_BUSY_MOVING;
+	}
 
 	return STATUS_OK;
 }
@@ -158,30 +160,28 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
     return STATUS_OK;
 }
 
-int8_t Machine::stepHome(Quad<bool> &homing) {
-	int16_t usDelay = 0;
-	int8_t pulses = 0;
-    for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse leading edges
+int8_t Machine::stepHome() {
+    int16_t usDelay = 0;
+    int8_t pulses = 0;
+    for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { 
         Axis &a(axis[motor[i].axisMap]);
-        if (homing.value[i]) {
-			if (a.enabled) {
-				a.readAtMin(invertLim);
-				if (a.atMin) {
-					homing.value[i] = false;
-				} else {
-					digitalWrite(a.pinDir, a.dirHIGH ? LOW : HIGH);
-					digitalWrite(a.pinStep, HIGH);
-					PULSE_DELAY;
-					pulses++;
-					digitalWrite(a.pinStep, LOW);
-					usDelay = max(usDelay, a.usDelay);
-				}
-			}
+        if (a.homing) {
+            a.readAtMin(invertLim);
+            if (a.atMin) {
+                a.homing = false;
+            } else {
+                digitalWrite(a.pinDir, a.dirHIGH ? LOW : HIGH); 
+                digitalWrite(a.pinStep, HIGH);
+                PULSE_DELAY;
+                pulses++;
+                digitalWrite(a.pinStep, LOW);
+                usDelay = max(usDelay, a.usDelay);
+            }
         }
     }
 
-	delayMics(usDelay); // maximum pulse rate throttle
-	return pulses;
+    delayMics(usDelay); // maximum pulse rate throttle
+    return pulses;
 }
 
 /**

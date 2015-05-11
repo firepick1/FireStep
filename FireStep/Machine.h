@@ -48,6 +48,7 @@ typedef class Axis {
         bool		atMin;
         bool		atMax;
         bool		enabled;
+		bool		homing;
         Axis() :
             pinStep(NOPIN),
             pinDir(NOPIN),
@@ -66,7 +67,8 @@ typedef class Axis {
             powerManagementMode(0),	// 0:off, 1:on, 2:on in cycle, 3:on when moving
             atMin(false),
             atMax(false),
-            enabled(false)
+            enabled(false),
+			homing(false)
         {};
         Status enable(bool active);
         inline Status pinMode(PinType pin, int mode) {
@@ -106,7 +108,7 @@ typedef class Machine : public QuadStepper {
         bool	invertLim;
         bool	pinEnableHigh;
         Display nullDisplay;
-		int8_t stepHome(Quad<bool> &homing);
+		int8_t 	stepHome();
     public:
         Display	*pDisplay;
         Motor motor[MOTOR_COUNT];
