@@ -57,7 +57,7 @@ Status Machine::home(Quad<bool> homing) {
 	
 	while (stepHome(homing) > 0) {}
 
-	return STATUS_STATE;
+	return STATUS_OK;
 }
 
 void Machine::setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value) {

@@ -525,6 +525,7 @@ Status JsonController::processHome(JsonCommand& jcmd, JsonObject& jobj, const ch
 			return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
 		}
 	} else {
+	cout << "status:" << status << endl;
 		return jcmd.setError(STATUS_STATE, key);
 	}
     return status;
@@ -608,7 +609,7 @@ Status JsonController::process(JsonCommand& jcmd) {
     for (JsonObject::iterator it = root.begin(); it != root.end(); ++it) {
         if (strcmp("dvs", it->key) == 0) {
             status = processStroke(jcmd, root, it->key);
-        } else if (strncmp("hom", it->key, 3) == 0) {
+        } else if (strncmp("ho", it->key, 2) == 0) {
             status = processHome(jcmd, root, it->key);
         } else if (strncmp("tst", it->key, 3) == 0) {
             status = processTest(jcmd, root, it->key);

@@ -1113,6 +1113,34 @@ void test_Machine_step() {
     cout << "TEST	: test_Machine_step() OK " << endl;
 }
 
+void test_Home() {
+    cout << "TEST	: test_Home() =====" << endl;
+
+    MachineThread mt;
+    ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
+	mt.machine.setMotorPosition(Quad<StepCoord>(99,99,99,99));
+    Serial.clear();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	threadClock.ticks++;
+    Serial.push(JT("{'ho':{'m1':10,'m3':20}}\n"));
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    ASSERTEQUALS("", Serial.output().c_str());
+
+	threadClock.ticks++;
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUALS("", Serial.output().c_str());
+
+	threadClock.ticks++;
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'ho':{'m1':10,'m3':20}}}\n"), Serial.output().c_str());
+
+    cout << "TEST	: test_Home() OK " << endl;
+}
+
 void test_MachineThread() {
     cout << "TEST	: test_MachineThread() =====" << endl;
 
@@ -1261,6 +1289,7 @@ int main(int argc, char *argv[]) {
     test_JsonController();
     test_MachineThread();
     test_Display();
+	test_Home();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }
