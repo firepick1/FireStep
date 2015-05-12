@@ -183,7 +183,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
 }
 
 int8_t Machine::stepHome() {
-    int16_t usDelay = 0;
+    int16_t searchDelay = 0;
     int8_t pulses = 0;
     for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { 
         Axis &a(*motorAxis[i]);
@@ -193,17 +193,17 @@ int8_t Machine::stepHome() {
                 a.homing = false;
 				for (StepCoord lb=a.latchBackoff; lb>0; lb--) {
 					stepOne(a, true);
-					delayMics(a.usDelay); 
+					delayMics(a.searchDelay); 
 				}
             } else {
 				stepOne(a, false);
-                usDelay = max(usDelay, a.usDelay);
+                searchDelay = max(searchDelay, a.searchDelay);
                 pulses++;
             }
         }
     }
 
-    delayMics(usDelay); // maximum pulse rate throttle
+    delayMics(searchDelay); // maximum pulse rate throttle
     return pulses;
 }
 

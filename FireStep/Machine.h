@@ -40,10 +40,10 @@ typedef class Axis {
         StepCoord	home; // home position
         StepCoord 	travelMin; // soft minimum travel limit
         StepCoord 	travelMax; // soft maximum travel limit
-        StepCoord 	searchVelocity; // homing velocity (pulses/second)
         StepCoord 	position; // current position (pulses)
         StepCoord 	latchBackoff; // pulses to send for backing off limit switch
         int16_t		usDelay; // minimum time between stepper pulses
+        int16_t 	searchDelay; // limit switch search velocity (pulse delay microseconds)
         float		stepAngle; // 1.8:200 steps/rev; 0.9:400 steps/rev
         uint8_t		microsteps;	// normally 1,2,4,8,16 or 32
         bool		dirHIGH; // advance on HIGH
@@ -61,10 +61,10 @@ typedef class Axis {
             home(0),
             travelMin(0),
             travelMax(10000),
-            searchVelocity(200),
             position(0),
             latchBackoff(MICROSTEPS_DEFAULT), 
             usDelay(0), // Suggest 80us (12.8kHz) for microsteps 1
+            searchDelay(80), // a slow, cautious but accurate speed
             stepAngle(1.8),
             microsteps(MICROSTEPS_DEFAULT),
             dirHIGH(true), // true:advance on HIGH; false:advance on LOW

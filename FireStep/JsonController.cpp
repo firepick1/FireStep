@@ -297,6 +297,7 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             node["ps"] = "";
             node["pw"] = "";
             node["sa"] = "";
+            node["sd"] = "";
             node["tm"] = "";
             node["tn"] = "";
             node["ud"] = "";
@@ -348,6 +349,8 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
         status = processPin(jobj, key, axis.pinStep, OUTPUT);
     } else if (strcmp("sa", key) == 0 || strcmp("sa", key + 1) == 0) {
         status = processField<float, double>(jobj, key, axis.stepAngle);
+    } else if (strcmp("sd", key) == 0 || strcmp("sd", key + 1) == 0) {
+        status = processField<int16_t, long>(jobj, key, axis.searchDelay);
     } else if (strcmp("tm", key) == 0 || strcmp("tm", key + 1) == 0) {
         status = processField<StepCoord, long>(jobj, key, axis.travelMax);
     } else if (strcmp("tn", key) == 0 || strcmp("tn", key + 1) == 0) {
