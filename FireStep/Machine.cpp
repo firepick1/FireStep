@@ -45,7 +45,7 @@ Status Axis::enable(bool active) {
 }
 
 Machine::Machine()
-    : invertLim(false), pDisplay(&nullDisplay) {
+    : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false) {
     pinEnableHigh = false;
 	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
 		setMotorAxis((MotorIndex)i, (AxisIndex)i);

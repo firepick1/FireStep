@@ -14,6 +14,7 @@ typedef class JsonController {
 	private:
 		Status processRawSteps(Quad<StepCoord> &steps);
 		Ticks lastProcessed;
+		void sendResponse(JsonCommand& jcmd);
 	protected:
 		Machine &machine;
 		Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);

@@ -456,6 +456,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
             node["fr"] = "";
+            node["jp"] = "";
             node["lh"] = "";
             node["tc"] = "";
             node["v"] = "";
@@ -471,12 +472,14 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         }
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
         jobj[key] = freeRam();
-    } else if (strcmp("v", key) == 0 || strcmp("sysv", key) == 0) {
-        jobj[key] = VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0;
+    } else if (strcmp("jp", key) == 0 || strcmp("sysjp", key) == 0) {
+        status = processField<bool, bool>(jobj, key, machine.jsonPrettyPrint);
     } else if (strcmp("lh", key) == 0 || strcmp("syslh", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.invertLim);
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
         jobj[key] = threadClock.ticks;
+    } else if (strcmp("v", key) == 0 || strcmp("sysv", key) == 0) {
+        jobj[key] = VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0;
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
@@ -592,9 +595,17 @@ Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const
 
 Status JsonController::cancel(JsonCommand& jcmd, Status cause) {
     jcmd.setStatus(cause);
-    jcmd.response().printTo(Serial);
-    Serial.println();
+	sendResponse(jcmd);
     return STATUS_WAIT_CANCELLED;
+}
+
+void JsonController::sendResponse(JsonCommand &jcmd) {
+    if (machine.jsonPrettyPrint) {
+        jcmd.response().prettyPrintTo(Serial);
+    } else {
+        jcmd.response().printTo(Serial);
+    }
+    Serial.println();
 }
 
 Status JsonController::process(JsonCommand& jcmd) {
@@ -643,8 +654,7 @@ Status JsonController::process(JsonCommand& jcmd) {
     jcmd.setStatus(status);
 
     if (!isProcessing(status)) {
-        jcmd.response().printTo(Serial);
-        Serial.println();
+		sendResponse(jcmd);
     }
     lastProcessed = threadClock.ticks;
 

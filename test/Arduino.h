@@ -75,103 +75,24 @@ typedef class SerialType : public Print {
         vector<uint8_t> bytes;
 
     public:
-		void clear() {
-			bytes.clear();
-			serialout.clear();
-			serialline.clear();
-		}
-		void push(uint8_t value) {
-            bytes.push_back(value);
-		}
-        void push(int16_t value) {
-            uint8_t *pvalue = (uint8_t *) &value;
-            bytes.push_back((uint8_t)((value >> 8) & 0xff));
-            bytes.push_back((uint8_t)(value & 0xff));
-        }
-        void push(int32_t value) {
-            uint8_t *pvalue = (uint8_t *) &value;
-            bytes.push_back((uint8_t)((value >> 24) & 0xff));
-            bytes.push_back((uint8_t)((value >> 16) & 0xff));
-            bytes.push_back((uint8_t)((value >> 8) & 0xff));
-            bytes.push_back((uint8_t)(value & 0xff));
-        }
-        void push(float value) {
-            uint8_t *pvalue = (uint8_t *) &value;
-            bytes.push_back(pvalue[0]);
-            bytes.push_back(pvalue[1]);
-            bytes.push_back(pvalue[2]);
-            bytes.push_back(pvalue[3]);
-        }
-		void push(string value) {
-			push(value.c_str());
-		}
-		void push(const char * value) {
-			for (const char *s=value; *s; s++) {
-				bytes.push_back(*s);
-			}
-		}
-        string output() {
-            string result = serialout;
-            serialout = "";
-            return result;
-        }
+		void clear();
+		void push(uint8_t value);
+        void push(int16_t value);
+        void push(int32_t value);
+        void push(float value);
+		void push(string value);
+		void push(const char * value);
+        string output();
 
     public:
-        int available() {
-            return bytes.size();
-        }
-        void begin(long speed) {
-        }
-
-        byte read() {
-            if (bytes.size() < 1) {
-                return 0;
-            }
-            byte c = bytes[0];
-            bytes.erase(bytes.begin());
-            return c;
-        }
-
-		virtual size_t write(uint8_t value) {
-            serialout.append(1, (char) value);
-            if (value == '\n') {
-                cout << "Serial	: \"" << serialline << "\"" << endl;
-				serialline = "";
-            } else {
-				serialline.append(1, (char)value);
-			}
-			return 1;
-		}
-        void print(const char *value) {
-            serialout.append(value);
-			serialline.append(value);
-        }
-        void print(int value, int format = DEC) {
-            stringstream buf;
-            switch (format) {
-            case HEX:
-                buf << std::hex << value;
-				buf << std::dec;
-                break;
-            default:
-            case DEC:
-                buf << value;
-                break;
-            }
-			string bufVal = buf.str();
-			serialline.append(bufVal);
-            serialout.append(bufVal);
-        }
-        void println(const char value, int format = DEC) {
-            print(value, format);
-            write('\n');
-        }
-        void println(const char *value = "") {
-			if (*value) {
-				print(value);
-			}
-            write('\n');
-        }
+        int available();
+        void begin(long speed) ;
+        byte read() ;
+		virtual size_t write(uint8_t value);
+        void print(const char *value);
+        void print(int value, int format = DEC);
+        void println(const char value, int format = DEC) ;
+        void println(const char *value = "") ;
 } SerialType;
 
 
@@ -185,7 +106,7 @@ extern SerialType Serial;
 
 #define ARDUINO_PINS 127
 #define ARDUINO_MEM 1024
-typedef class ArduinoType {
+typedef class MockDuino {
 	friend void delayMicroseconds(uint16_t us);
 	friend void digitalWrite(int16_t pin, int16_t value);
 	friend int16_t digitalRead(int16_t pin);
@@ -199,7 +120,7 @@ typedef class ArduinoType {
     public:
 
     public:
-        ArduinoType();
+        MockDuino();
 		void dump();
 		uint16_t& MEM(int addr);
 		void clear();
@@ -211,11 +132,10 @@ typedef class ArduinoType {
 		void setPinMode(int16_t pin, int16_t value);
 		uint32_t pulses(int16_t pin);
 		uint32_t get_usDelay() {return usDelay;}
-} ArduinoType;
+} MockDuino;
 
 #define DELAY500NS arduino.delay500ns();
 
-
-extern ArduinoType arduino;
+extern MockDuino arduino;
 
 #endif

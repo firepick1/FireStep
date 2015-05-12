@@ -119,6 +119,7 @@ typedef class Machine : public QuadStepper {
         AxisIndex motor[MOTOR_COUNT];
     public:
         bool	invertLim;
+		bool	jsonPrettyPrint;
         Display	*pDisplay;
         Axis axis[AXIS_COUNT];
         Stroke stroke;

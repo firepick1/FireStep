@@ -806,7 +806,7 @@ void test_JsonController() {
     threadClock.ticks = 12345;
     jc.process(jcmd);
     char sysbuf[500];
-    const char *fmt = "{'s':%d,'r':{'sys':{'fr':1000,'lh':false,'tc':12345,'v':%.2f}}}\n";
+    const char *fmt = "{'s':%d,'r':{'sys':{'fr':1000,'jp':false,'lh':false,'tc':12345,'v':%.2f}}}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
              STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
     ASSERTEQUALS(sysbuf, Serial.output().c_str());
@@ -1119,6 +1119,25 @@ void test_Machine_step() {
     cout << "TEST	: test_Machine_step() OK " << endl;
 }
 
+void test_PrettyPrint() {
+    cout << "TEST	: test_PrettyPrint() =====" << endl;
+
+    MachineThread mt = test_setup();
+	Machine &machine = mt.machine;
+
+	Serial.push(JT("{'sysjp':true}\n"));
+	threadClock.ticks++;
+	mt.Heartbeat(); // parse
+	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	threadClock.ticks++;
+	mt.Heartbeat(); // process
+	ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUALS(JT("{\r\n  's': 0,\r\n  'r': {\r\n    'sysjp': true\r\n  }\r\n}\n"), 
+		Serial.output().c_str());
+
+    cout << "TEST	: test_PrettyPrint() OK " << endl;
+}
+
 void test_Home() {
     cout << "TEST	: test_Home() =====" << endl;
 
@@ -1369,6 +1388,7 @@ int main(int argc, char *argv[]) {
     test_MachineThread();
     test_Display();
 	test_Home();
+	test_PrettyPrint();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }
