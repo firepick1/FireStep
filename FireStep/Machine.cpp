@@ -219,6 +219,16 @@ Quad<StepCoord> Machine::getMotorPosition() {
            );
 }
 
+void Machine::idle() {
+	for (MotorIndex i=0; i<MOTOR_COUNT; i++) {
+		if (motorAxis[i]->enabled) {
+			motorAxis[i]->enable(false);
+			delayMics(motorAxis[i]->idleSnooze);
+			motorAxis[i]->enable(true);
+		}
+	}
+}
+
 /**
  * Set position of currently driven axes bound to motors
  */

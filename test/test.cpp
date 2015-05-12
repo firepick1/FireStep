@@ -377,6 +377,8 @@ void testJSON_process(Machine& machine, JsonController&jc, JsonCommand &jcmd, st
     threadClock.ticks++;
     Status actualStatus = jc.process(jcmd);
     ASSERTEQUAL(status, actualStatus);
+	ASSERT(jcmd.requestAvailable() > sizeof(JsonVariant));
+	ASSERT(jcmd.responseAvailable() > sizeof(JsonVariant));
     ASSERTEQUALS(jo.c_str(), Serial.output().c_str());
 }
 
@@ -459,17 +461,17 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
     testJSON(machine, jc, replace, "{'?':{'sa':1.8}}", "{'s':0,'r':{'?':{'sa':1.80}}}\n");
 
     testJSON(machine, jc, replace, "{'x':''}",
-             "{'s':0,'r':{'x':{'dh':true,'en':true,'ho':0,'lb':16,'ln':false,"\
-			 "'mi':16,'pd':55,'pe':38,'pm':255,"\
-             "'pn':3,'po':0,'ps':54,'pw':0,'sa':1.80,'sd':80,'tm':10000,'tn':0,'ud':0}}}\n");
+             "{'s':0,'r':{'x':{'dh':true,'en':true,'ho':0,'is':80,'lb':16,'ln':false,"\
+			 "'mi':16,'pd':55,'pe':38,'pm':255,'pn':3,'po':0,'ps':54,'pw':0,"\
+			 "'sa':1.80,'sd':80,'tm':10000,'tn':0,'ud':0}}}\n");
     testJSON(machine, jc, replace, "{'y':''}",
-             "{'s':0,'r':{'y':{'dh':true,'en':true,'ho':0,'lb':16,'ln':false,"\
-			 "'mi':16,'pd':61,'pe':56,'pm':255,"\
-             "'pn':14,'po':0,'ps':60,'pw':0,'sa':1.80,'sd':80,'tm':10000,'tn':0,'ud':0}}}\n");
+             "{'s':0,'r':{'y':{'dh':true,'en':true,'ho':0,'is':80,'lb':16,'ln':false,"\
+			 "'mi':16,'pd':61,'pe':56,'pm':255,'pn':14,'po':0,'ps':60,'pw':0,"\
+			 "'sa':1.80,'sd':80,'tm':10000,'tn':0,'ud':0}}}\n");
     testJSON(machine, jc, replace, "{'z':''}",
-             "{'s':0,'r':{'z':{'dh':true,'en':true,'ho':0,'lb':16,'ln':false,"\
-			 "'mi':16,'pd':48,'pe':62,'pm':255,"\
-             "'pn':18,'po':0,'ps':46,'pw':0,'sa':1.80,'sd':80,'tm':10000,'tn':0,'ud':0}}}\n");
+             "{'s':0,'r':{'z':{'dh':true,'en':true,'ho':0,'is':80,'lb':16,'ln':false,"\
+			 "'mi':16,'pd':48,'pe':62,'pm':255,'pn':18,'po':0,'ps':46,'pw':0,"\
+			 "'sa':1.80,'sd':80,'tm':10000,'tn':0,'ud':0}}}\n");
 }
 
 void test_JsonController_machinePosition(Machine& machine, JsonController &jc) {
@@ -774,9 +776,8 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
     ASSERTEQUAL(resAvail, jcmd.responseAvailable());
 
     // Test largest valid stroke
-    char buf[5000];
     string segs = "[-127";
-    for (int i = 1; i < SEGMENT_COUNT * 5; i++) {
+    for (int i = 1; i < SEGMENT_COUNT * 10; i++) {
         segs += ",-127";
     }
     segs += "]";
@@ -1119,6 +1120,31 @@ void test_Machine_step() {
     cout << "TEST	: test_Machine_step() OK " << endl;
 }
 
+void test_Idle() {
+    cout << "TEST	: test_Idle() =====" << endl;
+
+    MachineThread mt = test_setup();
+	Machine &machine = mt.machine;
+	int32_t xenpulses = arduino.pulses(X_ENABLE_PIN);
+
+	threadClock.ticks++;
+	mt.Heartbeat(); // parse
+	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	ASSERTEQUAL(xenpulses+1, arduino.pulses(X_ENABLE_PIN));
+
+	threadClock.ticks++;
+	mt.Heartbeat(); // parse
+	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	ASSERTEQUAL(xenpulses+2, arduino.pulses(X_ENABLE_PIN));
+
+	threadClock.ticks++;
+	mt.Heartbeat(); // parse
+	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	ASSERTEQUAL(xenpulses+3, arduino.pulses(X_ENABLE_PIN));
+
+    cout << "TEST	: test_Idle() OK " << endl;
+}
+
 void test_PrettyPrint() {
     cout << "TEST	: test_PrettyPrint() =====" << endl;
 
@@ -1389,6 +1415,7 @@ int main(int argc, char *argv[]) {
     test_Display();
 	test_Home();
 	test_PrettyPrint();
+	test_Idle();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }

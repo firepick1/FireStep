@@ -89,7 +89,9 @@ void MachineThread::Heartbeat() {
         if (Serial.available()) {
             command.clear();
             status = command.parse();
-        }
+        } else {
+			machine.idle();
+		}
         break;
     case STATUS_WAIT_EOL:
         if (Serial.available()) {

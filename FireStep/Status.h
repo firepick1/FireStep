@@ -25,6 +25,7 @@ enum Status {
     STATUS_JSON_OBJECT = -7,		// JSON object expected
     STATUS_JSON_POSITIVE = -8,		// JSON value >= 0 expected
     STATUS_JSON_POSITIVE1 = -9,		// JSON value >= 1 expected
+    STATUS_JSON_KEY = -10,			// JSON buffer overflow: could not create JSON objecdt key
     STATUS_JSON_STROKE_ERROR = -20,	// Expected JSON object for stroke
     STATUS_S1_RANGE_ERROR = -21,	// Stroke segment s1 value out of range [-127,127]
     STATUS_S2_RANGE_ERROR = -22,	// Stroke segment s2 value out of range [-127,127]

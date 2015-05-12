@@ -26,6 +26,8 @@ namespace firestep {
   asm("nop");asm("nop");asm("nop");asm("nop"); asm("nop");asm("nop");asm("nop");asm("nop");
 #endif
 
+typedef int16_t DelayMics; // delay microseconds
+
 typedef class Axis {
         friend void ::test_Home();
         friend class Machine;
@@ -42,8 +44,9 @@ typedef class Axis {
         StepCoord 	travelMax; // soft maximum travel limit
         StepCoord 	position; // current position (pulses)
         StepCoord 	latchBackoff; // pulses to send for backing off limit switch
-        int16_t		usDelay; // minimum time between stepper pulses
-        int16_t 	searchDelay; // limit switch search velocity (pulse delay microseconds)
+        DelayMics	usDelay; // minimum time between stepper pulses
+        DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
+		DelayMics	idleSnooze; // idle enable-off snooze delay (microseconds)
         float		stepAngle; // 1.8:200 steps/rev; 0.9:400 steps/rev
         uint8_t		microsteps;	// normally 1,2,4,8,16 or 32
         bool		dirHIGH; // advance on HIGH
@@ -65,6 +68,7 @@ typedef class Axis {
             latchBackoff(MICROSTEPS_DEFAULT), 
             usDelay(0), // Suggest 80us (12.8kHz) for microsteps 1
             searchDelay(80), // a slow, cautious but accurate speed
+			idleSnooze(80),
             stepAngle(1.8),
             microsteps(MICROSTEPS_DEFAULT),
             dirHIGH(true), // true:advance on HIGH; false:advance on LOW
@@ -132,6 +136,7 @@ typedef class Machine : public QuadStepper {
         Quad<StepCoord> getMotorPosition();
         void setMotorPosition(const Quad<StepCoord> &position);
         virtual Status home();
+		void idle();
 		Status setMotorAxis(MotorIndex iMotor, AxisIndex iAxis);
 		AxisIndex getMotorAxis(MotorIndex iMotor) { return motor[iMotor]; }
 } Machine;

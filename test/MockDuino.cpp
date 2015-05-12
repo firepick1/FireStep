@@ -75,7 +75,11 @@ byte SerialType::read() {
 
 size_t SerialType::write(uint8_t value) {
     serialout.append(1, (char) value);
-    if (value == '\n') {
+	if (value == '\r') {
+		serialline.append(1, '\\');
+		serialline.append(1, 'r');
+		// skip
+	} else if (value == '\n') {
         cout << "Serial	: \"" << serialline << "\"" << endl;
         serialline = "";
     } else {
