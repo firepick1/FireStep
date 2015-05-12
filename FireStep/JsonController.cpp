@@ -286,6 +286,7 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             node["dh"] = "";
             node["en"] = "";
             node["ho"] = "";
+            node["lb"] = "";
             node["ln"] = "";
             node["mi"] = "";
             node["pd"] = "";
@@ -320,6 +321,8 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
         status = processField<bool, bool>(jobj, key, axis.dirHIGH);
     } else if (strcmp("ho", key) == 0 || strcmp("ho", key + 1) == 0) {
         status = processField<StepCoord, long>(jobj, key, axis.home);
+    } else if (strcmp("lb", key) == 0 || strcmp("lb", key + 1) == 0) {
+        status = processField<StepCoord, long>(jobj, key, axis.latchBackoff);
     } else if (strcmp("ln", key) == 0 || strcmp("ln", key + 1) == 0) {
         axis.readAtMin(machine.invertLim);
         status = processField<bool, bool>(jobj, key, axis.atMin);

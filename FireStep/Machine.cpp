@@ -14,6 +14,27 @@ using namespace firestep;
 template class Quad<int16_t>;
 template class Quad<int32_t>;
 
+// A stepper pulse cycle requires 3 digitalWrite()'s for 
+// step direction, pulse high, and pulse low.
+// Arduino 16-MHz digitalWrite pair takes 3.833 microseconds,
+// so a full stepper pulse cycle should take ~5.7 microseconds:
+//   http://skpang.co.uk/blog/archives/323
+// A4983 stepper driver pulse cycle requires 2 microseconds
+// DRV8825 stepper driver requires 3.8 microseconds
+//   http://www.ti.com/lit/ds/symlink/drv8825.pdf
+// Therefore, for currently fashionable stepper driver chips,
+// Arduino digitalWrite() is slow enough to be its own delay (feature!)
+// If you need longer pulse time, just add a delay:
+// #define PULSE_DELAY DELAY500NS /* increase pulse cycle by 1 microsecond */
+#define PULSE_DELAY /* no delay */
+
+inline void stepOne(Axis &a, bool advance) {
+	digitalWrite(a.pinDir, (advance == a.dirHIGH) ? HIGH : LOW); 
+	digitalWrite(a.pinStep, HIGH);
+	PULSE_DELAY;
+	digitalWrite(a.pinStep, LOW);
+}
+
 Status Axis::enable(bool active) {
     if (pinEnable == NOPIN || pinStep == NOPIN || pinDir == NOPIN || pinMin == NOPIN) {
         return STATUS_NOPIN;
@@ -107,23 +128,9 @@ inline void delayMics(int16_t usDelay) {
 // stepper pulse train to QUAD_ELEMENTS steppers. The pulse parameter
 // must have a value of -1, 0, or 1 for each stepper.
 //
-// A stepper pulse cycle requires 3 digitalWrite()'s for 
-// step direction, pulse high, and pulse low.
-// Arduino 16-MHz digitalWrite pair takes 3.833 microseconds,
-// so a full stepper pulse cycle should take ~5.7 microseconds:
-//   http://skpang.co.uk/blog/archives/323
-// A4983 stepper driver pulse cycle requires 2 microseconds
-// DRV8825 stepper driver requires 3.8 microseconds
-//   http://www.ti.com/lit/ds/symlink/drv8825.pdf
-// Therefore, for currently fashionable stepper driver chips,
-// Arduino digitalWrite() is slow enough to be its own delay (feature!)
-// If you need longer pulse time, just add a delay:
-// #define PULSE_DELAY DELAY500NS /* increase pulse cycle by 1 microsecond */
-//
 // Steppers can't be driven too quickly--they stall. Each
 // axis has a usDelay field that specifies a minimum delay
 // between pulses.
-#define PULSE_DELAY /* no delay */
 Status Machine::step(const Quad<StepCoord> &pulse) {
 	int16_t usDelay = 0;
     for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse leading edges
@@ -184,13 +191,14 @@ int8_t Machine::stepHome() {
             a.readAtMin(invertLim);
             if (a.atMin) {
                 a.homing = false;
+				for (StepCoord lb=a.latchBackoff; lb>0; lb--) {
+					stepOne(a, true);
+					delayMics(a.usDelay); 
+				}
             } else {
-                digitalWrite(a.pinDir, a.dirHIGH ? LOW : HIGH); 
-                digitalWrite(a.pinStep, HIGH);
-                PULSE_DELAY;
-                pulses++;
-                digitalWrite(a.pinStep, LOW);
+				stepOne(a, false);
                 usDelay = max(usDelay, a.usDelay);
+                pulses++;
             }
         }
     }

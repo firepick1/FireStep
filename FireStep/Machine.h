@@ -19,6 +19,7 @@ namespace firestep {
 #define AXIS_COUNT 6
 #define PIN_ENABLE LOW
 #define PIN_DISABLE HIGH
+#define MICROSTEPS_DEFAULT 16
 
 #ifndef DELAY500NS
 #define DELAY500NS \
@@ -41,6 +42,7 @@ typedef class Axis {
         StepCoord 	travelMax; // soft maximum travel limit
         StepCoord 	searchVelocity; // homing velocity (pulses/second)
         StepCoord 	position; // current position (pulses)
+        StepCoord 	latchBackoff; // pulses to send for backing off limit switch
         int16_t		usDelay; // minimum time between stepper pulses
         float		stepAngle; // 1.8:200 steps/rev; 0.9:400 steps/rev
         uint8_t		microsteps;	// normally 1,2,4,8,16 or 32
@@ -61,9 +63,10 @@ typedef class Axis {
             travelMax(10000),
             searchVelocity(200),
             position(0),
+            latchBackoff(MICROSTEPS_DEFAULT), 
             usDelay(0), // Suggest 80us (12.8kHz) for microsteps 1
             stepAngle(1.8),
-            microsteps(16),
+            microsteps(MICROSTEPS_DEFAULT),
             dirHIGH(true), // true:advance on HIGH; false:advance on LOW
             powerManagementMode(0),	// 0:off, 1:on, 2:on in cycle, 3:on when moving
             atMin(false),

@@ -459,13 +459,13 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
     testJSON(machine, jc, replace, "{'?':{'sa':1.8}}", "{'s':0,'r':{'?':{'sa':1.80}}}\n");
 
     testJSON(machine, jc, replace, "{'x':''}",
-             "{'s':0,'r':{'x':{'dh':true,'en':true,'ho':0,'ln':false,'mi':16,'pd':55,'pe':38,'pm':255,"\
+             "{'s':0,'r':{'x':{'dh':true,'en':true,'ho':0,'lb':16,'ln':false,'mi':16,'pd':55,'pe':38,'pm':255,"\
              "'pn':3,'po':0,'ps':54,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':0}}}\n");
     testJSON(machine, jc, replace, "{'y':''}",
-             "{'s':0,'r':{'y':{'dh':true,'en':true,'ho':0,'ln':false,'mi':16,'pd':61,'pe':56,'pm':255,"\
+             "{'s':0,'r':{'y':{'dh':true,'en':true,'ho':0,'lb':16,'ln':false,'mi':16,'pd':61,'pe':56,'pm':255,"\
              "'pn':14,'po':0,'ps':60,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':0}}}\n");
     testJSON(machine, jc, replace, "{'z':''}",
-             "{'s':0,'r':{'z':{'dh':true,'en':true,'ho':0,'ln':false,'mi':16,'pd':48,'pe':62,'pm':255,"\
+             "{'s':0,'r':{'z':{'dh':true,'en':true,'ho':0,'lb':16,'ln':false,'mi':16,'pd':48,'pe':62,'pm':255,"\
              "'pn':18,'po':0,'ps':46,'pw':0,'sa':1.80,'tm':10000,'tn':0,'ud':0}}}\n");
 }
 
@@ -1186,14 +1186,14 @@ void test_Home() {
 	threadClock.ticks++;
     mt.Heartbeat();
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(xpulses+2, arduino.pulses(X_STEP_PIN));
+    ASSERTEQUAL(xpulses+2+MICROSTEPS_DEFAULT, arduino.pulses(X_STEP_PIN));
     ASSERTEQUAL(ypulses, arduino.pulses(Y_STEP_PIN));
     ASSERTEQUAL(zpulses+3, arduino.pulses(Z_STEP_PIN));
 	ASSERTQUAD(Quad<StepCoord>(5,100,20,100), mt.machine.getMotorPosition());
 	ASSERTEQUAL(false, machine.axis[0].homing);
 	ASSERTEQUAL(false, machine.axis[1].homing);
 	ASSERTEQUAL(true, machine.axis[2].homing);
-	ASSERTEQUAL(LOW, arduino.getPin(X_DIR_PIN));
+	ASSERTEQUAL(HIGH, arduino.getPin(X_DIR_PIN)); // HIGH because we backed off
 	ASSERTEQUAL(LOW, arduino.getPin(Y_DIR_PIN));
 	ASSERTEQUAL(LOW, arduino.getPin(Z_DIR_PIN));
     ASSERTEQUALS("", Serial.output().c_str());
@@ -1202,16 +1202,16 @@ void test_Home() {
 	threadClock.ticks++;
     mt.Heartbeat();
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUAL(xpulses+2, arduino.pulses(X_STEP_PIN));
+    ASSERTEQUAL(xpulses+2+MICROSTEPS_DEFAULT, arduino.pulses(X_STEP_PIN));
     ASSERTEQUAL(ypulses, arduino.pulses(Y_STEP_PIN));
-    ASSERTEQUAL(zpulses+3, arduino.pulses(Z_STEP_PIN));
+    ASSERTEQUAL(zpulses+3+MICROSTEPS_DEFAULT, arduino.pulses(Z_STEP_PIN));
 	ASSERTQUAD(Quad<StepCoord>(5,100,20,100), mt.machine.getMotorPosition());
 	ASSERTEQUAL(false, machine.axis[0].homing);
 	ASSERTEQUAL(false, machine.axis[1].homing);
 	ASSERTEQUAL(false, machine.axis[2].homing);
-	ASSERTEQUAL(LOW, arduino.getPin(X_DIR_PIN));
+	ASSERTEQUAL(HIGH, arduino.getPin(X_DIR_PIN)); // HIGH because we backed off
 	ASSERTEQUAL(LOW, arduino.getPin(Y_DIR_PIN));
-	ASSERTEQUAL(LOW, arduino.getPin(Z_DIR_PIN));
+	ASSERTEQUAL(HIGH, arduino.getPin(Z_DIR_PIN)); // HIGH because we backed off
     ASSERTEQUALS(JT("{'s':0,'r':{'ho':{'m1':5,'m3':20}}}\n"), Serial.output().c_str());
 
     cout << "TEST	: test_Home() OK " << endl;
