@@ -25,16 +25,10 @@ namespace firestep {
   asm("nop");asm("nop");asm("nop");asm("nop"); asm("nop");asm("nop");asm("nop");asm("nop");
 #endif
 
-typedef struct Motor {
-    uint8_t	axisMap; 	// index into axis array
-    Motor() : axisMap(0) {}
-} Motor;
-
 typedef class Axis {
         friend void ::test_Home();
         friend class Machine;
     private:
-        bool		homing; // private: homing flag
         bool		enabled; // true: stepper drivers are enabled and powered
     public:
         PinType 	pinStep; // step pin
@@ -54,6 +48,7 @@ typedef class Axis {
         uint8_t 	powerManagementMode;
         bool		atMin; // minimum limit switch (last value read)
         bool		atMax; // maximum limit switch (last value read)
+        bool		homing; // true:axis is active for homing 
 
         Axis() :
             pinStep(NOPIN),
@@ -108,20 +103,20 @@ typedef class Axis {
             return STATUS_OK;
         }
 } Axis;
-typedef uint8_t AxisIndex;
+typedef int8_t AxisIndex;
 typedef QuadIndex MotorIndex;
 
 typedef class Machine : public QuadStepper {
-        friend class JsonController;
+        friend void ::test_Home();
     private:
-        bool	invertLim;
         bool	pinEnableHigh;
         Display nullDisplay;
         int8_t 	stepHome();
 		Axis *	motorAxis[MOTOR_COUNT];
+        AxisIndex motor[MOTOR_COUNT];
     public:
+        bool	invertLim;
         Display	*pDisplay;
-        Motor motor[MOTOR_COUNT];
         Axis axis[AXIS_COUNT];
         Stroke stroke;
 
@@ -132,8 +127,9 @@ typedef class Machine : public QuadStepper {
         void setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value = LOW);
         Quad<StepCoord> getMotorPosition();
         void setMotorPosition(const Quad<StepCoord> &position);
-        virtual Status home(Quad<bool> homing);
-		Status mapMotor(MotorIndex iMotor, AxisIndex iAxis);
+        virtual Status home();
+		Status setMotorAxis(MotorIndex iMotor, AxisIndex iAxis);
+		AxisIndex getMotorAxis(MotorIndex iMotor) { return motor[iMotor]; }
 } Machine;
 
 } // namespace firestep

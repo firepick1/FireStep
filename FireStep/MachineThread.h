@@ -3,20 +3,24 @@
 
 #include "JsonController.h"
 
+extern void test_Home();
+
 namespace firestep {
 
 typedef class MachineThread : Thread {
-	protected:
-		void displayStatus();
+        friend void test_Home();
+
+    protected:
+        void displayStatus();
 
     public:
-		Status status;
+        Status status;
         Machine machine;
-		JsonCommand command;
-		JsonController controller;
+        JsonCommand command;
+        JsonController controller;
 
-	public:
-		MachineThread();
+    public:
+        MachineThread();
         void setup();
         void Heartbeat();
 } MachineThread;

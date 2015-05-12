@@ -26,8 +26,8 @@ Status Axis::enable(bool active) {
 Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay) {
     pinEnableHigh = false;
-	for (int i=0; i<QUAD_ELEMENTS; i++) {
-		mapMotor(i, i);
+	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
+		setMotorAxis((MotorIndex)i, (AxisIndex)i);
 	}
     setPin(axis[0].pinStep, X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, X_DIR_PIN, OUTPUT);
@@ -43,28 +43,29 @@ Machine::Machine()
     setPin(axis[2].pinEnable, Z_ENABLE_PIN, OUTPUT, HIGH);
 
     for (int i = 0; i < MOTOR_COUNT; i++) {
-        motor[i].axisMap = i;
+        motor[i] = i;
     }
 }
 
-Status Machine::mapMotor(MotorIndex iMotor, AxisIndex iAxis) {
+Status Machine::setMotorAxis(MotorIndex iMotor, AxisIndex iAxis) {
 	if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
 		return STATUS_MOTOR_ERROR;
 	}
 	if (iAxis < 0 || AXIS_COUNT <= iAxis) {
 		return STATUS_AXIS_ERROR;
 	}
+	motor[iMotor] = iAxis;
 	motorAxis[iMotor] = &axis[iAxis];
 	return STATUS_OK;
 }
 
-Status Machine::home(Quad<bool> homing) {
+Status Machine::home() {
 	for (int i=0; i<QUAD_ELEMENTS; i++) {
-		Axis &a = axis[motor[i].axisMap];
-		a.homing = homing.value[i] = homing.value[i] &&
-			a.enabled &&
-			a.pinMin != NOPIN;
+		Axis &a(*motorAxis[i]);
 		if (a.homing) {
+			if (!a.enabled && a.pinMin != NOPIN) {
+				return STATUS_AXIS_DISABLED;
+			}
 			a.position = a.home;
 		}
 	}
@@ -126,7 +127,7 @@ inline void delayMics(int16_t usDelay) {
 Status Machine::step(const Quad<StepCoord> &pulse) {
 	int16_t usDelay = 0;
     for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse leading edges
-        Axis &a(axis[motor[i].axisMap]);
+		Axis &a(*motorAxis[i]);
         switch (pulse.value[i]) {
         case 1:
             if (!a.enabled) {
@@ -162,7 +163,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
 
     for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse trailing edges
         if (pulse.value[i]) {
-            Axis &a(axis[motor[i].axisMap]);
+			Axis &a(*motorAxis[i]);
             digitalWrite(a.pinStep, LOW);
             a.position += pulse.value[i];
 			usDelay = max(usDelay, a.usDelay);
@@ -178,7 +179,7 @@ int8_t Machine::stepHome() {
     int16_t usDelay = 0;
     int8_t pulses = 0;
     for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { 
-        Axis &a(axis[motor[i].axisMap]);
+        Axis &a(*motorAxis[i]);
         if (a.homing) {
             a.readAtMin(invertLim);
             if (a.atMin) {
@@ -203,10 +204,10 @@ int8_t Machine::stepHome() {
  */
 Quad<StepCoord> Machine::getMotorPosition() {
     return Quad<StepCoord>(
-               axis[motor[0].axisMap].position,
-               axis[motor[1].axisMap].position,
-               axis[motor[2].axisMap].position,
-               axis[motor[3].axisMap].position
+               motorAxis[0]->position,
+               motorAxis[1]->position,
+               motorAxis[2]->position,
+               motorAxis[3]->position
            );
 }
 
@@ -215,7 +216,7 @@ Quad<StepCoord> Machine::getMotorPosition() {
  */
 void Machine::setMotorPosition(const Quad<StepCoord> &position) {
     for (int i = 0; i < QUAD_ELEMENTS; i++) {
-        axis[motor[i].axisMap].position = position.value[i];
+        motorAxis[i]->position = position.value[i];
     }
 }
 
