@@ -50,7 +50,6 @@ typedef class Axis {
         float		stepAngle; // 1.8:200 steps/rev; 0.9:400 steps/rev
         uint8_t		microsteps;	// normally 1,2,4,8,16 or 32
         bool		dirHIGH; // advance on HIGH
-        uint8_t 	powerManagementMode;
         bool		atMin; // minimum limit switch (last value read)
         bool		atMax; // maximum limit switch (last value read)
         bool		homing; // true:axis is active for homing 
@@ -72,7 +71,6 @@ typedef class Axis {
             stepAngle(1.8),
             microsteps(MICROSTEPS_DEFAULT),
             dirHIGH(true), // true:advance on HIGH; false:advance on LOW
-            powerManagementMode(0),	// 0:off, 1:on, 2:on in cycle, 3:on when moving
             atMin(false),
             atMax(false),
             enabled(false),

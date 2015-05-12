@@ -288,6 +288,7 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             node["ho"] = "";
             node["is"] = "";
             node["lb"] = "";
+            node["lm"] = "";
             node["ln"] = "";
             node["mi"] = "";
             node["pd"] = "";
@@ -296,7 +297,6 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             node["pn"] = "";
             node["po"] = "";
             node["ps"] = "";
-            node["pw"] = "";
             node["sa"] = "";
             node["sd"] = "";
             node["tm"] = "";
@@ -330,6 +330,9 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
         status = processField<DelayMics, long>(jobj, key, axis.idleSnooze);
     } else if (strcmp("lb", key) == 0 || strcmp("lb", key + 1) == 0) {
         status = processField<StepCoord, long>(jobj, key, axis.latchBackoff);
+    } else if (strcmp("lm", key) == 0 || strcmp("lm", key + 1) == 0) {
+        axis.readAtMax(machine.invertLim);
+        status = processField<bool, bool>(jobj, key, axis.atMax);
     } else if (strcmp("ln", key) == 0 || strcmp("ln", key + 1) == 0) {
         axis.readAtMin(machine.invertLim);
         status = processField<bool, bool>(jobj, key, axis.atMin);
@@ -349,8 +352,6 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
         status = processPin(jobj, key, axis.pinMin, INPUT);
     } else if (strcmp("po", key) == 0 || strcmp("po", key + 1) == 0) {
         status = processField<StepCoord, long>(jobj, key, axis.position);
-    } else if (strcmp("pw", key) == 0 || strcmp("pw", key + 1) == 0) {
-        status = processField<uint8_t, long>(jobj, key, axis.powerManagementMode);
     } else if (strcmp("ps", key) == 0 || strcmp("ps", key + 1) == 0) {
         status = processPin(jobj, key, axis.pinStep, OUTPUT);
     } else if (strcmp("sa", key) == 0 || strcmp("sa", key + 1) == 0) {
