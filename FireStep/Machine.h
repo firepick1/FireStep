@@ -138,6 +138,7 @@ typedef class Machine : public QuadStepper {
 		Status setMotorAxis(MotorIndex iMotor, AxisIndex iAxis);
 		AxisIndex getMotorAxis(MotorIndex iMotor) { return motor[iMotor]; }
 		Status moveTo(Quad<StepCoord> destination, float feedRate);
+		Status moveTowards(Quad<StepCoord> delta, StepCoord maxSteps);
 } Machine;
 
 } // namespace firestep

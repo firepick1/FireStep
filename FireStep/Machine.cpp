@@ -29,11 +29,23 @@ template class Quad<int32_t>;
 // #define PULSE_DELAY DELAY500NS /* increase pulse cycle by 1 microsecond */
 #define PULSE_DELAY /* no delay */
 
+#define STEPONE_MICS 6 /* microseconds for a single stepOne() invocation */
+
 inline void stepOne(Axis &a, bool advance) {
 	digitalWrite(a.pinDir, (advance == a.dirHIGH) ? HIGH : LOW); 
 	digitalWrite(a.pinStep, HIGH);
 	PULSE_DELAY;
 	digitalWrite(a.pinStep, LOW);
+}
+
+/**
+ * inline replacement for Arduino delayMicroseconds()
+ */
+inline void delayMics(int16_t usDelay) {
+    while (usDelay-- > 0) {
+        DELAY500NS;
+        DELAY500NS;
+    }
 }
 
 Status Axis::enable(bool active) {
@@ -99,21 +111,61 @@ Status Machine::home() {
 	return STATUS_OK;
 }
 
-Status Machine::moveTo(Quad<StepCoord> destination, float feedRate) {
-	Quad<StepCoord> delta(destination - getMotorPosition());
-	StepCoord normalize = 0;
-	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
-		if (delta.value[i]) {
-			normalize = min(normalize, delta.value[i]);
-		}
+Status Machine::moveTo(Quad<StepCoord> destination, float seconds) {
+	Quad<StepCoord> delta(destination-getMotorPosition());
+	StepCoord maxSteps = 0;
+    for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
+		maxSteps = max(maxSteps, delta.value[i]);
 	}
-	if (normalize == 0) {
-		return STATUS_OK;
+	return moveTowards(delta, maxSteps);
+}
+
+Status Machine::moveTowards(Quad<StepCoord> delta, StepCoord maxSteps) {
+	if (delta.isZero()) {
+		return STATUS_OK;	// at destination
 	}
-	Quad<StepCoord> deltaNorm;
-	deltaNorm /= normalize;
-	cout << "moveTo:" << deltaNorm.toString() << endl;
-	return STATUS_OK;
+    int16_t usDelay = 0;
+	StepCoord maxDelta = 0;
+    for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
+        if (delta.value[i]) {
+            if (!motorAxis[i]->enabled) {
+                return STATUS_AXIS_DISABLED;
+            }
+			maxDelta = max(maxDelta, delta.value[i]);
+            usDelay = max(usDelay, motorAxis[i]->usDelay);
+        }
+    }
+	maxDelta = min(maxDelta, maxSteps);
+    for (StepCoord iStep = 1; iStep <= maxDelta; iStep++) {
+		int8_t pulses = 0;
+        for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
+            StepCoord step = delta.value[i];
+			Axis &a = *motorAxis[i];
+            if (step == 0) {
+                // do nothing
+            } else if (-step >= iStep) {
+				a.readAtMin(invertLim);
+				if (a.atMin) {
+					return STATUS_LIMIT_MIN;
+				}
+				if (a.position <= a.travelMin) {
+					return STATUS_TRAVEL_MIN;
+				}
+				stepOne(a, false);
+				a.position--;
+				pulses++;
+            } else if (step >= iStep) {
+				if (a.position >= a.travelMax) {
+					return STATUS_TRAVEL_MAX;
+				}
+				stepOne(a, true);
+				a.position++;
+				pulses++;
+            }
+        }
+		delayMics(usDelay - (pulses-1)*STEPONE_MICS);
+    }
+    return STATUS_BUSY_MOVING;
 }
 
 void Machine::setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value) {
@@ -127,19 +179,9 @@ void Machine::setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t valu
 }
 
 void Machine::enable(bool active) {
-	for (int i = 0; i < AXIS_COUNT; i++) {
-		axis[i].enable(active);
-	}
-}
-
-/**
- * inline replacement for Arduino delayMicroseconds()
- */
-inline void delayMics(int16_t usDelay) { 
-	while (usDelay-- > 0) {
-		DELAY500NS;
-		DELAY500NS;
-	}
+    for (int i = 0; i < AXIS_COUNT; i++) {
+        axis[i].enable(active);
+    }
 }
 
 // The step() method is the "stepper inner loop" that creates the
@@ -150,9 +192,9 @@ inline void delayMics(int16_t usDelay) {
 // axis has a usDelay field that specifies a minimum delay
 // between pulses.
 Status Machine::step(const Quad<StepCoord> &pulse) {
-	int16_t usDelay = 0;
+    int16_t usDelay = 0;
     for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse leading edges
-		Axis &a(*motorAxis[i]);
+        Axis &a(*motorAxis[i]);
         switch (pulse.value[i]) {
         case 1:
             if (!a.enabled) {
@@ -184,18 +226,18 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
             return STATUS_STEP_RANGE_ERROR;
         }
     }
-	PULSE_DELAY;
+    PULSE_DELAY;
 
     for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse trailing edges
         if (pulse.value[i]) {
-			Axis &a(*motorAxis[i]);
+            Axis &a(*motorAxis[i]);
             digitalWrite(a.pinStep, LOW);
             a.position += pulse.value[i];
-			usDelay = max(usDelay, a.usDelay);
+            usDelay = max(usDelay, a.usDelay);
         }
     }
 
-	delayMics(usDelay); // maximum pulse rate throttle
+    delayMics(usDelay); // maximum pulse rate throttle
 
     return STATUS_OK;
 }
@@ -203,18 +245,18 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
 int8_t Machine::stepHome() {
     int16_t searchDelay = 0;
     int8_t pulses = 0;
-    for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { 
+    for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {
         Axis &a(*motorAxis[i]);
         if (a.homing) {
             a.readAtMin(invertLim);
             if (a.atMin) {
                 a.homing = false;
-				for (StepCoord lb=a.latchBackoff; lb>0; lb--) {
-					stepOne(a, true);
-					delayMics(a.searchDelay); 
-				}
+                for (StepCoord lb = a.latchBackoff; lb > 0; lb--) {
+                    stepOne(a, true);
+                    delayMics(a.searchDelay);
+                }
             } else {
-				stepOne(a, false);
+                stepOne(a, false);
                 searchDelay = max(searchDelay, a.searchDelay);
                 pulses++;
             }
@@ -238,13 +280,13 @@ Quad<StepCoord> Machine::getMotorPosition() {
 }
 
 void Machine::idle() {
-	for (MotorIndex i=0; i<MOTOR_COUNT; i++) {
-		if (motorAxis[i]->enabled) {
-			motorAxis[i]->enable(false);
-			delayMics(motorAxis[i]->idleSnooze);
-			motorAxis[i]->enable(true);
-		}
-	}
+    for (MotorIndex i = 0; i < MOTOR_COUNT; i++) {
+        if (motorAxis[i]->enabled) {
+            motorAxis[i]->enable(false);
+            delayMics(motorAxis[i]->idleSnooze);
+            motorAxis[i]->enable(true);
+        }
+    }
 }
 
 /**
