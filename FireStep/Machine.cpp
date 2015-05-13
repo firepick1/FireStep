@@ -1,6 +1,7 @@
 #ifdef CMAKE
 #include <cstring>
 #endif
+#include <cmath>
 #include "Arduino.h"
 #include "Machine.h"
 #include "AnalogRead.h"
@@ -95,6 +96,23 @@ Status Machine::home() {
 		return STATUS_BUSY_MOVING;
 	}
 
+	return STATUS_OK;
+}
+
+Status Machine::moveTo(Quad<StepCoord> destination, float feedRate) {
+	Quad<StepCoord> delta(destination - getMotorPosition());
+	StepCoord normalize = 0;
+	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
+		if (delta.value[i]) {
+			normalize = min(normalize, delta.value[i]);
+		}
+	}
+	if (normalize == 0) {
+		return STATUS_OK;
+	}
+	Quad<StepCoord> deltaNorm;
+	deltaNorm /= normalize;
+	cout << "moveTo:" << deltaNorm.toString() << endl;
 	return STATUS_OK;
 }
 

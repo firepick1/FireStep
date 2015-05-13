@@ -47,6 +47,13 @@ template<class T> class Quad { // a QUAD_ELEMENTS vector
 				value[2] < 0 ? -value[2] : value[2],
 				value[3] < 0 ? -value[3] : value[3]);
 		}
+		float norm2() {
+			float sum = 0;
+			for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
+				sum += value[i]*value[i];
+			}
+			return sum;
+		}
 		void clear() {
 			value[0] = value[1] = value[2] = value[3] = 0;
 		}
