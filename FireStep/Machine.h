@@ -137,9 +137,13 @@ typedef class Machine : public QuadStepper {
 		void idle();
 		Status setMotorAxis(MotorIndex iMotor, AxisIndex iAxis);
 		AxisIndex getMotorAxis(MotorIndex iMotor) { return motor[iMotor]; }
-		Status moveTo(Quad<StepCoord> destination, float feedRate);
-		Status moveTowards(Quad<StepCoord> delta, StepCoord maxSteps);
+		Status moveTo(Quad<StepCoord> destination, float seconds);
+		Status moveTowards(Quad<StepCoord> delta, StepCoord maxSteps=0);
 } Machine;
+
+#ifdef TEST
+extern int32_t delayMicsTotal;
+#endif
 
 } // namespace firestep
 

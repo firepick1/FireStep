@@ -38,13 +38,22 @@ inline void stepOne(Axis &a, bool advance) {
 	digitalWrite(a.pinStep, LOW);
 }
 
+#ifdef TEST
+int32_t firestep::delayMicsTotal = 0;
+#endif
+
 /**
  * inline replacement for Arduino delayMicroseconds()
  */
-inline void delayMics(int16_t usDelay) {
-    while (usDelay-- > 0) {
-        DELAY500NS;
-        DELAY500NS;
+inline void delayMics(int32_t usDelay) {
+    if (usDelay > 0) {
+        while (usDelay-- > 0) {
+            DELAY500NS;
+            DELAY500NS;
+        }
+#ifdef TEST
+        delayMicsTotal += usDelay;
+#endif
     }
 }
 
@@ -60,9 +69,9 @@ Status Axis::enable(bool active) {
 Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false) {
     pinEnableHigh = false;
-	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
-		setMotorAxis((MotorIndex)i, (AxisIndex)i);
-	}
+    for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
+        setMotorAxis((MotorIndex)i, (AxisIndex)i);
+    }
     setPin(axis[0].pinStep, X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, X_DIR_PIN, OUTPUT);
     setPin(axis[0].pinMin, X_MIN_PIN, INPUT);
@@ -82,88 +91,98 @@ Machine::Machine()
 }
 
 Status Machine::setMotorAxis(MotorIndex iMotor, AxisIndex iAxis) {
-	if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
-		return STATUS_MOTOR_ERROR;
-	}
-	if (iAxis < 0 || AXIS_COUNT <= iAxis) {
-		return STATUS_AXIS_ERROR;
-	}
-	motor[iMotor] = iAxis;
-	motorAxis[iMotor] = &axis[iAxis];
-	return STATUS_OK;
+    if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
+        return STATUS_MOTOR_ERROR;
+    }
+    if (iAxis < 0 || AXIS_COUNT <= iAxis) {
+        return STATUS_AXIS_ERROR;
+    }
+    motor[iMotor] = iAxis;
+    motorAxis[iMotor] = &axis[iAxis];
+    return STATUS_OK;
 }
 
 Status Machine::home() {
-	for (int i=0; i<QUAD_ELEMENTS; i++) {
-		Axis &a(*motorAxis[i]);
-		if (a.homing) {
-			if (!a.enabled && a.pinMin != NOPIN) {
-				return STATUS_AXIS_DISABLED;
-			}
-			a.position = a.home;
-		}
-	}
-	
-	if (stepHome() > 0) {
-		return STATUS_BUSY_MOVING;
-	}
+    for (int i = 0; i < QUAD_ELEMENTS; i++) {
+        Axis &a(*motorAxis[i]);
+        if (a.homing) {
+            if (!a.enabled && a.pinMin != NOPIN) {
+                return STATUS_AXIS_DISABLED;
+            }
+            a.position = a.home;
+        }
+    }
 
-	return STATUS_OK;
+    if (stepHome() > 0) {
+        return STATUS_BUSY_MOVING;
+    }
+
+    return STATUS_OK;
 }
 
 Status Machine::moveTo(Quad<StepCoord> destination, float seconds) {
-	Quad<StepCoord> delta(destination-getMotorPosition());
-	StepCoord maxSteps = 0;
-    for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
-		maxSteps = max(maxSteps, delta.value[i]);
-	}
-	return moveTowards(delta, maxSteps);
+    for (;;) {
+        Quad<StepCoord> delta(destination - getMotorPosition());
+        float norm = sqrt(delta.norm2());
+        float stepsPerMic = norm / (seconds * 1000000);
+        StepCoord maxSteps = stepsPerMic * STEPONE_MICS + 1;
+        Status status = moveTowards(delta, maxSteps);
+        switch (status) {
+        default:
+        case STATUS_OK:
+            return status;
+        case STATUS_BUSY_MOVING:
+            int32_t moveMics = (int32_t) (maxSteps / stepsPerMic);
+            delayMics(moveMics - maxSteps * STEPONE_MICS);
+            break;
+        }
+    }
 }
 
 Status Machine::moveTowards(Quad<StepCoord> delta, StepCoord maxSteps) {
-	if (delta.isZero()) {
-		return STATUS_OK;	// at destination
-	}
+    if (delta.isZero()) {
+        return STATUS_OK;	// at destination
+    }
     int16_t usDelay = 0;
-	StepCoord maxDelta = 0;
+    StepCoord maxDelta = 0;
     for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         if (delta.value[i]) {
             if (!motorAxis[i]->enabled) {
                 return STATUS_AXIS_DISABLED;
             }
-			maxDelta = max(maxDelta, delta.value[i]);
+            maxDelta = max(maxDelta, delta.value[i]);
             usDelay = max(usDelay, motorAxis[i]->usDelay);
         }
     }
-	maxDelta = min(maxDelta, maxSteps);
+    maxDelta = maxSteps ? min(maxDelta, maxSteps) : maxDelta;
     for (StepCoord iStep = 1; iStep <= maxDelta; iStep++) {
-		int8_t pulses = 0;
+        int8_t pulses = 0;
         for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
             StepCoord step = delta.value[i];
-			Axis &a = *motorAxis[i];
+            Axis &a = *motorAxis[i];
             if (step == 0) {
                 // do nothing
             } else if (-step >= iStep) {
-				a.readAtMin(invertLim);
-				if (a.atMin) {
-					return STATUS_LIMIT_MIN;
-				}
-				if (a.position <= a.travelMin) {
-					return STATUS_TRAVEL_MIN;
-				}
-				stepOne(a, false);
-				a.position--;
-				pulses++;
+                a.readAtMin(invertLim);
+                if (a.atMin) {
+                    return STATUS_LIMIT_MIN;
+                }
+                if (a.position <= a.travelMin) {
+                    return STATUS_TRAVEL_MIN;
+                }
+                stepOne(a, false);
+                a.position--;
+                pulses++;
             } else if (step >= iStep) {
-				if (a.position >= a.travelMax) {
-					return STATUS_TRAVEL_MAX;
-				}
-				stepOne(a, true);
-				a.position++;
-				pulses++;
+                if (a.position >= a.travelMax) {
+                    return STATUS_TRAVEL_MAX;
+                }
+                stepOne(a, true);
+                a.position++;
+                pulses++;
             }
         }
-		delayMics(usDelay - (pulses-1)*STEPONE_MICS);
+        delayMics(usDelay - (pulses - 1)*STEPONE_MICS);
     }
     return STATUS_BUSY_MOVING;
 }

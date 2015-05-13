@@ -542,6 +542,53 @@ Status JsonController::processHome(JsonCommand& jcmd, JsonObject& jobj, const ch
     return status;
 }
 
+Status JsonController::initializeMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = STATUS_OK;
+    if (strcmp("ho", key) == 0) {
+        const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+            node["m1"] = "";
+            node["m2"] = "";
+            node["m3"] = "";
+            node["m4"] = "";
+			node["ms"] = "";
+        }
+        JsonObject& kidObj = jobj[key];
+        if (kidObj.success()) {
+            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+                status = initializeMove(jcmd, kidObj, it->key);
+                if (status != STATUS_BUSY_MOVING) {
+                    return status;
+                }
+            }
+        }
+    } else if (strcmp("m1", key) == 0 || strcmp("hom1", key) == 0) {
+		status = processHomeField(machine, 0, jcmd, jobj, key);
+    } else if (strcmp("m2", key) == 0 || strcmp("hom2", key) == 0) {
+		status = processHomeField(machine, 1, jcmd, jobj, key);
+    } else if (strcmp("m3", key) == 0 || strcmp("hom3", key) == 0) {
+		status = processHomeField(machine, 2, jcmd, jobj, key);
+    } else if (strcmp("m4", key) == 0 || strcmp("hom4", key) == 0) {
+		status = processHomeField(machine, 3, jcmd, jobj, key);
+    } else {
+        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+    }
+    return status == STATUS_OK ? STATUS_BUSY_MOVING : status;
+}
+
+Status JsonController::processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = jcmd.getStatus();
+    if (status == STATUS_BUSY_PARSED) {
+        status = initializeMove(jcmd, jobj, key);
+    } else if (status == STATUS_BUSY_MOVING) {
+		status = machine.home();
+    } else {
+        return jcmd.setError(STATUS_STATE, key);
+    }
+    return status;
+}
+
 Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("dpy", key) == 0) {
@@ -628,6 +675,8 @@ Status JsonController::process(JsonCommand& jcmd) {
     for (JsonObject::iterator it = root.begin(); it != root.end(); ++it) {
         if (strcmp("dvs", it->key) == 0) {
             status = processStroke(jcmd, root, it->key);
+        } else if (strncmp("mov", it->key, 3) == 0) {
+            status = processMove(jcmd, root, it->key);
         } else if (strncmp("ho", it->key, 2) == 0) {
             status = processHome(jcmd, root, it->key);
         } else if (strncmp("tst", it->key, 3) == 0) {
