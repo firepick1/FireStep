@@ -1116,6 +1116,15 @@ void test_Machine_step() {
     cout << "TEST	: test_Machine_step() OK " << endl;
 }
 
+void test_Move() {
+    cout << "TEST	: test_Move() =====" << endl;
+
+    MachineThread mt = test_setup();
+	Machine &machine = mt.machine;
+
+    cout << "TEST	: test_Move() OK " << endl;
+}
+
 void test_Idle() {
     cout << "TEST	: test_Idle() =====" << endl;
 
@@ -1412,6 +1421,7 @@ int main(int argc, char *argv[]) {
 	test_Home();
 	test_PrettyPrint();
 	test_Idle();
+	test_Move();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }
