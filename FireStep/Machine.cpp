@@ -47,13 +47,13 @@ int32_t firestep::delayMicsTotal = 0;
  */
 inline void delayMics(int32_t usDelay) {
     if (usDelay > 0) {
+#ifdef TEST
+        delayMicsTotal += usDelay;
+#endif
         while (usDelay-- > 0) {
             DELAY500NS;
             DELAY500NS;
         }
-#ifdef TEST
-        delayMicsTotal += usDelay;
-#endif
     }
 }
 
@@ -121,25 +121,31 @@ Status Machine::home() {
 }
 
 Status Machine::moveTo(Quad<StepCoord> destination, float seconds) {
-    for (;;) {
-        Quad<StepCoord> delta(destination - getMotorPosition());
-        float norm = sqrt(delta.norm2());
-        float stepsPerMic = norm / (seconds * 1000000);
-        StepCoord maxSteps = stepsPerMic * STEPONE_MICS + 1;
-        Status status = moveTowards(delta, maxSteps);
-        switch (status) {
-        default:
-        case STATUS_OK:
-            return status;
-        case STATUS_BUSY_MOVING:
-            int32_t moveMics = (int32_t) (maxSteps / stepsPerMic);
-            delayMics(moveMics - maxSteps * STEPONE_MICS);
-            break;
-        }
-    }
+	int32_t micsLeft = seconds * 1000000;
+	Quad<StepCoord> delta(destination - getMotorPosition());
+	Quad<StepCoord> pos;
+	int8_t td = 64;
+	float tdEnd = seconds/td;
+	float tdSeconds = (seconds-tdEnd*2)/(td-2);
+	StepCoord maxSteps = 0;
+	for (int8_t tn=0; tn<=td; tn++) {
+		Quad<StepCoord> segment;
+		for (MotorIndex i=0; i<MOTOR_COUNT; i++) {
+			segment.value[i] = (tn*delta.value[i])/td - pos.value[i];
+		}
+		//cout << (int) tn << " segment:" << segment.toString() << endl;
+		float t = (tn==0 || tn==td) ? tdEnd : tdSeconds;	// start/stop ramp
+    	Status status = moveDelta(segment, t);
+		if (status < 0) {
+			return status;
+		}
+		pos += segment;
+	}
+	return STATUS_OK;
 }
 
-Status Machine::moveTowards(Quad<StepCoord> delta, StepCoord maxSteps) {
+Status Machine::moveDelta(Quad<StepCoord> delta, float seconds) {
+	int32_t micsDelay = 0;
     if (delta.isZero()) {
         return STATUS_OK;	// at destination
     }
@@ -154,7 +160,6 @@ Status Machine::moveTowards(Quad<StepCoord> delta, StepCoord maxSteps) {
             usDelay = max(usDelay, motorAxis[i]->usDelay);
         }
     }
-    maxDelta = maxSteps ? min(maxDelta, maxSteps) : maxDelta;
     for (StepCoord iStep = 1; iStep <= maxDelta; iStep++) {
         int8_t pulses = 0;
         for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -183,7 +188,9 @@ Status Machine::moveTowards(Quad<StepCoord> delta, StepCoord maxSteps) {
             }
         }
         delayMics(usDelay - (pulses - 1)*STEPONE_MICS);
+		micsDelay += usDelay;
     }
+	delayMics(seconds*1000000 - micsDelay);
     return STATUS_BUSY_MOVING;
 }
 

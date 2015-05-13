@@ -138,7 +138,7 @@ typedef class Machine : public QuadStepper {
 		Status setMotorAxis(MotorIndex iMotor, AxisIndex iAxis);
 		AxisIndex getMotorAxis(MotorIndex iMotor) { return motor[iMotor]; }
 		Status moveTo(Quad<StepCoord> destination, float seconds);
-		Status moveTowards(Quad<StepCoord> delta, StepCoord maxSteps=0);
+		Status moveDelta(Quad<StepCoord> delta, float seconds);
 } Machine;
 
 #ifdef TEST

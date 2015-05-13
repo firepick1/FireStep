@@ -517,6 +517,7 @@ MachineThread test_setup() {
     testDisplay.clear();
     mt.setup();
     Serial.clear();
+	delayMicsTotal = 0;
     arduino.setPin(mt.machine.axis[0].pinMin, 0);
     arduino.setPin(mt.machine.axis[1].pinMin, 0);
     arduino.setPin(mt.machine.axis[2].pinMin, 0);
@@ -1121,6 +1122,16 @@ void test_Move() {
 
     MachineThread mt = test_setup();
 	Machine &machine = mt.machine;
+	int32_t xpulses = arduino.pulses(X_STEP_PIN);
+	int32_t ypulses = arduino.pulses(Y_STEP_PIN);
+	int32_t zpulses = arduino.pulses(Z_STEP_PIN);
+	int32_t usStart = delayMicsTotal;
+
+	Status status = machine.moveTo(Quad<StepCoord>(1,10,100,0), 1);
+	ASSERTEQUAL(STATUS_OK, status);
+	ASSERTEQUAL(xpulses+1, arduino.pulses(X_STEP_PIN));
+	ASSERTQUAD(Quad<StepCoord>(1,10,100,0), machine.getMotorPosition());
+	ASSERTEQUAL(usStart+1000000, delayMicsTotal);
 
     cout << "TEST	: test_Move() OK " << endl;
 }
