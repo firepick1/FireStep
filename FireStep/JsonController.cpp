@@ -219,10 +219,6 @@ Status JsonController::processStroke(JsonCommand &jcmd, JsonObject& jobj, const 
 Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group) {
     Status status = STATUS_OK;
     const char *s;
-    int iMotor = group - '1';
-    if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
-        return STATUS_MOTOR_INDEX;
-    }
     if (strlen(key) == 1) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
@@ -238,6 +234,10 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
             }
         }
     } else if (strcmp("ma", key) == 0 || strcmp("ma", key + 1) == 0) {
+		int iMotor = group - '1';
+		if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
+			return STATUS_MOTOR_INDEX;
+		}
         AxisIndex iAxis = machine.getMotorAxis(iMotor);
         status = processField<AxisIndex, long>(jobj, key, iAxis);
         machine.setMotorAxis(iMotor, iAxis);
