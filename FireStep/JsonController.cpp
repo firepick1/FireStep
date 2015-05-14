@@ -545,6 +545,7 @@ Status JsonController::processHome(JsonCommand& jcmd, JsonObject& jobj, const ch
 Status JsonController::initializeMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("mov", key) == 0) {
+	cout << "mov" << endl;
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
 			jcmd.move.clear();
