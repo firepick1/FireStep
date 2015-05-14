@@ -125,16 +125,17 @@ Status Machine::moveTo(Quad<StepCoord> destination, float seconds) {
 	Quad<StepCoord> delta(destination - getMotorPosition());
 	Quad<StepCoord> pos;
 	int8_t td = 64;
-	float tdEnd = seconds/td;
-	float tdSeconds = (seconds-tdEnd*2)/(td-2);
+	float tdSeconds = seconds/(td+2);
+	float tdEnd = tdSeconds*2;
+	//cout << "t:" << (tdSeconds*(td-2) + tdEnd*2) << endl;
 	StepCoord maxSteps = 0;
 	for (int8_t tn=0; tn<=td; tn++) {
 		Quad<StepCoord> segment;
 		for (MotorIndex i=0; i<MOTOR_COUNT; i++) {
 			segment.value[i] = (tn*delta.value[i])/td - pos.value[i];
 		}
-		//cout << (int) tn << " segment:" << segment.toString() << endl;
 		float t = (tn==0 || tn==td) ? tdEnd : tdSeconds;	// start/stop ramp
+		//cout <<  t << " segment:" << segment.toString() << endl;
     	Status status = moveDelta(segment, t);
 		if (status < 0) {
 			return status;
@@ -187,7 +188,8 @@ Status Machine::moveDelta(Quad<StepCoord> delta, float seconds) {
                 pulses++;
             }
         }
-        delayMics(usDelay - (pulses - 1)*STEPONE_MICS);
+		int16_t us = (usDelay - (pulses - 1)*STEPONE_MICS);
+        delayMics(us);
 		micsDelay += usDelay;
     }
 	delayMics(seconds*1000000 - micsDelay);

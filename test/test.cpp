@@ -1131,7 +1131,7 @@ void test_Move() {
 	ASSERTEQUAL(STATUS_OK, status);
 	ASSERTEQUAL(xpulses+1, arduino.pulses(X_STEP_PIN));
 	ASSERTQUAD(Quad<StepCoord>(1,10,100,0), machine.getMotorPosition());
-	ASSERTEQUAL(usStart+1000000, delayMicsTotal);
+	ASSERTEQUALT(usStart+1000000, delayMicsTotal, 20000);
 
     cout << "TEST	: test_Move() OK " << endl;
 }

@@ -23,12 +23,15 @@ namespace firestep {
 #define JSON_RESPONSE_BUFFER 200
 
 typedef class JsonCommand {
+	friend class JsonController;
     private:
 		bool parsed;
         char json[MAX_JSON];
 		char *pJsonFree;
         StaticJsonBuffer<JSON_REQUEST_BUFFER> jbRequest;
         StaticJsonBuffer<JSON_RESPONSE_BUFFER> jbResponse;
+		Quad<StepCoord> move;
+		StepCoord stepsPerSecond;
 		JsonVariant jRequestRoot;
 		JsonVariant jResponseRoot;
 		char error[8];
