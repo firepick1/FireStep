@@ -20,6 +20,7 @@ namespace firestep {
 #define PIN_ENABLE LOW
 #define PIN_DISABLE HIGH
 #define MICROSTEPS_DEFAULT 16
+#define INDEX_NONE -1
 
 #ifndef DELAY500NS
 #define DELAY500NS \
@@ -27,6 +28,16 @@ namespace firestep {
 #endif
 
 typedef int16_t DelayMics; // delay microseconds
+
+enum AxisIndexValue {
+	X_AXIS = 0,
+	Y_AXIS = 1,
+	Z_AXIS = 2,
+	A_AXIS = 3,
+	B_AXIS = 4,
+	C_AXIS = 5,
+	NO_AXIS = INDEX_NONE
+};
 
 typedef class Axis {
         friend void ::test_Home();
@@ -139,6 +150,7 @@ typedef class Machine : public QuadStepper {
 		AxisIndex getMotorAxis(MotorIndex iMotor) { return motor[iMotor]; }
 		Status moveTo(Quad<StepCoord> destination, float seconds);
 		Status moveDelta(Quad<StepCoord> delta, float seconds);
+		MotorIndex axisMotor(AxisIndex iAxis);
 } Machine;
 
 #ifdef TEST

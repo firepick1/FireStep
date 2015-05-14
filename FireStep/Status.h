@@ -27,10 +27,7 @@ enum Status {
     STATUS_JSON_POSITIVE1 = -9,		// JSON value >= 1 expected
     STATUS_JSON_KEY = -10,			// JSON buffer overflow: could not create JSON objecdt key
     STATUS_JSON_STROKE_ERROR = -20,	// Expected JSON object for stroke
-    STATUS_S1_RANGE_ERROR = -21,	// Stroke segment s1 value out of range [-127,127]
-    STATUS_S2_RANGE_ERROR = -22,	// Stroke segment s2 value out of range [-127,127]
-    STATUS_S3_RANGE_ERROR = -23,	// Stroke segment s3 value out of range [-127,127]
-    STATUS_S4_RANGE_ERROR = -24,	// Stroke segment s4 value out of range [-127,127]
+    STATUS_RANGE_ERROR = -21,		// Stroke segment s1 value out of range [-127,127]
     STATUS_S1S2LEN_ERROR = -25,		// Stroke segment s1/s2 length mismatch
     STATUS_S1S3LEN_ERROR = -26,		// Stroke segment s1/s3 length mismatch
     STATUS_S1S4LEN_ERROR = -27,		// Stroke segment s1/s4 length mismatch
@@ -66,6 +63,7 @@ enum Status {
 	STATUS_STATE = -128,			// Internal error: unknown processing state
 	STATUS_MOTOR_ERROR = -129,		// Internal error: invalid motor index
 	STATUS_NOT_IMPLEMENTED = -130,	// Proposed by not yet implemented 
+	STATUS_NO_MOTOR = -131,			// Axis must be mapped to motor
 };
 
 inline bool isProcessing(Status status) {

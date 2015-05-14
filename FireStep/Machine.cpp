@@ -15,7 +15,7 @@ using namespace firestep;
 template class Quad<int16_t>;
 template class Quad<int32_t>;
 
-// A stepper pulse cycle requires 3 digitalWrite()'s for 
+// A stepper pulse cycle requires 3 digitalWrite()'s for
 // step direction, pulse high, and pulse low.
 // Arduino 16-MHz digitalWrite pair takes 3.833 microseconds,
 // so a full stepper pulse cycle should take ~5.7 microseconds:
@@ -32,10 +32,10 @@ template class Quad<int32_t>;
 #define STEPONE_MICS 6 /* microseconds for a single stepOne() invocation */
 
 inline void stepOne(Axis &a, bool advance) {
-	digitalWrite(a.pinDir, (advance == a.dirHIGH) ? HIGH : LOW); 
-	digitalWrite(a.pinStep, HIGH);
-	PULSE_DELAY;
-	digitalWrite(a.pinStep, LOW);
+    digitalWrite(a.pinDir, (advance == a.dirHIGH) ? HIGH : LOW);
+    digitalWrite(a.pinStep, HIGH);
+    PULSE_DELAY;
+    digitalWrite(a.pinStep, LOW);
 }
 
 #ifdef TEST
@@ -121,32 +121,32 @@ Status Machine::home() {
 }
 
 Status Machine::moveTo(Quad<StepCoord> destination, float seconds) {
-	int32_t micsLeft = seconds * 1000000;
-	Quad<StepCoord> delta(destination - getMotorPosition());
-	Quad<StepCoord> pos;
-	int8_t td = 64;
-	float tdSeconds = seconds/(td+2);
-	float tdEnd = tdSeconds*2;
-	//cout << "t:" << (tdSeconds*(td-2) + tdEnd*2) << endl;
-	StepCoord maxSteps = 0;
-	for (int8_t tn=0; tn<=td; tn++) {
-		Quad<StepCoord> segment;
-		for (MotorIndex i=0; i<MOTOR_COUNT; i++) {
-			segment.value[i] = (tn*delta.value[i])/td - pos.value[i];
-		}
-		float t = (tn==0 || tn==td) ? tdEnd : tdSeconds;	// start/stop ramp
-		//cout <<  t << " segment:" << segment.toString() << endl;
-    	Status status = moveDelta(segment, t);
-		if (status < 0) {
-			return status;
-		}
-		pos += segment;
-	}
-	return STATUS_OK;
+    int32_t micsLeft = seconds * 1000000;
+    Quad<StepCoord> delta(destination - getMotorPosition());
+    Quad<StepCoord> pos;
+    int8_t td = 64;
+    float tdSeconds = seconds / (td + 2);
+    float tdEnd = tdSeconds * 2;
+    //cout << "t:" << (tdSeconds*(td-2) + tdEnd*2) << endl;
+    StepCoord maxSteps = 0;
+    for (int8_t tn = 0; tn <= td; tn++) {
+        Quad<StepCoord> segment;
+        for (MotorIndex i = 0; i < MOTOR_COUNT; i++) {
+            segment.value[i] = (tn * delta.value[i]) / td - pos.value[i];
+        }
+        float t = (tn == 0 || tn == td) ? tdEnd : tdSeconds;	// start/stop ramp
+        //cout <<  t << " segment:" << segment.toString() << endl;
+        Status status = moveDelta(segment, t);
+        if (status < 0) {
+            return status;
+        }
+        pos += segment;
+    }
+    return STATUS_OK;
 }
 
 Status Machine::moveDelta(Quad<StepCoord> delta, float seconds) {
-	int32_t micsDelay = 0;
+    int32_t micsDelay = 0;
     if (delta.isZero()) {
         return STATUS_OK;	// at destination
     }
@@ -188,12 +188,21 @@ Status Machine::moveDelta(Quad<StepCoord> delta, float seconds) {
                 pulses++;
             }
         }
-		int16_t us = (usDelay - (pulses - 1)*STEPONE_MICS);
+        int16_t us = (usDelay - (pulses - 1) * STEPONE_MICS);
         delayMics(us);
-		micsDelay += usDelay;
+        micsDelay += usDelay;
     }
-	delayMics(seconds*1000000 - micsDelay);
+    delayMics(seconds * 1000000 - micsDelay);
     return STATUS_BUSY_MOVING;
+}
+
+MotorIndex Machine::axisMotor(AxisIndex iAxis) {
+    for (MotorIndex iMotor = 0; iMotor < MOTOR_COUNT; iMotor++) {
+        if (motor[iMotor] == iAxis) {
+            return iMotor;
+        }
+    }
+    return INDEX_NONE;
 }
 
 void Machine::setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value) {

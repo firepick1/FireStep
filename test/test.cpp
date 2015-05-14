@@ -1142,7 +1142,7 @@ void test_Move() {
     machine.setMotorPosition(Quad<StepCoord>());
 
     threadClock.ticks++;
-    Serial.push(JT("{'mov':{'m1':1,'m2':10,'m3':100}}\n"));
+    Serial.push(JT("{'mov':{'m1':1,'m2':10,'m3':100,'sr':1}}\n"));
     mt.Heartbeat();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 
@@ -1157,7 +1157,37 @@ void test_Move() {
     ASSERTEQUAL(ypulses + 10, arduino.pulses(Y_STEP_PIN));
     ASSERTEQUAL(zpulses + 100, arduino.pulses(Z_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(1, 10, 100, 0), machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'m1':1,'m2':10,'m3':100}}}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'m1':1,'m2':10,'m3':100,'sr':1}}}\n"), Serial.output().c_str());
+    ASSERTEQUALT(usStart + 1000000, delayMicsTotal, 20000);
+
+    threadClock.ticks++;
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    usStart = delayMicsTotal;
+    xpulses = arduino.pulses(X_STEP_PIN);
+    ypulses = arduino.pulses(Y_STEP_PIN);
+    zpulses = arduino.pulses(Z_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+
+    threadClock.ticks++;
+    Serial.push(JT("{'mov':{'x':1,'y':10,'z':100}}\n"));
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+
+    threadClock.ticks++;
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+
+    threadClock.ticks++;
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(xpulses + 1, arduino.pulses(X_STEP_PIN));
+    ASSERTEQUAL(ypulses + 10, arduino.pulses(Y_STEP_PIN));
+    ASSERTEQUAL(zpulses + 100, arduino.pulses(Z_STEP_PIN));
+    ASSERTQUAD(Quad<StepCoord>(1, 10, 100, 0), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'x':1,'y':10,'z':100}}}\n"), Serial.output().c_str());
+    ASSERTEQUALT(usStart, delayMicsTotal, 20000);
 
     cout << "TEST	: test_Move() OK " << endl;
 }
