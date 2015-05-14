@@ -505,8 +505,8 @@ void test_JsonController_machinePosition(Machine& machine, JsonController &jc) {
     testJSON(machine, jc, replace, "{'spoc':''}", "{'s':0,'r':{'spoc':32765}}\n");
     testJSON(machine, jc, replace, "{'spoc':-32765}", "{'s':0,'r':{'spoc':-32765}}\n");
     testJSON(machine, jc, replace, "{'spoc':''}", "{'s':0,'r':{'spoc':-32765}}\n");
-    testJSON(machine, jc, replace, "{'spo':''}",
-             "{'s':0,'r':{'spo':{'x':-32760,'y':-32761,'z':-32762,'a':-32763,'b':-32764,'c':-32765}}}\n");
+    testJSON(machine, jc, replace, "{'spo1':'','spo2':'','spo3':'','spo4':''}",
+             "{'s':0,'r':{'spo1':-32760,'spo2':-32761,'spo3':-32762,'spo4':-32763}}\n");
 }
 
 MachineThread test_setup() {

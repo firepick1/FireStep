@@ -150,7 +150,8 @@ typedef class Machine : public QuadStepper {
 		AxisIndex getMotorAxis(MotorIndex iMotor) { return motor[iMotor]; }
 		Status moveTo(Quad<StepCoord> destination, float seconds);
 		Status moveDelta(Quad<StepCoord> delta, float seconds);
-		MotorIndex motorOfName(const char* axisName);
+		MotorIndex motorOfName(const char* name);
+		AxisIndex axisOfName(const char *name);
 } Machine;
 
 #ifdef TEST

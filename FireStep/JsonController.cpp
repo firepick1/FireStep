@@ -76,6 +76,9 @@ Status JsonController::processStepperPosition(JsonCommand &jcmd, JsonObject& job
             node["a"] = "";
             node["b"] = "";
             node["c"] = "";
+            if (!node.at("c").success()) {
+                return jcmd.setError(STATUS_JSON_KEY, "c");
+            }
         }
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {
@@ -87,18 +90,19 @@ Status JsonController::processStepperPosition(JsonCommand &jcmd, JsonObject& job
                 return status;
             }
         }
-    } else if (strcmp("x", key) == 0 || strcmp("spox", key) == 0) {
-        status = processField<StepCoord, long>(jobj, key, machine.axis[0].position);
-    } else if (strcmp("y", key) == 0 || strcmp("spoy", key) == 0) {
-        status = processField<StepCoord, long>(jobj, key, machine.axis[1].position);
-    } else if (strcmp("z", key) == 0 || strcmp("spoz", key) == 0) {
-        status = processField<StepCoord, long>(jobj, key, machine.axis[2].position);
-    } else if (strcmp("a", key) == 0 || strcmp("spoa", key) == 0) {
-        status = processField<StepCoord, long>(jobj, key, machine.axis[3].position);
-    } else if (strcmp("b", key) == 0 || strcmp("spob", key) == 0) {
-        status = processField<StepCoord, long>(jobj, key, machine.axis[4].position);
-    } else if (strcmp("c", key) == 0 || strcmp("spoc", key) == 0) {
-        status = processField<StepCoord, long>(jobj, key, machine.axis[5].position);
+	} else {
+		AxisIndex iAxis = machine.axisOfName(key);
+		if (iAxis == INDEX_NONE) {
+			if (strlen(key) > 3) {
+				iAxis = machine.axisOfName(key+3);
+				if (iAxis == INDEX_NONE) {
+					return jcmd.setError(STATUS_NO_MOTOR, key);
+				}
+			}else{
+				return jcmd.setError(STATUS_NO_MOTOR, key);
+			}
+		}
+        status = processField<StepCoord, long>(jobj, key, machine.axis[iAxis].position);
     }
     return status;
 }

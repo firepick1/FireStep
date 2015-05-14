@@ -209,27 +209,45 @@ MotorIndex Machine::motorOfName(const char *name) {
 	} 
 	
 	// Axis reference
+	AxisIndex iAxis = axisOfName(name);
+	if (iAxis != INDEX_NONE) {
+		for (MotorIndex iMotor = 0; iMotor < MOTOR_COUNT; iMotor++) {
+			if (motor[iMotor] == iAxis) {
+				return iMotor;
+			}
+		}
+	}
+    return INDEX_NONE;
+}
+
+AxisIndex Machine::axisOfName(const char *name) {
+	// Axis reference
 	AxisIndex iAxis;
 	if (strcmp("x", name) == 0) {
-		iAxis = X_AXIS;
+		return X_AXIS;
 	} else if (strcmp("y", name) == 0) {
-		iAxis = Y_AXIS;
+		return Y_AXIS;
 	} else if (strcmp("z", name) == 0) {
-		iAxis = Z_AXIS;
+		return Z_AXIS;
 	} else if (strcmp("a", name) == 0) {
-		iAxis = A_AXIS;
+		return A_AXIS;
 	} else if (strcmp("b", name) == 0) {
-		iAxis = B_AXIS;
+		return B_AXIS;
 	} else if (strcmp("c", name) == 0) {
-		iAxis = C_AXIS;
-	} else {
-		return INDEX_NONE;
+		return C_AXIS;
 	}
-    for (MotorIndex iMotor = 0; iMotor < MOTOR_COUNT; iMotor++) {
-        if (motor[iMotor] == iAxis) {
-            return iMotor;
-        }
-    }
+
+	// Motor reference
+	if (strcmp("1",name) == 0) {
+		return motor[0];
+	} else if (strcmp("2",name) == 0) {
+		return motor[1];
+	} else if (strcmp("3",name) == 0) {
+		return motor[2];
+	} else if (strcmp("4",name) == 0) {
+		return motor[3];
+	} 
+	
     return INDEX_NONE;
 }
 
