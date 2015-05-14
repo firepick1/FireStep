@@ -475,14 +475,6 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
 Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("ho", key) == 0) {
-        const char *s;
-        if ((s = jobj[key]) && *s == 0) {
-            JsonObject& node = jobj.createNestedObject(key);
-            node["1"] = "";
-            node["2"] = "";
-            node["3"] = "";
-            node["4"] = "";
-        }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
@@ -492,16 +484,12 @@ Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const
                 }
             }
         }
-    } else if (strcmp("1", key) == 0 || strcmp("ho1", key) == 0) {
-        status = processHomeField(machine, 0, jcmd, jobj, key);
-    } else if (strcmp("2", key) == 0 || strcmp("ho2", key) == 0) {
-        status = processHomeField(machine, 1, jcmd, jobj, key);
-    } else if (strcmp("3", key) == 0 || strcmp("ho3", key) == 0) {
-        status = processHomeField(machine, 2, jcmd, jobj, key);
-    } else if (strcmp("4", key) == 0 || strcmp("ho4", key) == 0) {
-        status = processHomeField(machine, 3, jcmd, jobj, key);
-    } else {
-        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+	} else {
+		MotorIndex iMotor = machine.motorOfName(key);
+		if (iMotor == INDEX_NONE) {
+			return jcmd.setError(STATUS_NO_MOTOR, key);
+		}
+        status = processHomeField(machine, iMotor, jcmd, jobj, key);
     }
     return status == STATUS_OK ? STATUS_BUSY_MOVING : status;
 }

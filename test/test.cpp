@@ -1251,7 +1251,7 @@ void test_Home() {
     machine.setMotorPosition(Quad<StepCoord>(100, 100, 100, 100));
 
     threadClock.ticks++;
-    Serial.push(JT("{'ho':{'1':'','3':20}}\n"));
+    Serial.push(JT("{'ho':{'x':'','z':20}}\n"));
     mt.Heartbeat();	// parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTQUAD(Quad<StepCoord>(100, 100, 100, 100), mt.machine.getMotorPosition());
@@ -1332,7 +1332,7 @@ void test_Home() {
     ASSERTEQUAL(HIGH, arduino.getPin(X_DIR_PIN)); // HIGH because we backed off
     ASSERTEQUAL(LOW, arduino.getPin(Y_DIR_PIN));
     ASSERTEQUAL(HIGH, arduino.getPin(Z_DIR_PIN)); // HIGH because we backed off
-    ASSERTEQUALS(JT("{'s':0,'r':{'ho':{'1':5,'3':20}}}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'ho':{'x':5,'z':20}}}\n"), Serial.output().c_str());
 
     cout << "TEST	: test_Home() OK " << endl;
 }
