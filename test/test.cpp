@@ -691,7 +691,7 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
     // parse and initialize stroke
     JsonCommand jcmd =
         testJSON(machine, jc, replace,
-                 "{'systc':'','dvs':{'us':123,'s1':[1,2],'s2':[4,5],'s3':[7,8]}}",
+                 "{'systc':'','dvs':{'us':123,'1':[1,2],'2':[4,5],'3':[7,8]}}",
                  "", STATUS_BUSY_MOVING);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), machine.stroke.position());
     ASSERTQUAD(Quad<StepCoord>(5, 5, 5, 5), machine.getMotorPosition());
@@ -719,7 +719,7 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
 
     // finalize stroke
     testJSON_process(machine, jc, jcmd, replace,
-                     "{'s':0,'r':{'systc':104,'dvs':{'us':123,'s1':4,'s2':13,'s3':22,'s4':0}}}\n",
+                     "{'s':0,'r':{'systc':104,'dvs':{'us':123,'1':4,'2':13,'3':22}}}\n",
                      STATUS_OK);
     ASSERTQUAD(Quad<StepCoord>(4, 13, 22, 0), machine.stroke.position());
     ASSERTQUAD(Quad<StepCoord>(9, 18, 27, 5), machine.getMotorPosition()); // axis a is NOPIN inactive
@@ -733,7 +733,7 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
 
     // parse and initialize stroke
     jcmd = testJSON(machine, jc, replace,
-                    "{'systc':'','dvs':{'us':123,'dp':[10,20],'s1':[1,2],'s2':[4,5],'s3':[7,8]}}",
+                    "{'systc':'','dvs':{'us':123,'dp':[10,20],'x':[1,2],'y':[4,5],'z':[7,8]}}",
                     "", STATUS_BUSY_MOVING);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), machine.stroke.position());
     ASSERTQUAD(Quad<StepCoord>(5, 5, 5, 5), machine.getMotorPosition());
@@ -764,7 +764,7 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
 
     // finalize stroke
     testJSON_process(machine, jc, jcmd, replace,
-                     "{'s':0,'r':{'systc':109,'dvs':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}\n",
+                     "{'s':0,'r':{'systc':109,'dvs':{'us':123,'dp':[10,20],'x':10,'y':20,'z':0}}}\n",
                      STATUS_OK);
     ASSERTQUAD(Quad<StepCoord>(10, 20, 0, 0), machine.stroke.position());
     ASSERTQUAD(Quad<StepCoord>(15, 25, 5, 5), machine.getMotorPosition()); // axis a is NOPIN inactive
@@ -779,7 +779,7 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
     }
     segs += "]";
     string jlarge = "{'dvs':{";
-    jlarge += "'s1':";
+    jlarge += "'1':";
     jlarge += segs;
     jlarge += "}}";
     string jlargein = JT(jlarge.c_str());
@@ -1142,7 +1142,7 @@ void test_Move() {
     machine.setMotorPosition(Quad<StepCoord>());
 
     threadClock.ticks++;
-    Serial.push(JT("{'mov':{'m1':1,'m2':10,'m3':100,'sr':1}}\n"));
+    Serial.push(JT("{'mov':{'1':1,'2':10,'3':100,'sr':1}}\n"));
     mt.Heartbeat();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 
@@ -1157,7 +1157,7 @@ void test_Move() {
     ASSERTEQUAL(ypulses + 10, arduino.pulses(Y_STEP_PIN));
     ASSERTEQUAL(zpulses + 100, arduino.pulses(Z_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(1, 10, 100, 0), machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'m1':1,'m2':10,'m3':100,'sr':1}}}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'1':1,'2':10,'3':100,'sr':1}}}\n"), Serial.output().c_str());
     ASSERTEQUALT(usStart + 1000000, delayMicsTotal, 20000);
 
     threadClock.ticks++;
@@ -1251,7 +1251,7 @@ void test_Home() {
     machine.setMotorPosition(Quad<StepCoord>(100, 100, 100, 100));
 
     threadClock.ticks++;
-    Serial.push(JT("{'ho':{'m1':'','m3':20}}\n"));
+    Serial.push(JT("{'ho':{'1':'','3':20}}\n"));
     mt.Heartbeat();	// parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTQUAD(Quad<StepCoord>(100, 100, 100, 100), mt.machine.getMotorPosition());
@@ -1332,7 +1332,7 @@ void test_Home() {
     ASSERTEQUAL(HIGH, arduino.getPin(X_DIR_PIN)); // HIGH because we backed off
     ASSERTEQUAL(LOW, arduino.getPin(Y_DIR_PIN));
     ASSERTEQUAL(HIGH, arduino.getPin(Z_DIR_PIN)); // HIGH because we backed off
-    ASSERTEQUALS(JT("{'s':0,'r':{'ho':{'m1':5,'m3':20}}}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'ho':{'1':5,'3':20}}}\n"), Serial.output().c_str());
 
     cout << "TEST	: test_Home() OK " << endl;
 }
@@ -1370,7 +1370,7 @@ void test_MachineThread() {
 
     ASSERTEQUALS("", Serial.output().c_str());
     threadClock.ticks++;
-    jsonIn = "{'systc':'','dvs':{'us':123,'dp':[10,20],'s1':[1,2],'s2':[4,5],'s3':[7,8]}}\n";
+    jsonIn = "{'systc':'','dvs':{'us':123,'dp':[10,20],'1':[1,2],'2':[4,5],'3':[7,8]}}\n";
     Serial.push(JT(jsonIn));
     mt.Heartbeat();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -1396,7 +1396,7 @@ void test_MachineThread() {
     mt.Heartbeat();
     ASSERTEQUAL(STATUS_OK, mt.status);
     jsonOut =
-        "{'s':0,'r':{'systc':108,'dvs':{'us':123,'dp':[10,20],'s1':10,'s2':20,'s3':0,'s4':0}}}\n";
+        "{'s':0,'r':{'systc':108,'dvs':{'us':123,'dp':[10,20],'1':10,'2':20,'3':0}}}\n";
     ASSERTEQUALS(JT(jsonOut), Serial.output().c_str());
     ASSERTQUAD(Quad<StepCoord>(10, 20, 0, 0), mt.machine.getMotorPosition());
 

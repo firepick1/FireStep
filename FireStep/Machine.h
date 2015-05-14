@@ -120,7 +120,7 @@ typedef class Axis {
         }
 } Axis;
 typedef int8_t AxisIndex;
-typedef QuadIndex MotorIndex;
+typedef int8_t MotorIndex;
 
 typedef class Machine : public QuadStepper {
         friend void ::test_Home();
@@ -150,7 +150,7 @@ typedef class Machine : public QuadStepper {
 		AxisIndex getMotorAxis(MotorIndex iMotor) { return motor[iMotor]; }
 		Status moveTo(Quad<StepCoord> destination, float seconds);
 		Status moveDelta(Quad<StepCoord> delta, float seconds);
-		MotorIndex axisMotor(AxisIndex iAxis);
+		MotorIndex motorOfName(const char* axisName);
 } Machine;
 
 #ifdef TEST

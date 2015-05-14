@@ -146,52 +146,12 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
             if (status != STATUS_OK) {
                 return jcmd.setError(status, it->key);
             }
-        } else if (strcmp("x", it->key) == 0) {
-            MotorIndex iMotor = machine.axisMotor(X_AXIS);
+		} else {
+			MotorIndex iMotor = machine.motorOfName(it->key);
             if (iMotor == INDEX_NONE) {
                 return jcmd.setError(STATUS_NO_MOTOR, it->key);
             }
 			status = initializeStrokeArray(jcmd, stroke, it->key, iMotor, slen[iMotor]);
-        } else if (strcmp("y", it->key) == 0) {
-            MotorIndex iMotor = machine.axisMotor(Y_AXIS);
-            if (iMotor == INDEX_NONE) {
-                return jcmd.setError(STATUS_NO_MOTOR, it->key);
-            }
-			status = initializeStrokeArray(jcmd, stroke, it->key, iMotor, slen[iMotor]);
-        } else if (strcmp("z", it->key) == 0) {
-            MotorIndex iMotor = machine.axisMotor(Z_AXIS);
-            if (iMotor == INDEX_NONE) {
-                return jcmd.setError(STATUS_NO_MOTOR, it->key);
-            }
-			status = initializeStrokeArray(jcmd, stroke, it->key, iMotor, slen[iMotor]);
-        } else if (strcmp("a", it->key) == 0) {
-            MotorIndex iMotor = machine.axisMotor(A_AXIS);
-            if (iMotor == INDEX_NONE) {
-                return jcmd.setError(STATUS_NO_MOTOR, it->key);
-            }
-			status = initializeStrokeArray(jcmd, stroke, it->key, iMotor, slen[iMotor]);
-        } else if (strcmp("b", it->key) == 0) {
-            MotorIndex iMotor = machine.axisMotor(B_AXIS);
-            if (iMotor == INDEX_NONE) {
-                return jcmd.setError(STATUS_NO_MOTOR, it->key);
-            }
-			status = initializeStrokeArray(jcmd, stroke, it->key, iMotor, slen[iMotor]);
-        } else if (strcmp("c", it->key) == 0) {
-            MotorIndex iMotor = machine.axisMotor(C_AXIS);
-            if (iMotor == INDEX_NONE) {
-                return jcmd.setError(STATUS_NO_MOTOR, it->key);
-            }
-			status = initializeStrokeArray(jcmd, stroke, it->key, iMotor, slen[iMotor]);
-        } else if (strcmp("s1", it->key) == 0) {
-			status = initializeStrokeArray(jcmd, stroke, it->key, 0, slen[0]);
-        } else if (strcmp("s2", it->key) == 0) {
-			status = initializeStrokeArray(jcmd, stroke, it->key, 1, slen[1]);
-        } else if (strcmp("s3", it->key) == 0) {
-			status = initializeStrokeArray(jcmd, stroke, it->key, 2, slen[2]);
-        } else if (strcmp("s4", it->key) == 0) {
-			status = initializeStrokeArray(jcmd, stroke, it->key, 3, slen[3]);
-        } else {
-            return jcmd.setError(STATUS_UNRECOGNIZED_NAME, it->key);
         }
     }
 	if (status != STATUS_BUSY_MOVING) {
@@ -221,10 +181,13 @@ Status JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
     Status status =  machine.stroke.traverse(ticks(), machine);
 
     Quad<StepCoord> &pos = machine.stroke.position();
-    stroke["s1"] = pos.value[0];
-    stroke["s2"] = pos.value[1];
-    stroke["s3"] = pos.value[2];
-    stroke["s4"] = pos.value[3];
+    for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
+		MotorIndex iMotor = machine.motorOfName(it->key);
+		if (iMotor != INDEX_NONE) {
+		cout << "key:" << it->key << " iMotor:" << (int) iMotor << endl;
+			stroke[it->key] = pos.value[iMotor];
+		}
+	}
 
     return status;
 }
@@ -515,10 +478,10 @@ Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["m1"] = "";
-            node["m2"] = "";
-            node["m3"] = "";
-            node["m4"] = "";
+            node["1"] = "";
+            node["2"] = "";
+            node["3"] = "";
+            node["4"] = "";
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -529,13 +492,13 @@ Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const
                 }
             }
         }
-    } else if (strcmp("m1", key) == 0 || strcmp("hom1", key) == 0) {
+    } else if (strcmp("1", key) == 0 || strcmp("ho1", key) == 0) {
         status = processHomeField(machine, 0, jcmd, jobj, key);
-    } else if (strcmp("m2", key) == 0 || strcmp("hom2", key) == 0) {
+    } else if (strcmp("2", key) == 0 || strcmp("ho2", key) == 0) {
         status = processHomeField(machine, 1, jcmd, jobj, key);
-    } else if (strcmp("m3", key) == 0 || strcmp("hom3", key) == 0) {
+    } else if (strcmp("3", key) == 0 || strcmp("ho3", key) == 0) {
         status = processHomeField(machine, 2, jcmd, jobj, key);
-    } else if (strcmp("m4", key) == 0 || strcmp("hom4", key) == 0) {
+    } else if (strcmp("4", key) == 0 || strcmp("ho4", key) == 0) {
         status = processHomeField(machine, 3, jcmd, jobj, key);
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
@@ -569,54 +532,14 @@ Status JsonController::initializeMove(JsonCommand& jcmd, JsonObject& jobj, const
                 }
             }
         }
-    } else if (strcmp("x", key) == 0) {
-        MotorIndex iMotor = machine.axisMotor(X_AXIS);
-        if (iMotor == INDEX_NONE) {
-            return STATUS_NO_MOTOR;
-        }
-        status = processField<StepCoord, long>(jobj, key, jcmd.move.value[iMotor]);
-    } else if (strcmp("y", key) == 0) {
-        MotorIndex iMotor = machine.axisMotor(Y_AXIS);
-        if (iMotor == INDEX_NONE) {
-            return STATUS_NO_MOTOR;
-        }
-        status = processField<StepCoord, long>(jobj, key, jcmd.move.value[iMotor]);
-    } else if (strcmp("z", key) == 0) {
-        MotorIndex iMotor = machine.axisMotor(Z_AXIS);
-        if (iMotor == INDEX_NONE) {
-            return STATUS_NO_MOTOR;
-        }
-        status = processField<StepCoord, long>(jobj, key, jcmd.move.value[iMotor]);
-    } else if (strcmp("a", key) == 0) {
-        MotorIndex iMotor = machine.axisMotor(A_AXIS);
-        if (iMotor == INDEX_NONE) {
-            return STATUS_NO_MOTOR;
-        }
-        status = processField<StepCoord, long>(jobj, key, jcmd.move.value[iMotor]);
-    } else if (strcmp("b", key) == 0) {
-        MotorIndex iMotor = machine.axisMotor(B_AXIS);
-        if (iMotor == INDEX_NONE) {
-            return STATUS_NO_MOTOR;
-        }
-        status = processField<StepCoord, long>(jobj, key, jcmd.move.value[iMotor]);
-    } else if (strcmp("c", key) == 0) {
-        MotorIndex iMotor = machine.axisMotor(C_AXIS);
-        if (iMotor == INDEX_NONE) {
-            return STATUS_NO_MOTOR;
-        }
-        status = processField<StepCoord, long>(jobj, key, jcmd.move.value[iMotor]);
-    } else if (strcmp("m1", key) == 0) {
-        status = processField<StepCoord, long>(jobj, key, jcmd.move.value[0]);
-    } else if (strcmp("m2", key) == 0) {
-        status = processField<StepCoord, long>(jobj, key, jcmd.move.value[1]);
-    } else if (strcmp("m3", key) == 0) {
-        status = processField<StepCoord, long>(jobj, key, jcmd.move.value[2]);
-    } else if (strcmp("m4", key) == 0) {
-        status = processField<StepCoord, long>(jobj, key, jcmd.move.value[3]);
-    } else if (strcmp("sr", key) == 0) {
+	} else if (strcmp("sr", key) == 0) {
         status = processField<StepCoord, long>(jobj, key, jcmd.stepRate);
-    } else {
-        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+	} else {
+        MotorIndex iMotor = machine.motorOfName(key);
+        if (iMotor == INDEX_NONE) {
+            return jcmd.setError(STATUS_NO_MOTOR, key);
+        }
+        status = processField<StepCoord, long>(jobj, key, jcmd.move.value[iMotor]);
     }
     return status == STATUS_OK ? STATUS_BUSY_MOVING : status;
 }
