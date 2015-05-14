@@ -31,7 +31,7 @@ typedef class JsonCommand {
         StaticJsonBuffer<JSON_REQUEST_BUFFER> jbRequest;
         StaticJsonBuffer<JSON_RESPONSE_BUFFER> jbResponse;
 		Quad<StepCoord> move;
-		StepCoord stepsPerSecond;
+		StepCoord stepRate; // steps per second
 		JsonVariant jRequestRoot;
 		JsonVariant jResponseRoot;
 		char error[8];
