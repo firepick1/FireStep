@@ -70,14 +70,12 @@ Status JsonController::processStepperPosition(JsonCommand &jcmd, JsonObject& job
     if (strlen(key) == 3) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["x"] = "";
-            node["y"] = "";
-            node["z"] = "";
-            node["a"] = "";
-            node["b"] = "";
-            node["c"] = "";
-            if (!node.at("c").success()) {
-                return jcmd.setError(STATUS_JSON_KEY, "c");
+            node["1"] = "";
+            node["2"] = "";
+            node["3"] = "";
+            node["4"] = "";
+            if (!node.at("4").success()) {
+                return jcmd.setError(STATUS_JSON_KEY, "4");
             }
         }
         JsonObject& kidObj = jobj[key];
@@ -234,6 +232,7 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
             }
         }
     } else if (strcmp("ma", key) == 0 || strcmp("ma", key + 1) == 0) {
+		JsonVariant &jv = jobj[key];
 		int iMotor = group - '1';
 		if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
 			return STATUS_MOTOR_INDEX;
@@ -644,7 +643,7 @@ Status JsonController::process(JsonCommand& jcmd) {
             status = processSys(jcmd, root, it->key);
         } else if (strncmp("dpy", it->key, 3) == 0) {
             status = processDisplay(jcmd, root, it->key);
-        } else if (strncmp("spo", it->key, 3) == 0) {
+        } else if (strncmp("mpo", it->key, 3) == 0) {
             status = processStepperPosition(jcmd, root, it->key);
         } else {
             switch (it->key[0]) {

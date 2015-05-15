@@ -474,39 +474,29 @@ void test_JsonController_machinePosition(Machine& machine, JsonController &jc) {
     string replace;
     replace.push_back('\'');
     replace.push_back('"');
-    testJSON(machine, jc, replace, "{'spo':''}", "{'s':0,'r':{'spo':{'x':0,'y':0,'z':0,'a':0,'b':0,'c':0}}}\n");
-    testJSON(machine, jc, replace, "{'spox':''}", "{'s':0,'r':{'spox':0}}\n");
-    testJSON(machine, jc, replace, "{'spox':32760}", "{'s':0,'r':{'spox':32760}}\n");
-    testJSON(machine, jc, replace, "{'spox':''}", "{'s':0,'r':{'spox':32760}}\n");
-    testJSON(machine, jc, replace, "{'spox':-32760}", "{'s':0,'r':{'spox':-32760}}\n");
-    testJSON(machine, jc, replace, "{'spox':''}", "{'s':0,'r':{'spox':-32760}}\n");
-    testJSON(machine, jc, replace, "{'spoy':''}", "{'s':0,'r':{'spoy':0}}\n");
-    testJSON(machine, jc, replace, "{'spoy':32761}", "{'s':0,'r':{'spoy':32761}}\n");
-    testJSON(machine, jc, replace, "{'spoy':''}", "{'s':0,'r':{'spoy':32761}}\n");
-    testJSON(machine, jc, replace, "{'spoy':-32761}", "{'s':0,'r':{'spoy':-32761}}\n");
-    testJSON(machine, jc, replace, "{'spoy':''}", "{'s':0,'r':{'spoy':-32761}}\n");
-    testJSON(machine, jc, replace, "{'spoz':''}", "{'s':0,'r':{'spoz':0}}\n");
-    testJSON(machine, jc, replace, "{'spoz':32762}", "{'s':0,'r':{'spoz':32762}}\n");
-    testJSON(machine, jc, replace, "{'spoz':''}", "{'s':0,'r':{'spoz':32762}}\n");
-    testJSON(machine, jc, replace, "{'spoz':-32762}", "{'s':0,'r':{'spoz':-32762}}\n");
-    testJSON(machine, jc, replace, "{'spoz':''}", "{'s':0,'r':{'spoz':-32762}}\n");
-    testJSON(machine, jc, replace, "{'spoa':''}", "{'s':0,'r':{'spoa':0}}\n");
-    testJSON(machine, jc, replace, "{'spoa':32763}", "{'s':0,'r':{'spoa':32763}}\n");
-    testJSON(machine, jc, replace, "{'spoa':''}", "{'s':0,'r':{'spoa':32763}}\n");
-    testJSON(machine, jc, replace, "{'spoa':-32763}", "{'s':0,'r':{'spoa':-32763}}\n");
-    testJSON(machine, jc, replace, "{'spoa':''}", "{'s':0,'r':{'spoa':-32763}}\n");
-    testJSON(machine, jc, replace, "{'spob':''}", "{'s':0,'r':{'spob':0}}\n");
-    testJSON(machine, jc, replace, "{'spob':32764}", "{'s':0,'r':{'spob':32764}}\n");
-    testJSON(machine, jc, replace, "{'spob':''}", "{'s':0,'r':{'spob':32764}}\n");
-    testJSON(machine, jc, replace, "{'spob':-32764}", "{'s':0,'r':{'spob':-32764}}\n");
-    testJSON(machine, jc, replace, "{'spob':''}", "{'s':0,'r':{'spob':-32764}}\n");
-    testJSON(machine, jc, replace, "{'spoc':''}", "{'s':0,'r':{'spoc':0}}\n");
-    testJSON(machine, jc, replace, "{'spoc':32765}", "{'s':0,'r':{'spoc':32765}}\n");
-    testJSON(machine, jc, replace, "{'spoc':''}", "{'s':0,'r':{'spoc':32765}}\n");
-    testJSON(machine, jc, replace, "{'spoc':-32765}", "{'s':0,'r':{'spoc':-32765}}\n");
-    testJSON(machine, jc, replace, "{'spoc':''}", "{'s':0,'r':{'spoc':-32765}}\n");
-    testJSON(machine, jc, replace, "{'spo1':'','spo2':'','spo3':'','spo4':''}",
-             "{'s':0,'r':{'spo1':-32760,'spo2':-32761,'spo3':-32762,'spo4':-32763}}\n");
+    testJSON(machine, jc, replace, "{'mpo':''}", "{'s':0,'r':{'mpo':{'1':0,'2':0,'3':0,'4':0}}}\n");
+    testJSON(machine, jc, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':0}}\n");
+    testJSON(machine, jc, replace, "{'mpo1':32760}", "{'s':0,'r':{'mpo1':32760}}\n");
+    testJSON(machine, jc, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':32760}}\n");
+    testJSON(machine, jc, replace, "{'mpo1':-32760}", "{'s':0,'r':{'mpo1':-32760}}\n");
+    testJSON(machine, jc, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':-32760}}\n");
+    testJSON(machine, jc, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':0}}\n");
+    testJSON(machine, jc, replace, "{'mpo2':32761}", "{'s':0,'r':{'mpo2':32761}}\n");
+    testJSON(machine, jc, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':32761}}\n");
+    testJSON(machine, jc, replace, "{'mpo2':-32761}", "{'s':0,'r':{'mpo2':-32761}}\n");
+    testJSON(machine, jc, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':-32761}}\n");
+    testJSON(machine, jc, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':0}}\n");
+    testJSON(machine, jc, replace, "{'mpo3':32762}", "{'s':0,'r':{'mpo3':32762}}\n");
+    testJSON(machine, jc, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':32762}}\n");
+    testJSON(machine, jc, replace, "{'mpo3':-32762}", "{'s':0,'r':{'mpo3':-32762}}\n");
+    testJSON(machine, jc, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':-32762}}\n");
+    testJSON(machine, jc, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':0}}\n");
+    testJSON(machine, jc, replace, "{'mpo4':32763}", "{'s':0,'r':{'mpo4':32763}}\n");
+    testJSON(machine, jc, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':32763}}\n");
+    testJSON(machine, jc, replace, "{'mpo4':-32763}", "{'s':0,'r':{'mpo4':-32763}}\n");
+    testJSON(machine, jc, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':-32763}}\n");
+    testJSON(machine, jc, replace, "{'mpo':''}",
+             "{'s':0,'r':{'mpo':{'1':-32760,'2':-32761,'3':-32762,'4':-32763}}}\n");
 }
 
 MachineThread test_setup() {
