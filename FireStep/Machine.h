@@ -78,7 +78,7 @@ typedef class Axis {
             latchBackoff(MICROSTEPS_DEFAULT), 
             usDelay(0), // Suggest 80us (12.8kHz) for microsteps 1
             searchDelay(80), // a slow, cautious but accurate speed
-			idleSnooze(80),
+			idleSnooze(0), // 0:disabled; 1000:weak, noisy, cooler  
             stepAngle(1.8),
             microsteps(MICROSTEPS_DEFAULT),
             dirHIGH(true), // true:advance on HIGH; false:advance on LOW

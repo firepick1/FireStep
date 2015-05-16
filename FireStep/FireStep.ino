@@ -5,7 +5,7 @@
 #include "NeoPixel.h"
 
 firestep::MachineThread machineThread; // FireStep command interpreter
-firestep::NeoPixel neoPixel(16, DISPLAY_PIN); // NeoPixel display driver
+firestep::NeoPixel neoPixel(16, PC2_DISPLAY_PIN); // NeoPixel display driver
 
 void setup() // run once, when the sketch starts
 {
@@ -19,7 +19,7 @@ void setup() // run once, when the sketch starts
   // Initialize
   machineThread.setup();
 
-  firestep::threadRunner.setup(LED_PIN);
+  firestep::threadRunner.setup(PC2_LED_PIN);
 }
 
 void loop()	// run over and over again
