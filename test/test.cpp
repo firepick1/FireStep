@@ -457,15 +457,15 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
     testJSON(machine, jc, replace, "{'?':{'sa':1.8}}", "{'s':0,'r':{'?':{'sa':1.80}}}\n");
 
     testJSON(machine, jc, replace, "{'x':''}",
-             "{'s':0,'r':{'x':{'dh':true,'en':true,'ho':0,'is':80,'lb':16,'lm':false,'ln':false,"\
+             "{'s':0,'r':{'x':{'dh':true,'en':true,'ho':0,'is':0,'lb':16,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':55,'pe':38,'pm':255,'pn':3,'po':0,'ps':54,"\
 			 "'sa':1.80,'sd':80,'tm':10000,'tn':0,'ud':0}}}\n");
     testJSON(machine, jc, replace, "{'y':''}",
-             "{'s':0,'r':{'y':{'dh':true,'en':true,'ho':0,'is':80,'lb':16,'lm':false,'ln':false,"\
+             "{'s':0,'r':{'y':{'dh':true,'en':true,'ho':0,'is':0,'lb':16,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':61,'pe':56,'pm':255,'pn':14,'po':0,'ps':60,"\
 			 "'sa':1.80,'sd':80,'tm':10000,'tn':0,'ud':0}}}\n");
     testJSON(machine, jc, replace, "{'z':''}",
-             "{'s':0,'r':{'z':{'dh':true,'en':true,'ho':0,'is':80,'lb':16,'lm':false,'ln':false,"\
+             "{'s':0,'r':{'z':{'dh':true,'en':true,'ho':0,'is':0,'lb':16,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':48,'pe':62,'pm':255,'pn':18,'po':0,'ps':46,"\
 			 "'sa':1.80,'sd':80,'tm':10000,'tn':0,'ud':0}}}\n");
 }
