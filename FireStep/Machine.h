@@ -122,12 +122,6 @@ typedef class Axis {
 typedef int8_t AxisIndex;
 typedef int8_t MotorIndex;
 
-enum PinConfig {
-	PC0_NOPIN = 0,
-	PC1_EMC01 = 1,
-	PC2_RAMPS_1_4 = 2,
-};
-
 typedef class Machine : public QuadStepper {
         friend void ::test_Home();
     private:
