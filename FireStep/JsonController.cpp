@@ -186,7 +186,6 @@ Status JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
     for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
 		MotorIndex iMotor = machine.motorOfName(it->key);
 		if (iMotor != INDEX_NONE) {
-		cout << "key:" << it->key << " iMotor:" << (int) iMotor << endl;
 			stroke[it->key] = pos.value[iMotor];
 		}
 	}
@@ -342,7 +341,6 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
     } else if (strcmp("tn", key) == 0 || strcmp("tn", key + 1) == 0) {
         status = processField<StepCoord, long>(jobj, key, axis.travelMin);
     } else if (strcmp("ud", key) == 0 || strcmp("ud", key + 1) == 0) {
-        cout << "ud" << endl;
         status = processField<DelayMics, long>(jobj, key, axis.usDelay);
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);

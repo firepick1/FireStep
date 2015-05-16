@@ -1,7 +1,7 @@
 #ifdef CMAKE
 #include <cstring>
-#endif
 #include <cmath>
+#endif
 #include "Arduino.h"
 #include "Machine.h"
 #include "AnalogRead.h"
