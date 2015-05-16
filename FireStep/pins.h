@@ -3,8 +3,28 @@
 
 #define NOPIN 255
 typedef uint8_t PinType;		// pin specification
-//#define BOARD_RAMPS
-//#define BOARD_EMC01
+
+//****************************************************************************************
+// The NOPIN configuration
+//****************************************************************************************
+
+  #define PC0_X_STEP_PIN         NOPIN
+  #define PC0_X_DIR_PIN          NOPIN
+  #define PC0_X_ENABLE_PIN       NOPIN
+  #define PC0_X_MIN_PIN          NOPIN
+  #define PC0_X_MAX_PIN          NOPIN
+  
+  #define PC0_Y_STEP_PIN         NOPIN
+  #define PC0_Y_DIR_PIN          NOPIN
+  #define PC0_Y_ENABLE_PIN       NOPIN
+  #define PC0_Y_MIN_PIN          NOPIN
+  #define PC0_Y_MAX_PIN          NOPIN
+  
+  #define PC0_Z_STEP_PIN         NOPIN
+  #define PC0_Z_DIR_PIN          NOPIN
+  #define PC0_Z_ENABLE_PIN       NOPIN
+  #define PC0_Z_MIN_PIN          NOPIN
+  #define PC0_Z_MAX_PIN          NOPIN
 
 //***********************************
 // Stuff specific to FirePick Delta (most of this section is a hack)
@@ -30,21 +50,21 @@ typedef uint8_t PinType;		// pin specification
   #define PC1_X_DIR_PIN          22
   #define PC1_X_ENABLE_PIN       14
   #define PC1_X_MIN_PIN          21
-  #define PC1_X_MAX_PIN          -1
+  #define PC1_X_MAX_PIN          NOPIN
   
   //Delta Motor "Y" ***********
   #define PC1_Y_STEP_PIN         4 //Y is the FRONT LEFT motor!
   #define PC1_Y_DIR_PIN          3
   #define PC1_Y_ENABLE_PIN       14
   #define PC1_Y_MIN_PIN          2
-  #define PC1_Y_MAX_PIN          -1
+  #define PC1_Y_MAX_PIN          NOPIN
   
   //Delta Motor "Z" ***********
   #define PC1_Z_STEP_PIN         13 //Z is the FRONT RIGHT motor!
   #define PC1_Z_DIR_PIN          12
   #define PC1_Z_ENABLE_PIN       14
   #define PC1_Z_MIN_PIN          11
-  #define PC1_Z_MAX_PIN          -1
+  #define PC1_Z_MAX_PIN          NOPIN
   
   //Modular Tool #1 ***********
   #define PC1_E0_STEP_PIN        20
@@ -73,13 +93,13 @@ typedef uint8_t PinType;		// pin specification
   #define PC1_HEATER_2_PIN       25
   #define PC1_TEMP_2_PIN         A7 //Analog numbering
 
-  #define PC1_HEATER_BED_PIN     -1 //25 //Digital numbering
-  #define PC1_TEMP_BED_PIN       -1 //A7 //Analog numbering
+  #define PC1_HEATER_BED_PIN     NOPIN
+  #define PC1_TEMP_BED_PIN       NOPIN
 
   //Vestigial Leftovers *******
-  #define PC1_LED_PIN            -1 //Not used on EMC01
-  #define PC1_FAN_PIN            -1 //Not used on EMC01
-  #define PC1_PS_ON_PIN          -1 //Not currently used, but might be on next pcb rev...
+  #define PC1_LED_PIN            NOPIN
+  #define PC1_FAN_PIN            NOPIN
+  #define PC1_PS_ON_PIN          NOPIN
  
 //#endif //EMC01 pinout
 
@@ -99,19 +119,19 @@ typedef uint8_t PinType;		// pin specification
   #define PC2_X_DIR_PIN          55 //A1
   #define PC2_X_ENABLE_PIN       38
   #define PC2_X_MIN_PIN           3 //3
-  #define PC2_X_MAX_PIN          -1 //2
+  #define PC2_X_MAX_PIN          NOPIN
   
   #define PC2_Y_STEP_PIN         60 //A6
   #define PC2_Y_DIR_PIN          61 //A7
   #define PC2_Y_ENABLE_PIN       56 //A2
   #define PC2_Y_MIN_PIN          14 //seems fried on current 2560 //14
-  #define PC2_Y_MAX_PIN          -1 //15
+  #define PC2_Y_MAX_PIN          NOPIN
   
   #define PC2_Z_STEP_PIN         46
   #define PC2_Z_DIR_PIN          48
   #define PC2_Z_ENABLE_PIN       62 //A8
   #define PC2_Z_MIN_PIN          18 //18
-  #define PC2_Z_MAX_PIN          -1 //19 (auto Z leveling probe)
+  #define PC2_Z_MAX_PIN          NOPIN
   
   #define PC2_E0_STEP_PIN        26
   #define PC2_E0_DIR_PIN         28
@@ -122,21 +142,19 @@ typedef uint8_t PinType;		// pin specification
   #define PC2_E1_ENABLE_PIN      30
   
   #define PC2_LED_PIN            13
-  
-  #define PC2_FAN_PIN            -1 // (Sprinter config)
-  
+  #define PC2_FAN_PIN            NOPIN
   #define PC2_PS_ON_PIN          12
   
   //MOSFETS:
   #define PC2_HEATER_0_PIN       10   // D10 EXTRUDER 1
-  #define PC2_HEATER_1_PIN       -1   // D9  (Use this for VACUUM instead!)
-  #define PC2_HEATER_2_PIN       -1   // N/C on RAMPS
+  #define PC2_HEATER_1_PIN       NOPIN
+  #define PC2_HEATER_2_PIN       NOPIN
   #define PC2_HEATER_BED_PIN     8    // BED +12V2, 11A
   
   //ANALOG / THERMISTORS:
   #define PC2_TEMP_0_PIN         13   // A13 
   #define PC2_TEMP_1_PIN         15   // A15 
-  #define PC2_TEMP_2_PIN         -1   // N/C on RAMPS
+  #define PC2_TEMP_2_PIN         NOPIN
   #define PC2_TEMP_BED_PIN       14   // A14 
 //#endif //RAMPS pinout
 
