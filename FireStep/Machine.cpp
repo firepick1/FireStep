@@ -251,6 +251,7 @@ MotorIndex Machine::motorOfName(const char *name) {
 
     // Axis reference
     AxisIndex iAxis = axisOfName(name);
+	cout << "axisOfName:" << name << " iAxis:" << (int) iAxis << endl;
     if (iAxis != INDEX_NONE) {
         for (MotorIndex iMotor = 0; iMotor < MOTOR_COUNT; iMotor++) {
             if (motor[iMotor] == iAxis) {

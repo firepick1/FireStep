@@ -39,8 +39,13 @@ template Status processField<bool,bool>(JsonObject& jobj, const char *key, bool&
 
 Status processHomeField(Machine& machine, AxisIndex iAxis, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
     Status status = processField<StepCoord, long>(jobj, key, machine.axis[iAxis].home);
-    jobj[key] = machine.axis[iAxis].home;
-    machine.axis[iAxis].homing = true;
+	if (machine.axis[iAxis].isEnabled()) {
+		jobj[key] = machine.axis[iAxis].home;
+		machine.axis[iAxis].homing = true;
+	} else {
+		jobj[key] = machine.axis[iAxis].position;
+		machine.axis[iAxis].homing = false;
+	}
 
 	return status;
 }
@@ -184,7 +189,7 @@ Status JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
 
     Quad<StepCoord> &pos = machine.stroke.position();
     for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
-		MotorIndex iMotor = machine.motorOfName(it->key);
+		MotorIndex iMotor = machine.motorOfName(it->key + (strlen(it->key)-1));
 		if (iMotor != INDEX_NONE) {
 			stroke[it->key] = pos.value[iMotor];
 		}
@@ -469,6 +474,14 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
 Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("ho", key) == 0) {
+		const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+			node["1"] = "";
+			node["2"] = "";
+			node["3"] = "";
+			node["4"] = "";
+        }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
@@ -479,7 +492,7 @@ Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const
             }
         }
 	} else {
-		MotorIndex iMotor = machine.motorOfName(key);
+		MotorIndex iMotor = machine.motorOfName(key + (strlen(key)-1));
 		if (iMotor == INDEX_NONE) {
 			return jcmd.setError(STATUS_NO_MOTOR, key);
 		}
@@ -517,7 +530,7 @@ Status JsonController::initializeMove(JsonCommand& jcmd, JsonObject& jobj, const
 	} else if (strcmp("sr", key) == 0) {
         status = processField<StepCoord, long>(jobj, key, jcmd.stepRate);
 	} else {
-        MotorIndex iMotor = machine.motorOfName(key);
+        MotorIndex iMotor = machine.motorOfName(key+(strlen(key)-1));
         if (iMotor == INDEX_NONE) {
             return jcmd.setError(STATUS_NO_MOTOR, key);
         }
