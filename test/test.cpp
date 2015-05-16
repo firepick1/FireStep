@@ -1107,6 +1107,41 @@ void test_Machine_step() {
     cout << "TEST	: test_Machine_step() OK " << endl;
 }
 
+void test_PinConfig() {
+    cout << "TEST	: test_PinConfig() =====" << endl;
+
+    MachineThread mt = test_setup();
+    Machine &machine = mt.machine;
+	ASSERTEQUAL(NOVALUE, arduino.getPinMode(PC1_X_STEP_PIN));
+
+    threadClock.ticks++;
+    Serial.push(JT("{'syspc':1}\n"));
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+
+    threadClock.ticks++;
+    mt.Heartbeat();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUAL(PC1_X_STEP_PIN, machine.axis[0].pinStep);
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC1_X_STEP_PIN));
+	ASSERTEQUAL(PC1_Y_STEP_PIN, machine.axis[1].pinStep);
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC1_Y_STEP_PIN));
+	ASSERTEQUAL(PC1_Z_STEP_PIN, machine.axis[2].pinStep);
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC1_Z_STEP_PIN));
+	ASSERTEQUAL(PC1_X_DIR_PIN, machine.axis[0].pinDir);
+	ASSERTEQUAL(PC1_Y_DIR_PIN, machine.axis[1].pinDir);
+	ASSERTEQUAL(PC1_Z_DIR_PIN, machine.axis[2].pinDir);
+	ASSERTEQUAL(PC1_X_ENABLE_PIN, machine.axis[0].pinEnable);
+	ASSERTEQUAL(PC1_Y_ENABLE_PIN, machine.axis[1].pinEnable);
+	ASSERTEQUAL(PC1_Z_ENABLE_PIN, machine.axis[2].pinEnable);
+	ASSERTEQUAL(PC1_X_MIN_PIN, machine.axis[0].pinMin);
+	ASSERTEQUAL(PC1_Y_MIN_PIN, machine.axis[1].pinMin);
+	ASSERTEQUAL(PC1_Z_MIN_PIN, machine.axis[2].pinMin);
+	ASSERTEQUAL(PC1_EMC01, machine.getPinConfig());
+
+    cout << "TEST	: test_PinConfig() OK " << endl;
+}
+
 void test_Move() {
     cout << "TEST	: test_Move() =====" << endl;
 
@@ -1479,6 +1514,7 @@ int main(int argc, char *argv[]) {
     test_PrettyPrint();
     test_Idle();
     test_Move();
+	test_PinConfig();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }

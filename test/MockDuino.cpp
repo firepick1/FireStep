@@ -130,7 +130,7 @@ MockDuino::MockDuino() {
     clear();
 }
 
-uint16_t& MockDuino::MEM(int addr) {
+int16_t& MockDuino::MEM(int addr) {
     ASSERT(0 <= addr && addr < ARDUINO_MEM);
     return mem[addr];
 }

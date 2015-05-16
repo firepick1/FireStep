@@ -13,8 +13,8 @@ using namespace std;
 typedef uint8_t byte;
 typedef uint8_t boolean;
 
-#define NOVALUE 57005 /* 0xDEAD */
-#define NOVALUESTR "57005"
+#define NOVALUE 32767 /* 0x77FF */
+#define NOVALUESTR "32767"
 
 
 #define DEC 1
@@ -112,17 +112,17 @@ typedef class MockDuino {
 	friend int16_t digitalRead(int16_t pin);
 	friend void pinMode(int16_t pin, int16_t inout);
 	private: 
-		uint16_t pin[ARDUINO_PINS];
-        uint16_t _pinMode[ARDUINO_PINS];
-		uint32_t pinPulses[ARDUINO_PINS];
-        uint16_t mem[ARDUINO_MEM];
-		uint32_t usDelay;
+		int16_t pin[ARDUINO_PINS];
+        int16_t _pinMode[ARDUINO_PINS];
+		int32_t pinPulses[ARDUINO_PINS];
+        int16_t mem[ARDUINO_MEM];
+		int32_t usDelay;
     public:
 
     public:
         MockDuino();
 		void dump();
-		uint16_t& MEM(int addr);
+		int16_t& MEM(int addr);
 		void clear();
 		void timer1(int increment=1);
 		void delay500ns();
