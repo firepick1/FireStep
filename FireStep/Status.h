@@ -64,6 +64,7 @@ enum Status {
 	STATUS_MOTOR_ERROR = -129,		// Internal error: invalid motor index
 	STATUS_NOT_IMPLEMENTED = -130,	// Proposed by not yet implemented 
 	STATUS_NO_MOTOR = -131,			// Axis must be mapped to motor
+	STATUS_PIN_CONFIG = -132,		// Invalid pin configuration
 };
 
 inline bool isProcessing(Status status) {

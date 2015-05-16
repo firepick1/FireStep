@@ -122,6 +122,11 @@ typedef class Axis {
 typedef int8_t AxisIndex;
 typedef int8_t MotorIndex;
 
+enum PinConfig {
+	PC1_EMC01,
+	PC2_RAMPS_1_4,
+};
+
 typedef class Machine : public QuadStepper {
         friend void ::test_Home();
     private:
@@ -129,7 +134,9 @@ typedef class Machine : public QuadStepper {
         Display nullDisplay;
         int8_t 	stepHome();
 		Axis *	motorAxis[MOTOR_COUNT];
-        AxisIndex motor[MOTOR_COUNT];
+        AxisIndex	motor[MOTOR_COUNT];
+		PinConfig	pinConfig;
+
     public:
         bool	invertLim;
 		bool	jsonPrettyPrint;
@@ -152,6 +159,8 @@ typedef class Machine : public QuadStepper {
 		Status moveDelta(Quad<StepCoord> delta, float seconds);
 		MotorIndex motorOfName(const char* name);
 		AxisIndex axisOfName(const char *name);
+		Status setPinConfig(PinConfig pc);
+		PinConfig getPinConfig() { return pinConfig; }
 } Machine;
 
 #ifdef TEST

@@ -72,22 +72,49 @@ Machine::Machine()
     for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
         setMotorAxis((MotorIndex)i, (AxisIndex)i);
     }
-    setPin(axis[0].pinStep, X_STEP_PIN, OUTPUT);
-    setPin(axis[0].pinDir, X_DIR_PIN, OUTPUT);
-    setPin(axis[0].pinMin, X_MIN_PIN, INPUT);
-    setPin(axis[0].pinEnable, X_ENABLE_PIN, OUTPUT, HIGH);
-    setPin(axis[1].pinStep, Y_STEP_PIN, OUTPUT);
-    setPin(axis[1].pinDir, Y_DIR_PIN, OUTPUT);
-    setPin(axis[1].pinMin, Y_MIN_PIN, INPUT);
-    setPin(axis[1].pinEnable, Y_ENABLE_PIN, OUTPUT, HIGH);
-    setPin(axis[2].pinStep, Z_STEP_PIN, OUTPUT);
-    setPin(axis[2].pinDir, Z_DIR_PIN, OUTPUT);
-    setPin(axis[2].pinMin, Z_MIN_PIN, INPUT);
-    setPin(axis[2].pinEnable, Z_ENABLE_PIN, OUTPUT, HIGH);
+	setPinConfig(PC2_RAMPS_1_4);
 
     for (int i = 0; i < MOTOR_COUNT; i++) {
         motor[i] = i;
     }
+}
+
+Status Machine::setPinConfig(PinConfig pc) {
+    switch (pc) {
+    default:
+		return STATUS_PIN_CONFIG;
+    case PC1_EMC01:
+		setPin(axis[0].pinStep, PC1_X_STEP_PIN, OUTPUT);
+		setPin(axis[0].pinDir, PC1_X_DIR_PIN, OUTPUT);
+		setPin(axis[0].pinMin, PC1_X_MIN_PIN, INPUT);
+		setPin(axis[0].pinEnable, PC1_X_ENABLE_PIN, OUTPUT, HIGH);
+		setPin(axis[1].pinStep, PC1_Y_STEP_PIN, OUTPUT);
+		setPin(axis[1].pinDir, PC1_Y_DIR_PIN, OUTPUT);
+		setPin(axis[1].pinMin, PC1_Y_MIN_PIN, INPUT);
+		setPin(axis[1].pinEnable, PC1_Y_ENABLE_PIN, OUTPUT, HIGH);
+		setPin(axis[2].pinStep, PC1_Z_STEP_PIN, OUTPUT);
+		setPin(axis[2].pinDir, PC1_Z_DIR_PIN, OUTPUT);
+		setPin(axis[2].pinMin, PC1_Z_MIN_PIN, INPUT);
+		setPin(axis[2].pinEnable, PC1_Z_ENABLE_PIN, OUTPUT, HIGH);
+		break;
+    case PC2_RAMPS_1_4:
+		setPin(axis[0].pinStep, PC2_X_STEP_PIN, OUTPUT);
+		setPin(axis[0].pinDir, PC2_X_DIR_PIN, OUTPUT);
+		setPin(axis[0].pinMin, PC2_X_MIN_PIN, INPUT);
+		setPin(axis[0].pinEnable, PC2_X_ENABLE_PIN, OUTPUT, HIGH);
+		setPin(axis[1].pinStep, PC2_Y_STEP_PIN, OUTPUT);
+		setPin(axis[1].pinDir, PC2_Y_DIR_PIN, OUTPUT);
+		setPin(axis[1].pinMin, PC2_Y_MIN_PIN, INPUT);
+		setPin(axis[1].pinEnable, PC2_Y_ENABLE_PIN, OUTPUT, HIGH);
+		setPin(axis[2].pinStep, PC2_Z_STEP_PIN, OUTPUT);
+		setPin(axis[2].pinDir, PC2_Z_DIR_PIN, OUTPUT);
+		setPin(axis[2].pinMin, PC2_Z_MIN_PIN, INPUT);
+		setPin(axis[2].pinEnable, PC2_Z_ENABLE_PIN, OUTPUT, HIGH);
+        break;
+    }
+	
+	pinConfig = pc;
+	return STATUS_OK;
 }
 
 Status Machine::setMotorAxis(MotorIndex iMotor, AxisIndex iAxis) {
@@ -197,57 +224,57 @@ Status Machine::moveDelta(Quad<StepCoord> delta, float seconds) {
 }
 
 MotorIndex Machine::motorOfName(const char *name) {
-	// Motor reference
-	if (strcmp("1",name) == 0) {
-		return 0;
-	} else if (strcmp("2",name) == 0) {
-		return 1;
-	} else if (strcmp("3",name) == 0) {
-		return 2;
-	} else if (strcmp("4",name) == 0) {
-		return 3;
-	} 
-	
-	// Axis reference
-	AxisIndex iAxis = axisOfName(name);
-	if (iAxis != INDEX_NONE) {
-		for (MotorIndex iMotor = 0; iMotor < MOTOR_COUNT; iMotor++) {
-			if (motor[iMotor] == iAxis) {
-				return iMotor;
-			}
-		}
-	}
+    // Motor reference
+    if (strcmp("1", name) == 0) {
+        return 0;
+    } else if (strcmp("2", name) == 0) {
+        return 1;
+    } else if (strcmp("3", name) == 0) {
+        return 2;
+    } else if (strcmp("4", name) == 0) {
+        return 3;
+    }
+
+    // Axis reference
+    AxisIndex iAxis = axisOfName(name);
+    if (iAxis != INDEX_NONE) {
+        for (MotorIndex iMotor = 0; iMotor < MOTOR_COUNT; iMotor++) {
+            if (motor[iMotor] == iAxis) {
+                return iMotor;
+            }
+        }
+    }
     return INDEX_NONE;
 }
 
 AxisIndex Machine::axisOfName(const char *name) {
-	// Axis reference
-	AxisIndex iAxis;
-	if (strcmp("x", name) == 0) {
-		return X_AXIS;
-	} else if (strcmp("y", name) == 0) {
-		return Y_AXIS;
-	} else if (strcmp("z", name) == 0) {
-		return Z_AXIS;
-	} else if (strcmp("a", name) == 0) {
-		return A_AXIS;
-	} else if (strcmp("b", name) == 0) {
-		return B_AXIS;
-	} else if (strcmp("c", name) == 0) {
-		return C_AXIS;
-	}
+    // Axis reference
+    AxisIndex iAxis;
+    if (strcmp("x", name) == 0) {
+        return X_AXIS;
+    } else if (strcmp("y", name) == 0) {
+        return Y_AXIS;
+    } else if (strcmp("z", name) == 0) {
+        return Z_AXIS;
+    } else if (strcmp("a", name) == 0) {
+        return A_AXIS;
+    } else if (strcmp("b", name) == 0) {
+        return B_AXIS;
+    } else if (strcmp("c", name) == 0) {
+        return C_AXIS;
+    }
 
-	// Motor reference
-	if (strcmp("1",name) == 0) {
-		return motor[0];
-	} else if (strcmp("2",name) == 0) {
-		return motor[1];
-	} else if (strcmp("3",name) == 0) {
-		return motor[2];
-	} else if (strcmp("4",name) == 0) {
-		return motor[3];
-	} 
-	
+    // Motor reference
+    if (strcmp("1", name) == 0) {
+        return motor[0];
+    } else if (strcmp("2", name) == 0) {
+        return motor[1];
+    } else if (strcmp("3", name) == 0) {
+        return motor[2];
+    } else if (strcmp("4", name) == 0) {
+        return motor[3];
+    }
+
     return INDEX_NONE;
 }
 
