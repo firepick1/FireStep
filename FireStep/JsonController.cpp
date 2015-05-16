@@ -360,23 +360,6 @@ int freeRam () {
 #endif
 }
 
-Status JsonController::processRawSteps(Quad<StepCoord> &steps) {
-    while (!steps.isZero()) {
-        Quad<StepCoord> motorPos = machine.getMotorPosition();
-        Quad<StepCoord> pulse(steps.sgn());
-        motorPos -= pulse;
-        machine.setMotorPosition(motorPos); // permit infinite travel
-
-        Status status = machine.step(pulse);
-        if (status != STATUS_OK) {
-            return status;
-        }
-        steps -= pulse;
-    }
-
-    return STATUS_OK;
-}
-
 Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = jcmd.getStatus();
 
@@ -408,11 +391,11 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
                 }
             }
             Quad<StepCoord> steps1(steps);
-            status = processRawSteps(steps1);
+            status = machine.pulse(steps1);
             if (status == STATUS_OK) {
                 delay(250);
                 Quad<StepCoord> steps2(steps.absoluteValue());
-                status = processRawSteps(steps2);
+                status = machine.pulse(steps2);
                 delay(250);
             }
             if (status == STATUS_OK) {
@@ -429,7 +412,7 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
                     steps.value[i] = jarr[i];
                 }
             }
-            status = processRawSteps(steps);
+            status = machine.pulse(steps);
         } else {
             return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
         }

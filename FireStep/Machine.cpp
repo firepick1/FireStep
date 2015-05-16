@@ -29,9 +29,9 @@ template class Quad<int32_t>;
 // #define PULSE_DELAY DELAY500NS /* increase pulse cycle by 1 microsecond */
 #define PULSE_DELAY /* no delay */
 
-#define STEPONE_MICS 6 /* microseconds for a single stepOne() invocation */
+#define PULSEONE_MICS 6 /* microseconds for a single pulseOne() invocation */
 
-inline void stepOne(Axis &a, bool advance) {
+inline void pulseOne(Axis &a, bool advance) {
     digitalWrite(a.pinDir, (advance == a.dirHIGH) ? HIGH : LOW);
     digitalWrite(a.pinStep, HIGH);
     PULSE_DELAY;
@@ -217,19 +217,19 @@ Status Machine::moveDelta(Quad<StepCoord> delta, float seconds) {
                 if (a.position <= a.travelMin) {
                     return STATUS_TRAVEL_MIN;
                 }
-                stepOne(a, false);
+                pulseOne(a, false);
                 a.position--;
                 pulses++;
             } else if (step >= iStep) {
                 if (a.position >= a.travelMax) {
                     return STATUS_TRAVEL_MAX;
                 }
-                stepOne(a, true);
+                pulseOne(a, true);
                 a.position++;
                 pulses++;
             }
         }
-        int16_t us = (usDelay - (pulses - 1) * STEPONE_MICS);
+        int16_t us = (usDelay - (pulses - 1) * PULSEONE_MICS);
         delayMics(us);
         micsDelay += usDelay;
     }
@@ -308,13 +308,15 @@ void Machine::enable(bool active) {
     }
 }
 
-// The step() method is the "stepper inner loop" that creates the
-// stepper pulse train to QUAD_ELEMENTS steppers. The pulse parameter
-// must have a value of -1, 0, or 1 for each stepper.
-//
-// Steppers can't be driven too quickly--they stall. Each
-// axis has a usDelay field that specifies a minimum delay
-// between pulses.
+/**
+ * The step() method is the "stepper inner loop" that creates the
+ * stepper pulse train to QUAD_ELEMENTS steppers. The pulse parameter
+ * must have a value of -1, 0, or 1 for each stepper.
+ *
+ * Steppers can't be driven too quickly--they stall. Each
+ * axis has a usDelay field that specifies a minimum delay
+ * between pulses.
+ */
 Status Machine::step(const Quad<StepCoord> &pulse) {
     int16_t usDelay = 0;
     for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse leading edges
@@ -366,6 +368,30 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
     return STATUS_OK;
 }
 
+
+/**
+ * Send stepper pulses without updating position.
+ * This is important for homing, test and calibration
+ * Return STATUS_OK on success
+ */
+Status Machine::pulse(Quad<StepCoord> &pulses) {
+    while (!pulses.isZero()) {
+        Quad<StepCoord> motorPos = getMotorPosition();
+        Quad<StepCoord> pulse(pulses.sgn());
+        motorPos -= pulse;
+        setMotorPosition(motorPos); // permit infinite travel
+
+        Status status = step(pulse);
+        if (status != STATUS_OK) {
+            return status;
+        }
+        pulses -= pulse;
+    }
+
+    return STATUS_OK;
+}
+
+
 int8_t Machine::stepHome() {
     int16_t searchDelay = 0;
     int8_t pulses = 0;
@@ -376,11 +402,11 @@ int8_t Machine::stepHome() {
             if (a.atMin) {
                 a.homing = false;
                 for (StepCoord lb = a.latchBackoff; lb > 0; lb--) {
-                    stepOne(a, true);
+                    pulseOne(a, true);
                     delayMics(a.searchDelay);
                 }
             } else {
-                stepOne(a, false);
+                pulseOne(a, false);
                 searchDelay = max(searchDelay, a.searchDelay);
                 pulses++;
             }
