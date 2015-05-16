@@ -29,9 +29,9 @@ template class Quad<int32_t>;
 // #define PULSE_DELAY DELAY500NS /* increase pulse cycle by 1 microsecond */
 #define PULSE_DELAY /* no delay */
 
-#define PULSEONE_MICS 6 /* microseconds for a single pulseOne() invocation */
+#define PULSEAXIS_MICS 6 /* microseconds for a single pulseAxis() invocation */
 
-inline void pulseOne(Axis &a, bool advance) {
+inline void pulseAxis(Axis &a, bool advance) {
     digitalWrite(a.pinDir, (advance == a.dirHIGH) ? HIGH : LOW);
     digitalWrite(a.pinStep, HIGH);
     PULSE_DELAY;
@@ -217,19 +217,19 @@ Status Machine::moveDelta(Quad<StepCoord> delta, float seconds) {
                 if (a.position <= a.travelMin) {
                     return STATUS_TRAVEL_MIN;
                 }
-                pulseOne(a, false);
+                pulseAxis(a, false);
                 a.position--;
                 pulses++;
             } else if (step >= iStep) {
                 if (a.position >= a.travelMax) {
                     return STATUS_TRAVEL_MAX;
                 }
-                pulseOne(a, true);
+                pulseAxis(a, true);
                 a.position++;
                 pulses++;
             }
         }
-        int16_t us = (usDelay - (pulses - 1) * PULSEONE_MICS);
+        int16_t us = (usDelay - (pulses - 1) * PULSEAXIS_MICS);
         delayMics(us);
         micsDelay += usDelay;
     }
@@ -402,11 +402,11 @@ int8_t Machine::stepHome() {
             if (a.atMin) {
                 a.homing = false;
                 for (StepCoord lb = a.latchBackoff; lb > 0; lb--) {
-                    pulseOne(a, true);
+                    pulseAxis(a, true);
                     delayMics(a.searchDelay);
                 }
             } else {
-                pulseOne(a, false);
+                pulseAxis(a, false);
                 searchDelay = max(searchDelay, a.searchDelay);
                 pulses++;
             }
