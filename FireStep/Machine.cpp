@@ -37,7 +37,7 @@ Machine::Machine()
     for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
         setMotorAxis((MotorIndex)i, (AxisIndex)i);
     }
-	setPinConfig(PC2_RAMPS_1_4);
+    setPinConfig(PC2_RAMPS_1_4);
 
     for (int i = 0; i < MOTOR_COUNT; i++) {
         motor[i] = i;
@@ -47,53 +47,53 @@ Machine::Machine()
 Status Machine::setPinConfig(PinConfig pc) {
     switch (pc) {
     default:
-		return STATUS_PIN_CONFIG;
+        return STATUS_PIN_CONFIG;
     case PC0_NOPIN:
-		setPin(axis[0].pinStep, PC0_X_STEP_PIN, OUTPUT);
-		setPin(axis[0].pinDir, PC0_X_DIR_PIN, OUTPUT);
-		setPin(axis[0].pinMin, PC0_X_MIN_PIN, INPUT);
-		setPin(axis[0].pinEnable, PC0_X_ENABLE_PIN, OUTPUT, HIGH);
-		setPin(axis[1].pinStep, PC0_Y_STEP_PIN, OUTPUT);
-		setPin(axis[1].pinDir, PC0_Y_DIR_PIN, OUTPUT);
-		setPin(axis[1].pinMin, PC0_Y_MIN_PIN, INPUT);
-		setPin(axis[1].pinEnable, PC0_Y_ENABLE_PIN, OUTPUT, HIGH);
-		setPin(axis[2].pinStep, PC0_Z_STEP_PIN, OUTPUT);
-		setPin(axis[2].pinDir, PC0_Z_DIR_PIN, OUTPUT);
-		setPin(axis[2].pinMin, PC0_Z_MIN_PIN, INPUT);
-		setPin(axis[2].pinEnable, PC0_Z_ENABLE_PIN, OUTPUT, HIGH);
-		break;
+        setPin(axis[0].pinStep, PC0_X_STEP_PIN, OUTPUT);
+        setPin(axis[0].pinDir, PC0_X_DIR_PIN, OUTPUT);
+        setPin(axis[0].pinMin, PC0_X_MIN_PIN, INPUT);
+        setPin(axis[0].pinEnable, PC0_X_ENABLE_PIN, OUTPUT, HIGH);
+        setPin(axis[1].pinStep, PC0_Y_STEP_PIN, OUTPUT);
+        setPin(axis[1].pinDir, PC0_Y_DIR_PIN, OUTPUT);
+        setPin(axis[1].pinMin, PC0_Y_MIN_PIN, INPUT);
+        setPin(axis[1].pinEnable, PC0_Y_ENABLE_PIN, OUTPUT, HIGH);
+        setPin(axis[2].pinStep, PC0_Z_STEP_PIN, OUTPUT);
+        setPin(axis[2].pinDir, PC0_Z_DIR_PIN, OUTPUT);
+        setPin(axis[2].pinMin, PC0_Z_MIN_PIN, INPUT);
+        setPin(axis[2].pinEnable, PC0_Z_ENABLE_PIN, OUTPUT, HIGH);
+        break;
     case PC1_EMC01:
-		setPin(axis[0].pinStep, PC1_X_STEP_PIN, OUTPUT);
-		setPin(axis[0].pinDir, PC1_X_DIR_PIN, OUTPUT);
-		setPin(axis[0].pinMin, PC1_X_MIN_PIN, INPUT);
-		setPin(axis[0].pinEnable, PC1_X_ENABLE_PIN, OUTPUT, HIGH);
-		setPin(axis[1].pinStep, PC1_Y_STEP_PIN, OUTPUT);
-		setPin(axis[1].pinDir, PC1_Y_DIR_PIN, OUTPUT);
-		setPin(axis[1].pinMin, PC1_Y_MIN_PIN, INPUT);
-		setPin(axis[1].pinEnable, PC1_Y_ENABLE_PIN, OUTPUT, HIGH);
-		setPin(axis[2].pinStep, PC1_Z_STEP_PIN, OUTPUT);
-		setPin(axis[2].pinDir, PC1_Z_DIR_PIN, OUTPUT);
-		setPin(axis[2].pinMin, PC1_Z_MIN_PIN, INPUT);
-		setPin(axis[2].pinEnable, PC1_Z_ENABLE_PIN, OUTPUT, HIGH);
-		break;
+        setPin(axis[0].pinStep, PC1_X_STEP_PIN, OUTPUT);
+        setPin(axis[0].pinDir, PC1_X_DIR_PIN, OUTPUT);
+        setPin(axis[0].pinMin, PC1_X_MIN_PIN, INPUT);
+        setPin(axis[0].pinEnable, PC1_X_ENABLE_PIN, OUTPUT, HIGH);
+        setPin(axis[1].pinStep, PC1_Y_STEP_PIN, OUTPUT);
+        setPin(axis[1].pinDir, PC1_Y_DIR_PIN, OUTPUT);
+        setPin(axis[1].pinMin, PC1_Y_MIN_PIN, INPUT);
+        setPin(axis[1].pinEnable, PC1_Y_ENABLE_PIN, OUTPUT, HIGH);
+        setPin(axis[2].pinStep, PC1_Z_STEP_PIN, OUTPUT);
+        setPin(axis[2].pinDir, PC1_Z_DIR_PIN, OUTPUT);
+        setPin(axis[2].pinMin, PC1_Z_MIN_PIN, INPUT);
+        setPin(axis[2].pinEnable, PC1_Z_ENABLE_PIN, OUTPUT, HIGH);
+        break;
     case PC2_RAMPS_1_4:
-		setPin(axis[0].pinStep, PC2_X_STEP_PIN, OUTPUT);
-		setPin(axis[0].pinDir, PC2_X_DIR_PIN, OUTPUT);
-		setPin(axis[0].pinMin, PC2_X_MIN_PIN, INPUT);
-		setPin(axis[0].pinEnable, PC2_X_ENABLE_PIN, OUTPUT, HIGH);
-		setPin(axis[1].pinStep, PC2_Y_STEP_PIN, OUTPUT);
-		setPin(axis[1].pinDir, PC2_Y_DIR_PIN, OUTPUT);
-		setPin(axis[1].pinMin, PC2_Y_MIN_PIN, INPUT);
-		setPin(axis[1].pinEnable, PC2_Y_ENABLE_PIN, OUTPUT, HIGH);
-		setPin(axis[2].pinStep, PC2_Z_STEP_PIN, OUTPUT);
-		setPin(axis[2].pinDir, PC2_Z_DIR_PIN, OUTPUT);
-		setPin(axis[2].pinMin, PC2_Z_MIN_PIN, INPUT);
-		setPin(axis[2].pinEnable, PC2_Z_ENABLE_PIN, OUTPUT, HIGH);
+        setPin(axis[0].pinStep, PC2_X_STEP_PIN, OUTPUT);
+        setPin(axis[0].pinDir, PC2_X_DIR_PIN, OUTPUT);
+        setPin(axis[0].pinMin, PC2_X_MIN_PIN, INPUT);
+        setPin(axis[0].pinEnable, PC2_X_ENABLE_PIN, OUTPUT, HIGH);
+        setPin(axis[1].pinStep, PC2_Y_STEP_PIN, OUTPUT);
+        setPin(axis[1].pinDir, PC2_Y_DIR_PIN, OUTPUT);
+        setPin(axis[1].pinMin, PC2_Y_MIN_PIN, INPUT);
+        setPin(axis[1].pinEnable, PC2_Y_ENABLE_PIN, OUTPUT, HIGH);
+        setPin(axis[2].pinStep, PC2_Z_STEP_PIN, OUTPUT);
+        setPin(axis[2].pinDir, PC2_Z_DIR_PIN, OUTPUT);
+        setPin(axis[2].pinMin, PC2_Z_MIN_PIN, INPUT);
+        setPin(axis[2].pinEnable, PC2_Z_ENABLE_PIN, OUTPUT, HIGH);
         break;
     }
-	
-	pinConfig = pc;
-	return STATUS_OK;
+
+    pinConfig = pc;
+    return STATUS_OK;
 }
 
 Status Machine::setMotorAxis(MotorIndex iMotor, AxisIndex iAxis) {
@@ -362,25 +362,25 @@ Status Machine::pulse(Quad<StepCoord> &pulses) {
 int8_t Machine::stepHome(int16_t pulsesPerAxis, int16_t searchDelay) {
     int8_t pulses = 0;
 
-    for (int8_t iPulse=0; iPulse<pulsesPerAxis; iPulse++) {
-    for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {
-        Axis &a(*motorAxis[i]);
-        if (a.homing && a.enabled) {
-            a.readAtMin(invertLim);
-            if (a.atMin) {
-                a.homing = false;
-                delayMics(100000); // wait 0.1s for machine to settle
-                for (StepCoord lb = a.latchBackoff; lb > 0; lb--) {
-                    a.pulse(true);
-                    delayMics(a.searchDelay);
+    for (int8_t iPulse = 0; iPulse < pulsesPerAxis; iPulse++) {
+        for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {
+            Axis &a(*motorAxis[i]);
+            if (a.homing && a.enabled) {
+                a.readAtMin(invertLim);
+                if (a.atMin) {
+                    a.homing = false;
+                    delayMics(100000); // wait 0.1s for machine to settle
+                    for (StepCoord lb = a.latchBackoff; lb > 0; lb--) {
+                        a.pulse(true);
+                        delayMics(a.searchDelay);
+                    }
+                } else {
+                    a.pulse(false);
+                    pulses++;
                 }
-            } else {
-                a.pulse(false);
-                pulses++;
             }
         }
-    }
-    delayMics(searchDelay); // maximum pulse rate throttle
+        delayMics(searchDelay); // maximum pulse rate throttle
     }
 
     return pulses;
