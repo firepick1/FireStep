@@ -1265,6 +1265,33 @@ void test_dvs() {
     cout << "TEST	: test_dvs() OK " << endl;
 }
 
+void test_error(MachineThread &mt, const char * cmd, Status status, const char *output=NULL) {
+    Serial.push(JT(cmd));
+    test_ticks(1); // parse
+	if (mt.status != STATUS_BUSY_PARSED) {
+		ASSERTEQUAL(status, mt.status);
+	} else {
+		test_ticks(1); // initialize
+		ASSERTEQUAL(status, mt.status);
+	}
+	if (output) {
+		ASSERTEQUALS(JT(output), Serial.output().c_str());
+	}
+}
+
+void test_errors() {
+    cout << "TEST	: test_errors() =====" << endl;
+
+    MachineThread mt = test_setup();
+    Machine &machine = mt.machine;
+
+    test_error(mt, "{'abc':true}\n", STATUS_UNRECOGNIZED_NAME, "{'s':-4,'r':{'abc':true},'e':'abc'}\n");
+    test_error(mt, "{bad-json}\n", STATUS_JSON_PARSE_ERROR, "{'s':-5}\n");
+    test_error(mt, "bad-json\n", STATUS_JSON_PARSE_ERROR, "{'s':-5}\n");
+
+    cout << "TEST	: test_errors() OK " << endl;
+}
+
 void test_Idle() {
     cout << "TEST	: test_Idle() =====" << endl;
 
@@ -1631,6 +1658,7 @@ int main(int argc, char *argv[]) {
     test_Move();
 	test_PinConfig();
 	test_dvs();
+	test_errors();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }

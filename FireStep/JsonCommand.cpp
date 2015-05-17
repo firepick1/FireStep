@@ -56,23 +56,18 @@ Status JsonCommand::parseCore() {
 			kids++;
 		}
 		if (kids < 1) {
-			return setError(STATUS_JSON_MEM, "mem");
+			return STATUS_JSON_MEM;
 		}
         jResponseRoot["s"] = STATUS_BUSY_PARSED;
 		jResponseRoot["r"] = jRequestRoot;
     } else {
-		return setError(STATUS_JSON_PARSE_ERROR, "json");
+		return STATUS_JSON_PARSE_ERROR;
     }
 
 	return STATUS_BUSY_PARSED;
 }
 
-/**
- * Parse the JSON provided or a JSON line read from Serial
- * Return true if parsing is complete.
- * Check isValid() and getStatus() for parsing status.
- */
-Status JsonCommand::parse(const char *jsonIn) {
+Status JsonCommand::parseInput(const char *jsonIn) {
     if (parsed) {
         return STATUS_BUSY_PARSED;
     }
@@ -80,14 +75,14 @@ Status JsonCommand::parse(const char *jsonIn) {
         snprintf(json, sizeof(json), "%s", jsonIn);
         if (strcmp(jsonIn, json) != 0) {
             parsed = true;
-			return setError(STATUS_JSON_TOO_LONG,"p1");
+			return STATUS_JSON_TOO_LONG;
         }
         return parseCore();
 	} else {
 		while (Serial.available()) {
 			if (pJsonFree - json >= MAX_JSON - 1) {
 				parsed = true;
-				return setError(STATUS_JSON_TOO_LONG,"p2");
+				return STATUS_JSON_TOO_LONG;
 			}
 			char c = Serial.read();
 			if (c == '\n') {
@@ -98,6 +93,22 @@ Status JsonCommand::parse(const char *jsonIn) {
 		}
 		return STATUS_WAIT_EOL;
 	}
+}
+
+/**
+ * Parse the JSON provided or a JSON line read from Serial
+ * Return true if parsing is complete.
+ * Check isValid() and getStatus() for parsing status.
+ */
+Status JsonCommand::parse(const char *jsonIn) {
+	Status status = parseInput(jsonIn);
+
+	if (status < 0) {
+		char error[100];
+		snprintf(error, sizeof(error), "{\"s\":%d}", status);
+		Serial.println(error);
+	}
+	return status;
 }
 
 bool JsonCommand::isValid() {

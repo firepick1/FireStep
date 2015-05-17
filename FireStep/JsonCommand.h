@@ -38,6 +38,7 @@ typedef class JsonCommand {
 
 	private:
 		Status parseCore();
+		Status parseInput(const char *jsonIn);
     public:
         JsonCommand();
 		void clear();
