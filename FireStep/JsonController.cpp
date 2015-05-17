@@ -9,45 +9,45 @@
 using namespace firestep;
 
 JsonController::JsonController(Machine& machine)
-	: machine(machine) {
-	lastProcessed = 0;
+    : machine(machine) {
+    lastProcessed = 0;
 }
 
 Status JsonController::setup() {
-	lastProcessed = threadClock.ticks;
-	return STATUS_OK;
+    lastProcessed = threadClock.ticks;
+    return STATUS_OK;
 }
 
 template<class TF, class TJ>
 Status processField(JsonObject& jobj, const char* key, TF& field) {
-	Status status = STATUS_OK;
-	const char *s;
-	if ((s=jobj[key]) && *s==0) { // query
-		status = (jobj[key] = (TJ) field).success() ? status : STATUS_FIELD_ERROR;
-	} else {
-		field = (TF)(TJ)jobj[key];
-		jobj[key] = (TJ) field;
-	}
-	return status;
+    Status status = STATUS_OK;
+    const char *s;
+    if ((s = jobj[key]) && *s == 0) { // query
+        status = (jobj[key] = (TJ) field).success() ? status : STATUS_FIELD_ERROR;
+    } else {
+        field = (TF)(TJ)jobj[key];
+        jobj[key] = (TJ) field;
+    }
+    return status;
 }
-template Status processField<int16_t,long>(JsonObject& jobj, const char *key, int16_t& field);
-template Status processField<uint16_t,long>(JsonObject& jobj, const char *key, uint16_t& field);
-template Status processField<int32_t,long>(JsonObject& jobj, const char *key, int32_t& field);
-template Status processField<uint8_t,long>(JsonObject& jobj, const char *key, uint8_t& field);
-template Status processField<float,double>(JsonObject& jobj, const char *key, float& field);
-template Status processField<bool,bool>(JsonObject& jobj, const char *key, bool& field);
+template Status processField<int16_t, long>(JsonObject& jobj, const char *key, int16_t& field);
+template Status processField<uint16_t, long>(JsonObject& jobj, const char *key, uint16_t& field);
+template Status processField<int32_t, long>(JsonObject& jobj, const char *key, int32_t& field);
+template Status processField<uint8_t, long>(JsonObject& jobj, const char *key, uint8_t& field);
+template Status processField<float, double>(JsonObject& jobj, const char *key, float& field);
+template Status processField<bool, bool>(JsonObject& jobj, const char *key, bool& field);
 
 Status processHomeField(Machine& machine, AxisIndex iAxis, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
     Status status = processField<StepCoord, long>(jobj, key, machine.axis[iAxis].home);
-	if (machine.axis[iAxis].isEnabled()) {
-		jobj[key] = machine.axis[iAxis].home;
-		machine.axis[iAxis].homing = true;
-	} else {
-		jobj[key] = machine.axis[iAxis].position;
-		machine.axis[iAxis].homing = false;
-	}
+    if (machine.axis[iAxis].isEnabled()) {
+        jobj[key] = machine.axis[iAxis].home;
+        machine.axis[iAxis].homing = true;
+    } else {
+        jobj[key] = machine.axis[iAxis].position;
+        machine.axis[iAxis].homing = false;
+    }
 
-	return status;
+    return status;
 }
 
 int axisOf(char c) {
@@ -93,25 +93,25 @@ Status JsonController::processStepperPosition(JsonCommand &jcmd, JsonObject& job
                 return status;
             }
         }
-	} else {
-		AxisIndex iAxis = machine.axisOfName(key);
-		if (iAxis == INDEX_NONE) {
-			if (strlen(key) > 3) {
-				iAxis = machine.axisOfName(key+3);
-				if (iAxis == INDEX_NONE) {
-					return jcmd.setError(STATUS_NO_MOTOR, key);
-				}
-			}else{
-				return jcmd.setError(STATUS_NO_MOTOR, key);
-			}
-		}
+    } else {
+        AxisIndex iAxis = machine.axisOfName(key);
+        if (iAxis == INDEX_NONE) {
+            if (strlen(key) > 3) {
+                iAxis = machine.axisOfName(key + 3);
+                if (iAxis == INDEX_NONE) {
+                    return jcmd.setError(STATUS_NO_MOTOR, key);
+                }
+            } else {
+                return jcmd.setError(STATUS_NO_MOTOR, key);
+            }
+        }
         status = processField<StepCoord, long>(jobj, key, machine.axis[iAxis].position);
     }
     return status;
 }
 
-Status JsonController::initializeStrokeArray(JsonCommand &jcmd, 
-	JsonObject& stroke, const char *key, MotorIndex iMotor, int16_t &slen) {
+Status JsonController::initializeStrokeArray(JsonCommand &jcmd,
+        JsonObject& stroke, const char *key, MotorIndex iMotor, int16_t &slen) {
     JsonArray &jarr = stroke[key];
     if (!jarr.success()) {
         return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, key);
@@ -123,12 +123,12 @@ Status JsonController::initializeStrokeArray(JsonCommand &jcmd,
         machine.stroke.seg[slen++].value[iMotor] = (int8_t) (long) * it2;
     }
     stroke[key] = (long) 0;
-	return STATUS_BUSY_MOVING;
+    return STATUS_BUSY_MOVING;
 }
 
 Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
-	Status status = STATUS_BUSY_MOVING;
-    int16_t slen[4] = {0,0,0,0};
+    Status status = STATUS_BUSY_MOVING;
+    int16_t slen[4] = {0, 0, 0, 0};
     bool us_ok = false;
     for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
         if (strcmp("us", it->key) == 0) {
@@ -153,17 +153,17 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
             if (status != STATUS_OK) {
                 return jcmd.setError(status, it->key);
             }
-		} else {
-			MotorIndex iMotor = machine.motorOfName(it->key);
+        } else {
+            MotorIndex iMotor = machine.motorOfName(it->key);
             if (iMotor == INDEX_NONE) {
                 return jcmd.setError(STATUS_NO_MOTOR, it->key);
             }
-			status = initializeStrokeArray(jcmd, stroke, it->key, iMotor, slen[iMotor]);
+            status = initializeStrokeArray(jcmd, stroke, it->key, iMotor, slen[iMotor]);
         }
     }
-	if (status != STATUS_BUSY_MOVING) {
-		return status;
-	}
+    if (status != STATUS_BUSY_MOVING) {
+        return status;
+    }
     if (!us_ok) {
         return jcmd.setError(STATUS_FIELD_REQUIRED, "us");
     }
@@ -189,11 +189,11 @@ Status JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
 
     Quad<StepCoord> &pos = machine.stroke.position();
     for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
-		MotorIndex iMotor = machine.motorOfName(it->key + (strlen(it->key)-1));
-		if (iMotor != INDEX_NONE) {
-			stroke[it->key] = pos.value[iMotor];
-		}
-	}
+        MotorIndex iMotor = machine.motorOfName(it->key + (strlen(it->key) - 1));
+        if (iMotor != INDEX_NONE) {
+            stroke[it->key] = pos.value[iMotor];
+        }
+    }
 
     return status;
 }
@@ -236,11 +236,11 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
             }
         }
     } else if (strcmp("ma", key) == 0 || strcmp("ma", key + 1) == 0) {
-		JsonVariant &jv = jobj[key];
-		int iMotor = group - '1';
-		if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
-			return STATUS_MOTOR_INDEX;
-		}
+        JsonVariant &jv = jobj[key];
+        int iMotor = group - '1';
+        if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
+            return STATUS_MOTOR_INDEX;
+        }
         AxisIndex iAxis = machine.getMotorAxis(iMotor);
         status = processField<AxisIndex, long>(jobj, key, iAxis);
         machine.setMotorAxis(iMotor, iAxis);
@@ -433,7 +433,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             node["fr"] = "";
             node["jp"] = "";
             node["lh"] = "";
-			node["pc"] = "";
+            node["pc"] = "";
             node["tc"] = "";
             node["v"] = "";
         }
@@ -451,14 +451,14 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp("jp", key) == 0 || strcmp("sysjp", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.jsonPrettyPrint);
     } else if (strcmp("pc", key) == 0 || strcmp("syspc", key) == 0) {
-		PinConfig pc = machine.getPinConfig();
+        PinConfig pc = machine.getPinConfig();
         status = processField<PinConfig, long>(jobj, key, pc);
-		const char *s;
-		if ((s=jobj.at(key)) && *s==0) { // query
-			// do nothing
-		} else {
-			machine.setPinConfig(pc);
-		}
+        const char *s;
+        if ((s = jobj.at(key)) && *s == 0) { // query
+            // do nothing
+        } else {
+            machine.setPinConfig(pc);
+        }
     } else if (strcmp("lh", key) == 0 || strcmp("syslh", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.invertLim);
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
@@ -474,13 +474,13 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
 Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("ho", key) == 0) {
-		const char *s;
+        const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-			node["1"] = "";
-			node["2"] = "";
-			node["3"] = "";
-			node["4"] = "";
+            node["1"] = "";
+            node["2"] = "";
+            node["3"] = "";
+            node["4"] = "";
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -491,11 +491,11 @@ Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const
                 }
             }
         }
-	} else {
-		MotorIndex iMotor = machine.motorOfName(key + (strlen(key)-1));
-		if (iMotor == INDEX_NONE) {
-			return jcmd.setError(STATUS_NO_MOTOR, key);
-		}
+    } else {
+        MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));
+        if (iMotor == INDEX_NONE) {
+            return jcmd.setError(STATUS_NO_MOTOR, key);
+        }
         status = processHomeField(machine, iMotor, jcmd, jobj, key);
     }
     return status == STATUS_OK ? STATUS_BUSY_MOVING : status;
@@ -527,10 +527,10 @@ Status JsonController::initializeMove(JsonCommand& jcmd, JsonObject& jobj, const
                 }
             }
         }
-	} else if (strcmp("sr", key) == 0) {
+    } else if (strcmp("sr", key) == 0) {
         status = processField<StepCoord, long>(jobj, key, jcmd.stepRate);
-	} else {
-        MotorIndex iMotor = machine.motorOfName(key+(strlen(key)-1));
+    } else {
+        MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));
         if (iMotor == INDEX_NONE) {
             return jcmd.setError(STATUS_NO_MOTOR, key);
         }
