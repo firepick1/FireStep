@@ -28,7 +28,7 @@ class TestDisplay: public Display {
         }
 } testDisplay;
 
-void test_tick(int ticks) {
+void test_ticks(int ticks) {
     arduino.timer1(ticks);
     threadRunner.outerLoop();
 }
@@ -82,9 +82,9 @@ void test_Thread() {
     ASSERTEQUAL(0x0000, TCCR1A);	// Timer/Counter1 normal port operation
     ASSERTEQUAL(0x0005, TCCR1B);	// Timer/Counter1 active; prescale 1024
     ASSERTEQUAL(NOVALUE, SREGI); 	// Global interrupts enabled
-    test_tick(1);
+    test_ticks(1);
     Ticks lastClock = ticks();
-    test_tick(1);
+    test_ticks(1);
     ASSERTEQUAL(1000000 / 15625, MicrosecondsSince(lastClock));
 
     cout << "TEST	: test_Thread() OK " << endl;
@@ -94,10 +94,10 @@ void test_command(const char *cmd, const char* expected) {
     Serial.clear();
     Serial.push(cmd);
     ASSERTEQUAL(strlen(cmd), Serial.available());
-    test_tick(MS_TICKS(1));
-    test_tick(MS_TICKS(1));
-    test_tick(MS_TICKS(1));
-    test_tick(MS_TICKS(1));
+    test_ticks(MS_TICKS(1));
+    test_ticks(MS_TICKS(1));
+    test_ticks(MS_TICKS(1));
+    test_ticks(MS_TICKS(1));
     ASSERTEQUALS(expected, Serial.output().c_str());
 }
 
@@ -174,7 +174,7 @@ void test_Machine() {
 
     // ticks should increase with TCNT1
     Ticks lastClock = ticks();
-    test_tick(1);
+    test_ticks(1);
     ASSERT(lastClock < ticks());
     lastClock = ticks();
     arduino.dump();
@@ -1217,6 +1217,54 @@ void test_Move() {
     cout << "TEST	: test_Move() OK " << endl;
 }
 
+void test_dvs() {
+    cout << "TEST	: test_dvs() =====" << endl;
+
+    MachineThread mt = test_setup();
+    Machine &machine = mt.machine;
+    int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
+
+    Serial.push(JT("{'dvs':{'us':5000000,'x':[127,127,0,-127,-127]}}\n"));
+    test_ticks(1); // parse
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    ASSERTEQUAL(xpulses, arduino.pulses(PC2_X_STEP_PIN));
+
+    test_ticks(1); // initialize
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(xpulses, arduino.pulses(PC2_X_STEP_PIN));
+
+    test_ticks(1); // start moving
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(xpulses, arduino.pulses(PC2_X_STEP_PIN));
+
+    test_ticks(MS_TICKS(1000)); // start moving
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(xpulses+1*127, arduino.pulses(PC2_X_STEP_PIN));
+
+    test_ticks(MS_TICKS(1000)); // start moving
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(xpulses+3*127, arduino.pulses(PC2_X_STEP_PIN));
+
+    test_ticks(MS_TICKS(1000)); // start moving
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(xpulses+5*127, arduino.pulses(PC2_X_STEP_PIN));
+
+    test_ticks(MS_TICKS(1000)); // start moving
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(xpulses+6*127, arduino.pulses(PC2_X_STEP_PIN));
+
+    test_ticks(MS_TICKS(1000)); // start moving
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(xpulses+6*127, arduino.pulses(PC2_X_STEP_PIN));
+
+    test_ticks(MS_TICKS(1000)); // start moving
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(xpulses+6*127, arduino.pulses(PC2_X_STEP_PIN));
+	ASSERTEQUALS(JT("{'s':0,'r':{'dvs':{'us':5000000,'x':762}}}\n"), Serial.output().c_str());
+
+    cout << "TEST	: test_dvs() OK " << endl;
+}
+
 void test_Idle() {
     cout << "TEST	: test_Idle() =====" << endl;
 
@@ -1582,6 +1630,7 @@ int main(int argc, char *argv[]) {
     test_Idle();
     test_Move();
 	test_PinConfig();
+	test_dvs();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }

@@ -39,7 +39,7 @@ Machine::Machine()
     }
     setPinConfig(PC2_RAMPS_1_4);
 
-    for (int i = 0; i < MOTOR_COUNT; i++) {
+    for (MotorIndex i = 0; i < MOTOR_COUNT; i++) {
         motor[i] = i;
     }
 }
@@ -110,7 +110,7 @@ Status Machine::setMotorAxis(MotorIndex iMotor, AxisIndex iAxis) {
 
 Status Machine::home() {
     int16_t searchDelay = 0;
-    for (int i = 0; i < QUAD_ELEMENTS; i++) {
+    for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         Axis &a(*motorAxis[i]);
         if (a.homing) {
             if (!a.enabled && a.pinMin != NOPIN) {
@@ -270,7 +270,7 @@ void Machine::setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t valu
 }
 
 void Machine::enable(bool active) {
-    for (int i = 0; i < AXIS_COUNT; i++) {
+    for (AxisIndex i = 0; i < AXIS_COUNT; i++) {
         axis[i].enable(active);
     }
 }
@@ -418,7 +418,7 @@ void Machine::idle() {
  * Set position of currently driven axes bound to motors
  */
 void Machine::setMotorPosition(const Quad<StepCoord> &position) {
-    for (int i = 0; i < QUAD_ELEMENTS; i++) {
+    for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         motorAxis[i]->position = position.value[i];
     }
 }
