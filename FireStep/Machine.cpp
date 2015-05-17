@@ -15,53 +15,18 @@ using namespace firestep;
 template class Quad<int16_t>;
 template class Quad<int32_t>;
 
-// A stepper pulse cycle requires 3 digitalWrite()'s for
-// step direction, pulse high, and pulse low.
-// Arduino 16-MHz digitalWrite pair takes 3.833 microseconds,
-// so a full stepper pulse cycle should take ~5.7 microseconds:
-//   http://skpang.co.uk/blog/archives/323
-// A4983 stepper driver pulse cycle requires 2 microseconds
-// DRV8825 stepper driver requires 3.8 microseconds
-//   http://www.ti.com/lit/ds/symlink/drv8825.pdf
-// Therefore, for currently fashionable stepper driver chips,
-// Arduino digitalWrite() is slow enough to be its own delay (feature!)
-// If you need longer pulse time, just add a delay:
-// #define PULSE_DELAY DELAY500NS /* increase pulse cycle by 1 microsecond */
-#define PULSE_DELAY /* no delay */
-
 #define PULSEAXIS_MICS 6 /* microseconds for a single pulseAxis() invocation */
-
-inline void pulseAxis(Axis &a, bool advance) {
-    digitalWrite(a.pinDir, (advance == a.dirHIGH) ? HIGH : LOW);
-    digitalWrite(a.pinStep, HIGH);
-    PULSE_DELAY;
-    digitalWrite(a.pinStep, LOW);
-}
 
 #ifdef TEST
 int32_t firestep::delayMicsTotal = 0;
 #endif
-
-/**
- * inline replacement for Arduino delayMicroseconds()
- */
-inline void delayMics(int32_t usDelay) {
-    if (usDelay > 0) {
-#ifdef TEST
-        delayMicsTotal += usDelay;
-#endif
-        while (usDelay-- > 0) {
-            DELAY500NS;
-            DELAY500NS;
-        }
-    }
-}
 
 Status Axis::enable(bool active) {
     if (pinEnable == NOPIN || pinStep == NOPIN || pinDir == NOPIN || pinMin == NOPIN) {
         return STATUS_NOPIN;
     }
     digitalWrite(pinEnable, active ? PIN_ENABLE : PIN_DISABLE);
+    digitalWrite(pinDir, (advancing == dirHIGH) ? HIGH : LOW);
     enabled = active;
     return STATUS_OK;
 }
@@ -144,6 +109,7 @@ Status Machine::setMotorAxis(MotorIndex iMotor, AxisIndex iAxis) {
 }
 
 Status Machine::home() {
+    int16_t searchDelay = 0;
     for (int i = 0; i < QUAD_ELEMENTS; i++) {
         Axis &a(*motorAxis[i]);
         if (a.homing) {
@@ -151,10 +117,11 @@ Status Machine::home() {
                 return STATUS_AXIS_DISABLED;
             }
             a.position = a.home;
+            searchDelay = max(searchDelay, a.searchDelay);
         }
     }
 
-    if (stepHome() > 0) {
+    if (stepHome(32, searchDelay) > 0) {
         return STATUS_BUSY_MOVING;
     }
 
@@ -217,14 +184,14 @@ Status Machine::moveDelta(Quad<StepCoord> delta, float seconds) {
                 if (a.position <= a.travelMin) {
                     return STATUS_TRAVEL_MIN;
                 }
-                pulseAxis(a, false);
+                a.pulse(false);
                 a.position--;
                 pulses++;
             } else if (step >= iStep) {
                 if (a.position >= a.travelMax) {
                     return STATUS_TRAVEL_MAX;
                 }
-                pulseAxis(a, true);
+                a.pulse(true);
                 a.position++;
                 pulses++;
             }
@@ -251,7 +218,6 @@ MotorIndex Machine::motorOfName(const char *name) {
 
     // Axis reference
     AxisIndex iAxis = axisOfName(name);
-	cout << "axisOfName:" << name << " iAxis:" << (int) iAxis << endl;
     if (iAxis != INDEX_NONE) {
         for (MotorIndex iMotor = 0; iMotor < MOTOR_COUNT; iMotor++) {
             if (motor[iMotor] == iAxis) {
@@ -393,28 +359,30 @@ Status Machine::pulse(Quad<StepCoord> &pulses) {
 }
 
 
-int8_t Machine::stepHome() {
-    int16_t searchDelay = 0;
+int8_t Machine::stepHome(int16_t pulsesPerAxis, int16_t searchDelay) {
     int8_t pulses = 0;
+
+    for (int8_t iPulse=0; iPulse<pulsesPerAxis; iPulse++) {
     for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {
         Axis &a(*motorAxis[i]);
-        if (a.homing) {
+        if (a.homing && a.enabled) {
             a.readAtMin(invertLim);
             if (a.atMin) {
                 a.homing = false;
+                delayMics(100000); // wait 0.1s for machine to settle
                 for (StepCoord lb = a.latchBackoff; lb > 0; lb--) {
-                    pulseAxis(a, true);
+                    a.pulse(true);
                     delayMics(a.searchDelay);
                 }
             } else {
-                pulseAxis(a, false);
-                searchDelay = max(searchDelay, a.searchDelay);
+                a.pulse(false);
                 pulses++;
             }
         }
     }
-
     delayMics(searchDelay); // maximum pulse rate throttle
+    }
+
     return pulses;
 }
 
