@@ -28,7 +28,7 @@ typedef class Stroke {
     public:
 		Ticks			tStart;				// ticks at start of traversal
 		StepCoord		maxV;				// max steps/tick (default 16)
-        StepDV 			scale;				// segment velocity unit
+        StepCoord		scale;				// segment velocity unit
 		Ticks			dtTotal;			// ticks for planned traversal 
         int32_t 		planMicros;			// planned traversal microseconds
         SegIndex		curSeg;				// current segment index
