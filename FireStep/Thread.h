@@ -47,16 +47,16 @@ inline Ticks ticks() {
 typedef struct Thread {
     public:
         Thread() : tardies(0), id(0), pNext(NULL) {
-            nextHeartbeat.ticks = 0;
+            nextLoop.ticks = 0;
         }
         virtual void setup();
-        virtual void Heartbeat() {}
+        virtual void loop() {}
 
         struct Thread *pNext;
 
-        // Threads should increment the heartbeat as desired.
-        // Threads with 0 nextHeartbeat will always run ASAP.
-        ThreadClock nextHeartbeat;
+        // Threads should increment the loop as desired.
+        // Threads with 0 nextLoop will always run ASAP.
+        ThreadClock nextLoop;
 
         byte tardies;
         char id;
@@ -66,7 +66,7 @@ Thread, *ThreadPtr;
 // Binary pulse with variable width
 typedef struct PulseThread : Thread {
         virtual void setup(Ticks period, Ticks pulseWidth);
-        virtual void Heartbeat();
+        virtual void loop();
 
         boolean isHigh;
 
@@ -91,7 +91,7 @@ typedef class MonitorThread : PulseThread {
 
         void setup(int pinLED=NOPIN); /* PRIVATE */
         unsigned int Free(); /* PRIVATE */
-        void Heartbeat(); /* PRIVATE */
+        void loop(); /* PRIVATE */
         int pinLED; /* PRIVATE */
 
     public:
@@ -109,7 +109,7 @@ extern MonitorThread monitor;
 
 extern struct Thread *pThreadList;
 extern int nThreads;
-extern int32_t nHeartbeats;
+extern int32_t nLoops;
 extern int32_t nTardies;
 
 typedef class ThreadRunner {
@@ -156,7 +156,7 @@ typedef class ThreadRunner {
             if (fast-- && innerLoop()) {
                 // do nothing
             } else {
-                nHeartbeats += nHB;
+                nLoops += nHB;
                 nHB = 0;
                 fast = 255;
             }
@@ -187,25 +187,25 @@ typedef class ThreadRunner {
 
             // inner loop: run active Threads
             for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-                if (generation < pThread->nextHeartbeat.generation) {
+                if (generation < pThread->nextLoop.generation) {
                     continue; // not time yet for scheduled reactivation
                 }
-                if (generation == pThread->nextHeartbeat.generation && age < pThread->nextHeartbeat.age) {
+                if (generation == pThread->nextLoop.generation && age < pThread->nextLoop.age) {
                     continue; // not time yet for scheduled reactivation
                 }
 
-                pThread->Heartbeat();	// reactivate thread
+                pThread->loop();	// reactivate thread
                 nHB++;
 
                 if (testTardies-- == 0) {
                     testTardies = 5;	// test intermittently for late Threads
-                    if (age <= pThread->nextHeartbeat.age) {
+                    if (age <= pThread->nextLoop.age) {
                         continue;    // transient ASAP or future
                     }
-                    if (generation < pThread->nextHeartbeat.generation) {
+                    if (generation < pThread->nextLoop.generation) {
                         continue;    // future
                     }
-                    if (0 == pThread->nextHeartbeat.age) {
+                    if (0 == pThread->nextLoop.age) {
                         continue;    // permanent ASAP
                     }
 

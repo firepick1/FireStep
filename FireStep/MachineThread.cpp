@@ -63,7 +63,7 @@ void MachineThread::displayStatus() {
     machine.pDisplay->show();
 }
 
-void MachineThread::Heartbeat() {
+void MachineThread::loop() {
 #ifdef THROTTLE_SPEED
     controller.speed = ADCH;
     if (controller.speed <= 251) {
@@ -123,6 +123,6 @@ void MachineThread::Heartbeat() {
 
     displayStatus();
 
-    nextHeartbeat.ticks = 0; // Highest priority
+    nextLoop.ticks = 0; // Highest priority
 }
 

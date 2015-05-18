@@ -22,7 +22,7 @@ typedef class MachineThread : Thread {
     public:
         MachineThread();
         void setup();
-        void Heartbeat();
+        void loop();
 } MachineThread;
 
 } // namespace firestep

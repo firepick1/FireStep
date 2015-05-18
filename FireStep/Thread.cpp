@@ -8,7 +8,7 @@ namespace firestep {
 	ThreadRunner 	threadRunner;
 	struct Thread *	pThreadList;
 	int 			nThreads;
-	int32_t 		nHeartbeats;
+	int32_t 		nLoops;
 	int32_t 		nTardies;
 
 };
@@ -46,17 +46,17 @@ void PulseThread::setup(Ticks period, Ticks pulseWidth) {
     m_LowPeriod = period - m_HighPeriod;
 }
 
-void PulseThread::Heartbeat() {
+void PulseThread::loop() {
     isHigh = !isHigh;
     if (isHigh) {
-        nextHeartbeat.ticks = threadClock.ticks+m_HighPeriod;
+        nextLoop.ticks = threadClock.ticks+m_HighPeriod;
     } else {
-        nextHeartbeat.ticks = threadClock.ticks+m_LowPeriod;
+        nextLoop.ticks = threadClock.ticks+m_LowPeriod;
     }
 }
 
 
-unsigned long totalHeartbeats;
+unsigned long totalLoops;
 
 void MonitorThread::setup(int pinLED) {
     id = 'Z';
@@ -92,8 +92,8 @@ void MonitorThread::Error(const char *msg, int value) {
     Serial.println(value);
 }
 
-void MonitorThread::Heartbeat() {
-    PulseThread::Heartbeat();
+void MonitorThread::loop() {
+    PulseThread::loop();
 #define MONITOR
 #ifdef MONITOR
     ThreadEnable(false);
@@ -119,29 +119,29 @@ void MonitorThread::Heartbeat() {
         verbose = true;
     }
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-        if (threadClock.generation > pThread->nextHeartbeat.generation + 1 && 
-			pThread->nextHeartbeat.generation > 0) {
+        if (threadClock.generation > pThread->nextLoop.generation + 1 && 
+			pThread->nextLoop.generation > 0) {
 			//cout << "ticks:" << threadClock.ticks 
-				//<< " nextHeartBeat:" << pThread->nextHeartbeat.ticks 
+				//<< " nextLoop:" << pThread->nextLoop.ticks 
 				//<< " pThread:" << pThread->id << endl;
-            Error("O@G", pThread->nextHeartbeat.generation);
+            Error("O@G", pThread->nextLoop.generation);
         }
     }
     if (isHigh) {
-        totalHeartbeats += nHeartbeats;
+        totalLoops += nLoops;
         if (verbose) {
             Serial.print(".");
             //DEBUG_DEC("F", Free());
             DEBUG_DEC("S", millis() / 1000);
             DEBUG_DEC("G", threadClock.generation);
-            DEBUG_DEC("H", nHeartbeats);
+            DEBUG_DEC("H", nLoops);
             if (threadClock.generation > 0) {
-                DEBUG_DEC("H/G", totalHeartbeats / threadClock.generation);
+                DEBUG_DEC("H/G", totalLoops / threadClock.generation);
             }
             DEBUG_DEC("T", nTardies);
             DEBUG_EOL();
         }
-        nHeartbeats = 0;
+        nLoops = 0;
         nTardies = 0;
     }
     ThreadEnable(true);
@@ -162,7 +162,7 @@ void ThreadRunner::clear() {
 	pThreadList = NULL;
 	threadClock.ticks = 0;
 	nThreads = 0;
-	nHeartbeats = 0;
+	nLoops = 0;
 	nTardies = 0;
 	generation = threadClock.generation;
 	lastAge = 0;
@@ -190,8 +190,8 @@ void ThreadRunner::setup(int pinLED) {
 void ThreadRunner::resetGenerations() {
     threadClock.generation -= GENERATION_RESET;
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-        if (pThread->nextHeartbeat.ticks) {
-            pThread->nextHeartbeat.generation -= GENERATION_RESET;
+        if (pThread->nextLoop.ticks) {
+            pThread->nextLoop.generation -= GENERATION_RESET;
         }
     }
 }
@@ -228,16 +228,13 @@ int32_t firestep::MicrosecondsSince(Ticks lastClock) {
     return (elapsed * 1000000) / MS_TICKS(1000);
 }
 
-// Make sure we come up for air sometimes
-#define MAX_ACTIVE_HEARTBEATS (255-MAX_ThreadS)
-
 void firestep::ThreadEnable(boolean enable) {
 #ifdef DEBUG_ThreadENABLE
     DEBUG_DEC("C", ticks());
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
         Serial.print(pThread->id);
         Serial.print(":");
-        Serial.print(pThread->nextHeartbeat.ticks, DEC);
+        Serial.print(pThread->nextLoop.ticks, DEC);
         Serial.print(" ");
     }
     DEBUG_EOL();
