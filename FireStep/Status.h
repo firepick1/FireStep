@@ -65,6 +65,7 @@ enum Status {
 	STATUS_NOT_IMPLEMENTED = -130,	// Proposed by not yet implemented 
 	STATUS_NO_MOTOR = -131,			// Axis must be mapped to motor
 	STATUS_PIN_CONFIG = -132,		// Invalid pin configuration
+	STATUS_VALUE_RANGE = -133,		// Provided value out of range
 };
 
 inline bool isProcessing(Status status) {

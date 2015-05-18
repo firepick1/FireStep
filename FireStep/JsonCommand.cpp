@@ -49,18 +49,23 @@ Status JsonCommand::parseCore() {
 	}
 	JsonObject &jobj = jbRequest.parseObject(json);
 	parsed = true;
-    jRequestRoot = jobj;
+    jRequestRoot = "?";
     if (jobj.success()) {
 		int kids = 0;
 		for (JsonObject::iterator it=jobj.begin(); it!=jobj.end(); ++it) {
+			if (!it->value.success()) {
+				return STATUS_JSON_PARSE_ERROR;
+			}
 			kids++;
 		}
 		if (kids < 1) {
 			return STATUS_JSON_MEM;
 		}
         jResponseRoot["s"] = STATUS_BUSY_PARSED;
+		jRequestRoot = jobj;
 		jResponseRoot["r"] = jRequestRoot;
     } else {
+		jResponseRoot["r"] = "?";
 		return STATUS_JSON_PARSE_ERROR;
     }
 

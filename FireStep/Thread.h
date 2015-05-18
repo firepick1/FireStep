@@ -109,8 +109,8 @@ extern MonitorThread monitor;
 
 extern struct Thread *pThreadList;
 extern int nThreads;
-extern long nHeartbeats;
-extern long nTardies;
+extern int32_t nHeartbeats;
+extern int32_t nTardies;
 
 typedef class ThreadRunner {
     private:

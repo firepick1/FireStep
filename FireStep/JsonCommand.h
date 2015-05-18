@@ -46,7 +46,7 @@ typedef class JsonCommand {
 		inline JsonObject & response() { return jResponseRoot; }
         Status parse(const char *jsonIn=NULL);
 		bool isValid();
-		inline Status getStatus() { return (Status) (long) jResponseRoot["s"]; }
+		inline Status getStatus() { return (Status) (int32_t) jResponseRoot["s"]; }
 		inline void setStatus(Status status) { jResponseRoot["s"] = status; }
 		const char *getError();
 		Status setError(Status status, const char *err);

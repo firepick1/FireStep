@@ -1268,15 +1268,13 @@ void test_dvs() {
 void test_error(MachineThread &mt, const char * cmd, Status status, const char *output=NULL) {
     Serial.push(JT(cmd));
     test_ticks(1); // parse
-	if (mt.status != STATUS_BUSY_PARSED) {
-		ASSERTEQUAL(status, mt.status);
-	} else {
+	if (mt.status == STATUS_BUSY_PARSED) {
 		test_ticks(1); // initialize
-		ASSERTEQUAL(status, mt.status);
 	}
 	if (output) {
 		ASSERTEQUALS(JT(output), Serial.output().c_str());
 	}
+	ASSERTEQUAL(status, mt.status);
 }
 
 void test_errors() {
@@ -1288,6 +1286,7 @@ void test_errors() {
     test_error(mt, "{'abc':true}\n", STATUS_UNRECOGNIZED_NAME, "{'s':-4,'r':{'abc':true},'e':'abc'}\n");
     test_error(mt, "{bad-json}\n", STATUS_JSON_PARSE_ERROR, "{'s':-5}\n");
     test_error(mt, "bad-json\n", STATUS_JSON_PARSE_ERROR, "{'s':-5}\n");
+    test_error(mt, "{'xud':50000}\n", STATUS_VALUE_RANGE, "{'s':-133,'r':{'xud':50000}}\n");
 
     cout << "TEST	: test_errors() OK " << endl;
 }

@@ -37,12 +37,12 @@ Ticks Stroke::goalStartTicks(Ticks t) {
 	SegIndex s = (dtl + length-1) / dtTotal;
 	Ticks dtEnd = (s*dtTotal)/length;
 #ifdef TEST_TRACE
-	cout << "dtEnd:" << (long) dtEnd
-		<< " s:" << (long) s 
+	cout << "dtEnd:" << (int32_t) dtEnd
+		<< " s:" << (int32_t) s 
 		<< " dtl:" << dtl 
 		<< " dt:" << dt
 		<< " dtTotal:" << dtTotal
-		<< " length:" << (long) length
+		<< " length:" << (int32_t) length
 		<< endl;
 #endif
 	return dtEnd;
@@ -60,12 +60,12 @@ Ticks Stroke::goalEndTicks(Ticks t) {
 	SegIndex s = (dtl + length-1) / dtTotal;
 	Ticks dtEnd = ((s+1)*dtTotal)/length;
 #ifdef TRACE
-	cout << "dtEnd:" << (long) dtEnd
-		<< " s:" << (long) s 
+	cout << "dtEnd:" << (int32_t) dtEnd
+		<< " s:" << (int32_t) s 
 		<< " dtl:" << dtl 
 		<< " dt:" << dt
 		<< " dtTotal:" << dtTotal
-		<< " length:" << (long) length
+		<< " length:" << (int32_t) length
 		<< endl;
 #endif
 	return dtEnd;

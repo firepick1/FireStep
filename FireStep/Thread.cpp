@@ -8,8 +8,8 @@ namespace firestep {
 	ThreadRunner 	threadRunner;
 	struct Thread *	pThreadList;
 	int 			nThreads;
-	long 			nHeartbeats;
-	long 			nTardies;
+	int32_t 		nHeartbeats;
+	int32_t 		nTardies;
 
 };
 
