@@ -72,7 +72,6 @@ Ticks Stroke::goalEndTicks(Ticks t) {
 }
 
 Quad<StepCoord> Stroke::goalPos(Ticks t) {
-	Quad<StepCoord> v;
 	SegIndex sGoal = goalSegment(t);
 	Quad<StepCoord> dGoal;
 	Ticks dtSegStart = goalStartTicks(t);
@@ -85,19 +84,19 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 		dGoal = dEndPos;
 	} else {
 		dt = min(dtTotal, dt);
-		Quad<StepCoord> posSegStart;
 		Ticks tNum = (dt>dtSegEnd ? dtSegEnd:dt) - dtSegStart;
 		for (int8_t iMotor=0; iMotor<QUAD_ELEMENTS; iMotor++) {
-			int32_t vNew = v.value[iMotor];
+			int16_t v = 0;
+			int16_t pos = 0;
 			for (SegIndex s=0; s<sGoal; s++) {
-				vNew += scale * (StepCoord) seg[s].value[iMotor];
-				posSegStart.value[iMotor] += vNew;
+				v += scale * (StepCoord) seg[s].value[iMotor];
+				pos += v;
 			}
-			vNew += scale * (StepCoord) seg[sGoal].value[iMotor];
-			vNew *= tNum;
-			vNew /= dtSeg;
-			dGoal.value[iMotor] = posSegStart.value[iMotor]+vNew;
-			v.value[iMotor] = vNew;
+			v += scale * (StepCoord) seg[sGoal].value[iMotor];
+			int32_t dSeg = v;
+			dSeg *= tNum;
+			dSeg /= dtSeg;
+			dGoal.value[iMotor] = pos+dSeg;
 		}
 	}
 	return dGoal;

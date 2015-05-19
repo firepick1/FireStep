@@ -1223,6 +1223,7 @@ void test_dvs() {
     MachineThread mt = test_setup();
     Machine &machine = mt.machine;
     int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
+	machine.setMotorPosition(Quad<StepCoord>(100,100,100,100));
 
     Serial.push(JT("{'dvs':{'us':5000000,'x':[10,0,0,0,0]}}\n"));
     test_ticks(1); // parse
@@ -1232,6 +1233,7 @@ void test_dvs() {
     test_ticks(1); // initialize
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(xpulses, arduino.pulses(PC2_X_STEP_PIN));
+	ASSERTEQUAL(0, threadClock.ticks - machine.stroke.tStart);
 
     test_ticks(1); // start moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
@@ -1240,55 +1242,73 @@ void test_dvs() {
     test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(1, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTEQUAL(MS_TICKS(100)+1, threadClock.ticks - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(2, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTEQUAL(MS_TICKS(200), threadClock.ticks - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(2, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTEQUAL(MS_TICKS(300), threadClock.ticks - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(3, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTEQUAL(MS_TICKS(400)-1, threadClock.ticks - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(500) - 4*MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(4, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(5, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTEQUAL(MS_TICKS(500)+1, threadClock.ticks - machine.stroke.tStart);
+
+    test_ticks(MS_TICKS(1000)-MS_TICKS(500)); // moving
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(10, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTEQUAL(MS_TICKS(1000)+1, threadClock.ticks - machine.stroke.tStart);
+	ASSERTQUAD(Quad<StepCoord>(110,100,100,100), machine.getMotorPosition());
 
     test_ticks(MS_TICKS(500)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(9, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(15, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTEQUAL(MS_TICKS(1500)+1, threadClock.ticks - machine.stroke.tStart);
 
-    test_ticks(MS_TICKS(500)); // moving
+    test_ticks(MS_TICKS(1000)-MS_TICKS(500)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(14, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-
-    test_ticks(MS_TICKS(500)); // moving
-    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(19, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(20, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTEQUAL(MS_TICKS(2000)+1, threadClock.ticks - machine.stroke.tStart);
+	ASSERTQUAD(Quad<StepCoord>(120,100,100,100), machine.getMotorPosition());
 
     test_ticks(MS_TICKS(1000)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(29, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(30, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTEQUAL(MS_TICKS(3000)+1, threadClock.ticks - machine.stroke.tStart);
+	ASSERTQUAD(Quad<StepCoord>(130,100,100,100), machine.getMotorPosition());
 
     test_ticks(MS_TICKS(500)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(34, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(35, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTEQUAL(MS_TICKS(3500)+1, threadClock.ticks - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(600)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(40, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(41, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTEQUAL(MS_TICKS(4100)+1, threadClock.ticks - machine.stroke.tStart);
+	ASSERTQUAD(Quad<StepCoord>(141,100,100,100), machine.getMotorPosition());
 
-    test_ticks(MS_TICKS(500)); // moving
+    test_ticks(MS_TICKS(600)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(40, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTEQUAL(MS_TICKS(4700)+1, threadClock.ticks - machine.stroke.tStart);
+    ASSERTEQUAL(41, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTQUAD(Quad<StepCoord>(141,100,100,100), machine.getMotorPosition());
 
-    test_ticks(MS_TICKS(1000)); // start moving
+    test_ticks(MS_TICKS(1000)); // moving
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUAL(40, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-	ASSERTEQUALS(JT("{'s':0,'r':{'dvs':{'us':5000000,'x':40}}}\n"), Serial.output().c_str());
+    ASSERTEQUAL(41, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTEQUALS(JT("{'s':0,'r':{'dvs':{'us':5000000,'x':41}}}\n"), Serial.output().c_str());
+	ASSERTQUAD(Quad<StepCoord>(141,100,100,100), machine.getMotorPosition());
 
     cout << "TEST	: test_dvs() OK " << endl;
 }

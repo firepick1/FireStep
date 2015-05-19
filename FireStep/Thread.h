@@ -10,11 +10,12 @@ namespace firestep {
 #define DEBUG_HEX(S,V) Serial.print(" " S ":");Serial.print(V,HEX);
 #define DEBUG_DEC(S,V) Serial.print(" " S ":");Serial.print(V,DEC);
 
-#define CLOCK_HZ 16000000	// cycles per second
+#define CLOCK_HZ 16000000L	// cycles per second
 #define TIMER_PRESCALE	1024 /* 1, 8, 64, 256, 1024 */
 #define FREQ_CYCLES(freq) (CLOCK_HZ/(freq))
 #define MS_CYCLES(ms) FREQ_CYCLES(1000.0 / (ms))
-#define MS_TICKS(ms) (FREQ_CYCLES(1000.0 / (ms))/TIMER_PRESCALE)
+#define MS_TICKS_REAL(ms) (FREQ_CYCLES(1000.0 / (ms))/TIMER_PRESCALE)
+#define MS_TICKS(ms) (((CLOCK_HZ*(ms)) / 1000)/TIMER_PRESCALE)
 #define MAX_GENERATIONS 50010
 #define GENERATION_RESET 50000
 #define TIMER_ENABLED (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10))
