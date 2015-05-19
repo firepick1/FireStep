@@ -28,7 +28,7 @@ void NeoPixel::setup() {
 }
 
 void NeoPixel::show() {
-    bool updateDisplay = (curLevel == level && curStatus == status);
+    bool updateDisplay = curLevel != level || curStatus != status;
     if (fgTicks < threadClock.ticks && strip.numPixels()) {
         fgIndex = (fgIndex + 1) % strip.numPixels();
         fgTicks = threadClock.ticks + MS_TICKS(3000 / 16);
