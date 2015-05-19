@@ -90,12 +90,10 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 		for (int8_t iMotor=0; iMotor<QUAD_ELEMENTS; iMotor++) {
 			int16_t vNew = v.value[iMotor];
 			for (SegIndex s=0; s<sGoal; s++) {
-				StepCoord dv = seg[s].value[iMotor];
-				vNew += dv * scale;
+				vNew += scale * (StepCoord) seg[s].value[iMotor];
 				posSegStart.value[iMotor] += vNew;
 			}
-			StepCoord dv = seg[sGoal].value[iMotor];
-			vNew += dv * scale;
+			vNew += scale * (StepCoord) seg[sGoal].value[iMotor];
 			vNew *= tNum;
 			vNew /= dtSeg;
 			dGoal.value[iMotor] = posSegStart.value[iMotor]+vNew;
