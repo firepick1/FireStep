@@ -1304,7 +1304,7 @@ void test_dvs() {
     ASSERTEQUAL(41, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 	ASSERTQUAD(Quad<StepCoord>(141,100,100,100), machine.getMotorPosition());
 
-    test_ticks(MS_TICKS(1000)); // moving
+    test_ticks(MS_TICKS(1000)); // done
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(41, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 	ASSERTEQUALS(JT("{'s':0,'r':{'dvs':{'us':5000000,'x':41}}}\n"), Serial.output().c_str());
