@@ -1224,7 +1224,7 @@ void test_dvs() {
     Machine &machine = mt.machine;
     int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
 
-    Serial.push(JT("{'dvs':{'us':5000000,'x':[127,127,0,-127,-127]}}\n"));
+    Serial.push(JT("{'dvs':{'us':5000000,'x':[10,0,0,0,0]}}\n"));
     test_ticks(1); // parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTEQUAL(xpulses, arduino.pulses(PC2_X_STEP_PIN));
@@ -1237,30 +1237,58 @@ void test_dvs() {
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(xpulses, arduino.pulses(PC2_X_STEP_PIN));
 
-    test_ticks(MS_TICKS(1000)); // start moving
+    test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(xpulses+1*127, arduino.pulses(PC2_X_STEP_PIN));
+    ASSERTEQUAL(1, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 
-    test_ticks(MS_TICKS(1000)); // start moving
+    test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(xpulses+3*127, arduino.pulses(PC2_X_STEP_PIN));
+    ASSERTEQUAL(2, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 
-    test_ticks(MS_TICKS(1000)); // start moving
+    test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(xpulses+5*127, arduino.pulses(PC2_X_STEP_PIN));
+    ASSERTEQUAL(2, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 
-    test_ticks(MS_TICKS(1000)); // start moving
+    test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(xpulses+6*127, arduino.pulses(PC2_X_STEP_PIN));
+    ASSERTEQUAL(3, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 
-    test_ticks(MS_TICKS(1000)); // start moving
+    test_ticks(MS_TICKS(500) - 4*MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(xpulses+6*127, arduino.pulses(PC2_X_STEP_PIN));
+    ASSERTEQUAL(4, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+
+    test_ticks(MS_TICKS(500)); // moving
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(9, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+
+    test_ticks(MS_TICKS(500)); // moving
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(14, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+
+    test_ticks(MS_TICKS(500)); // moving
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(19, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+
+    test_ticks(MS_TICKS(1000)); // moving
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(29, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+
+    test_ticks(MS_TICKS(500)); // moving
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(34, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+
+    test_ticks(MS_TICKS(600)); // moving
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(40, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+
+    test_ticks(MS_TICKS(500)); // moving
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(40, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 
     test_ticks(MS_TICKS(1000)); // start moving
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUAL(xpulses+6*127, arduino.pulses(PC2_X_STEP_PIN));
-	ASSERTEQUALS(JT("{'s':0,'r':{'dvs':{'us':5000000,'x':762}}}\n"), Serial.output().c_str());
+    ASSERTEQUAL(40, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+	ASSERTEQUALS(JT("{'s':0,'r':{'dvs':{'us':5000000,'x':40}}}\n"), Serial.output().c_str());
 
     cout << "TEST	: test_dvs() OK " << endl;
 }
