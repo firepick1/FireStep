@@ -109,11 +109,11 @@ template<class T> T abs(T a) { return a < 0 ? -a : a; };
 Status Stroke::start(Ticks tStart) {
 	this->tStart = tStart;
 
+	dtTotal = (planMicros + TICK_MICROSECONDS-1) / TICK_MICROSECONDS;
 	if (dtTotal <= 0) {
 		if (planMicros <= TICK_MICROSECONDS) {
 			return STATUS_STROKE_PLANMICROS;
 		}
-		dtTotal = (planMicros + TICK_MICROSECONDS-1) / TICK_MICROSECONDS;
 	}
 
 	dPos = 0;
