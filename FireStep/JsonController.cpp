@@ -143,9 +143,6 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
             }
 			float seconds = (float) planMicros / 1000000.0;
 			machine.stroke.setTotalTime(seconds);
-			cout << " planMicros:" << planMicros 
-				<< " seconds:" << seconds
-				<< " totalTime:" << machine.stroke.getTotalTime() << endl;
             us_ok = true;
         } else if (strcmp("dp", it->key) == 0) {
             JsonArray &jarr = stroke[it->key];
@@ -426,6 +423,14 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
                 }
             }
             status = machine.pulse(steps);
+        } else if (strcmp("ph", key) == 0 || strcmp("tstph", key) == 0) { // PH curve
+			StrokeBuilder sb;
+			machine.setMotorPosition(Quad<StepCoord>());
+			sb.buildLine(machine.stroke, Quad<StepCoord>(6400,3200,1600,0));
+			machine.stroke.start(ticks());
+			do {
+				status =  machine.stroke.traverse(ticks(), machine);
+			} while (status >= 0 || status == STATUS_BUSY_MOVING);
         } else {
             return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
         }

@@ -25,7 +25,6 @@ float Stroke::getTotalTime() {
 
 void Stroke::setTotalTime(float seconds) {
 	dtTotal = MS_TICKS_REAL(seconds * 1000);
-	cout << " dtTotal:" << dtTotal << endl;
 }
 
 void Stroke::clear() {
