@@ -7,11 +7,7 @@
 
 namespace firestep {
 
-#if defined(TEST)
-#define SEGMENT_COUNT 5
-#else
 #define SEGMENT_COUNT 100
-#endif
 
 typedef int8_t  StepDV;			// change in StepCoord velocity
 typedef int16_t StepCoord;		// stepper coordinate (i.e., pulses)

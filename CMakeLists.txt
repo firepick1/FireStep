@@ -40,6 +40,7 @@ include_directories(
 	${BUILD_TARGET_DIR} 
 	test
 	ArduinoJson/include 
+	ph5
 	/usr/local/include 
 	/usr/include
 )
@@ -87,9 +88,11 @@ add_executable(test
 
 add_dependencies(test
 	ArduinoJson
+	_ph5
 )
 target_link_libraries(test
 	ArduinoJson
+	_ph5
 )
 
 if(WIN32)

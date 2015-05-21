@@ -6,12 +6,14 @@
 #include "FireUtils.hpp"
 #include "version.h"
 #include "Arduino.h"
+#include "ph5.hpp"
 
 #include "MachineThread.h"
 #include "Display.h"
 
 byte lastByte;
 
+using namespace ph5;
 using namespace firestep;
 using namespace ArduinoJson;
 
@@ -764,7 +766,7 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
 
     // Test largest valid stroke
     string segs = "[-127";
-    for (int i = 1; i < SEGMENT_COUNT * 10; i++) {
+    for (int i = 1; i < 50; i++) {
         segs += ",-127";
     }
     segs += "]";
@@ -1683,6 +1685,55 @@ void test_Display() {
     cout << "TEST	: test_Display() OK " << endl;
 }
 
+void test_ph5() {
+    cout << "TEST	: test_ph5() =====" << endl;
+
+	Complex<float> c1(3,4);
+	ASSERTEQUAL(3, c1.Re());
+	ASSERTEQUAL(4, c1.Im());
+	ASSERTEQUAL(5, c1.modulus());
+
+	vector<Complex<float> > z;
+	vector<Complex<float> > q;
+	z.push_back(Complex<float>());
+	z.push_back(Complex<float>(56.568542495));
+	z.push_back(Complex<float>(56.568542495));
+	q.push_back(Complex<float>());
+	q.push_back(Complex<float>(3200));
+	q.push_back(Complex<float>(6400));
+	PH5Curve<float> phline(z, q);
+	float vMax = 1000;
+	float tvMax = 1;
+	float vIn = 0;
+	float vCruise = 1000;
+	PHFeed<float> phf(phline, vMax, tvMax, vIn, vCruise);
+	float E = 0;
+	float epsilon = 0.001;
+	phline.r(E).assertEqualT(Complex<float>(0,0), epsilon);
+	E = phf.Ekt(E, 0.1);
+	phline.r(E).assertEqualT(Complex<float>(248.169,0), epsilon);
+	E = phf.Ekt(E, 0.2);
+	phline.r(E).assertEqualT(Complex<float>(980,0), epsilon);
+	E = phf.Ekt(E, 0.3);
+	phline.r(E).assertEqualT(Complex<float>(1720,0), epsilon);
+	E = phf.Ekt(E, 0.4);
+	phline.r(E).assertEqualT(Complex<float>(2460,0), epsilon);
+	E = phf.Ekt(E, 0.5);
+	phline.r(E).assertEqualT(Complex<float>(3200,0), epsilon);
+	E = phf.Ekt(E, 0.6);
+	phline.r(E).assertEqualT(Complex<float>(3940,0), epsilon);
+	E = phf.Ekt(E, 0.7);
+	phline.r(E).assertEqualT(Complex<float>(4680,0), epsilon);
+	E = phf.Ekt(E, 0.8);
+	phline.r(E).assertEqualT(Complex<float>(5420,0), epsilon);
+	E = phf.Ekt(E, 0.9);
+	phline.r(E).assertEqualT(Complex<float>(6151.830,0), epsilon);
+	E = phf.Ekt(E, 1.0);
+	phline.r(E).assertEqualT(Complex<float>(6400,0), epsilon);
+
+    cout << "TEST	: test_ph5() OK " << endl;
+}
+
 int main(int argc, char *argv[]) {
     LOGINFO3("INFO	: FireStep test v%d.%d.%d",
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -1706,6 +1757,7 @@ int main(int argc, char *argv[]) {
 	test_PinConfig();
 	test_dvs();
 	test_errors();
+	test_ph5();
 
     cout << "TEST	: END OF TEST main()" << endl;
 }

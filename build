@@ -29,11 +29,26 @@ if [ ! -e Adafruit_NeoPixel ]; then
 	git clone https://github.com/adafruit/Adafruit_NeoPixel	
 fi
 if [ ! -e ArduinoJson ]; then
-	echo "GIT	: git clone https://github.com:firepick1/ArduinoJson.git"
-	git clone git@github.com:firepick1/ArduinoJson.git
+	echo "GIT	: git clone https://github.com/firepick1/ArduinoJson.git"
+	git clone https://github.com/firepick1/ArduinoJson.git
+	RC=$?; if [ $RC -ne 0 ]; then
+		echo "ERROR	: git clone failed (RC=$RC)"
+		exit -1
+	fi
 	pushd ArduinoJson
 	cmake .
 	make clean all
+	popd
+fi
+if [ ! -e /usr/lib/lib_ph5.so ]; then
+	echo "GIT	: git clone https://github.com/firepick1/ph5.git"
+	git clone https://github.com/firepick1/ph5.git
+	RC=$?; if [ $RC -ne 0 ]; then
+		echo "ERROR	: git clone failed (RC=$RC)"
+		exit -1
+	fi
+	pushd ph5
+	./build clean all
 	popd
 fi
 
