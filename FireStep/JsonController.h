@@ -12,10 +12,11 @@ namespace firestep {
 
 typedef class JsonController {
     private:
+        Ticks lastProcessed;
+    private:
         Status initializeStrokeArray(JsonCommand &jcmd, JsonObject& stroke,
                                      const char *key, MotorIndex iMotor, int16_t &slen);
         Status processRawSteps(Quad<StepCoord> &steps);
-        Ticks lastProcessed;
         void sendResponse(JsonCommand& jcmd);
     protected:
         Machine &machine;

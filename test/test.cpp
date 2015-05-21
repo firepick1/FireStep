@@ -6,7 +6,6 @@
 #include "FireUtils.hpp"
 #include "version.h"
 #include "Arduino.h"
-#include "ph5.hpp"
 
 #include "MachineThread.h"
 #include "Display.h"
@@ -578,7 +577,7 @@ void test_JsonController_tst() {
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUAL(DISPLAY_WAIT_CANCELLED, mt.machine.pDisplay->getStatus());
-    ASSERTEQUALS(JT("{'s':-123,'r':{'tstrv':[1,2]}}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':-901,'r':{'tstrv':[1,2]}}\n"), Serial.output().c_str());
 
     threadClock.ticks++;
     mt.loop();
@@ -683,13 +682,14 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
     // parse and initialize stroke
     JsonCommand jcmd =
         testJSON(machine, jc, replace,
-                 "{'systc':'','dvs':{'us':123,'1':[1,2],'2':[4,5],'3':[7,8]}}",
+                 "{'systc':'','dvs':{'us':128,'1':[1,2],'2':[4,5],'3':[7,8]}}",
                  "", STATUS_BUSY_MOVING);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), machine.stroke.position());
     ASSERTQUAD(Quad<StepCoord>(5, 5, 5, 5), machine.getMotorPosition());
     ASSERTEQUAL(tStart, threadClock.ticks);
     ASSERTEQUAL(tStart, machine.stroke.tStart);
-    ASSERTEQUAL(2, machine.stroke.dtTotal);
+	float epsilon = 0.000001;
+    ASSERTEQUALT(0.000128, machine.stroke.getTotalTime(), epsilon);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), machine.stroke.dEndPos);
 
     // traverse first stroke segment
@@ -711,7 +711,7 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
 
     // finalize stroke
     testJSON_process(machine, jc, jcmd, replace,
-                     "{'s':0,'r':{'systc':104,'dvs':{'us':123,'1':4,'2':13,'3':22}}}\n",
+                     "{'s':0,'r':{'systc':104,'dvs':{'us':128,'1':4,'2':13,'3':22}}}\n",
                      STATUS_OK);
     ASSERTQUAD(Quad<StepCoord>(4, 13, 22, 0), machine.stroke.position());
     ASSERTQUAD(Quad<StepCoord>(9, 18, 27, 5), machine.getMotorPosition()); // axis a is NOPIN inactive
@@ -725,13 +725,13 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
 
     // parse and initialize stroke
     jcmd = testJSON(machine, jc, replace,
-                    "{'systc':'','dvs':{'us':123,'dp':[10,20],'x':[1,2],'y':[4,5],'z':[7,8]}}",
+                    "{'systc':'','dvs':{'us':128,'dp':[10,20],'x':[1,2],'y':[4,5],'z':[7,8]}}",
                     "", STATUS_BUSY_MOVING);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), machine.stroke.position());
     ASSERTQUAD(Quad<StepCoord>(5, 5, 5, 5), machine.getMotorPosition());
     ASSERTEQUAL(tStart, threadClock.ticks);
     ASSERTEQUAL(tStart, machine.stroke.tStart);
-    ASSERTEQUAL(2, machine.stroke.dtTotal);
+    ASSERTEQUAL(2, machine.stroke.getTotalTime()*TICKS_PER_SECOND);
     ASSERTQUAD(Quad<StepCoord>(10, 20, 0, 0), machine.stroke.dEndPos);
 
     // traverse first stroke segment
@@ -756,7 +756,7 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
 
     // finalize stroke
     testJSON_process(machine, jc, jcmd, replace,
-                     "{'s':0,'r':{'systc':109,'dvs':{'us':123,'dp':[10,20],'x':10,'y':20,'z':0}}}\n",
+                     "{'s':0,'r':{'systc':109,'dvs':{'us':128,'dp':[10,20],'x':10,'y':20,'z':0}}}\n",
                      STATUS_OK);
     ASSERTQUAD(Quad<StepCoord>(10, 20, 0, 0), machine.stroke.position());
     ASSERTQUAD(Quad<StepCoord>(15, 25, 5, 5), machine.getMotorPosition()); // axis a is NOPIN inactive
@@ -865,17 +865,20 @@ void test_Stroke() {
     MockStepper stepper;
     Ticks tStart = 100000;
     ASSERTEQUAL(STATUS_STROKE_START, stroke.traverse(ticks(), stepper));
-    stroke.seg[stroke.length++] = Quad<StepDV>(1, 10, -1, -10);
-    stroke.seg[stroke.length++] = Quad<StepDV>(1, 10, -1, -10);
-    stroke.seg[stroke.length++] = Quad<StepDV>(-1, -10, 1, 10);
+    stroke.append( Quad<StepDV>(1, 10, -1, -10) );
+    stroke.append( Quad<StepDV>(1, 10, -1, -10) );
+    stroke.append( Quad<StepDV>(-1, -10, 1, 10) );
     stroke.dEndPos = Quad<StepCoord>(4, 40, -4, -40);
-    ASSERTEQUAL(0, stroke.dtTotal);
-    ASSERTEQUAL(STATUS_STROKE_PLANMICROS, stroke.start(tStart));
-    stroke.planMicros = 17 * TICK_MICROSECONDS - 1; // should round up to 17
+    ASSERTEQUAL(0, stroke.getTotalTime()*TICKS_PER_SECOND);
+    ASSERTEQUAL(STATUS_STROKE_TIME, stroke.start(tStart));
+
+    stroke.setTotalTime(17/(float) TICKS_PER_SECOND); 
+    ASSERTEQUAL(17, stroke.getTotalTime()*TICKS_PER_SECOND);
+
     stroke.dEndPos.value[0] += 100;
     ASSERTEQUAL(STATUS_STROKE_END_ERROR, stroke.start(tStart));
     stroke.dEndPos.value[0] -= 100;
-    ASSERTEQUAL(17, stroke.dtTotal);
+    ASSERTEQUAL(17, stroke.getTotalTime()*TICKS_PER_SECOND);
 
     ASSERTEQUAL(0, stroke.goalStartTicks(tStart - 1));
     ASSERTEQUAL(0, stroke.goalEndTicks(tStart - 1));
@@ -992,7 +995,7 @@ void test_Stroke() {
     ASSERTEQUAL(STATUS_STROKE_END_ERROR, stroke.start(tStart));
     stroke.dEndPos.value[3] -= 100;
     ASSERTEQUAL(STATUS_OK, stroke.start(tStart));
-    ASSERTEQUAL(17, stroke.dtTotal);
+    ASSERTEQUAL(17, stroke.getTotalTime()*TICKS_PER_SECOND);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), stroke.position());
     ASSERTQUAD(Quad<StepCoord>(13, 122, -11, -118), stroke.dEndPos);
     ASSERTQUAD(Quad<StepCoord>(13, 122, -11, -118), stroke.goalPos(tStart + 17));
@@ -1333,9 +1336,9 @@ void test_errors() {
     MachineThread mt = test_setup();
     Machine &machine = mt.machine;
 
-    test_error(mt, "{'abc':true}\n", STATUS_UNRECOGNIZED_NAME, "{'s':-4,'r':{'abc':true},'e':'abc'}\n");
-    test_error(mt, "{bad-json}\n", STATUS_JSON_PARSE_ERROR, "{'s':-5}\n");
-    test_error(mt, "bad-json\n", STATUS_JSON_PARSE_ERROR, "{'s':-5}\n");
+    test_error(mt, "{'abc':true}\n", STATUS_UNRECOGNIZED_NAME, "{'s':-402,'r':{'abc':true},'e':'abc'}\n");
+    test_error(mt, "{bad-json}\n", STATUS_JSON_PARSE_ERROR, "{'s':-403}\n");
+    test_error(mt, "bad-json\n", STATUS_JSON_PARSE_ERROR, "{'s':-403}\n");
     test_error(mt, "{'xud':50000}\n", STATUS_VALUE_RANGE, "{'s':-133,'r':{'xud':50000}}\n");
 
     cout << "TEST	: test_errors() OK " << endl;
@@ -1603,16 +1606,11 @@ void test_MachineThread() {
     ASSERTEQUALS("", Serial.output().c_str());
 
     threadClock.ticks++;
-    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    mt.loop();
-    ASSERTEQUALS("", Serial.output().c_str());
-
-    threadClock.ticks++;
     Serial.clear();
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     jsonOut =
-        "{'s':0,'r':{'systc':108,'dvs':{'us':123,'dp':[10,20],'1':10,'2':20,'3':0}}}\n";
+        "{'s':0,'r':{'systc':107,'dvs':{'us':123,'dp':[10,20],'1':10,'2':20,'3':0}}}\n";
     ASSERTEQUALS(JT(jsonOut), Serial.output().c_str());
     ASSERTQUAD(Quad<StepCoord>(10, 20, 0, 0), mt.machine.getMotorPosition());
 
@@ -1688,48 +1686,9 @@ void test_Display() {
 void test_ph5() {
     cout << "TEST	: test_ph5() =====" << endl;
 
-	Complex<float> c1(3,4);
-	ASSERTEQUAL(3, c1.Re());
-	ASSERTEQUAL(4, c1.Im());
-	ASSERTEQUAL(5, c1.modulus());
-
-	vector<Complex<float> > z;
-	vector<Complex<float> > q;
-	z.push_back(Complex<float>());
-	z.push_back(Complex<float>(56.568542495));
-	z.push_back(Complex<float>(56.568542495));
-	q.push_back(Complex<float>());
-	q.push_back(Complex<float>(3200));
-	q.push_back(Complex<float>(6400));
-	PH5Curve<float> phline(z, q);
-	float vMax = 1000;
-	float tvMax = 1;
-	float vIn = 0;
-	float vCruise = 1000;
-	PHFeed<float> phf(phline, vMax, tvMax, vIn, vCruise);
-	float E = 0;
-	float epsilon = 0.001;
-	phline.r(E).assertEqualT(Complex<float>(0,0), epsilon);
-	E = phf.Ekt(E, 0.1);
-	phline.r(E).assertEqualT(Complex<float>(248.169,0), epsilon);
-	E = phf.Ekt(E, 0.2);
-	phline.r(E).assertEqualT(Complex<float>(980,0), epsilon);
-	E = phf.Ekt(E, 0.3);
-	phline.r(E).assertEqualT(Complex<float>(1720,0), epsilon);
-	E = phf.Ekt(E, 0.4);
-	phline.r(E).assertEqualT(Complex<float>(2460,0), epsilon);
-	E = phf.Ekt(E, 0.5);
-	phline.r(E).assertEqualT(Complex<float>(3200,0), epsilon);
-	E = phf.Ekt(E, 0.6);
-	phline.r(E).assertEqualT(Complex<float>(3940,0), epsilon);
-	E = phf.Ekt(E, 0.7);
-	phline.r(E).assertEqualT(Complex<float>(4680,0), epsilon);
-	E = phf.Ekt(E, 0.8);
-	phline.r(E).assertEqualT(Complex<float>(5420,0), epsilon);
-	E = phf.Ekt(E, 0.9);
-	phline.r(E).assertEqualT(Complex<float>(6151.830,0), epsilon);
-	E = phf.Ekt(E, 1.0);
-	phline.r(E).assertEqualT(Complex<float>(6400,0), epsilon);
+	StrokeBuilder sb;
+	Stroke stroke;
+	sb.buildLine(stroke, Quad<StepCoord>(6400,3200,1600,0));
 
     cout << "TEST	: test_ph5() OK " << endl;
 }

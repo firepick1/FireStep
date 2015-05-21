@@ -5,13 +5,37 @@
 #include "Stroke.h"
 
 using namespace firestep;
+using namespace ph5;
 
 template class Quad<int16_t>;
 template class Quad<int32_t>;
 
 Stroke::Stroke() 
-	: length(0), maxV(16), scale(1), curSeg(0), planMicros(0), tStart(0), dtTotal(0)
-{}
+{
+	clear();
+}
+
+Ticks Stroke::getTotalTicks() {
+	return dtTotal;
+}
+
+float Stroke::getTotalTime() {
+	return dtTotal / (float) TICKS_PER_SECOND;
+}
+
+void Stroke::setTotalTime(float seconds) {
+	dtTotal = MS_TICKS_REAL(seconds * 1000);
+	cout << " dtTotal:" << dtTotal << endl;
+}
+
+void Stroke::clear() {
+	length = 0;
+	maxEndPulses = 16;
+	scale = 1;
+	curSeg = 0;
+	tStart = 0;
+	dtTotal = 0;
+}
 
 SegIndex Stroke::goalSegment(Ticks t) {
 	if (t < tStart || length == 0 || dtTotal==0) {
@@ -109,17 +133,14 @@ template<class T> T abs(T a) { return a < 0 ? -a : a; };
 Status Stroke::start(Ticks tStart) {
 	this->tStart = tStart;
 
-	dtTotal = (planMicros + TICK_MICROSECONDS-1) / TICK_MICROSECONDS;
 	if (dtTotal <= 0) {
-		if (planMicros <= TICK_MICROSECONDS) {
-			return STATUS_STROKE_PLANMICROS;
-		}
+		return STATUS_STROKE_TIME;
 	}
 
 	dPos = 0;
 	Quad<StepCoord> end = goalPos(tStart+dtTotal-1);
 	for (int i=0; i<4; i++) {
-		if (maxV < abs(dEndPos.value[i] - end.value[i])) {
+		if (maxEndPulses < abs(dEndPos.value[i] - end.value[i])) {
 			return STATUS_STROKE_END_ERROR;
 		}
 	}
@@ -168,4 +189,102 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 	return STATUS_BUSY_MOVING;
 }
 
+int16_t Stroke::append(Quad<StepDV> dv) {
+	if (length > SEGMENT_COUNT) {
+		return STATUS_STROKE_MAXLEN;
+	}
+	seg[length++] = dv;
+
+	return length;
+}
+
+/////////////////// StrokeBuilder ////////////////
+
+StrokeBuilder::StrokeBuilder(StepCoord vMax, float vMaxSeconds)
+	: vMax(vMax), vMaxSeconds(vMaxSeconds), minSegments(20)
+{
+}
+
+/**
+ * Build a rest-to-rest stroke with minimum jerk that continuously accelerates
+ * until it reaches the end position located at relPos from current position
+ * in the fastest possible time subject to the minimum jerk constraint
+ */
+Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
+	float K[QUAD_ELEMENTS];
+	float Ksqrt[QUAD_ELEMENTS];
+	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
+		K[i] = relPos.value[i]/6400.0;
+		Ksqrt[i] = sqrt(K[i]);
+	}
+#define Z6400 56.568542495
+    vector<Complex<float> > z[QUAD_ELEMENTS];
+    vector<Complex<float> > q[QUAD_ELEMENTS];
+	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
+		z[i].push_back(Complex<float>());
+		z[i].push_back(Complex<float>(Z6400*Ksqrt[i]));
+		z[i].push_back(Complex<float>(Z6400*Ksqrt[i]));
+		q[i].push_back(Complex<float>());
+		q[i].push_back(Complex<float>(3200*K[i]));
+		q[i].push_back(Complex<float>(6400*K[i]));
+	}
+    PH5Curve<float> ph[] = {
+		PH5Curve<float>(z[0],q[0]),
+		PH5Curve<float>(z[1],q[1]),
+		PH5Curve<float>(z[2],q[2]),
+		PH5Curve<float>(z[3],q[3])
+	};
+    PHFeed<float> phf[] = {
+		PHFeed<float>(ph[0], vMax, vMaxSeconds, 0, vMax, 0),
+		PHFeed<float>(ph[1], vMax, vMaxSeconds, 0, vMax, 0),
+		PHFeed<float>(ph[2], vMax, vMaxSeconds, 0, vMax, 0),
+		PHFeed<float>(ph[3], vMax, vMaxSeconds, 0, vMax, 0),
+	};
+	float tS = 0;
+	int8_t iMax = 0;
+	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
+		if (phf[i].get_tS() > tS) {
+			iMax = i;
+			tS = phf[i].get_tS();
+		}
+	}
+	stroke.clear();
+    float E = 0;
+    float N = max(minSegments, (int16_t)(1000 * tS / 20)); // ~20ms timeslice
+    Quad<StepCoord> s;
+    Quad<StepCoord> v;
+    for (int16_t iSeg = 0; iSeg <= N; iSeg++) {
+		Quad<StepCoord> sNew;
+		Quad<StepCoord> vNew;
+        E = phf[iMax].Ekt(E, iSeg / N);
+		for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
+			sNew.value[i] = ph[i].r(E).Re() + 0.5;
+		}
+        vNew = sNew - s;
+        Quad<StepCoord> dv = vNew - v;
+		Quad<StepDV> segment;
+		for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
+			if (dv.value[i] < (StepCoord) -127 || (StepCoord) 127 < dv.value[i]) {
+				return STATUS_STROKE_SEGPULSES;
+			}
+			segment.value[i] = dv.value[i];
+		}
+		stroke.append(segment);
+#ifdef TEST
+        cout << " iSeg/N:" << (int) (100 * iSeg / N + 0.5) 
+		<< " sNew:" << sNew.toString()
+		<< " vNew:" << vNew.toString() 
+		<< " dv:" << dv.toString()
+		<< endl;
+#endif
+        v = vNew;
+        s = sNew;
+    }
+#ifdef TEST
+    cout << " N:" << N << " tS:" << tS << endl;
+#endif
+	stroke.setTotalTime(tS);
+
+	return STATUS_OK;
+}
 

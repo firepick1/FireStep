@@ -136,10 +136,16 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
     bool us_ok = false;
     for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
         if (strcmp("us", it->key) == 0) {
-            status = processField<int32_t, int32_t>(stroke, it->key, machine.stroke.planMicros);
+			int32_t planMicros;
+            status = processField<int32_t, int32_t>(stroke, it->key, planMicros);
             if (status != STATUS_OK) {
                 return jcmd.setError(status, it->key);
             }
+			float seconds = (float) planMicros / 1000000.0;
+			machine.stroke.setTotalTime(seconds);
+			cout << " planMicros:" << planMicros 
+				<< " seconds:" << seconds
+				<< " totalTime:" << machine.stroke.getTotalTime() << endl;
             us_ok = true;
         } else if (strcmp("dp", it->key) == 0) {
             JsonArray &jarr = stroke[it->key];

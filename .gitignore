@@ -1,4 +1,6 @@
 Adafruit_NeoPixel
+ph5
+vgcore.*
 FireStep.wiki
 foo
 ArduinoJson

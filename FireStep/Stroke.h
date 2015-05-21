@@ -4,7 +4,7 @@
 #include "Status.h"
 #include "Thread.h"
 #include "Quad.h"
-
+#include "ph5.hpp" 
 namespace firestep {
 
 #define SEGMENT_COUNT 100
@@ -21,18 +21,18 @@ typedef class QuadStepper {
 typedef class Stroke {
 	private:
 		Quad<StepCoord> dPos;				// current offset from start position
+		Ticks			dtTotal;			// ticks for planned traversal 
     public:
 		Ticks			tStart;				// ticks at start of traversal
-		StepCoord		maxV;				// max steps/tick (default 16)
+		StepCoord		maxEndPulses;		// max pulse offset for end position (default 16)
         StepCoord		scale;				// segment velocity unit
-		Ticks			dtTotal;			// ticks for planned traversal 
-        int32_t 		planMicros;			// planned traversal microseconds
         SegIndex		curSeg;				// current segment index
         SegIndex	 	length;				// number of segments
 		Quad<StepDV> 	seg[SEGMENT_COUNT];	// delta velocity 
         Quad<StepCoord>	dEndPos;			// ending offset
     public:
         Stroke();
+		void clear();
 		Status start(Ticks tStart);
 		Status traverse(Ticks tCurrent, QuadStepper &quadStep);
 		bool isDone();
@@ -40,10 +40,25 @@ typedef class Stroke {
 		Ticks goalStartTicks(Ticks t);
 		Ticks goalEndTicks(Ticks t);
 		SegIndex goalSegment(Ticks t);
+		int16_t append(Quad<StepDV> dv);
 		inline Quad<StepCoord>& position() {
 			return dPos;
 		}
+		float getTotalTime();
+		Ticks getTotalTicks();
+		void setTotalTime(float seconds);
 } Stroke;
+
+typedef class StrokeBuilder {
+	public:
+		StepCoord	vMax; // max pulses per second 
+		float 		vMaxSeconds; // seconds to achieve vMax 
+		int16_t		minSegments; // minimum number of stroke segments (default 20)
+
+	public:
+		StrokeBuilder(StepCoord vMax=12800, float vMaxSeconds=0.5);
+		Status buildLine(Stroke & stroke, Quad<StepCoord> dPos);
+} StrokeBuilder;
 
 } // namespace firestep
 
