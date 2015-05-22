@@ -4,7 +4,8 @@
 #include "Status.h"
 #include "Thread.h"
 #include "Quad.h"
-#include "ph5.hpp" 
+#include "FireUtils.hpp"
+#include "ph5.h" 
 namespace firestep {
 
 #define SEGMENT_COUNT 100

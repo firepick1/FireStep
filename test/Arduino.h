@@ -1,7 +1,6 @@
 // DUMMY ARDUINO HEADER
 #ifndef ARDUINO_H
 #define ARDUINO_H
-#include <vector>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -72,7 +71,6 @@ typedef class SerialType : public Print {
     private:
         string serialout;
 		string serialline;
-        vector<uint8_t> bytes;
 
     public:
 		void clear();

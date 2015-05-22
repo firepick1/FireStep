@@ -1,3 +1,4 @@
+#include <vector>
 #include <string.h>
 #include <iostream>
 #include <fstream>
@@ -9,36 +10,38 @@
 SerialType Serial;
 MockDuino arduino;
 
+vector<uint8_t> serialbytes;
+
 void SerialType::clear() {
-    bytes.clear();
+    serialbytes.clear();
     serialout.clear();
     serialline.clear();
 }
 
 void SerialType::push(uint8_t value) {
-    bytes.push_back(value);
+    serialbytes.push_back(value);
 }
 
 void SerialType::push(int16_t value) {
     uint8_t *pvalue = (uint8_t *) &value;
-    bytes.push_back((uint8_t)((value >> 8) & 0xff));
-    bytes.push_back((uint8_t)(value & 0xff));
+    serialbytes.push_back((uint8_t)((value >> 8) & 0xff));
+    serialbytes.push_back((uint8_t)(value & 0xff));
 }
 
 void SerialType::push(int32_t value) {
     uint8_t *pvalue = (uint8_t *) &value;
-    bytes.push_back((uint8_t)((value >> 24) & 0xff));
-    bytes.push_back((uint8_t)((value >> 16) & 0xff));
-    bytes.push_back((uint8_t)((value >> 8) & 0xff));
-    bytes.push_back((uint8_t)(value & 0xff));
+    serialbytes.push_back((uint8_t)((value >> 24) & 0xff));
+    serialbytes.push_back((uint8_t)((value >> 16) & 0xff));
+    serialbytes.push_back((uint8_t)((value >> 8) & 0xff));
+    serialbytes.push_back((uint8_t)(value & 0xff));
 }
 
 void SerialType::push(float value) {
     uint8_t *pvalue = (uint8_t *) &value;
-    bytes.push_back(pvalue[0]);
-    bytes.push_back(pvalue[1]);
-    bytes.push_back(pvalue[2]);
-    bytes.push_back(pvalue[3]);
+    serialbytes.push_back(pvalue[0]);
+    serialbytes.push_back(pvalue[1]);
+    serialbytes.push_back(pvalue[2]);
+    serialbytes.push_back(pvalue[3]);
 }
 
 void SerialType::push(string value) {
@@ -47,7 +50,7 @@ void SerialType::push(string value) {
 
 void SerialType::push(const char * value) {
     for (const char *s = value; *s; s++) {
-        bytes.push_back(*s);
+        serialbytes.push_back(*s);
     }
 }
 
@@ -58,18 +61,18 @@ string SerialType::output() {
 }
 
 int SerialType::available() {
-    return bytes.size();
+    return serialbytes.size();
 }
 
 void SerialType::begin(long speed) {
 }
 
 byte SerialType::read() {
-    if (bytes.size() < 1) {
+    if (serialbytes.size() < 1) {
         return 0;
     }
-    byte c = bytes[0];
-    bytes.erase(bytes.begin());
+    byte c = serialbytes[0];
+    serialbytes.erase(serialbytes.begin());
     return c;
 }
 
