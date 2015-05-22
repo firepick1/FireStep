@@ -1,10 +1,14 @@
 #ifndef STROKE_H
 #define STROKE_H
 
+#ifdef TEST
+#include "FireLog.h"
+#include "FireUtils.hpp"
+#endif
+
 #include "Status.h"
 #include "Thread.h"
 #include "Quad.h"
-#include "FireUtils.hpp"
 #include "ph5.h" 
 namespace firestep {
 
