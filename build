@@ -40,6 +40,11 @@ if [ ! -e ArduinoJson ]; then
 	make clean all
 	popd
 fi
+
+if [ "${MEMORY_MODEL}" == "" ]; then
+	export MEMORY_MODEL=MEMORY_MODEL_TINY
+fi
+echo "DEFINE	: MEMORY_MODEL=${MEMORY_MODEL}"
 if [ ! -e /usr/lib/lib_ph5.so ]; then
 	echo "GIT	: git clone https://github.com/firepick1/ph5.git"
 	git clone https://github.com/firepick1/ph5.git
