@@ -38,9 +38,9 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/FireStep
 	${PROJECT_SOURCE_DIR}/FireStep/pins
 	${BUILD_TARGET_DIR} 
-	test
-	ArduinoJson/include 
-	ph5
+	${PROJECT_SOURCE_DIR}/test
+	${PROJECT_SOURCE_DIR}/ArduinoJson/include 
+	${PROJECT_SOURCE_DIR}/ph5
 	/usr/local/include 
 	/usr/include
 )
@@ -68,7 +68,7 @@ message("CMAKE_PREFIX_PATH:${CMAKE_PREFIX_PATH}")
 
 link_directories( 
 	${BUILD_TARGET_DIR} 
-	ArduinoJson/lib
+	${PROJECT_SOURCE_DIR}/ArduinoJson/lib
 	/usr/lib 
 	/usr/local/lib 
 )
