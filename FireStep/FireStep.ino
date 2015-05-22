@@ -1,5 +1,6 @@
 #include <Adafruit_NeoPixel.h>
 #include <ArduinoJson.h>
+#include <ph5.h>
 #include "Arduino.h"
 #include "MachineThread.h"
 #include "NeoPixel.h"

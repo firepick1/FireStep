@@ -217,8 +217,8 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 		Ksqrt[i] = sqrt(K[i]);
 	}
 #define Z6400 56.568542495
-    vector<Complex<float> > z[QUAD_ELEMENTS];
-    vector<Complex<float> > q[QUAD_ELEMENTS];
+    tinyvector<Complex<float> > z[QUAD_ELEMENTS];
+    tinyvector<Complex<float> > q[QUAD_ELEMENTS];
 	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
 		z[i].push_back(Complex<float>());
 		z[i].push_back(Complex<float>(Z6400*Ksqrt[i]));

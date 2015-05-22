@@ -47,10 +47,11 @@ if [ ! -e /usr/lib/lib_ph5.so ]; then
 		echo "ERROR	: git clone failed (RC=$RC)"
 		exit -1
 	fi
-	pushd ph5
-	./build clean all
-	popd
 fi
+pushd ph5
+	git pull
+	./build clean all
+popd
 
 if [ "$WINDIR" != "" ]; then
 	echo "SYSTEM	: FireStep Windows support is limited to Arduino IDE"
