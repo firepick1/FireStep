@@ -49,6 +49,7 @@ typedef class Stroke {
 		inline Quad<StepCoord>& position() {
 			return dPos;
 		}
+		inline Ticks get_dtTotal() { return dtTotal; }
 		float getTotalTime();
 		Ticks getTotalTicks();
 		void setTotalTime(float seconds);

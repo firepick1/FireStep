@@ -170,6 +170,7 @@ void ThreadRunner::clear() {
 	nHB = 0;
 	testTardies = 0;
 	fast = 255;
+	TCNT1 = 0;
 }
 
 void ThreadRunner::setup(int pinLED) {
@@ -180,6 +181,7 @@ void ThreadRunner::setup(int pinLED) {
 
     TCCR1A = 0; // Timer mode
     TIMSK1 = 0 << TOIE1;	// disable interrupts
+	lastAge = 0;
     ThreadEnable(true);
 }
 
@@ -188,44 +190,11 @@ void ThreadRunner::setup(int pinLED) {
  * Give the machine a rest and power-cycle it.
  */ 
 void ThreadRunner::resetGenerations() {
-    threadClock.generation -= GENERATION_RESET;
+    threadClock.ticks = 0;
+	lastAge = 0;
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-        if (pThread->nextLoop.ticks) {
-            pThread->nextLoop.generation -= GENERATION_RESET;
-        }
+        pThread->nextLoop.ticks = 0;
     }
-}
-
-int32_t firestep::MicrosecondsSince(Ticks lastClock) {
-    int32_t elapsed;
-	//cout << "ticks:" << ticks() << " lastClock:" << lastClock << endl;
-    if (ticks() < lastClock) {
-        ThreadClock reset;
-        reset.generation = GENERATION_RESET;
-        reset.age = 0;
-        elapsed = (ticks() + reset.ticks) - lastClock;
-        if (elapsed < 0) {
-            //SerialInt32 e;
-            //e.longValue = elapsed;
-            //e.send();
-            //Serial.print(' ', BYTE);
-            //e.longValue = ticks()
-            //e.send();
-            //Serial.print(' ', BYTE);
-            //e.longValue = reset.ticks;
-            //e.send();
-            //Serial.print(' ', BYTE);
-            //e.longValue = lastClock;
-            //e.send();
-            Error("e?", 0);
-        }
-//cout << "elapsed:" << elapsed << endl;
-    } else {
-        elapsed = ticks() - lastClock;
-//cout << "ELAPSED:" << elapsed  << endl;
-    }
-
-    return (elapsed * 1000000) / MS_TICKS(1000);
 }
 
 void firestep::ThreadEnable(boolean enable) {

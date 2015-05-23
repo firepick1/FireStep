@@ -36,15 +36,6 @@ typedef union ThreadClock  {
 
 extern ThreadClock threadClock;
 
-/**
- * With the standard ATMEGA 16,000,000 Hz system clock and TCNT1 / 1024 prescaler:
- * 1 tick = 1024 clock cycles = 64 microseconds
- * Clock overflows in 2^31 * 0.000064 seconds = ~38.1 hours
- */
-inline Ticks ticks() {
-    return threadClock.ticks;
-}
-
 typedef struct Thread {
     public:
         Thread() : tardies(0), id(0), pNext(NULL) {
@@ -104,7 +95,6 @@ typedef class MonitorThread : PulseThread {
 void Error(const char *msg, int value);
 void ThreadEnable(boolean enable);
 void PrintN(char c, byte n);
-int32_t MicrosecondsSince(Ticks lastClock);
 
 extern MonitorThread monitor;
 
@@ -121,14 +111,12 @@ typedef class ThreadRunner {
         byte		testTardies;
         int16_t		nHB;
         byte		fast;
-    protected:
-        void resetGenerations();
     public:
         ThreadRunner();
-	public: 
+        void resetGenerations();
 		void clear();
-    public:
         void setup(int pinLED=NOPIN);
+
     public:
         void run() {
             // outer loop: bookkeeping
@@ -163,7 +151,7 @@ typedef class ThreadRunner {
             }
         }
     public:
-        inline byte innerLoop() {
+		inline Ticks ticks() {
             cli();
             threadClock.age = age = TCNT1;
             if (age < lastAge) {
@@ -185,6 +173,12 @@ typedef class ThreadRunner {
             }
             lastAge = age;
             sei();
+			return threadClock.ticks;
+		}
+        inline byte innerLoop() {
+			if (ticks() == 0) {
+				return 0;
+			}
 
             // inner loop: run active Threads
             for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
@@ -217,8 +211,21 @@ typedef class ThreadRunner {
             return 1;
         }
 } ThreadRunner;
-
 extern ThreadRunner threadRunner;
+
+/**
+ * With the standard ATMEGA 16,000,000 Hz system clock and TCNT1 / 1024 prescaler:
+ * 1 tick = 1024 clock cycles = 64 microseconds
+ * Clock overflows in 2^31 * 0.000064 seconds = ~38.1 hours
+ */
+inline Ticks ticks() {
+	Ticks result = threadRunner.ticks();
+
+	if (result == 0) {
+		result = threadRunner.ticks();
+	}
+    return result;
+}
 
 } // namespace firestep
 

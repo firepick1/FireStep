@@ -155,9 +155,7 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 	if (tStart <= 0) {
 		return STATUS_STROKE_START;
 	}
-	if (tCurrent > tStart+dtTotal) {
-		return STATUS_OK;
-	}
+	Status status = STATUS_BUSY_MOVING;
 	while (dPos != dGoal) {
 		StepCoord d[4];
 		StepCoord dMax = 0;
@@ -185,7 +183,8 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 				return status;	// abnormal return
 		}
 	}
-	return STATUS_BUSY_MOVING;
+	status = tCurrent >= tStart+dtTotal ? STATUS_OK : STATUS_BUSY_MOVING;
+	return status;
 }
 
 int16_t Stroke::append(Quad<StepDV> dv) {
