@@ -430,7 +430,7 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
 			machine.stroke.start(ticks());
 			do {
 				status =  machine.stroke.traverse(ticks(), machine);
-			} while (status >= 0 || status == STATUS_BUSY_MOVING);
+			} while (status == STATUS_BUSY_MOVING);
         } else {
             return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
         }
@@ -448,6 +448,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             node["fr"] = "";
             node["jp"] = "";
             node["lh"] = "";
+            node["lp"] = "";
             node["pc"] = "";
             node["tc"] = "";
             node["v"] = "";
@@ -476,6 +477,8 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         }
     } else if (strcmp("lh", key) == 0 || strcmp("syslh", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.invertLim);
+    } else if (strcmp("lp", key) == 0 || strcmp("syslh", key) == 0) {
+        status = processField<int32_t, int32_t>(jobj, key, nLoops);
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
         jobj[key] = threadClock.ticks;
     } else if (strcmp("v", key) == 0 || strcmp("sysv", key) == 0) {

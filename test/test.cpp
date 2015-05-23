@@ -792,7 +792,7 @@ void test_JsonController() {
     threadClock.ticks = 12345;
     jc.process(jcmd);
     char sysbuf[500];
-    const char *fmt = "{'s':%d,'r':{'sys':{'fr':1000,'jp':false,'lh':false,'pc':2,'tc':12345,'v':%.2f}}}\n";
+    const char *fmt = "{'s':%d,'r':{'sys':{'fr':1000,'jp':false,'lh':false,'lp':0,'pc':2,'tc':12345,'v':%.2f}}}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
              STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
     ASSERTEQUALS(sysbuf, Serial.output().c_str());
@@ -1690,11 +1690,13 @@ void test_ph5() {
 	machine.stroke.start(ticks());
 
 	Status status;
+	int i = 0;
 	do {
-		arduino.timer1(1); mt.loop();
+		arduino.timer1(1); 
 		status =  machine.stroke.traverse(ticks(), machine);
-		cout << "status:" << status << endl;
+		i++;
 	} while (status == STATUS_BUSY_MOVING);
+	ASSERTEQUAL(15625,i);
 	ASSERT(status >= 0);
 
     cout << "TEST	: test_ph5() OK " << endl;
