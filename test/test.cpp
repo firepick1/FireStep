@@ -1676,7 +1676,9 @@ void test_ph5() {
 
     MachineThread mt = test_setup();
     Machine &machine = mt.machine;
+	arduino.timer1(1);
 	StrokeBuilder sb;
+	ASSERTQUAD(Quad<StepCoord>(), machine.getMotorPosition());
 	sb.buildLine(machine.stroke, Quad<StepCoord>(6400,3200,1600,0));
 	ASSERTEQUAL(51, machine.stroke.length);
 	ASSERTEQUAL(0, machine.stroke.seg[0].value[0]);
@@ -1686,18 +1688,21 @@ void test_ph5() {
 	ASSERTEQUAL(4, machine.stroke.seg[4].value[0]);
 	ASSERTEQUAL(5, machine.stroke.seg[5].value[0]);
 
-	arduino.timer1(1); mt.loop();
 	machine.stroke.start(ticks());
 
 	Status status;
 	int i = 0;
+	status =  machine.stroke.traverse(ticks(), machine);
+	ASSERTEQUAL(STATUS_BUSY_MOVING, status);
+	status =  machine.stroke.traverse(ticks(), machine);
+	ASSERTEQUAL(STATUS_BUSY_MOVING, status);
 	do {
 		arduino.timer1(1); 
 		status =  machine.stroke.traverse(ticks(), machine);
 		i++;
 	} while (status == STATUS_BUSY_MOVING);
 	ASSERTEQUAL(15625,i);
-	ASSERT(status >= 0);
+	ASSERTEQUAL(STATUS_OK, status);
 
     cout << "TEST	: test_ph5() OK " << endl;
 }

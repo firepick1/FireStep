@@ -138,7 +138,7 @@ Status Stroke::start(Ticks tStart) {
 
 	dPos = 0;
 	Quad<StepCoord> end = goalPos(tStart+dtTotal-1);
-	for (int i=0; i<4; i++) {
+	for (QuadIndex i=0; i<4; i++) {
 		if (maxEndPulses < abs(dEndPos.value[i] - end.value[i])) {
 			return STATUS_STROKE_END_ERROR;
 		}
@@ -269,7 +269,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 		}
 		stroke.append(segment);
 #ifdef TEST
-        cout << " iSeg/N:" << (int) (100 * iSeg / N + 0.5) 
+        cout << " iSeg/N:" << (int16_t) (100 * iSeg / N + 0.5) 
 		<< " sNew:" << sNew.toString()
 		<< " vNew:" << vNew.toString() 
 		<< " dv:" << dv.toString()

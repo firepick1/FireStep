@@ -55,9 +55,6 @@ void PulseThread::loop() {
     }
 }
 
-
-unsigned long totalLoops;
-
 void MonitorThread::setup(int pinLED) {
     id = 'Z';
     // set monitor interval to not coincide with timer overflow
@@ -128,20 +125,15 @@ void MonitorThread::loop() {
         }
     }
     if (isHigh) {
-        totalLoops += nLoops;
         if (verbose) {
             Serial.print(".");
             //DEBUG_DEC("F", Free());
             DEBUG_DEC("S", millis() / 1000);
             DEBUG_DEC("G", threadClock.generation);
             DEBUG_DEC("H", nLoops);
-            if (threadClock.generation > 0) {
-                DEBUG_DEC("H/G", totalLoops / threadClock.generation);
-            }
             DEBUG_DEC("T", nTardies);
             DEBUG_EOL();
         }
-        nLoops = 0;
         nTardies = 0;
     }
     ThreadEnable(true);

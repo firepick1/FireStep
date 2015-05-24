@@ -25,11 +25,11 @@ Status processField(JsonObject& jobj, const char* key, TF& field) {
     if ((s = jobj[key]) && *s == 0) { // query
         status = (jobj[key] = (TJ) field).success() ? status : STATUS_FIELD_ERROR;
     } else {
-		float value = (TJ)jobj[key];
+        float value = (TJ)jobj[key];
         field = (TF)value;
-		if ((float) field != value) {
-			return STATUS_VALUE_RANGE;
-		}
+        if ((float) field != value) {
+            return STATUS_VALUE_RANGE;
+        }
         jobj[key] = (TJ) field;
     }
     return status;
@@ -136,13 +136,13 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
     bool us_ok = false;
     for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
         if (strcmp("us", it->key) == 0) {
-			int32_t planMicros;
+            int32_t planMicros;
             status = processField<int32_t, int32_t>(stroke, it->key, planMicros);
             if (status != STATUS_OK) {
                 return jcmd.setError(status, it->key);
             }
-			float seconds = (float) planMicros / 1000000.0;
-			machine.stroke.setTotalTime(seconds);
+            float seconds = (float) planMicros / 1000000.0;
+            machine.stroke.setTotalTime(seconds);
             us_ok = true;
         } else if (strcmp("dp", it->key) == 0) {
             JsonArray &jarr = stroke[it->key];
@@ -152,7 +152,7 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
             if (!jarr[0].success()) {
                 return jcmd.setError(STATUS_JSON_ARRAY_LEN, it->key);
             }
-            for (int i = 0; i < 4 && jarr[i].success(); i++) {
+            for (MotorIndex i = 0; i < 4 && jarr[i].success(); i++) {
                 machine.stroke.dEndPos.value[i] = jarr[i];
             }
         } else if (strcmp("sc", it->key) == 0) {
@@ -244,7 +244,7 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
         }
     } else if (strcmp("ma", key) == 0 || strcmp("ma", key + 1) == 0) {
         JsonVariant &jv = jobj[key];
-        int iMotor = group - '1';
+        MotorIndex iMotor = group - '1';
         if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
             return STATUS_MOTOR_INDEX;
         }
@@ -265,7 +265,7 @@ Status JsonController::processPin(JsonObject& jobj, const char *key, PinType &pi
 Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group) {
     Status status = STATUS_OK;
     const char *s;
-    int iAxis = axisOf(group);
+    AxisIndex iAxis = axisOf(group);
     if (iAxis < 0) {
         return STATUS_AXIS_ERROR;
     }
@@ -390,7 +390,7 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
                 return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, key);
             }
             Quad<StepCoord> steps;
-            for (int i = 0; i < 4; i++) {
+            for (MotorIndex i = 0; i < 4; i++) {
                 if (jarr[i].success()) {
                     Axis &a = machine.axis[machine.getMotorAxis(i)];
                     int16_t revs = jarr[i];
@@ -411,26 +411,28 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
             if (status == STATUS_OK) {
                 status = STATUS_BUSY_MOVING;
             }
-        } else if (strcmp("sp", key) == 0 || strcmp("tstsp", key) == 0) { // step pulses
+        } else if (strcmp("sp", key) == 0 || strcmp("tstsp", key) == 0) {
+            // step pulses
             JsonArray &jarr = jobj[key];
             if (!jarr.success()) {
                 return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, key);
             }
             Quad<StepCoord> steps;
-            for (int i = 0; i < 4; i++) {
+            for (MotorIndex i = 0; i < 4; i++) {
                 if (jarr[i].success()) {
                     steps.value[i] = jarr[i];
                 }
             }
             status = machine.pulse(steps);
-        } else if (strcmp("ph", key) == 0 || strcmp("tstph", key) == 0) { // PH curve
-			StrokeBuilder sb;
-			machine.setMotorPosition(Quad<StepCoord>());
-			sb.buildLine(machine.stroke, Quad<StepCoord>(6400,3200,1600,0));
-			machine.stroke.start(ticks());
-			do {
-				status =  machine.stroke.traverse(ticks(), machine);
-			} while (status == STATUS_BUSY_MOVING);
+        } else if (strcmp("ph", key) == 0 || strcmp("tstph", key) == 0) {
+            // PH curve
+            StrokeBuilder sb;
+            machine.setMotorPosition(Quad<StepCoord>());
+            sb.buildLine(machine.stroke, Quad<StepCoord>(6400, 3200, 1600, 0));
+            machine.stroke.start(ticks());
+            do {
+                status =  machine.stroke.traverse(ticks(), machine);
+            } while (status == STATUS_BUSY_MOVING);
         } else {
             return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
         }
@@ -477,7 +479,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         }
     } else if (strcmp("lh", key) == 0 || strcmp("syslh", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.invertLim);
-    } else if (strcmp("lp", key) == 0 || strcmp("syslh", key) == 0) {
+    } else if (strcmp("lp", key) == 0 || strcmp("syslp", key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, nLoops);
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
         jobj[key] = threadClock.ticks;
