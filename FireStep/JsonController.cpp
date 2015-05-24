@@ -434,6 +434,9 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
 				do {
 					status =  machine.stroke.traverse(ticks(), machine);
 				} while (status == STATUS_BUSY_MOVING);
+				if (status == STATUS_OK) {
+					status = STATUS_BUSY_MOVING; // repeat indefinitely
+				}
 			}
         } else {
             return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
