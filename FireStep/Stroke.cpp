@@ -262,7 +262,12 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 		PH5TYPE fSeg = iSeg/(PH5TYPE)N;
         E = phf[iMax].Ekt(E, fSeg);
 #ifdef TEST
-		cout << "fSeg:" << fSeg << " E:" << E ;
+		cout << "fSeg:" << fSeg 
+		//<< " E:" << E 
+		//<< " Ft(fSeg):" << phf[iMax].Ft(fSeg)
+		//<< " s(fSeg):" << ph[iMax].s(fSeg)
+		//<< " sigma(fSeg):" << ph[iMax].sigma(fSeg)
+		;
 #endif
 		for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
 			sNew.value[i] = ph[i].r(E).Re() + 0.5;
@@ -277,7 +282,8 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 		}
 		stroke.append(segment);
 #ifdef TEST
-        cout << " iSeg/N:" << (int16_t) (100 * iSeg / N + 0.5) 
+        cout 
+		//<< " iSeg/N:" << (int16_t) (100 * iSeg / N + 0.5) 
 		<< " sNew:" << sNew.toString()
 		<< " vNew:" << vNew.toString() 
 		<< " dv:" << dv.toString()

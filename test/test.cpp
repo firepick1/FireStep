@@ -77,6 +77,7 @@ void test_Thread() {
     threadRunner.setup();
     monitor.verbose = false;
 
+	ASSERTEQUAL(4, sizeof(PH5TYPE));
     ASSERTEQUAL(16000, MS_CYCLES(1));
     ASSERTEQUAL(7812, (int32_t) MS_TICKS(500));
     ASSERTEQUAL(15625, MS_TICKS(1000));
