@@ -426,7 +426,7 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
             status = machine.pulse(steps);
         } else if (strcmp("ph", key) == 0 || strcmp("tstph", key) == 0) {
             // PH curve
-            StrokeBuilder sb;
+            StrokeBuilder sb(12800,0.5,20,SEGMENT_COUNT);
             machine.setMotorPosition(Quad<StepCoord>());
             status = sb.buildLine(machine.stroke, Quad<StepCoord>(6400, 3200, 1600, 0));
 			if (status == STATUS_OK) {

@@ -60,9 +60,11 @@ typedef class StrokeBuilder {
 		StepCoord	vMax; // max pulses per second 
 		float 		vMaxSeconds; // seconds to achieve vMax 
 		int16_t		minSegments; // minimum number of stroke segments (default 20)
+		int16_t		maxSegments; // maximum number of stroke segments (defuault 50);
 
 	public:
-		StrokeBuilder(StepCoord vMax=12800, float vMaxSeconds=0.5);
+		StrokeBuilder(StepCoord vMax=12800, float vMaxSeconds=0.5, 
+			int16_t minSegments=20, int16_t maxSegments=50);
 		Status buildLine(Stroke & stroke, Quad<StepCoord> dPos);
 } StrokeBuilder;
 

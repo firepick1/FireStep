@@ -198,8 +198,10 @@ int16_t Stroke::append(Quad<StepDV> dv) {
 
 /////////////////// StrokeBuilder ////////////////
 
-StrokeBuilder::StrokeBuilder(StepCoord vMax, float vMaxSeconds)
-	: vMax(vMax), vMaxSeconds(vMaxSeconds), minSegments(20)
+StrokeBuilder::StrokeBuilder(StepCoord vMax, float vMaxSeconds,
+			int16_t minSegments, int16_t maxSegments)
+	: vMax(vMax), vMaxSeconds(vMaxSeconds), 
+	minSegments(minSegments), maxSegments(maxSegments)
 {
 }
 
@@ -209,36 +211,36 @@ StrokeBuilder::StrokeBuilder(StepCoord vMax, float vMaxSeconds)
  * in the fastest possible time subject to the minimum jerk constraint
  */
 Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
-	float K[QUAD_ELEMENTS];
-	float Ksqrt[QUAD_ELEMENTS];
+	PH5TYPE K[QUAD_ELEMENTS];
+	PH5TYPE Ksqrt[QUAD_ELEMENTS];
 	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
 		K[i] = relPos.value[i]/6400.0;
 		Ksqrt[i] = sqrt(K[i]);
 	}
 #define Z6400 56.568542495
-    PHVECTOR<Complex<float> > z[QUAD_ELEMENTS];
-    PHVECTOR<Complex<float> > q[QUAD_ELEMENTS];
+    PHVECTOR<Complex<PH5TYPE> > z[QUAD_ELEMENTS];
+    PHVECTOR<Complex<PH5TYPE> > q[QUAD_ELEMENTS];
 	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
-		z[i].push_back(Complex<float>());
-		z[i].push_back(Complex<float>(Z6400*Ksqrt[i]));
-		z[i].push_back(Complex<float>(Z6400*Ksqrt[i]));
-		q[i].push_back(Complex<float>());
-		q[i].push_back(Complex<float>(3200*K[i]));
-		q[i].push_back(Complex<float>(6400*K[i]));
+		z[i].push_back(Complex<PH5TYPE>());
+		z[i].push_back(Complex<PH5TYPE>(Z6400*Ksqrt[i]));
+		z[i].push_back(Complex<PH5TYPE>(Z6400*Ksqrt[i]));
+		q[i].push_back(Complex<PH5TYPE>());
+		q[i].push_back(Complex<PH5TYPE>(3200*K[i]));
+		q[i].push_back(Complex<PH5TYPE>(6400*K[i]));
 	}
-    PH5Curve<float> ph[] = {
-		PH5Curve<float>(z[0],q[0]),
-		PH5Curve<float>(z[1],q[1]),
-		PH5Curve<float>(z[2],q[2]),
-		PH5Curve<float>(z[3],q[3])
+    PH5Curve<PH5TYPE> ph[] = {
+		PH5Curve<PH5TYPE>(z[0],q[0]),
+		PH5Curve<PH5TYPE>(z[1],q[1]),
+		PH5Curve<PH5TYPE>(z[2],q[2]),
+		PH5Curve<PH5TYPE>(z[3],q[3])
 	};
-    PHFeed<float> phf[] = {
-		PHFeed<float>(ph[0], vMax, vMaxSeconds, 0, vMax, 0),
-		PHFeed<float>(ph[1], vMax, vMaxSeconds, 0, vMax, 0),
-		PHFeed<float>(ph[2], vMax, vMaxSeconds, 0, vMax, 0),
-		PHFeed<float>(ph[3], vMax, vMaxSeconds, 0, vMax, 0),
+    PHFeed<PH5TYPE> phf[] = {
+		PHFeed<PH5TYPE>(ph[0], vMax, vMaxSeconds, 0, vMax, 0),
+		PHFeed<PH5TYPE>(ph[1], vMax, vMaxSeconds, 0, vMax, 0),
+		PHFeed<PH5TYPE>(ph[2], vMax, vMaxSeconds, 0, vMax, 0),
+		PHFeed<PH5TYPE>(ph[3], vMax, vMaxSeconds, 0, vMax, 0),
 	};
-	float tS = 0;
+	PH5TYPE tS = 0;
 	int8_t iMax = 0;
 	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
 		if (phf[i].get_tS() > tS) {
@@ -247,8 +249,9 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 		}
 	}
 	stroke.clear();
-    float E = 0;
-    float N = max(minSegments, (int16_t)(1000 * tS / 20)); // ~20ms timeslice
+    PH5TYPE E = 0;
+    int16_t N = 1000 * tS / 20; // ~20ms timeslice
+    N = max(minSegments, min(maxSegments, (int16_t)N)); // ~20ms timeslice
     Quad<StepCoord> s;
     Quad<StepCoord> v;
 	Quad<StepCoord> sNew;
@@ -256,7 +259,11 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 	Quad<StepCoord> dv;
 	Quad<StepDV> segment;
     for (int16_t iSeg = 0; iSeg <= N; iSeg++) {
-        E = phf[iMax].Ekt(E, iSeg / N);
+		PH5TYPE fSeg = iSeg/(PH5TYPE)N;
+        E = phf[iMax].Ekt(E, fSeg);
+#ifdef TEST
+		cout << "fSeg:" << fSeg << " E:" << E ;
+#endif
 		for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
 			sNew.value[i] = ph[i].r(E).Re() + 0.5;
 		}
