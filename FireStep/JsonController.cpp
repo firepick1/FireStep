@@ -428,11 +428,13 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
             // PH curve
             StrokeBuilder sb;
             machine.setMotorPosition(Quad<StepCoord>());
-            sb.buildLine(machine.stroke, Quad<StepCoord>(6400, 3200, 1600, 0));
-            machine.stroke.start(ticks());
-            do {
-                status =  machine.stroke.traverse(ticks(), machine);
-            } while (status == STATUS_BUSY_MOVING);
+            status = sb.buildLine(machine.stroke, Quad<StepCoord>(6400, 3200, 1600, 0));
+			if (status == STATUS_OK) {
+				machine.stroke.start(ticks());
+				do {
+					status =  machine.stroke.traverse(ticks(), machine);
+				} while (status == STATUS_BUSY_MOVING);
+			}
         } else {
             return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
         }

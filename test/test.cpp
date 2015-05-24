@@ -1679,7 +1679,8 @@ void test_ph5() {
 	arduino.timer1(1);
 	StrokeBuilder sb;
 	ASSERTQUAD(Quad<StepCoord>(), machine.getMotorPosition());
-	sb.buildLine(machine.stroke, Quad<StepCoord>(6400,3200,1600,0));
+	Status status = sb.buildLine(machine.stroke, Quad<StepCoord>(6400,3200,1600,0));
+	ASSERTEQUAL(STATUS_OK, status);
 	ASSERTEQUAL(51, machine.stroke.length);
 	ASSERTEQUAL(0, machine.stroke.seg[0].value[0]);
 	ASSERTEQUAL(0, machine.stroke.seg[1].value[0]);
@@ -1690,7 +1691,6 @@ void test_ph5() {
 
 	machine.stroke.start(ticks());
 
-	Status status;
 	int i = 0;
 	status =  machine.stroke.traverse(ticks(), machine);
 	ASSERTEQUAL(STATUS_BUSY_MOVING, status);

@@ -251,16 +251,17 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     float N = max(minSegments, (int16_t)(1000 * tS / 20)); // ~20ms timeslice
     Quad<StepCoord> s;
     Quad<StepCoord> v;
+	Quad<StepCoord> sNew;
+	Quad<StepCoord> vNew;
+	Quad<StepCoord> dv;
+	Quad<StepDV> segment;
     for (int16_t iSeg = 0; iSeg <= N; iSeg++) {
-		Quad<StepCoord> sNew;
-		Quad<StepCoord> vNew;
         E = phf[iMax].Ekt(E, iSeg / N);
 		for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
 			sNew.value[i] = ph[i].r(E).Re() + 0.5;
 		}
         vNew = sNew - s;
-        Quad<StepCoord> dv = vNew - v;
-		Quad<StepDV> segment;
+        dv = vNew - v;
 		for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
 			if (dv.value[i] < (StepCoord) -127 || (StepCoord) 127 < dv.value[i]) {
 				return STATUS_STROKE_SEGPULSES;
