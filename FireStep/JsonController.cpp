@@ -392,7 +392,6 @@ typedef class TestPH {
 } TestPH;
 
 Status TestPH::runTest(JsonCommand &jcmd, JsonObject& jobj) {
-	cout << "runTest()" << endl;
 	int16_t minSegs = nSegs ? nSegs : 20;
 	int16_t maxSegs = nSegs ? nSegs : SEGMENT_COUNT;
 	if (maxSegs > SEGMENT_COUNT) {
@@ -408,9 +407,6 @@ Status TestPH::runTest(JsonCommand &jcmd, JsonObject& jobj) {
 			machine.getMotorAxis(2).isEnabled() ? -pulses : 0,
 			machine.getMotorAxis(3).isEnabled() ? -pulses : 0));
 	}
-#ifdef TEST
-	cout << "TestPH::runTest() pulses:" << pulses << endl;
-#endif
     Status status = sb.buildLine(machine.stroke, Quad<StepCoord>(
 		machine.getMotorAxis(0).isEnabled() ? pulses : 0,
 		machine.getMotorAxis(1).isEnabled() ? pulses : 0,
@@ -452,8 +448,6 @@ Status TestPH::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
 	const char *s;
 
-	cout << "TestPH::process(" << key << ")" << endl;
-
     if (strcmp("tstph", key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
@@ -484,7 +478,9 @@ Status TestPH::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     } else if (strcmp("sg", key) == 0) {
         status = processField<int16_t, int32_t>(jobj, key, nSegs);
     } else if (strcmp("sa", key) == 0) {
-        if (!(s = jobj[key]) || *s != 0) {
+        if ((s = jobj.at(key)) && *s == 0) { // query
+			// do nothing
+		} else {
 			return jcmd.setError(STATUS_OUTPUT_FIELD, key);
 		}
     } else if (strcmp("tv", key) == 0) {
@@ -497,8 +493,6 @@ Status TestPH::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
 
 Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = jcmd.getStatus();
-
-cout << "processTest()" << endl;
 
     switch (status) {
     case STATUS_BUSY_PARSED:
