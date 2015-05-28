@@ -385,7 +385,7 @@ typedef class TestPH {
 
     public:
         TestPH(Machine& machine)
-            : nSamples(0), pulses(6400), vMax(12800), tvMax(0.5), nSegs(0), machine(machine)
+            : nSamples(0), pulses(6400), vMax(12800), tvMax(0.7), nSegs(0), machine(machine)
         {}
 
         Status process(JsonCommand& jcmd, JsonObject& jobj, const char* key);
@@ -439,7 +439,7 @@ Status TestPH::runTest(JsonCommand &jcmd, JsonObject& jobj) {
             status = STATUS_BUSY_MOVING; // repeat indefinitely
         }
     }
-	jobj["sa"] = nSamples;
+	jobj["lp"] = nSamples;
 
 	return status;
 }
@@ -453,7 +453,7 @@ Status TestPH::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
             JsonObject& node = jobj.createNestedObject(key);
             node["mv"] = "";
             node["pu"] = "";
-            node["sa"] = "";
+            node["lp"] = "";
             node["sg"] = "";
             node["tv"] = "";
         }
@@ -477,12 +477,8 @@ Status TestPH::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
         status = processField<StepCoord, int32_t>(jobj, key, pulses);
     } else if (strcmp("sg", key) == 0) {
         status = processField<int16_t, int32_t>(jobj, key, nSegs);
-    } else if (strcmp("sa", key) == 0) {
-        if ((s = jobj.at(key)) && *s == 0) { // query
-			// do nothing
-		} else {
-			return jcmd.setError(STATUS_OUTPUT_FIELD, key);
-		}
+    } else if (strcmp("lp", key) == 0) {
+		// do nothing
     } else if (strcmp("tv", key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, tvMax);
     } else {
