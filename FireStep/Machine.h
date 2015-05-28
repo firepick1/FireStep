@@ -194,9 +194,12 @@ typedef class Machine : public QuadStepper {
         void setMotorPosition(const Quad<StepCoord> &position);
         virtual Status home();
         void idle();
-        Status setMotorAxis(MotorIndex iMotor, AxisIndex iAxis);
-        AxisIndex getMotorAxis(MotorIndex iMotor) {
-            return motor[iMotor];
+        Status setAxisIndex(MotorIndex iMotor, AxisIndex iAxis);
+        AxisIndex getAxisIndex(MotorIndex iMotor) {
+			return motor[iMotor];
+		}
+        Axis& getMotorAxis(MotorIndex iMotor) {
+            return axis[motor[iMotor]];
         }
         Status moveTo(Quad<StepCoord> destination, float seconds);
         Status moveDelta(Quad<StepCoord> delta, float seconds);

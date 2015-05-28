@@ -67,6 +67,7 @@ enum Status {
     STATUS_FIELD_ARRAY_ERROR = -418,// Expected JSON field array value
     STATUS_FIELD_REQUIRED = -419,	// Expected JSON field value
     STATUS_JSON_ARRAY_LEN = -420,	// JSON array is too short
+    STATUS_OUTPUT_FIELD = -421,		// JSON field is for output only
 
 	// events
 	STATUS_ESTOP = -900,			// Emergency hardware stop

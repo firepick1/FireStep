@@ -215,3 +215,13 @@ void PrintN(char c, byte n) {
     }
 }
 
+#ifdef ARDUINO
+Ticks firestep::ticks() {
+	Ticks result = threadRunner.ticks();
+
+	if (result == 0) {
+		result = threadRunner.ticks();
+	}
+    return result;
+}
+#endif

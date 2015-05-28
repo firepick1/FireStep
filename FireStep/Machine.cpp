@@ -35,7 +35,7 @@ Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false) {
     pinEnableHigh = false;
     for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
-        setMotorAxis((MotorIndex)i, (AxisIndex)i);
+        setAxisIndex((MotorIndex)i, (AxisIndex)i);
     }
     setPinConfig(PC2_RAMPS_1_4);
 
@@ -96,7 +96,7 @@ Status Machine::setPinConfig(PinConfig pc) {
     return STATUS_OK;
 }
 
-Status Machine::setMotorAxis(MotorIndex iMotor, AxisIndex iAxis) {
+Status Machine::setAxisIndex(MotorIndex iMotor, AxisIndex iAxis) {
     if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
         return STATUS_MOTOR_ERROR;
     }
@@ -163,6 +163,9 @@ Status Machine::moveDelta(Quad<StepCoord> delta, float seconds) {
     for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         if (delta.value[i]) {
             if (!motorAxis[i]->enabled) {
+#ifdef TEST
+				cout << "moveDelta(" << delta.value[i] << ") STATUS_AXIS_DISABLED:" << (int) i << endl;
+#endif
                 return STATUS_AXIS_DISABLED;
             }
             maxDelta = max(maxDelta, delta.value[i]);
@@ -291,6 +294,9 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
         switch (pulse.value[i]) {
         case 1:
             if (!a.enabled) {
+#ifdef TEST
+				cout << "step(1): STATUS_AXIS_DISABLED:" << (int) i << endl;
+#endif
                 return STATUS_AXIS_DISABLED;
             }
             if (a.position >= a.travelMax) {
@@ -306,6 +312,9 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
             break;
         case -1:
             if (!a.enabled) {
+#ifdef TEST
+				cout << "step(-1) STATUS_AXIS_DISABLED:" << (int) i << endl;
+#endif
                 return STATUS_AXIS_DISABLED;
             }
             a.readAtMin(invertLim);

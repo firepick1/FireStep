@@ -218,14 +218,7 @@ extern ThreadRunner threadRunner;
  * 1 tick = 1024 clock cycles = 64 microseconds
  * Clock overflows in 2^31 * 0.000064 seconds = ~38.1 hours
  */
-inline Ticks ticks() {
-	Ticks result = threadRunner.ticks();
-
-	if (result == 0) {
-		result = threadRunner.ticks();
-	}
-    return result;
-}
+extern Ticks ticks();
 
 } // namespace firestep
 

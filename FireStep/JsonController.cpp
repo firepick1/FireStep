@@ -38,7 +38,7 @@ template Status processField<int16_t, int32_t>(JsonObject& jobj, const char *key
 template Status processField<uint16_t, int32_t>(JsonObject& jobj, const char *key, uint16_t& field);
 template Status processField<int32_t, int32_t>(JsonObject& jobj, const char *key, int32_t& field);
 template Status processField<uint8_t, int32_t>(JsonObject& jobj, const char *key, uint8_t& field);
-template Status processField<float, double>(JsonObject& jobj, const char *key, float& field);
+template Status processField<PH5TYPE, PH5TYPE>(JsonObject& jobj, const char *key, PH5TYPE& field);
 template Status processField<bool, bool>(JsonObject& jobj, const char *key, bool& field);
 
 Status processHomeField(Machine& machine, AxisIndex iAxis, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
@@ -134,6 +134,7 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
     Status status = STATUS_BUSY_MOVING;
     int16_t slen[4] = {0, 0, 0, 0};
     bool us_ok = false;
+	machine.stroke.clear();
     for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
         if (strcmp("us", it->key) == 0) {
             int32_t planMicros;
@@ -248,9 +249,9 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
         if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
             return STATUS_MOTOR_INDEX;
         }
-        AxisIndex iAxis = machine.getMotorAxis(iMotor);
+        AxisIndex iAxis = machine.getAxisIndex(iMotor);
         status = processField<AxisIndex, int32_t>(jobj, key, iAxis);
-        machine.setMotorAxis(iMotor, iAxis);
+        machine.setAxisIndex(iMotor, iAxis);
     }
     return status;
 }
@@ -370,8 +371,134 @@ int freeRam () {
 #endif
 }
 
+typedef class TestPH {
+	private:
+        int16_t nSamples;
+        StepCoord pulses;
+        StepCoord vMax;
+		PH5TYPE tvMax;
+		int16_t nSegs;
+		Machine &machine;
+
+	private:
+		Status runTest(JsonCommand& jcmd, JsonObject& jobj);
+
+    public:
+        TestPH(Machine& machine)
+            : nSamples(0), pulses(6400), vMax(12800), tvMax(0.5), nSegs(0), machine(machine)
+        {}
+
+        Status process(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+} TestPH;
+
+Status TestPH::runTest(JsonCommand &jcmd, JsonObject& jobj) {
+	cout << "runTest()" << endl;
+	int16_t minSegs = nSegs ? nSegs : 20;
+	int16_t maxSegs = nSegs ? nSegs : SEGMENT_COUNT;
+	if (maxSegs > SEGMENT_COUNT) {
+		return jcmd.setError(STATUS_STROKE_MAXLEN, "sg");
+	}
+    StrokeBuilder sb(vMax, tvMax, minSegs, maxSegs);
+	if (pulses >= 0) {
+		machine.setMotorPosition(Quad<StepCoord>());
+	} else {
+		machine.setMotorPosition(Quad<StepCoord>(
+			machine.getMotorAxis(0).isEnabled() ? -pulses : 0,
+			machine.getMotorAxis(1).isEnabled() ? -pulses : 0,
+			machine.getMotorAxis(2).isEnabled() ? -pulses : 0,
+			machine.getMotorAxis(3).isEnabled() ? -pulses : 0));
+	}
+#ifdef TEST
+	cout << "TestPH::runTest() pulses:" << pulses << endl;
+#endif
+    Status status = sb.buildLine(machine.stroke, Quad<StepCoord>(
+		machine.getMotorAxis(0).isEnabled() ? pulses : 0,
+		machine.getMotorAxis(1).isEnabled() ? pulses : 0,
+		machine.getMotorAxis(2).isEnabled() ? pulses : 0,
+		machine.getMotorAxis(3).isEnabled() ? pulses : 0));
+    if (status == STATUS_OK) {
+        machine.stroke.start(ticks());
+#ifdef TEST
+	cout << "TestPH::runTest() pos:" << machine.getMotorPosition().toString() << endl;
+#endif
+        do {
+			nSamples++;
+            status =  machine.stroke.traverse(ticks(), machine);
+#ifdef TEST
+			if (nSamples % 500 == 0) {
+			cout << "TestPH:runTest()" 
+				<< " t:"
+				<< (threadClock.ticks - machine.stroke.tStart)/
+					(float) machine.stroke.get_dtTotal()
+				<< " pos:"
+				<< machine.getMotorPosition().toString() << endl;
+			}
+#endif
+        } while (status == STATUS_BUSY_MOVING);
+#ifdef TEST
+	cout << "TestPH::runTest() pos:" << machine.getMotorPosition().toString() 
+		<< " status:" << status << endl;
+#endif
+        if (status == STATUS_OK) {
+            status = STATUS_BUSY_MOVING; // repeat indefinitely
+        }
+    }
+	jobj["sa"] = nSamples;
+
+	return status;
+}
+
+Status TestPH::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = STATUS_OK;
+	const char *s;
+
+	cout << "TestPH::process(" << key << ")" << endl;
+
+    if (strcmp("tstph", key) == 0) {
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+            node["mv"] = "";
+            node["pu"] = "";
+            node["sa"] = "";
+            node["sg"] = "";
+            node["tv"] = "";
+        }
+        JsonObject& kidObj = jobj[key];
+        if (!kidObj.success()) {
+            return jcmd.setError(STATUS_JSON_OBJECT, key);
+        }
+        for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+            status = process(jcmd, kidObj, it->key);
+            if (status != STATUS_OK) {
+#ifdef TEST
+				cout << "TestPH::process() status:" << status << endl;
+#endif
+                return status;
+            }
+        }
+		status = runTest(jcmd, kidObj);
+    } else if (strcmp("mv", key) == 0) {
+        status = processField<StepCoord, int32_t>(jobj, key, vMax);
+    } else if (strcmp("pu", key) == 0) {
+        status = processField<StepCoord, int32_t>(jobj, key, pulses);
+    } else if (strcmp("sg", key) == 0) {
+        status = processField<int16_t, int32_t>(jobj, key, nSegs);
+    } else if (strcmp("sa", key) == 0) {
+        if (!(s = jobj[key]) || *s != 0) {
+			return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+		}
+    } else if (strcmp("tv", key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, tvMax);
+    } else {
+        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+    }
+    return status;
+}
+
 Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = jcmd.getStatus();
+
+cout << "processTest()" << endl;
 
     switch (status) {
     case STATUS_BUSY_PARSED:
@@ -392,7 +519,7 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
             Quad<StepCoord> steps;
             for (MotorIndex i = 0; i < 4; i++) {
                 if (jarr[i].success()) {
-                    Axis &a = machine.axis[machine.getMotorAxis(i)];
+                    Axis &a = machine.getMotorAxis(i);
                     int16_t revs = jarr[i];
                     int16_t revSteps = 360 / a.stepAngle;
                     int16_t revMicrosteps = revSteps * a.microsteps;
@@ -425,19 +552,7 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
             }
             status = machine.pulse(steps);
         } else if (strcmp("ph", key) == 0 || strcmp("tstph", key) == 0) {
-            // PH curve
-            StrokeBuilder sb(12800,0.5,20,SEGMENT_COUNT);
-            machine.setMotorPosition(Quad<StepCoord>());
-            status = sb.buildLine(machine.stroke, Quad<StepCoord>(6400, 3200, 1600, 0));
-			if (status == STATUS_OK) {
-				machine.stroke.start(ticks());
-				do {
-					status =  machine.stroke.traverse(ticks(), machine);
-				} while (status == STATUS_BUSY_MOVING);
-				if (status == STATUS_OK) {
-					status = STATUS_BUSY_MOVING; // repeat indefinitely
-				}
-			}
+            return TestPH(machine).process(jcmd, jobj, key);
         } else {
             return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
         }

@@ -34,6 +34,7 @@ void Stroke::clear() {
 	curSeg = 0;
 	tStart = 0;
 	dtTotal = 0;
+	dPos = dEndPos = Quad<StepCoord>();
 }
 
 SegIndex Stroke::goalSegment(Ticks t) {
@@ -104,6 +105,9 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 	if (dt <= 0 || dtTotal <= 0 || length <= 0 || dtSeg <= 0) {
 		// do nothing
 	} else if (dtTotal <= dt && !dEndPos.isZero()) {
+#ifdef TEST
+		cout << "goalPos:" << dEndPos.toString() << endl;
+#endif
 		dGoal = dEndPos;
 	} else {
 		dt = min(dtTotal, dt);
@@ -130,79 +134,90 @@ template<class T> T abs(T a) { return a < 0 ? -a : a; };
 #endif
 
 Status Stroke::start(Ticks tStart) {
-	this->tStart = tStart;
+    this->tStart = tStart;
 
-	if (dtTotal <= 0) {
-		return STATUS_STROKE_TIME;
-	}
+    if (dtTotal <= 0) {
+        return STATUS_STROKE_TIME;
+    }
 
-	dPos = 0;
-	Quad<StepCoord> end = goalPos(tStart+dtTotal-1);
-	for (QuadIndex i=0; i<4; i++) {
-		if (maxEndPulses < abs(dEndPos.value[i] - end.value[i])) {
-			return STATUS_STROKE_END_ERROR;
-		}
-	}
-	return STATUS_OK;
+    dPos = 0;
+    if (dEndPos.isZero()) {
+		dEndPos = goalPos(tStart + dtTotal);
+	} else {
+        Quad<StepCoord> almostEnd = goalPos(tStart + dtTotal - 1);
+        for (QuadIndex i = 0; i < 4; i++) {
+            if (maxEndPulses < abs(dEndPos.value[i] - almostEnd.value[i])) {
+                return STATUS_STROKE_END_ERROR;
+            }
+        }
+    }
+    return STATUS_OK;
 }
 
 bool Stroke::isDone() {
-	return dPos == dEndPos;
+    return dPos == dEndPos;
 }
 
 Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
-	Quad<StepCoord> dGoal = goalPos(tCurrent);
-	if (tStart <= 0) {
-		return STATUS_STROKE_START;
+    Quad<StepCoord> dGoal = goalPos(tCurrent);
+    if (tStart <= 0) {
+        return STATUS_STROKE_START;
+    }
+#ifdef TEST
+	Ticks endTicks = tCurrent - (tStart+dtTotal);
+	if (endTicks > -5) {
+		cout << "traverse(" << endTicks << ")"
+			<< dGoal.toString()
+			<< endl;
 	}
-	Status status = STATUS_BUSY_MOVING;
-	while (dPos != dGoal) {
-		StepCoord d[4];
-		StepCoord dMax = 0;
-		for (uint8_t i=0; i<4; i++) {
-			d[i] = dGoal.value[i] - dPos.value[i];
-			dMax = max(dMax, abs(d[i]));
-		}
-		if (dMax == 0) {
-			break;
-		}
-		Quad<StepCoord> pulse;
-		for (uint8_t i=0; i<4; i++) {
-			if (abs(d[i]) != dMax) {
-				continue;
-			}
-			pulse.value[i] = d[i] < 0 ? -1 : 1;
-		}
-		dPos += pulse;
-		Status status = stepper.step(pulse);
-		switch (status) {
-			case STATUS_OK:	// operation complete
-			case STATUS_BUSY_MOVING: // work in progress
-				break;
-			default:
-				return status;	// abnormal return
-		}
-	}
-	status = tCurrent >= tStart+dtTotal ? STATUS_OK : STATUS_BUSY_MOVING;
-	return status;
+#endif
+    Status status = STATUS_BUSY_MOVING;
+    while (dPos != dGoal) {
+        StepCoord d[4];
+        StepCoord dMax = 0;
+        for (uint8_t i = 0; i < 4; i++) {
+            d[i] = dGoal.value[i] - dPos.value[i];
+            dMax = max(dMax, abs(d[i]));
+        }
+        if (dMax == 0) {
+            break;
+        }
+        Quad<StepCoord> pulse;
+        for (uint8_t i = 0; i < 4; i++) {
+            if (abs(d[i]) != dMax) {
+                continue;
+            }
+            pulse.value[i] = d[i] < 0 ? -1 : 1;
+        }
+        dPos += pulse;
+        Status status = stepper.step(pulse);
+        switch (status) {
+        case STATUS_OK:	// operation complete
+        case STATUS_BUSY_MOVING: // work in progress
+            break;
+        default:
+            return status;	// abnormal return
+        }
+    }
+    status = tCurrent >= tStart + dtTotal ? STATUS_OK : STATUS_BUSY_MOVING;
+    return status;
 }
 
 int16_t Stroke::append(Quad<StepDV> dv) {
-	if (length > SEGMENT_COUNT) {
-		return STATUS_STROKE_MAXLEN;
-	}
-	seg[length++] = dv;
+    if (length > SEGMENT_COUNT) {
+        return STATUS_STROKE_MAXLEN;
+    }
+    seg[length++] = dv;
 
-	return length;
+    return length;
 }
 
 /////////////////// StrokeBuilder ////////////////
 
 StrokeBuilder::StrokeBuilder(StepCoord vMax, float vMaxSeconds,
-			int16_t minSegments, int16_t maxSegments)
-	: vMax(vMax), vMaxSeconds(vMaxSeconds), 
-	minSegments(minSegments), maxSegments(maxSegments)
-{
+                             int16_t minSegments, int16_t maxSegments)
+    : vMax(vMax), vMaxSeconds(vMaxSeconds),
+      minSegments(minSegments), maxSegments(maxSegments) {
 }
 
 /**
@@ -211,92 +226,92 @@ StrokeBuilder::StrokeBuilder(StepCoord vMax, float vMaxSeconds,
  * in the fastest possible time subject to the minimum jerk constraint
  */
 Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
-	PH5TYPE K[QUAD_ELEMENTS];
-	PH5TYPE Ksqrt[QUAD_ELEMENTS];
-	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
-		K[i] = relPos.value[i]/6400.0;
-		Ksqrt[i] = sqrt(K[i]);
-	}
+    PH5TYPE K[QUAD_ELEMENTS];
+    PH5TYPE Ksqrt[QUAD_ELEMENTS];
+    for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
+        K[i] = relPos.value[i] / 6400.0;
+        Ksqrt[i] = sqrt(K[i]);
+    }
+#ifdef TEST
+	cout << "buildLine(" << relPos.toString() << ")" << endl;
+#endif
 #define Z6400 56.568542495
     PHVECTOR<Complex<PH5TYPE> > z[QUAD_ELEMENTS];
     PHVECTOR<Complex<PH5TYPE> > q[QUAD_ELEMENTS];
-	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
-		z[i].push_back(Complex<PH5TYPE>());
-		z[i].push_back(Complex<PH5TYPE>(Z6400*Ksqrt[i]));
-		z[i].push_back(Complex<PH5TYPE>(Z6400*Ksqrt[i]));
-		q[i].push_back(Complex<PH5TYPE>());
-		q[i].push_back(Complex<PH5TYPE>(3200*K[i]));
-		q[i].push_back(Complex<PH5TYPE>(6400*K[i]));
-	}
+    for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
+        z[i].push_back(Complex<PH5TYPE>());
+        z[i].push_back(Complex<PH5TYPE>(Z6400 * Ksqrt[i]));
+        z[i].push_back(Complex<PH5TYPE>(Z6400 * Ksqrt[i]));
+        q[i].push_back(Complex<PH5TYPE>());
+        q[i].push_back(Complex<PH5TYPE>(3200 * K[i]));
+        q[i].push_back(Complex<PH5TYPE>(6400 * K[i]));
+    }
     PH5Curve<PH5TYPE> ph[] = {
-		PH5Curve<PH5TYPE>(z[0],q[0]),
-		PH5Curve<PH5TYPE>(z[1],q[1]),
-		PH5Curve<PH5TYPE>(z[2],q[2]),
-		PH5Curve<PH5TYPE>(z[3],q[3])
-	};
+        PH5Curve<PH5TYPE>(z[0], q[0]),
+        PH5Curve<PH5TYPE>(z[1], q[1]),
+        PH5Curve<PH5TYPE>(z[2], q[2]),
+        PH5Curve<PH5TYPE>(z[3], q[3])
+    };
+#ifdef TEST
+	cout << "ph[0].r(1):" << ph[0].r(1).Re() << endl;
+#endif
     PHFeed<PH5TYPE> phf[] = {
-		PHFeed<PH5TYPE>(ph[0], vMax, vMaxSeconds, 0, vMax, 0),
-		PHFeed<PH5TYPE>(ph[1], vMax, vMaxSeconds, 0, vMax, 0),
-		PHFeed<PH5TYPE>(ph[2], vMax, vMaxSeconds, 0, vMax, 0),
-		PHFeed<PH5TYPE>(ph[3], vMax, vMaxSeconds, 0, vMax, 0),
-	};
-	PH5TYPE tS = 0;
-	int8_t iMax = 0;
-	for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
-		if (phf[i].get_tS() > tS) {
-			iMax = i;
-			tS = phf[i].get_tS();
-		}
-	}
-	stroke.clear();
+        PHFeed<PH5TYPE>(ph[0], vMax, vMaxSeconds),
+        PHFeed<PH5TYPE>(ph[1], vMax, vMaxSeconds),
+        PHFeed<PH5TYPE>(ph[2], vMax, vMaxSeconds),
+        PHFeed<PH5TYPE>(ph[3], vMax, vMaxSeconds)
+    };
+    PH5TYPE tS = 0;
+    int8_t iMax = 0;
+    for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
+        if (phf[i].get_tS() > tS) {
+            iMax = i;
+            tS = phf[i].get_tS();
+        }
+    }
+    stroke.clear();
     PH5TYPE E = 0;
     int16_t N = 1000 * tS / 20; // ~20ms timeslice
-    N = max(minSegments, min(maxSegments, (int16_t)N)); // ~20ms timeslice
+    N = max(minSegments, min(maxSegments, (int16_t)N)); 
     Quad<StepCoord> s;
     Quad<StepCoord> v;
-	Quad<StepCoord> sNew;
-	Quad<StepCoord> vNew;
-	Quad<StepCoord> dv;
-	Quad<StepDV> segment;
+    Quad<StepCoord> sNew;
+    Quad<StepCoord> vNew;
+    Quad<StepCoord> dv;
+    Quad<StepDV> segment;
     for (int16_t iSeg = 0; iSeg <= N; iSeg++) {
-		PH5TYPE fSeg = iSeg/(PH5TYPE)N;
+        PH5TYPE fSeg = iSeg / (PH5TYPE)N;
         E = phf[iMax].Ekt(E, fSeg);
-#ifdef TEST
-		cout << "fSeg:" << fSeg 
-		//<< " E:" << E 
-		//<< " Ft(fSeg):" << phf[iMax].Ft(fSeg)
-		//<< " s(fSeg):" << ph[iMax].s(fSeg)
-		//<< " sigma(fSeg):" << ph[iMax].sigma(fSeg)
-		;
-#endif
-		for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
-			sNew.value[i] = ph[i].r(E).Re() + 0.5;
-		}
+        for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
+            sNew.value[i] = ph[i].r(E).Re() + 0.5;
+        }
         vNew = sNew - s;
         dv = vNew - v;
-		for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
-			if (dv.value[i] < (StepCoord) -127 || (StepCoord) 127 < dv.value[i]) {
-				return STATUS_STROKE_SEGPULSES;
-			}
-			segment.value[i] = dv.value[i];
-		}
-		stroke.append(segment);
 #ifdef TEST
-        cout 
-		//<< " iSeg/N:" << (int16_t) (100 * iSeg / N + 0.5) 
-		<< " sNew:" << sNew.toString()
-		<< " vNew:" << vNew.toString() 
-		<< " dv:" << dv.toString()
-		<< endl;
+        cout << "fSeg:" << fSeg
+			<< " sNew:" << sNew.toString()
+			<< " vNew:" << vNew.toString()
+			<< " dv:" << dv.toString()
+			<< endl;
 #endif
+        for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
+            if (dv.value[i] < (StepCoord) - 127 || (StepCoord) 127 < dv.value[i]) {
+#ifdef TEST
+				cout << " STATUS_STROKE_SEGPULSES pulses:" << dv.value[i] << endl;
+#endif
+                return STATUS_STROKE_SEGPULSES;
+            }
+            segment.value[i] = dv.value[i];
+        }
+		stroke.append(segment);
         v = vNew;
         s = sNew;
     }
 #ifdef TEST
     cout << " N:" << N << " tS:" << tS << endl;
 #endif
-	stroke.setTotalTime(tS);
+    stroke.setTotalTime(tS);
 
-	return STATUS_OK;
+    return STATUS_OK;
 }
 
