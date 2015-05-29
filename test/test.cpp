@@ -449,12 +449,12 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
     testJSON(machine, jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':111}}}\n");
     testJSON(machine, jc, replace, "{'?':{'tn':0}}", "{'s':0,'r':{'?':{'tn':0}}}\n");
     testJSON(machine, jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':0}}}\n");
-    testJSON(machine, jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':10000}}\n");  	// default
+    testJSON(machine, jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':32767}}\n");  	// default
     testJSON(machine, jc, replace, "{'?tm':222}", "{'s':0,'r':{'?tm':222}}\n");
     testJSON(machine, jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':222}}\n");
     testJSON(machine, jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':222}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'tm':10000}}", "{'s':0,'r':{'?':{'tm':10000}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':10000}}}\n");
+    testJSON(machine, jc, replace, "{'?':{'tm':32767}}", "{'s':0,'r':{'?':{'tm':32767}}}\n");
+    testJSON(machine, jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':32767}}}\n");
     testJSON(machine, jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':16}}}\n");
     testJSON(machine, jc, replace, "{'?':{'mi':1}}", "{'s':0,'r':{'?':{'mi':1}}}\n");
     testJSON(machine, jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':1}}}\n");
@@ -471,15 +471,15 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
     testJSON(machine, jc, replace, "{'x':''}",
              "{'s':0,'r':{'x':{'dh':true,'en':true,'ho':0,'is':0,'lb':16,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':55,'pe':38,'pm':255,'pn':3,'po':0,'ps':54,"\
-			 "'sa':1.80,'sd':80,'tm':10000,'tn':0,'ud':0}}}\n");
+			 "'sa':1.80,'sd':80,'tm':32767,'tn':0,'ud':0}}}\n");
     testJSON(machine, jc, replace, "{'y':''}",
              "{'s':0,'r':{'y':{'dh':true,'en':true,'ho':0,'is':0,'lb':16,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':61,'pe':56,'pm':255,'pn':14,'po':0,'ps':60,"\
-			 "'sa':1.80,'sd':80,'tm':10000,'tn':0,'ud':0}}}\n");
+			 "'sa':1.80,'sd':80,'tm':32767,'tn':0,'ud':0}}}\n");
     testJSON(machine, jc, replace, "{'z':''}",
              "{'s':0,'r':{'z':{'dh':true,'en':true,'ho':0,'is':0,'lb':16,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':48,'pe':62,'pm':255,'pn':18,'po':0,'ps':46,"\
-			 "'sa':1.80,'sd':80,'tm':10000,'tn':0,'ud':0}}}\n");
+			 "'sa':1.80,'sd':80,'tm':32767,'tn':0,'ud':0}}}\n");
 }
 
 void test_JsonController_machinePosition(Machine& machine, JsonController &jc) {
@@ -680,10 +680,10 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
     machine.axis[1].enable(true);
     machine.axis[2].enable(true);
 #define STROKE_CONFIG "{"\
-			"'xtm':10000,'xtn':0,'xpo':5,'xln':false,"\
-			"'ytm':10000,'ytn':0,'ypo':5,'yln':false,"\
-			"'ztm':10000,'ztn':0,'zpo':5,'zln':false,"\
-			"'atm':10000,'atn':0,'apo':5,'aln':false,'aps':255}"
+			"'xtm':32767,'xtn':0,'xpo':5,'xln':false,"\
+			"'ytm':32767,'ytn':0,'ypo':5,'yln':false,"\
+			"'ztm':32767,'ztn':0,'zpo':5,'zln':false,"\
+			"'atm':32767,'atn':0,'apo':5,'aln':false,'aps':255}"
     string jconfig = STROKE_CONFIG;
     testJSON(machine, jc, replace, jconfig.c_str(), "{'s':0,'r':" STROKE_CONFIG "}\n");
     ASSERTQUAD(Quad<StepCoord>(5, 5, 5, 5), machine.getMotorPosition());
