@@ -1715,7 +1715,7 @@ void test_ph5() {
 	xpulses = arduino.pulses(PC2_X_STEP_PIN);
 	int32_t xdirpulses = arduino.pulses(PC2_X_DIR_PIN);
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-    Serial.push(JT("{'tstph':{'pu':3200,'tv':'','sg':'','mv':'','sa':''}}\n")); 
+    Serial.push(JT("{'tstph':{'pu':3200,'tv':'','sg':'','mv':'','lp':''}}\n")); 
     mt.loop();	// command.parse
 	ASSERTEQUAL(true, machine.stroke.isDone());
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
