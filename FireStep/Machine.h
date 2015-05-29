@@ -106,7 +106,7 @@ typedef class Axis {
             pinEnable(NOPIN),
             home(0),
             travelMin(0),
-            travelMax(32767),
+            travelMax(32000),	// 5 full 400-step revolutions @16-microsteps
             position(0),
             latchBackoff(MICROSTEPS_DEFAULT),
             usDelay(0), // Suggest 80us (12.8kHz) for microsteps 1
