@@ -375,7 +375,7 @@ typedef class PHSelfTest {
 	private:
 		int32_t nSamples;
         StepCoord pulses;
-        StepCoord vMax;
+        int32_t vMax;
 		PH5TYPE tvMax;
 		int16_t nSegs;
 		Machine &machine;
@@ -487,9 +487,14 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
                 return status;
             }
         }
+		//pulses = -pulses;
 		status = execute(jcmd, kidObj);
+		if (status == STATUS_BUSY_MOVING) {
+			//pulses = -pulses; //reverse direction
+			//status = execute(jcmd, kidObj);
+		}
     } else if (strcmp("mv", key) == 0) {
-        status = processField<StepCoord, int32_t>(jobj, key, vMax);
+        status = processField<int32_t, int32_t>(jobj, key, vMax);
     } else if (strcmp("pu", key) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, pulses);
     } else if (strcmp("sg", key) == 0) {

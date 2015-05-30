@@ -53,10 +53,12 @@ if [ ! -e /usr/lib/lib_ph5.so ]; then
 		exit -1
 	fi
 fi
-pushd ph5
-	git pull
-	./build clean all
-popd
+if [ "$1" == "" ]; then
+	pushd ph5
+		git pull
+		./build clean all
+	popd
+fi
 
 if [ "$WINDIR" != "" ]; then
 	echo "SYSTEM	: FireStep Windows support is limited to Arduino IDE"

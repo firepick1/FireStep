@@ -24,6 +24,7 @@ float Stroke::getTotalTime() {
 }
 
 void Stroke::setTotalTime(float seconds) {
+	ASSERT(seconds > 0);
 	dtTotal = MS_TICKS_REAL(seconds * 1000);
 }
 
@@ -106,21 +107,19 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 	if (dt <= 0 || dtTotal <= 0 || length <= 0 || dtSeg <= 0) {
 		// do nothing
 	} else if (dtTotal <= dt && !dEndPos.isZero()) {
-#ifdef TEST
-		cout << "goalPos:" << dEndPos.toString() << endl;
-#endif
+		TESTCOUT1("goalPos:", dEndPos.toString());
 		dGoal = dEndPos;
 	} else {
 		dt = min(dtTotal, dt);
 		Ticks tNum = (dt>dtSegEnd ? dtSegEnd:dt) - dtSegStart;
 		for (int8_t iMotor=0; iMotor<QUAD_ELEMENTS; iMotor++) {
-			int16_t v = 0;
+			int32_t v = 0;
 			int16_t pos = 0;
 			for (SegIndex s=0; s<sGoal; s++) {
-				v += scale * (StepCoord) seg[s].value[iMotor];
+				v += (int32_t)(scale * (StepCoord) seg[s].value[iMotor]);
 				pos += v;
 			}
-			v += scale * (StepCoord) seg[sGoal].value[iMotor];
+			v += (int32_t)(scale * (StepCoord) seg[sGoal].value[iMotor]);
 			int32_t dSeg = v;
 			dSeg *= tNum;
 			dSeg /= dtSeg;
@@ -148,20 +147,15 @@ Status Stroke::start(Ticks tStart) {
         Quad<StepCoord> almostEnd = goalPos(tStart + dtTotal - 1);
         for (QuadIndex i = 0; i < 4; i++) {
             if (maxEndPulses < abs(dEndPos.value[i] - almostEnd.value[i])) {
-#ifdef TEST
-				cout << "Stroke::start() STATUS_STROKE_END_ERROR " 
-					<< " dEndPos[" << i << "]:" << dEndPos.value[i] 
-					<< " last interpolated value:" << almostEnd.value[i]
-					<< " delta:" << (dEndPos.value[i] - almostEnd.value[i])
-					<< endl;
-#endif
+				TESTCOUT4("Stroke::start() STATUS_STROKE_END_ERROR dEndPos[", i,
+					"]:", dEndPos.value[i],
+					" last interpolated value:", almostEnd.value[i],
+					" delta:", (dEndPos.value[i] - almostEnd.value[i]));
                 return STATUS_STROKE_END_ERROR;
             }
         }
     }
-#ifdef TEST
-	cout << "Stroke::start() dEndPos:" << dEndPos.toString() << " dtTotal:" << dtTotal << endl;
-#endif
+	TESTCOUT2("Stroke::start() dEndPos:", dEndPos.toString(), " dtTotal:", dtTotal);
     return STATUS_OK;
 }
 
@@ -225,7 +219,7 @@ int16_t Stroke::append(Quad<StepDV> dv) {
 
 /////////////////// StrokeBuilder ////////////////
 
-StrokeBuilder::StrokeBuilder(StepCoord vMax, float vMaxSeconds,
+StrokeBuilder::StrokeBuilder(int32_t vMax, float vMaxSeconds,
                              int16_t minSegments, int16_t maxSegments)
     : vMax(vMax), vMaxSeconds(vMaxSeconds),
       minSegments(minSegments), maxSegments(maxSegments) {
@@ -243,9 +237,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         K[i] = relPos.value[i] / 6400.0;
         Ksqrt[i] = sqrt(K[i]);
     }
-#ifdef TEST
-	cout << "buildLine(" << relPos.toString() << ")" << endl;
-#endif
+	TESTCOUT1("buildLine:", relPos.toString());
 #define Z6400 56.568542495
     PHVECTOR<Complex<PH5TYPE> > z[QUAD_ELEMENTS];
     PHVECTOR<Complex<PH5TYPE> > q[QUAD_ELEMENTS];
@@ -263,9 +255,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         PH5Curve<PH5TYPE>(z[2], q[2]),
         PH5Curve<PH5TYPE>(z[3], q[3])
     };
-#ifdef TEST
-	cout << "ph[0].r(1):" << ph[0].r(1).Re() << endl;
-#endif
+	TESTCOUT1("ph[0].r(1)", ph[0].r(1).Re());
     PHFeed<PH5TYPE> phf[] = {
         PHFeed<PH5TYPE>(ph[0], vMax, vMaxSeconds),
         PHFeed<PH5TYPE>(ph[1], vMax, vMaxSeconds),
@@ -275,6 +265,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     PH5TYPE tS = 0;
     int8_t iMax = 0;
     for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
+	TESTCOUT1("phf[i].get_tS()", phf[i].get_tS());
         if (phf[i].get_tS() > tS) {
             iMax = i;
             tS = phf[i].get_tS();
@@ -300,30 +291,23 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 			stroke.vPeak = max(stroke.vPeak, (int32_t)abs(vNew.value[i]));
 			dv.value[i] = vNew.value[i] - v.value[i];
         }
-#ifdef TEST
-        cout << "fSeg:" << fSeg
-			<< " sNew:" << sNew.toString()
-			<< " vNew:" << vNew.toString()
-			<< " dv:" << dv.toString()
-			<< endl;
-#endif
+        TESTCOUT4("fSeg:", fSeg, " sNew:", sNew.toString(), 
+			" vNew:", vNew.toString(), " dv:", dv.toString());
         for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
             if (dv.value[i] < (StepCoord) - 127 || (StepCoord) 127 < dv.value[i]) {
-#ifdef TEST
-				cout << " STATUS_STROKE_SEGPULSES pulses:" << dv.value[i] << endl;
-#endif
+				TESTCOUT1(" STATUS_STROKE_SEGPULSES pulses", dv.value[i]);
                 return STATUS_STROKE_SEGPULSES;
             }
             segment.value[i] = dv.value[i];
         }
-		stroke.append(segment);
+		int16_t rc = stroke.append(segment);
+		if (rc < 0) {
+			return (Status) rc;
+		}
         v = vNew;
         s = sNew;
     }
-#ifdef TEST
-    cout << " N:" << N << " tS:" << tS 
-		<< " dEndPos:" << stroke.dEndPos.toString() << endl;
-#endif
+    TESTCOUT3(" N:", N, " tS:", tS, " dEndPos:", stroke.dEndPos.toString());
     stroke.setTotalTime(tS);
 
     return STATUS_OK;

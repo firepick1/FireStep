@@ -6,6 +6,17 @@
 
 namespace firestep {
 
+#ifdef TEST
+#define TESTCOUT1(k,v) cout << k << v << endl
+#define TESTCOUT2(k1,v1,k2,v2) cout << k1<<v1 <<k2<<v2 << endl
+#define TESTCOUT3(k1,v1,k2,v2,k3,v3) cout << k1<<v1 <<k2<<v2 <<k3<< v3 << endl
+#define TESTCOUT4(k1,v1,k2,v2,k3,v3,k4,v4) cout << k1<<v1 <<k2<<v2 <<k3<<v3 <<k4<<v4 << endl
+#else
+#define TESTCOUT1(k,v) 
+#define TESTCOUT2(k1,v1,k2,v2) 
+#define TESTCOUT3(k1,v1,k2,v2,k3,v3) 
+#define TESTCOUT4(k1,v1,k2,v2,k3,v3,k4,v4)
+#endif
 #define DEBUG_EOL() Serial.println("");
 #define DEBUG_HEX(S,V) Serial.print(" " S ":");Serial.print(V,HEX);
 #define DEBUG_DEC(S,V) Serial.print(" " S ":");Serial.print(V,DEC);
