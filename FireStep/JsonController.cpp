@@ -452,7 +452,9 @@ Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
 
 	jobj["lp"] = nSamples;
 	jobj["sg"] = machine.stroke.length;
-	jobj["tt"] = machine.stroke.getTotalTime();
+	float tt = machine.stroke.getTotalTime();
+	jobj["tt"] = tt;
+	jobj["vp"] = machine.stroke.vPeak * (machine.stroke.length / tt);
 
 	return status;
 }
@@ -464,12 +466,13 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
     if (strcmp("tstph", key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
+            node["lp"] = "";
             node["mv"] = "";
             node["pu"] = "";
-            node["lp"] = "";
             node["sg"] = "";
             node["tt"] = "";
             node["tv"] = "";
+            node["vp"] = "";
         }
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {
@@ -497,6 +500,8 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
 		// output variable
     } else if (strcmp("tv", key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, tvMax);
+    } else if (strcmp("vp", key) == 0) {
+		// output variable
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }

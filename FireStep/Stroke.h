@@ -29,6 +29,7 @@ typedef class Stroke {
 		Ticks			dtTotal;			// ticks for planned traversal 
     public:
 		Ticks			tStart;				// ticks at start of traversal
+		int32_t			vPeak;				// peak velocity on any axis
 		StepCoord		maxEndPulses;		// max pulse offset for end position (default 16)
         StepCoord		scale;				// segment velocity unit
         SegIndex		curSeg;				// current segment index

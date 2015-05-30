@@ -1747,7 +1747,7 @@ void test_ph5() {
 	mt.loop();	// command.process
 	ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
-		JT("{'s':-901,'r':{'tstph':{'pu':3200,'tv':0.70,'sg':41,'mv':12800,'lp':13072,'tt':0.84}}}\n"), 
+		JT("{'s':-901,'r':{'tstph':{'pu':3200,'tv':0.70,'sg':41,'mv':12800,'lp':13072,'tt':0.84,'vp':7645.16}}}\n"), 
 		Serial.output().c_str());
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 	mt.loop(); // idle
@@ -1772,7 +1772,7 @@ void test_ph5() {
 	mt.loop();	// command.process
 	ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
-		JT("{'s':-901,'r':{'tstph':{'pu':12800,'tv':0.70,'sg':79,'mv':12800,'lp':26562,'tt':1.70}}}\n"), 
+		JT("{'s':-901,'r':{'tstph':{'pu':12800,'tv':0.70,'sg':79,'mv':12800,'lp':26562,'tt':1.70,'vp':12826.12}}}\n"), 
 		Serial.output().c_str());
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 	mt.loop(); // idle
@@ -1797,7 +1797,7 @@ void test_ph5() {
 	mt.loop();	// command.process
 	ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
-		JT("{'s':-901,'r':{'tstph':{'pu':6400,'tv':0.01,'sg':64,'mv':12800,'lp':7968,'tt':0.51}}}\n"), 
+		JT("{'s':-901,'r':{'tstph':{'pu':6400,'tv':0.01,'sg':64,'mv':12800,'lp':7968,'tt':0.51,'vp':12801.21}}}\n"), 
 		Serial.output().c_str());
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 	mt.loop(); // idle

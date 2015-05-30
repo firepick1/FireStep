@@ -35,6 +35,7 @@ void Stroke::clear() {
 	tStart = 0;
 	dtTotal = 0;
 	dPos = dEndPos = Quad<StepCoord>();
+	vPeak = 0;
 }
 
 SegIndex Stroke::goalSegment(Ticks t) {
@@ -295,9 +296,10 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         E = phf[iMax].Ekt(E, fSeg);
         for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
             sNew.value[i] = ph[i].r(E).Re() + 0.5;
+			vNew.value[i] = sNew.value[i] - s.value[i];
+			stroke.vPeak = max(stroke.vPeak, (int32_t)abs(vNew.value[i]));
+			dv.value[i] = vNew.value[i] - v.value[i];
         }
-        vNew = sNew - s;
-        dv = vNew - v;
 #ifdef TEST
         cout << "fSeg:" << fSeg
 			<< " sNew:" << sNew.toString()
