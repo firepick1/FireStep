@@ -143,7 +143,7 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
                 return jcmd.setError(status, it->key);
             }
             float seconds = (float) planMicros / 1000000.0;
-            machine.stroke.setTotalTime(seconds);
+            machine.stroke.setTimePlanned(seconds);
             us_ok = true;
         } else if (strcmp("dp", it->key) == 0) {
             JsonArray &jarr = stroke[it->key];
@@ -415,7 +415,8 @@ Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
     if (status != STATUS_OK) {
 		return status;
 	}
-	status = machine.stroke.start(ticks());
+	Ticks tStart = ticks();
+	status = machine.stroke.start(tStart);
 	switch (status) {
 		case STATUS_OK:
 			break;
@@ -449,12 +450,14 @@ Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
 	if (status == STATUS_OK) {
 		status = STATUS_BUSY_MOVING; // repeat indefinitely
 	}
+	Ticks tActual = ticks() - tStart;
 
 	jobj["lp"] = nSamples;
 	jobj["sg"] = machine.stroke.length;
-	float tt = machine.stroke.getTotalTime();
-	jobj["tt"] = tt;
-	jobj["vp"] = machine.stroke.vPeak * (machine.stroke.length / tt);
+	jobj["ta"] = tActual / (float) TICKS_PER_SECOND;
+	float tp = machine.stroke.getTimePlanned();
+	jobj["tp"] = tp;
+	jobj["vp"] = machine.stroke.vPeak * (machine.stroke.length / tp);
 
 	return status;
 }
@@ -470,7 +473,8 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
             node["mv"] = "";
             node["pu"] = "";
             node["sg"] = "";
-            node["tt"] = "";
+            node["ta"] = "";
+            node["tp"] = "";
             node["tv"] = "";
             node["vp"] = "";
         }
@@ -501,7 +505,9 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
         status = processField<int16_t, int32_t>(jobj, key, nSegs);
     } else if (strcmp("lp", key) == 0) {
 		// output variable
-    } else if (strcmp("tt", key) == 0) {
+    } else if (strcmp("ta", key) == 0) {
+		// output variable
+    } else if (strcmp("tp", key) == 0) {
 		// output variable
     } else if (strcmp("tv", key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, tvMax);

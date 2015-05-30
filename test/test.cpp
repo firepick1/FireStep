@@ -701,7 +701,7 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
     ASSERTEQUAL(tStart, machine.stroke.tStart);
 	ASSERTEQUAL(2, machine.stroke.get_dtTotal());
 	float epsilon = 0.000001;
-    ASSERTEQUALT(0.000128, machine.stroke.getTotalTime(), epsilon);
+    ASSERTEQUALT(0.000128, machine.stroke.getTimePlanned(), epsilon);
     ASSERTQUAD(Quad<StepCoord>(4, 13, 22, 0), machine.stroke.dEndPos);
 
 	TCNT1--; // mock ticks() increments TCNT1, so decrement to simulate no change in ticks()
@@ -737,7 +737,7 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), machine.stroke.position());
     ASSERTQUAD(Quad<StepCoord>(5, 5, 5, 5), machine.getMotorPosition());
     ASSERTEQUAL(tStart, machine.stroke.tStart);
-    ASSERTEQUAL(2, machine.stroke.getTotalTime()*TICKS_PER_SECOND);
+    ASSERTEQUAL(2, machine.stroke.getTimePlanned()*TICKS_PER_SECOND);
     ASSERTQUAD(Quad<StepCoord>(10, 20, 0, 0), machine.stroke.dEndPos);
 
 	TCNT1--; // simulate unchanging ticks()
@@ -867,16 +867,16 @@ void test_Stroke() {
     stroke.append( Quad<StepDV>(1, 10, -1, -10) );
     stroke.append( Quad<StepDV>(-1, -10, 1, 10) );
     stroke.dEndPos = Quad<StepCoord>(4, 40, -4, -40);
-    ASSERTEQUAL(0, stroke.getTotalTime()*TICKS_PER_SECOND);
+    ASSERTEQUAL(0, stroke.getTimePlanned()*TICKS_PER_SECOND);
     ASSERTEQUAL(STATUS_STROKE_TIME, stroke.start(tStart));
 
-    stroke.setTotalTime(17/(float) TICKS_PER_SECOND); 
-    ASSERTEQUAL(17, stroke.getTotalTime()*TICKS_PER_SECOND);
+    stroke.setTimePlanned(17/(float) TICKS_PER_SECOND); 
+    ASSERTEQUAL(17, stroke.getTimePlanned()*TICKS_PER_SECOND);
 
     stroke.dEndPos.value[0] += 100;
     ASSERTEQUAL(STATUS_STROKE_END_ERROR, stroke.start(tStart));
     stroke.dEndPos.value[0] -= 100;
-    ASSERTEQUAL(17, stroke.getTotalTime()*TICKS_PER_SECOND);
+    ASSERTEQUAL(17, stroke.getTimePlanned()*TICKS_PER_SECOND);
 
     ASSERTEQUAL(0, stroke.goalStartTicks(tStart - 1));
     ASSERTEQUAL(0, stroke.goalEndTicks(tStart - 1));
@@ -995,7 +995,7 @@ void test_Stroke() {
     ASSERTEQUAL(STATUS_STROKE_END_ERROR, stroke.start(tStart));
     stroke.dEndPos.value[3] -= 100;
     ASSERTEQUAL(STATUS_OK, stroke.start(tStart));
-    ASSERTEQUAL(17, stroke.getTotalTime()*TICKS_PER_SECOND);
+    ASSERTEQUAL(17, stroke.getTimePlanned()*TICKS_PER_SECOND);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), stroke.position());
     ASSERTQUAD(Quad<StepCoord>(13, 122, -11, -118), stroke.dEndPos);
     ASSERTQUAD(Quad<StepCoord>(13, 122, -11, -118), stroke.goalPos(tStart + 17));
@@ -1747,7 +1747,8 @@ void test_ph5() {
 	mt.loop();	// command.process
 	ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
-		JT("{'s':-901,'r':{'tstph':{'pu':3200,'tv':0.70,'sg':41,'mv':12800,'lp':13072,'tt':0.84,'vp':7645.16}}}\n"), 
+		JT("{'s':-901,'r':{'tstph':{'pu':3200,'tv':0.70,'sg':41,'mv':12800,"\
+		"'lp':13072,'ta':0.84,'tp':0.84,'vp':7645.16}}}\n"), 
 		Serial.output().c_str());
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 	mt.loop(); // idle
@@ -1772,7 +1773,8 @@ void test_ph5() {
 	mt.loop();	// command.process
 	ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
-		JT("{'s':-901,'r':{'tstph':{'pu':12800,'tv':0.70,'sg':79,'mv':12800,'lp':26562,'tt':1.70,'vp':12826.12}}}\n"), 
+		JT("{'s':-901,'r':{'tstph':{'pu':12800,'tv':0.70,'sg':79,'mv':12800,"\
+		"'lp':26562,'ta':1.70,'tp':1.70,'vp':12826.12}}}\n"), 
 		Serial.output().c_str());
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 	mt.loop(); // idle
@@ -1797,7 +1799,8 @@ void test_ph5() {
 	mt.loop();	// command.process
 	ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
-		JT("{'s':-901,'r':{'tstph':{'pu':6400,'tv':0.01,'sg':64,'mv':12800,'lp':7968,'tt':0.51,'vp':12801.21}}}\n"), 
+		JT("{'s':-901,'r':{'tstph':{'pu':6400,'tv':0.01,'sg':64,'mv':12800,"\
+		"'lp':7968,'ta':0.51,'tp':0.51,'vp':12801.21}}}\n"), 
 		Serial.output().c_str());
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 	mt.loop(); // idle
@@ -1822,7 +1825,8 @@ void test_ph5() {
 	mt.loop();	// command.process
 	ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
-		JT("{'s':-901,'r':{'tstph':{'pu':6400,'tv':0.10,'sg':64,'mv':40000,'lp':4062,'tt':0.26,'vp':40128.01}}}\n"), 
+		JT("{'s':-901,'r':{'tstph':{'pu':6400,'tv':0.10,'sg':64,'mv':40000,"\
+		"'lp':4062,'ta':0.26,'tp':0.26,'vp':40128.01}}}\n"), 
 		Serial.output().c_str());
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 	mt.loop(); // idle

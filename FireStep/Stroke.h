@@ -53,9 +53,9 @@ typedef class Stroke {
         inline Ticks get_dtTotal() {
             return dtTotal;
         }
-        float getTotalTime();
+        float getTimePlanned();
         Ticks getTotalTicks();
-        void setTotalTime(float seconds);
+        void setTimePlanned(float seconds);
 } Stroke;
 
 typedef class StrokeBuilder {

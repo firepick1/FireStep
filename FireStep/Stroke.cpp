@@ -19,11 +19,11 @@ Ticks Stroke::getTotalTicks() {
 	return dtTotal;
 }
 
-float Stroke::getTotalTime() {
+float Stroke::getTimePlanned() {
 	return dtTotal / (float) TICKS_PER_SECOND;
 }
 
-void Stroke::setTotalTime(float seconds) {
+void Stroke::setTimePlanned(float seconds) {
 	ASSERT(seconds > 0);
 	dtTotal = MS_TICKS_REAL(seconds * 1000);
 }
@@ -308,7 +308,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         s = sNew;
     }
     TESTCOUT3(" N:", N, " tS:", tS, " dEndPos:", stroke.dEndPos.toString());
-    stroke.setTotalTime(tS);
+    stroke.setTimePlanned(tS);
 
     return STATUS_OK;
 }
