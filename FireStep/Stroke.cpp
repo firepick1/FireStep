@@ -147,10 +147,20 @@ Status Stroke::start(Ticks tStart) {
         Quad<StepCoord> almostEnd = goalPos(tStart + dtTotal - 1);
         for (QuadIndex i = 0; i < 4; i++) {
             if (maxEndPulses < abs(dEndPos.value[i] - almostEnd.value[i])) {
+#ifdef TEST
+				cout << "Stroke::start() STATUS_STROKE_END_ERROR " 
+					<< " dEndPos[" << i << "]:" << dEndPos.value[i] 
+					<< " last interpolated value:" << almostEnd.value[i]
+					<< " delta:" << (dEndPos.value[i] - almostEnd.value[i])
+					<< endl;
+#endif
                 return STATUS_STROKE_END_ERROR;
             }
         }
     }
+#ifdef TEST
+	cout << "Stroke::start() dEndPos:" << dEndPos.toString() << " dtTotal:" << dtTotal << endl;
+#endif
     return STATUS_OK;
 }
 
@@ -204,7 +214,7 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 }
 
 int16_t Stroke::append(Quad<StepDV> dv) {
-    if (length > SEGMENT_COUNT) {
+    if (length >= SEGMENT_COUNT) {
         return STATUS_STROKE_MAXLEN;
     }
     seg[length++] = dv;
@@ -308,7 +318,8 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         s = sNew;
     }
 #ifdef TEST
-    cout << " N:" << N << " tS:" << tS << endl;
+    cout << " N:" << N << " tS:" << tS 
+		<< " dEndPos:" << stroke.dEndPos.toString() << endl;
 #endif
     stroke.setTotalTime(tS);
 

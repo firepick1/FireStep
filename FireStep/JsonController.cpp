@@ -371,9 +371,9 @@ int freeRam () {
 #endif
 }
 
-typedef class TestPH {
+typedef class PHSelfTest {
 	private:
-        int16_t nSamples;
+		int32_t nSamples;
         StepCoord pulses;
         StepCoord vMax;
 		PH5TYPE tvMax;
@@ -381,20 +381,20 @@ typedef class TestPH {
 		Machine &machine;
 
 	private:
-		Status runTest(JsonCommand& jcmd, JsonObject& jobj);
+		Status execute(JsonCommand& jcmd, JsonObject& jobj);
 
     public:
-        TestPH(Machine& machine)
+        PHSelfTest(Machine& machine)
             : nSamples(0), pulses(6400), vMax(12800), tvMax(0.7), nSegs(0), machine(machine)
         {}
 
         Status process(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-} TestPH;
+} PHSelfTest;
 
-Status TestPH::runTest(JsonCommand &jcmd, JsonObject& jobj) {
-	int16_t minSegs = nSegs ? nSegs : 20;
-	int16_t maxSegs = nSegs ? nSegs : SEGMENT_COUNT;
-	if (maxSegs > SEGMENT_COUNT) {
+Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
+	int16_t minSegs = nSegs ? nSegs : min(SEGMENT_COUNT-1,abs(pulses)/100);
+	int16_t maxSegs = nSegs ? nSegs : SEGMENT_COUNT-1;
+	if (maxSegs >= SEGMENT_COUNT) {
 		return jcmd.setError(STATUS_STROKE_MAXLEN, "sg");
 	}
     StrokeBuilder sb(vMax, tvMax, minSegs, maxSegs);
@@ -412,39 +412,52 @@ Status TestPH::runTest(JsonCommand &jcmd, JsonObject& jobj) {
 		machine.getMotorAxis(1).isEnabled() ? pulses : 0,
 		machine.getMotorAxis(2).isEnabled() ? pulses : 0,
 		machine.getMotorAxis(3).isEnabled() ? pulses : 0));
-    if (status == STATUS_OK) {
-        machine.stroke.start(ticks());
+    if (status != STATUS_OK) {
+		return status;
+	}
+	status = machine.stroke.start(ticks());
+	switch (status) {
+		case STATUS_OK:
+			break;
+		case STATUS_STROKE_TIME:
+			return jcmd.setError(status, "tv");
+		default:
+			return status;
+	}
 #ifdef TEST
-	cout << "TestPH::runTest() pos:" << machine.getMotorPosition().toString() << endl;
+	cout << "PHSelfTest::execute() pulses:" << pulses 
+		<< " pos:" << machine.getMotorPosition().toString() << endl;
 #endif
-        do {
-			nSamples++;
-            status =  machine.stroke.traverse(ticks(), machine);
+	do {
+		nSamples++;
+		status =  machine.stroke.traverse(ticks(), machine);
 #ifdef TEST
-			if (nSamples % 500 == 0) {
-			cout << "TestPH:runTest()" 
+		if (nSamples % 500 == 0) {
+			cout << "PHSelfTest:execute()" 
 				<< " t:"
 				<< (threadClock.ticks - machine.stroke.tStart)/
 					(float) machine.stroke.get_dtTotal()
 				<< " pos:"
 				<< machine.getMotorPosition().toString() << endl;
-			}
+		}
 #endif
-        } while (status == STATUS_BUSY_MOVING);
+	} while (status == STATUS_BUSY_MOVING);
 #ifdef TEST
-	cout << "TestPH::runTest() pos:" << machine.getMotorPosition().toString() 
+	cout << "PHSelfTest::execute() pos:" << machine.getMotorPosition().toString() 
 		<< " status:" << status << endl;
 #endif
-        if (status == STATUS_OK) {
-            status = STATUS_BUSY_MOVING; // repeat indefinitely
-        }
-    }
+	if (status == STATUS_OK) {
+		status = STATUS_BUSY_MOVING; // repeat indefinitely
+	}
+
 	jobj["lp"] = nSamples;
+	jobj["sg"] = machine.stroke.length;
+	jobj["tt"] = machine.stroke.getTotalTime();
 
 	return status;
 }
 
-Status TestPH::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
 	const char *s;
 
@@ -465,12 +478,12 @@ Status TestPH::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
             status = process(jcmd, kidObj, it->key);
             if (status != STATUS_OK) {
 #ifdef TEST
-				cout << "TestPH::process() status:" << status << endl;
+				cout << "PHSelfTest::process() status:" << status << endl;
 #endif
                 return status;
             }
         }
-		status = runTest(jcmd, kidObj);
+		status = execute(jcmd, kidObj);
     } else if (strcmp("mv", key) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, vMax);
     } else if (strcmp("pu", key) == 0) {
@@ -542,7 +555,7 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
             }
             status = machine.pulse(steps);
         } else if (strcmp("ph", key) == 0 || strcmp("tstph", key) == 0) {
-            return TestPH(machine).process(jcmd, jobj, key);
+            return PHSelfTest(machine).process(jcmd, jobj, key);
         } else {
             return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
         }
