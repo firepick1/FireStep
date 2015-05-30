@@ -289,7 +289,8 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     Quad<StepCoord> vNew;
     Quad<StepCoord> dv;
     Quad<StepDV> segment;
-    for (int16_t iSeg = 0; iSeg <= N; iSeg++) {
+	E = phf[iMax].Ekt(E, 0);
+    for (int16_t iSeg = 1; iSeg <= N; iSeg++) {
         PH5TYPE fSeg = iSeg / (PH5TYPE)N;
         E = phf[iMax].Ekt(E, fSeg);
         for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {

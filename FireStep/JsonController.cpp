@@ -468,6 +468,7 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
             node["pu"] = "";
             node["lp"] = "";
             node["sg"] = "";
+            node["tt"] = "";
             node["tv"] = "";
         }
         JsonObject& kidObj = jobj[key];
@@ -491,7 +492,9 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
     } else if (strcmp("sg", key) == 0) {
         status = processField<int16_t, int32_t>(jobj, key, nSegs);
     } else if (strcmp("lp", key) == 0) {
-		// do nothing
+		// output variable
+    } else if (strcmp("tt", key) == 0) {
+		// output variable
     } else if (strcmp("tv", key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, tvMax);
     } else {

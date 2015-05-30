@@ -12,7 +12,7 @@
 #include "ph5.h" 
 namespace firestep {
 
-#define SEGMENT_COUNT 64
+#define SEGMENT_COUNT 80
 
 typedef int8_t  StepDV;			// change in StepCoord velocity
 typedef int16_t StepCoord;		// stepper coordinate (i.e., pulses)
