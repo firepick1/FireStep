@@ -392,7 +392,7 @@ typedef class PHSelfTest {
 } PHSelfTest;
 
 Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
-	int16_t minSegs = nSegs ? nSegs : min(SEGMENT_COUNT-1,abs(pulses)/100);
+	int16_t minSegs = nSegs ? nSegs : max(10, min(SEGMENT_COUNT-1,abs(pulses)/100));
 	int16_t maxSegs = nSegs ? nSegs : SEGMENT_COUNT-1;
 	if (maxSegs >= SEGMENT_COUNT) {
 		return jcmd.setError(STATUS_STROKE_MAXLEN, "sg");
