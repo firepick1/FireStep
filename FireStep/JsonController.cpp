@@ -454,10 +454,11 @@ Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
 
 	jobj["lp"] = nSamples;
 	jobj["sg"] = machine.stroke.length;
-	jobj["ta"] = tActual / (float) TICKS_PER_SECOND;
+	float ta = tActual / (float) TICKS_PER_SECOND;
+	jobj["ta"] = ta;
 	float tp = machine.stroke.getTimePlanned();
 	jobj["tp"] = tp;
-	jobj["vp"] = machine.stroke.vPeak * (machine.stroke.length / tp);
+	jobj["vp"] = machine.stroke.vPeak * (machine.stroke.length / ta);
 
 	return status;
 }

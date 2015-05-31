@@ -65,13 +65,6 @@ void MonitorThread::setup(int pinLED) {
 		pinMode(pinLED, OUTPUT);
 	}
     blinkLED = true;
-
-    for (byte i = 4; i-- > 0;) {
-        LED(i);
-        delay(500);
-        LED(0);
-        delay(500);
-    }
 }
 
 void MonitorThread::LED(byte value) {
