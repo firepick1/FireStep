@@ -263,7 +263,9 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     }
     stroke.clear();
     PH5TYPE E = 0;
-    int16_t N = 1000 * tS / 20; // ~20ms timeslice
+
+    int16_t N = 1000 * tS / 40; // 40ms/segment
+
     N = max(minSegments, min(maxSegments, (int16_t)N)); 
     Quad<StepCoord> s;
     Quad<StepCoord> v;

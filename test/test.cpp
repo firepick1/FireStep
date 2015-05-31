@@ -1683,13 +1683,16 @@ void test_ph5() {
 	ASSERTQUAD(Quad<StepCoord>(), machine.getMotorPosition());
 	Status status = sb.buildLine(machine.stroke, Quad<StepCoord>(6400,3200,1600,0));
 	ASSERTEQUAL(STATUS_OK, status);
-	ASSERTEQUAL(50, machine.stroke.length);
-	ASSERTEQUAL(0, machine.stroke.seg[0].value[0]);
-	ASSERTEQUAL(1, machine.stroke.seg[1].value[0]);
-	ASSERTEQUAL(1, machine.stroke.seg[2].value[0]);
-	ASSERTEQUAL(4, machine.stroke.seg[3].value[0]);
-	ASSERTEQUAL(5, machine.stroke.seg[4].value[0]);
-	ASSERTEQUAL(8, machine.stroke.seg[5].value[0]);
+	ASSERTEQUAL(25, machine.stroke.length);
+	ASSERTEQUAL(1, machine.stroke.seg[0].value[0]);
+	ASSERTEQUAL(7, machine.stroke.seg[1].value[0]);
+	ASSERTEQUAL(22, machine.stroke.seg[2].value[0]);
+	ASSERTEQUAL(41, machine.stroke.seg[3].value[0]);
+	ASSERTEQUAL(58, machine.stroke.seg[4].value[0]);
+	ASSERTEQUAL(70, machine.stroke.seg[5].value[0]);
+	ASSERTEQUAL(76, machine.stroke.seg[6].value[0]); // peak velocity
+	ASSERTEQUAL(75, machine.stroke.seg[7].value[0]); 
+	ASSERTEQUAL(63, machine.stroke.seg[8].value[0]);
 	int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
 	StepCoord xpos = machine.axis[0].position;
 
@@ -1746,8 +1749,8 @@ void test_ph5() {
 	mt.loop();	// command.process
 	ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
-		JT("{'s':-901,'r':{'tstph':{'pu':3200,'tv':0.70,'sg':41,'mv':12800,"\
-		"'lp':26144,'pp':7644.57,'ta':0.84,'tp':0.84}}}\n"), 
+		JT("{'s':-901,'r':{'tstph':{'pu':3200,'tv':0.70,'sg':32,'mv':12800,"\
+		"'lp':26144,'pp':7649.35,'ta':0.84,'tp':0.84}}}\n"), 
 		Serial.output().c_str());
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 	mt.loop(); // idle
