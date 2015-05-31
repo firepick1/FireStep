@@ -191,23 +191,13 @@ void firestep::ThreadEnable(boolean enable) {
     }
     DEBUG_EOL();
 #endif
-    if (enable) {
-        //TCCR1B = 1<<CS12 | 0<<CS11 | 0<<CS10; // Timer prescaler div256
-        //TCCR1B = 0 << CS12 | 0 << CS11 | 1 << CS10; // Timer prescaler div1 (16MHz)
-        TCCR1B = 1 << CS12 | 0 << CS11 | 1 << CS10; // Timer prescaler div1024 (15625Hz)
-    } else {
-        TCCR1B = 0;	// Stop clock
-    }
+	TIMER_ENABLE(enable);
 }
 
-void PrintN(char c, byte n) {
-    while (n--) {
-        Serial.print(c);
-    }
-}
-
-#ifdef ARDUINO
-Ticks firestep::ticks() {
+firestep::Ticks firestep::ticks() {
+#if defined(TEST)
+	arduino.timer1(1);
+#endif
 	Ticks result = threadRunner.ticks();
 
 	if (result == 0) {
@@ -215,4 +205,3 @@ Ticks firestep::ticks() {
 	}
     return result;
 }
-#endif

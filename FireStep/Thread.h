@@ -55,13 +55,13 @@ typedef class MonitorThread : PulseThread {
 
     private:
         byte	blinkLED;
+        int16_t pinLED; /* PRIVATE */
 
+	private:
         void 	LED(byte value);
-
         void setup(int pinLED=NOPIN); /* PRIVATE */
         unsigned int Free(); /* PRIVATE */
         void loop(); /* PRIVATE */
-        int pinLED; /* PRIVATE */
 
     public:
         boolean verbose;
@@ -71,7 +71,6 @@ typedef class MonitorThread : PulseThread {
 
 void Error(const char *msg, int value);
 void ThreadEnable(boolean enable);
-void PrintN(char c, byte n);
 
 extern MonitorThread monitor;
 

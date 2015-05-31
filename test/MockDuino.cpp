@@ -244,12 +244,3 @@ void delay(int ms) {
     arduino.timer1(MS_TICKS(ms));
 }
 
-firestep::Ticks firestep::ticks() {
-	arduino.timer1(1);
-	Ticks result = threadRunner.ticks();
-
-	if (result == 0) {
-		result = threadRunner.ticks();
-	}
-    return result;
-}

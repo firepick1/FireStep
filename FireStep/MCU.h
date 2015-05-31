@@ -42,5 +42,11 @@
 #define TIMER_CLEAR()	TCNT1 = 0
 #define TIMER_SETUP() TCCR1A = 0 /* Timer mode */; TIMSK1 = (0 << TOIE1) /* disable interrupts */
 #define TIMER_VALUE() TCNT1
+#define TIMER_ENABLE(enable) \
+    if (enable) {\
+        TCCR1B = 1 << CS12 | 0 << CS11 | 1 << CS10; /* Timer prescaler div1024 (15625Hz) */\
+    } else {\
+        TCCR1B = 0;	/* stop clock */\
+    }
 
 #endif
