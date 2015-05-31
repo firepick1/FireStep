@@ -287,16 +287,14 @@ void Machine::enable(bool active) {
  * axis has a usDelay field that specifies a minimum delay
  * between pulses.
  */
-Status Machine::step(const Quad<StepCoord> &pulse) {
+Status Machine::step(const Quad<StepDV> &pulse) {
     int16_t usDelay = 0;
     for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse leading edges
         Axis &a(*motorAxis[i]);
         switch (pulse.value[i]) {
         case 1:
             if (!a.enabled) {
-#ifdef TEST
-				cout << "step(1): STATUS_AXIS_DISABLED:" << (int) i << endl;
-#endif
+				TESTCOUT1("step(1): STATUS_AXIS_DISABLED:", (int) i);
                 return STATUS_AXIS_DISABLED;
             }
             if (a.position >= a.travelMax) {
@@ -312,9 +310,7 @@ Status Machine::step(const Quad<StepCoord> &pulse) {
             break;
         case -1:
             if (!a.enabled) {
-#ifdef TEST
-				cout << "step(-1) STATUS_AXIS_DISABLED:" << (int) i << endl;
-#endif
+				TESTCOUT1("step(-1): STATUS_AXIS_DISABLED:", (int) i);
                 return STATUS_AXIS_DISABLED;
             }
             a.readAtMin(invertLim);
@@ -363,7 +359,12 @@ Status Machine::pulse(Quad<StepCoord> &pulses) {
         motorPos -= pulse;
         setMotorPosition(motorPos); // permit infinite travel
 
-        Status status = step(pulse);
+		Quad<StepDV> steps(
+			(StepDV) pulse.value[0],
+			(StepDV) pulse.value[1],
+			(StepDV) pulse.value[2],
+			(StepDV) pulse.value[3]);
+        Status status = step(steps);
         if (status != STATUS_OK) {
             return status;
         }

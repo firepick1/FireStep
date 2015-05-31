@@ -151,12 +151,12 @@ void test_Machine() {
     ASSERT(machine.axis[0].isEnabled());
     ASSERT(machine.axis[1].isEnabled());
     ASSERT(machine.axis[2].isEnabled());
-    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1, 1, 1, 0)));
+    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(1, 1, 1, 0)));
     ASSERTEQUAL(2, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTEQUAL(2, arduino.pulses(PC2_Y_STEP_PIN));
     ASSERTEQUAL(2, arduino.pulses(PC2_Z_STEP_PIN));
 
-    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1, -1, -1, 0)));
+    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(-1, -1, -1, 0)));
     ASSERTEQUAL(3, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTEQUAL(3, arduino.pulses(PC2_Y_STEP_PIN));
     ASSERTEQUAL(3, arduino.pulses(PC2_Z_STEP_PIN));
@@ -845,7 +845,7 @@ class MockStepper : public QuadStepper {
         void clear() {
             dPos.clear();
         }
-        virtual Status step(const Quad<StepCoord> &pulse) {
+        virtual Status step(const Quad<StepDV> &pulse) {
             dPos += pulse;
 #ifdef TEST_TRACE
             cout << "	: MockStepper"
@@ -1057,34 +1057,34 @@ void test_Machine_step() {
     ASSERTEQUAL(false, machine.axis[5].isEnabled());
 
     Status status;
-    ASSERTQUAD(machine.getMotorPosition(), Quad<StepCoord>(0, 0, 0, 0));
-    ASSERTEQUAL(STATUS_STEP_RANGE_ERROR, machine.step(Quad<StepCoord>(4, 3, 2, 1)));
-    ASSERTEQUAL(STATUS_AXIS_DISABLED, machine.step(Quad<StepCoord>(1, 1, 1, 1)));
+    ASSERTQUAD(machine.getMotorPosition(), Quad<StepDV>(0, 0, 0, 0));
+    ASSERTEQUAL(STATUS_STEP_RANGE_ERROR, machine.step(Quad<StepDV>(4, 3, 2, 1)));
+    ASSERTEQUAL(STATUS_AXIS_DISABLED, machine.step(Quad<StepDV>(1, 1, 1, 1)));
     ASSERTQUAD(machine.getMotorPosition(), Quad<StepCoord>(0, 0, 0, 0));
 
     // Test travelMax
-    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1, 0, 0, 0)));
+    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(1, 0, 0, 0)));
     ASSERTEQUAL(false, machine.axis[3].atMin);
     ASSERT(machine.getMotorPosition() == Quad<StepCoord>(1, 0, 0, 0));
-    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1, 1, 0, 0)));
+    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(1, 1, 0, 0)));
     ASSERTEQUAL(false, machine.axis[3].atMin);
     ASSERT(machine.getMotorPosition() == Quad<StepCoord>(2, 1, 0, 0));
-    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1, 1, 1, 0)));
+    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(1, 1, 1, 0)));
     ASSERTEQUAL(false, machine.axis[3].atMin);
     ASSERTQUAD(machine.getMotorPosition(), Quad<StepCoord>(3, 2, 1, 0));
-    ASSERTEQUAL(STATUS_AXIS_DISABLED, machine.step(Quad<StepCoord>(1, 1, 1, 1)));
+    ASSERTEQUAL(STATUS_AXIS_DISABLED, machine.step(Quad<StepDV>(1, 1, 1, 1)));
     ASSERTQUAD(machine.getMotorPosition(), Quad<StepCoord>(3, 2, 1, 0));
-    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1, 1, 1, 0)));
+    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(1, 1, 1, 0)));
     ASSERTEQUAL(false, machine.axis[3].atMin);
     ASSERTQUAD(Quad<StepCoord>(4, 3, 2, 0), machine.getMotorPosition());
-    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(1, 1, 1, 0)));
+    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(1, 1, 1, 0)));
     ASSERTEQUAL(false, machine.axis[3].atMin);
     ASSERTQUAD(machine.getMotorPosition(), Quad<StepCoord>(5, 4, 3, 0));
     ASSERTEQUAL(false, machine.axis[0].atMin);
     ASSERTEQUAL(false, machine.axis[1].atMin);
     ASSERTEQUAL(false, machine.axis[2].atMin);
     ASSERTEQUAL(false, machine.axis[3].atMin);
-    ASSERTEQUAL(STATUS_TRAVEL_MAX, machine.step(Quad<StepCoord>(1, 1, 1, 0)));
+    ASSERTEQUAL(STATUS_TRAVEL_MAX, machine.step(Quad<StepDV>(1, 1, 1, 0)));
     ASSERTQUAD(Quad<StepCoord>(5, 4, 3, 0), machine.getMotorPosition());
 
     // Test travelMin
@@ -1092,13 +1092,13 @@ void test_Machine_step() {
     ASSERTEQUAL(false, machine.axis[1].atMin);
     ASSERTEQUAL(false, machine.axis[2].atMin);
     ASSERTEQUAL(false, machine.axis[3].atMin);
-    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1, -1, -1, 0)));
+    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(-1, -1, -1, 0)));
     ASSERTQUAD(Quad<StepCoord>(4, 3, 2, 0), machine.getMotorPosition());
-    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1, -1, -1, 0)));
+    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(-1, -1, -1, 0)));
     ASSERTQUAD(Quad<StepCoord>(3, 2, 1, 0), machine.getMotorPosition());
-    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepCoord>(-1, -1, -1, 0)));
+    ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(-1, -1, -1, 0)));
     ASSERTQUAD(Quad<StepCoord>(2, 1, 0, 0), machine.getMotorPosition());
-    ASSERTEQUAL(STATUS_TRAVEL_MIN, machine.step(Quad<StepCoord>(-1, -1, -1, 0)));
+    ASSERTEQUAL(STATUS_TRAVEL_MIN, machine.step(Quad<StepDV>(-1, -1, -1, 0)));
     ASSERTQUAD(Quad<StepCoord>(2, 1, 0, 0), machine.getMotorPosition());
 
     // Test atMin
@@ -1106,7 +1106,7 @@ void test_Machine_step() {
     machine.axis[0].travelMin = -10;
     machine.axis[1].travelMin = -10;
     machine.axis[2].travelMin = -10;
-    ASSERTEQUAL(STATUS_LIMIT_MIN, machine.step(Quad<StepCoord>(-1, -1, -1, 0)));
+    ASSERTEQUAL(STATUS_LIMIT_MIN, machine.step(Quad<StepDV>(-1, -1, -1, 0)));
     ASSERTQUAD(Quad<StepCoord>(2, 1, 0, 0), machine.getMotorPosition());
 
     cout << "TEST	: test_Machine_step() OK " << endl;

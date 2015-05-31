@@ -20,7 +20,7 @@ typedef uint8_t SegIndex;		// Stroke segment index [0..length)
 
 typedef class QuadStepper {
     public:
-        virtual Status step(const Quad<StepCoord> &pulse) = 0;
+        virtual Status step(const Quad<StepDV> &pulse) = 0;
 } QuadStepper;
 
 typedef class Stroke {

@@ -157,7 +157,7 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 #endif
 	
     Status status = STATUS_BUSY_MOVING;
-	Quad<StepCoord> pulse;
+	Quad<StepDV> pulse;
 	for (bool done=true; ; done=true) {
         for (uint8_t i = 0; i < 4; i++) {
             StepCoord dp = dGoal.value[i] - dPos.value[i];
