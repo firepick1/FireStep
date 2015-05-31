@@ -62,15 +62,7 @@ Ticks Stroke::goalStartTicks(Ticks t) {
 	Ticks dtl = dt * length;
 	SegIndex s = (dtl + length-1) / dtTotal;
 	Ticks dtEnd = (s*dtTotal)/length;
-#ifdef TEST_TRACE
-	cout << "dtEnd:" << (int32_t) dtEnd
-		<< " s:" << (int32_t) s 
-		<< " dtl:" << dtl 
-		<< " dt:" << dt
-		<< " dtTotal:" << dtTotal
-		<< " length:" << (int32_t) length
-		<< endl;
-#endif
+
 	return dtEnd;
 }
 
@@ -85,15 +77,7 @@ Ticks Stroke::goalEndTicks(Ticks t) {
 	Ticks dtl = dt * length;
 	SegIndex s = (dtl + length-1) / dtTotal;
 	Ticks dtEnd = ((s+1)*dtTotal)/length;
-#ifdef TRACE
-	cout << "dtEnd:" << (int32_t) dtEnd
-		<< " s:" << (int32_t) s 
-		<< " dtl:" << dtl 
-		<< " dt:" << dt
-		<< " dtTotal:" << dtTotal
-		<< " length:" << (int32_t) length
-		<< endl;
-#endif
+
 	return dtEnd;
 }
 
@@ -171,40 +155,37 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 #ifdef TEST
 	Ticks endTicks = tCurrent - (tStart+dtTotal);
 	if (endTicks > -5) {
-		cout << "traverse(" << endTicks << ")"
-			<< dGoal.toString()
-			<< endl;
+		TESTCOUT2("traverse(", endTicks, ") ", dGoal.toString());
 	}
 #endif
+	
     Status status = STATUS_BUSY_MOVING;
-    while (dPos != dGoal) {
-        StepCoord d[4];
-        StepCoord dMax = 0;
+	Quad<StepCoord> pulse;
+	for (bool done=true; ; done=true) {
         for (uint8_t i = 0; i < 4; i++) {
-            d[i] = dGoal.value[i] - dPos.value[i];
-            dMax = max(dMax, abs(d[i]));
+            StepCoord dp = dGoal.value[i] - dPos.value[i];
+			if (dp) {
+				done = false;
+				if (dp < 0) {
+					pulse.value[i] = -1;
+					dPos.value[i]--;
+				} else {
+					pulse.value[i] = 1;
+					dPos.value[i]++;
+				}
+			} else {
+				pulse.value[i] = 0;
+			}
         }
-        if (dMax == 0) {
-            break;
-        }
-        Quad<StepCoord> pulse;
-        for (uint8_t i = 0; i < 4; i++) {
-            if (abs(d[i]) != dMax) {
-                continue;
-            }
-            pulse.value[i] = d[i] < 0 ? -1 : 1;
-        }
-        dPos += pulse;
-        Status status = stepper.step(pulse);
-        switch (status) {
-        case STATUS_OK:	// operation complete
-        case STATUS_BUSY_MOVING: // work in progress
-            break;
-        default:
+		if (done) {
+			break;
+		}
+        status = stepper.step(pulse);
+		if (status < 0) {
             return status;	// abnormal return
         }
     }
-    status = tCurrent >= tStart + dtTotal ? STATUS_OK : STATUS_BUSY_MOVING;
+	status = (tCurrent >= tStart + dtTotal) ? STATUS_OK : STATUS_BUSY_MOVING;
     return status;
 }
 

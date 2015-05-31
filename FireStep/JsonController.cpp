@@ -452,13 +452,13 @@ Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
 	}
 	Ticks tActual = ticks() - tStart;
 
-	jobj["lp"] = nSamples;
-	jobj["sg"] = machine.stroke.length;
 	float ta = tActual / (float) TICKS_PER_SECOND;
-	jobj["ta"] = ta;
 	float tp = machine.stroke.getTimePlanned();
+	jobj["lp"] = nSamples;
+	jobj["pp"] = machine.stroke.vPeak * (machine.stroke.length / ta);
+	jobj["sg"] = machine.stroke.length;
+	jobj["ta"] = ta;
 	jobj["tp"] = tp;
-	jobj["vp"] = machine.stroke.vPeak * (machine.stroke.length / ta);
 
 	return status;
 }
@@ -472,12 +472,12 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
             JsonObject& node = jobj.createNestedObject(key);
             node["lp"] = "";
             node["mv"] = "";
+            node["pp"] = "";
             node["pu"] = "";
             node["sg"] = "";
             node["ta"] = "";
             node["tp"] = "";
             node["tv"] = "";
-            node["vp"] = "";
         }
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {
@@ -497,22 +497,22 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
 			pulses = -pulses; //reverse direction
 			status = execute(jcmd, kidObj);
 		}
+    } else if (strcmp("lp", key) == 0) {
+		// output variable
     } else if (strcmp("mv", key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, vMax);
+    } else if (strcmp("pp", key) == 0) {
+		// output variable
     } else if (strcmp("pu", key) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, pulses);
     } else if (strcmp("sg", key) == 0) {
         status = processField<int16_t, int32_t>(jobj, key, nSegs);
-    } else if (strcmp("lp", key) == 0) {
-		// output variable
     } else if (strcmp("ta", key) == 0) {
 		// output variable
     } else if (strcmp("tp", key) == 0) {
 		// output variable
     } else if (strcmp("tv", key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, tvMax);
-    } else if (strcmp("vp", key) == 0) {
-		// output variable
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
