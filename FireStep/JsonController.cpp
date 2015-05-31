@@ -491,11 +491,10 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
                 return status;
             }
         }
-		//pulses = -pulses;
 		status = execute(jcmd, kidObj);
 		if (status == STATUS_BUSY_MOVING) {
-			//pulses = -pulses; //reverse direction
-			//status = execute(jcmd, kidObj);
+			pulses = -pulses; //reverse direction
+			status = execute(jcmd, kidObj);
 		}
     } else if (strcmp("mv", key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, vMax);

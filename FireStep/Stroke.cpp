@@ -235,16 +235,22 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     PH5TYPE Ksqrt[QUAD_ELEMENTS];
     for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
         K[i] = relPos.value[i] / 6400.0;
-        Ksqrt[i] = sqrt(K[i]);
+		TESTCOUT2("K[", i, "]:", K[i]);
+		Ksqrt[i] = sqrt(abs(K[i]));
     }
 	TESTCOUT1("buildLine:", relPos.toString());
 #define Z6400 56.568542495
     PHVECTOR<Complex<PH5TYPE> > z[QUAD_ELEMENTS];
     PHVECTOR<Complex<PH5TYPE> > q[QUAD_ELEMENTS];
     for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
-        z[i].push_back(Complex<PH5TYPE>());
-        z[i].push_back(Complex<PH5TYPE>(Z6400 * Ksqrt[i]));
-        z[i].push_back(Complex<PH5TYPE>(Z6400 * Ksqrt[i]));
+		z[i].push_back(Complex<PH5TYPE>());
+		if (K[i] < 0) {
+			z[i].push_back(Complex<PH5TYPE>(0,Z6400 * Ksqrt[i]));
+			z[i].push_back(Complex<PH5TYPE>(0,Z6400 * Ksqrt[i]));
+		} else {
+			z[i].push_back(Complex<PH5TYPE>(Z6400 * Ksqrt[i]));
+			z[i].push_back(Complex<PH5TYPE>(Z6400 * Ksqrt[i]));
+		}
         q[i].push_back(Complex<PH5TYPE>());
         q[i].push_back(Complex<PH5TYPE>(3200 * K[i]));
         q[i].push_back(Complex<PH5TYPE>(6400 * K[i]));
@@ -255,7 +261,10 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         PH5Curve<PH5TYPE>(z[2], q[2]),
         PH5Curve<PH5TYPE>(z[3], q[3])
     };
-	TESTCOUT1("ph[0].r(1)", ph[0].r(1).Re());
+	TESTCOUT2("ph[0].r(0.5).Re:", ph[0].r(0.5).Re(), " Im:", ph[0].r(0.5).Im());
+	TESTCOUT2("ph[0].r(1).Re:", ph[0].r(1).Re(), " Im:", ph[0].r(1).Im());
+	TESTCOUT2("ph vMax:", vMax, " vMaxSeconds:", vMaxSeconds);
+
     PHFeed<PH5TYPE> phf[] = {
         PHFeed<PH5TYPE>(ph[0], vMax, vMaxSeconds),
         PHFeed<PH5TYPE>(ph[1], vMax, vMaxSeconds),
@@ -265,10 +274,13 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     PH5TYPE tS = 0;
     int8_t iMax = 0;
     for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
-	TESTCOUT1("phf[i].get_tS()", phf[i].get_tS());
-        if (phf[i].get_tS() > tS) {
-            iMax = i;
-            tS = phf[i].get_tS();
+		PH5TYPE tSi = phf[i].get_tS();
+        if (K[i] != 0) { // active axis
+			TESTCOUT3("phf[", i, "] s(1):", phf[0].s(1), " tS:", tSi);
+			if (K[i] != 0 && tSi > tS) {
+				iMax = i;
+				tS = tSi;
+			}
         }
     }
     stroke.clear();
@@ -286,7 +298,8 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         PH5TYPE fSeg = iSeg / (PH5TYPE)N;
         E = phf[iMax].Ekt(E, fSeg);
         for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
-            sNew.value[i] = ph[i].r(E).Re() + 0.5;
+			PH5TYPE pos = ph[i].r(E).Re();
+            sNew.value[i] = pos < 0 ? pos-0.5 : pos+0.5;
 			vNew.value[i] = sNew.value[i] - s.value[i];
 			stroke.vPeak = max(stroke.vPeak, (int32_t)abs(vNew.value[i]));
 			dv.value[i] = vNew.value[i] - v.value[i];
