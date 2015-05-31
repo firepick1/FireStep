@@ -74,7 +74,7 @@ void MonitorThread::LED(byte value) {
 }
 
 void MonitorThread::Error(const char *msg, int value) {
-    LED(3);
+    LED(HIGH);
     for (int i = 0; i < 20; i++) {
         Serial.print('>');
     }
@@ -91,7 +91,7 @@ void MonitorThread::loop() {
         if (isHigh) {
             LED(blinkLED);
         } else {
-            LED(LED_NONE);
+            LED(LOW);
         }
     }
     if (nTardies > 50) {
@@ -105,7 +105,7 @@ void MonitorThread::loop() {
         }
         Serial.println('!');
     } else if (nTardies > 20) {
-        LED(LED_YELLOW);
+        LED(HIGH);
         verbose = true;
     }
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
