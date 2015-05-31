@@ -330,7 +330,7 @@ Status Machine::step(const Quad<StepDV> &pulse) {
             return STATUS_STEP_RANGE_ERROR;
         }
     }
-    PULSE_DELAY;
+    PULSE_WIDTH_DELAY();
 
     for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse trailing edges
         if (pulse.value[i]) {
@@ -342,6 +342,50 @@ Status Machine::step(const Quad<StepDV> &pulse) {
     }
 
     delayMics(usDelay); // maximum pulse rate throttle
+
+    return STATUS_OK;
+}
+
+
+/**
+ * Set direction based on the sign of each pulse value
+ * and check bounds
+ */
+Status Machine::stepDirection(const Quad<StepDV> &pulse) {
+    for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse leading edges
+        Axis &a(*motorAxis[i]);
+        if (pulse.value[i] > 0) {
+            if (!a.enabled) {
+				TESTCOUT1("step(1): STATUS_AXIS_DISABLED:", (int) i);
+                return STATUS_AXIS_DISABLED;
+            }
+            if (a.position + pulse.value[i] > a.travelMax) {
+                return STATUS_TRAVEL_MAX;
+            }
+			if (!a.advancing) {
+				a.advancing = true;
+				digitalWrite(a.pinDir, a.dirHIGH ? HIGH : LOW);
+			}
+			a.position += pulse.value[i];
+		} else if (pulse.value[i] < 0) {
+            if (!a.enabled) {
+				TESTCOUT1("step(-1): STATUS_AXIS_DISABLED:", (int) i);
+                return STATUS_AXIS_DISABLED;
+            }
+            a.readAtMin(invertLim);
+            if (a.atMin) {
+                return STATUS_LIMIT_MIN;
+            }
+            if (a.position + pulse.value[i] < a.travelMin) {
+                return STATUS_TRAVEL_MIN;
+            }
+			if (a.advancing) {
+				a.advancing = false;
+				digitalWrite(a.pinDir, a.dirHIGH ? LOW : HIGH);
+			}
+			a.position += pulse.value[i];
+        }
+    }
 
     return STATUS_OK;
 }

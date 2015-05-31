@@ -22,8 +22,8 @@ namespace firestep {
 // Therefore, for currently fashionable stepper driver chips,
 // Arduino digitalWrite() is slow enough to be its own delay (feature!)
 // If you need longer pulse time, just add a delay:
-// #define PULSE_DELAY DELAY500NS /* increase pulse cycle by 1 microsecond */
-#define PULSE_DELAY /* no delay */
+// #define PULSE_WIDTH_DELAY DELAY500NS /* increase pulse cycle by 1 microsecond */
+#define PULSE_WIDTH_DELAY() /* no delay */
 
 #define A4988_PULSE_DELAY 	DELAY500NS;DELAY500NS
 #define DRV8825_PULSE_DELAY DELAY500NS;DELAY500NS;DELAY500NS;DELAY500NS
@@ -138,7 +138,7 @@ typedef class Axis {
                 digitalWrite(pinDir, (advance == dirHIGH) ? HIGH : LOW);
             }
             digitalWrite(pinStep, HIGH);
-            PULSE_DELAY;
+            PULSE_WIDTH_DELAY();
             digitalWrite(pinStep, LOW);
         }
         inline Status readAtMin(bool invertLim) {
@@ -188,6 +188,58 @@ typedef class Machine : public QuadStepper {
         Machine();
         void enable(bool active);
         virtual Status step(const Quad<StepDV> &pulse);
+		inline void pulsePin1(int16_t pinStep) {
+			digitalWrite(pinStep, HIGH);
+			PULSE_WIDTH_DELAY();
+			digitalWrite(pinStep, LOW);
+		}
+		inline int8_t pulsePin(int16_t pinStep, int8_t n) {
+			switch (n) {
+			case 0:
+				pulsePin1(pinStep);
+				pulsePin1(pinStep);
+				pulsePin1(pinStep);
+				pulsePin1(pinStep);
+				return 4;
+			case 3:
+				pulsePin1(pinStep);
+				pulsePin1(pinStep);
+				pulsePin1(pinStep);
+				return 3;
+			case 2:
+				pulsePin1(pinStep);
+				pulsePin1(pinStep);
+				return 2;
+			case 1:
+				pulsePin1(pinStep);
+				return 1;
+			}
+		}
+        inline Status stepFast(Quad<StepDV> &pulse) {
+			Quad<StepDV> p(pulse);
+			//TESTCOUT4("stepFast ", (int) p.value[0], ",", (int) p.value[1], ",", 
+				//(int) p.value[2], ",", (int) p.value[3]);
+			for (bool hasPulses=true; hasPulses;) {
+				hasPulses = false;
+				for (uint8_t i=0; i<QUAD_ELEMENTS; i++) {
+					// emit 0-4 pulse burst per axis
+					int16_t pinStep = motorAxis[i]->pinStep;
+					int8_t pv = p.value[i];
+					if (pv > 0) {
+						p.value[i] -= pulsePin(pinStep, pv & (int8_t) 0x3);
+						hasPulses = true;
+					} else if (pv < 0) {
+						p.value[i] += pulsePin(pinStep, -pv & (int8_t) 0x3);
+						hasPulses = true;
+					}
+				}
+				//TESTCOUT4("stepFast => ", (int) p.value[0], ",", (int) p.value[1], ",", 
+					//(int) p.value[2], ",", (int) p.value[3]);
+			}
+
+            return STATUS_OK;
+        }
+        virtual Status stepDirection(const Quad<StepDV> &pulse);
         Status pulse(Quad<StepCoord> &pulses);
         void setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value = LOW);
         Quad<StepCoord> getMotorPosition();
@@ -196,8 +248,8 @@ typedef class Machine : public QuadStepper {
         void idle();
         Status setAxisIndex(MotorIndex iMotor, AxisIndex iAxis);
         AxisIndex getAxisIndex(MotorIndex iMotor) {
-			return motor[iMotor];
-		}
+            return motor[iMotor];
+        }
         Axis& getMotorAxis(MotorIndex iMotor) {
             return axis[motor[iMotor]];
         }

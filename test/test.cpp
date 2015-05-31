@@ -845,6 +845,12 @@ class MockStepper : public QuadStepper {
         void clear() {
             dPos.clear();
         }
+        virtual Status stepDirection(const Quad<StepDV> &pulse) {
+            return STATUS_OK;
+        }
+        virtual Status stepFast(Quad<StepDV> &pulse) {
+			return step(pulse);
+		}
         virtual Status step(const Quad<StepDV> &pulse) {
             dPos += pulse;
 #ifdef TEST_TRACE
@@ -1710,10 +1716,10 @@ void test_ph5() {
 		xpos = xposnew;
 		i++;
 	} while (status == STATUS_BUSY_MOVING);
+    ASSERTEQUAL(6400, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 	ASSERTEQUAL(15623,i);
 	ASSERTEQUAL(STATUS_OK, status);
 	ASSERTQUAD(Quad<StepCoord>(6400, 3200, 1600, 0), machine.getMotorPosition());
-    ASSERTEQUAL(6400, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 
 	// TEST: short line
 	xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -1871,28 +1877,31 @@ int main(int argc, char *argv[]) {
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
     firelog_level(FIRELOG_TRACE);
 
-	// test first
-	//test_ph5();
+    // test first
 
-    test_Serial();
-    test_Thread();
-    test_Quad();
-    test_Stroke();
-    test_Machine_step();
-    test_Machine();
-    test_ArduinoJson();
-    test_JsonCommand();
-    test_JsonController();
-    test_MachineThread();
-    test_Display();
-    test_Home();
-    test_PrettyPrint();
-    test_Idle();
-    test_Move();
-	test_PinConfig();
-	test_dvs();
-	test_errors();
-	test_ph5();
+    if (argc > 1 && strcmp("-1", argv[1]) == 0) {
+		test_ph5();
+    } else {
+        test_Serial();
+        test_Thread();
+        test_Quad();
+        test_Stroke();
+        test_Machine_step();
+        test_Machine();
+        test_ArduinoJson();
+        test_JsonCommand();
+        test_JsonController();
+        test_MachineThread();
+        test_Display();
+        test_Home();
+        test_PrettyPrint();
+        test_Idle();
+        test_Move();
+        test_PinConfig();
+        test_dvs();
+        test_errors();
+        test_ph5();
+    }
 
     cout << "TEST	: END OF TEST main()" << endl;
 }

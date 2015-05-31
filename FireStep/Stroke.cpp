@@ -158,8 +158,10 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 	
     Status status = STATUS_BUSY_MOVING;
 	Quad<StepDV> pulse;
+#define SLOWx
+#ifdef SLOW
 	for (bool done=true; ; done=true) {
-        for (uint8_t i = 0; i < 4; i++) {
+		for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
             StepCoord dp = dGoal.value[i] - dPos.value[i];
 			if (dp) {
 				done = false;
@@ -182,6 +184,38 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
             return status;	// abnormal return
         }
     }
+#else
+#define PULSE_BLOCK 32 /* pulses emitted without limit checks */
+	Quad<StepCoord> dPosSeg = dGoal - dPos;
+	for (bool done=true; ; done=true) {
+		for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
+			StepCoord dp = dPosSeg.value[i];
+			if (dp < -PULSE_BLOCK) {
+				pulse.value[i] = -PULSE_BLOCK;
+				done = false;
+			} else if (dp > PULSE_BLOCK) {
+				pulse.value[i] = PULSE_BLOCK;
+				done = false;
+			} else if (dp) {
+				pulse.value[i] = dp;
+				done = false;
+			} else {
+				pulse.value[i] = 0;
+			}
+			dPosSeg.value[i] -= (StepCoord) pulse.value[i];
+			dPos.value[i] += (StepCoord) pulse.value[i];
+		}
+		if (done) {
+			break;
+		}
+		if (0 > (status = stepper.stepDirection(pulse))) { 
+			return status;
+		}
+		if (0 > (status = stepper.stepFast(pulse))) {
+			return status;
+		}
+	}
+#endif
 	status = (tCurrent >= tStart + dtTotal) ? STATUS_OK : STATUS_BUSY_MOVING;
     return status;
 }
