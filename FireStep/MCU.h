@@ -35,8 +35,12 @@
 #define MAX_GENERATIONS 50010
 #define GENERATION_RESET 50000
 #define TIMER_ENABLED (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10))
-#define MAX_ThreadS 32
 #define TICK_MICROSECONDS ((TIMER_PRESCALE * 1000L)/(CLOCK_HZ/1000))
 #define TICKS_PER_SECOND ((int32_t)MS_TICKS(1000))
+
+// uint16_t hardware timer
+#define TIMER_CLEAR()	TCNT1 = 0
+#define TIMER_SETUP() TCCR1A = 0 /* Timer mode */; TIMSK1 = (0 << TOIE1) /* disable interrupts */
+#define TIMER_VALUE() TCNT1
 
 #endif

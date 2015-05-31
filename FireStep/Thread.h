@@ -130,10 +130,10 @@ typedef class ThreadRunner {
     public:
 		inline Ticks ticks() {
             cli();
-            threadClock.age = age = TCNT1;
+            threadClock.age = age = TIMER_VALUE();
             if (age < lastAge) {
                 // 1) a generation is 4.194304s 
-				// 2) generation is incremented when TCNT1 overflows
+				// 2) generation is incremented when TIMER_VALUE() overflows
                 // 3) innerLoop MUST complete within a generation
                 lastAge = age;
                 threadClock.generation = ++generation;

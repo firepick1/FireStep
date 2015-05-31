@@ -3,6 +3,8 @@
 
 using namespace firestep;
 
+#define MAX_THREADS 32
+
 namespace firestep {
 	ThreadClock 	threadClock;
 	ThreadRunner 	threadRunner;
@@ -30,8 +32,8 @@ void Thread::setup() {
             id = 'a' + nThreads;
         }
 		nThreads++;
-        if (nThreads >= MAX_ThreadS) {
-            Error("SC", MAX_ThreadS);
+        if (nThreads >= MAX_THREADS) {
+            Error("SC", MAX_THREADS);
         }
     }
 }
@@ -155,17 +157,13 @@ void ThreadRunner::clear() {
 	nHB = 0;
 	testTardies = 0;
 	fast = 255;
-	TCNT1 = 0;
+	TIMER_CLEAR();
 }
 
 void ThreadRunner::setup(int pinLED) {
     monitor.setup(pinLED);
-    //DEBUG_DEC("CLKPR", CLKPR);
-    //DEBUG_DEC("nThreads", nThreads);
-    //DEBUG_EOL();
 
-    TCCR1A = 0; // Timer mode
-    TIMSK1 = 0 << TOIE1;	// disable interrupts
+	TIMER_SETUP();
 	lastAge = 0;
     ThreadEnable(true);
 }
