@@ -455,10 +455,10 @@ Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
 	float te = tElapsed / (float) TICKS_PER_SECOND;
 	float tp = machine.stroke.getTimePlanned();
 	jobj["lp"] = nSamples;
-	jobj["pp"] = machine.stroke.vPeak * (machine.stroke.length / te);
+	jobj["pp"].set(machine.stroke.vPeak * (machine.stroke.length / te), 1);
 	jobj["sg"] = machine.stroke.length;
-	jobj["te"] = te;
-	jobj["tp"] = tp;
+	jobj["te"].set(te,3);
+	jobj["tp"].set(tp,3);
 
 	return status;
 }
