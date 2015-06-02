@@ -124,7 +124,7 @@ Status JsonController::initializeStrokeArray(JsonCommand &jcmd,
         if (*it2 < -127 || 127 < *it2) {
             return jcmd.setError(STATUS_RANGE_ERROR, key);
         }
-        machine.stroke.seg[slen++].value[iMotor] = (int8_t) (int32_t) * it2;
+        machine.stroke.seg[slen++].value[iMotor] = (StepDV) (int32_t) * it2;
     }
     stroke[key] = (int32_t) 0;
     return STATUS_BUSY_MOVING;
@@ -392,8 +392,8 @@ typedef class PHSelfTest {
 } PHSelfTest;
 
 Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
-	int16_t minSegs = nSegs ? nSegs : max(10, min(SEGMENT_COUNT-1,abs(pulses)/100));
-	int16_t maxSegs = nSegs ? nSegs : SEGMENT_COUNT-1;
+	int16_t minSegs = nSegs ? nSegs : 0; //max(10, min(SEGMENT_COUNT-1,abs(pulses)/100));
+	int16_t maxSegs = nSegs ? nSegs : 0; // SEGMENT_COUNT-1;
 	if (maxSegs >= SEGMENT_COUNT) {
 		return jcmd.setError(STATUS_STROKE_MAXLEN, "sg");
 	}
@@ -450,14 +450,14 @@ Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
 	if (status == STATUS_OK) {
 		status = STATUS_BUSY_MOVING; // repeat indefinitely
 	}
-	Ticks tActual = ticks() - tStart;
+	Ticks tElapsed = ticks() - tStart;
 
-	float ta = tActual / (float) TICKS_PER_SECOND;
+	float te = tElapsed / (float) TICKS_PER_SECOND;
 	float tp = machine.stroke.getTimePlanned();
 	jobj["lp"] = nSamples;
-	jobj["pp"] = machine.stroke.vPeak * (machine.stroke.length / ta);
+	jobj["pp"] = machine.stroke.vPeak * (machine.stroke.length / te);
 	jobj["sg"] = machine.stroke.length;
-	jobj["ta"] = ta;
+	jobj["te"] = te;
 	jobj["tp"] = tp;
 
 	return status;
@@ -475,7 +475,7 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
             node["pp"] = "";
             node["pu"] = "";
             node["sg"] = "";
-            node["ta"] = "";
+            node["te"] = "";
             node["tp"] = "";
             node["tv"] = "";
         }
@@ -507,7 +507,7 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
         status = processField<StepCoord, int32_t>(jobj, key, pulses);
     } else if (strcmp("sg", key) == 0) {
         status = processField<int16_t, int32_t>(jobj, key, nSegs);
-    } else if (strcmp("ta", key) == 0) {
+    } else if (strcmp("te", key) == 0) {
 		// output variable
     } else if (strcmp("tp", key) == 0) {
 		// output variable

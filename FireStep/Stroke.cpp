@@ -96,7 +96,7 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
 	} else {
 		dt = min(dtTotal, dt);
 		Ticks tNum = (dt>dtSegEnd ? dtSegEnd:dt) - dtSegStart;
-		for (int8_t iMotor=0; iMotor<QUAD_ELEMENTS; iMotor++) {
+		for (QuadIndex iMotor=0; iMotor<QUAD_ELEMENTS; iMotor++) {
 			StepCoord v = 0; // segment velocity
 			StepCoord pos = 0;
 			for (SegIndex s=0; s<sGoal; s++) {
@@ -235,6 +235,9 @@ StrokeBuilder::StrokeBuilder(int32_t vMax, float vMaxSeconds,
                              int16_t minSegments, int16_t maxSegments)
     : vMax(vMax), vMaxSeconds(vMaxSeconds),
       minSegments(minSegments), maxSegments(maxSegments) {
+	if (maxSegments == 0 || SEGMENT_COUNT <= maxSegments) {
+		maxSegments = SEGMENT_COUNT-1;
+	}
 }
 
 /**
@@ -245,16 +248,18 @@ StrokeBuilder::StrokeBuilder(int32_t vMax, float vMaxSeconds,
 Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     PH5TYPE K[QUAD_ELEMENTS];
     PH5TYPE Ksqrt[QUAD_ELEMENTS];
-    for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
+	StepCoord pulses = 0;
+    for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         K[i] = relPos.value[i] / 6400.0;
 		TESTCOUT2("K[", i, "]:", K[i]);
 		Ksqrt[i] = sqrt(abs(K[i]));
+		pulses = max(abs(relPos.value[i]), pulses);
     }
 	TESTCOUT1("buildLine:", relPos.toString());
 #define Z6400 56.568542495
     PHVECTOR<Complex<PH5TYPE> > z[QUAD_ELEMENTS];
     PHVECTOR<Complex<PH5TYPE> > q[QUAD_ELEMENTS];
-    for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
+    for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
 		z[i].push_back(Complex<PH5TYPE>());
 		if (K[i] < 0) {
 			z[i].push_back(Complex<PH5TYPE>(0,Z6400 * Ksqrt[i]));
@@ -284,8 +289,8 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         PHFeed<PH5TYPE>(ph[3], vMax, vMaxSeconds)
     };
     PH5TYPE tS = 0;
-    int8_t iMax = 0;
-    for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
+    QuadIndex iMax = 0;
+    for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
 		PH5TYPE tSi = phf[i].get_tS();
         if (K[i] != 0) { // active axis
 			TESTCOUT3("phf[", i, "] s(1):", phf[0].s(1), " tS:", tSi);
@@ -299,8 +304,12 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     PH5TYPE E = 0;
 
     int16_t N = 1000 * tS / 40; // 40ms/segment
+	int16_t minSegs = minSegments;
+	if (minSegs == 0) {
+		minSegs = max(10, min(SEGMENT_COUNT-1,abs(pulses)/100));
+	}
 
-    N = max(minSegments, min(maxSegments, (int16_t)N)); 
+    N = max(minSegs, min(maxSegments, (int16_t)N)); 
     Quad<StepCoord> s;
     Quad<StepCoord> v;
     Quad<StepCoord> sNew;
@@ -311,7 +320,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     for (int16_t iSeg = 1; iSeg <= N; iSeg++) {
         PH5TYPE fSeg = iSeg / (PH5TYPE)N;
         E = phf[iMax].Ekt(E, fSeg);
-        for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
+        for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
 			PH5TYPE pos = ph[i].r(E).Re();
             sNew.value[i] = pos < 0 ? pos-0.5 : pos+0.5;
 			vNew.value[i] = sNew.value[i] - s.value[i];
@@ -320,7 +329,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         }
         TESTCOUT4("fSeg:", fSeg, " sNew:", sNew.toString(), 
 			" vNew:", vNew.toString(), " dv:", dv.toString());
-        for (int8_t i = 0; i < QUAD_ELEMENTS; i++) {
+        for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
             if (dv.value[i] < (StepCoord) - 127 || (StepCoord) 127 < dv.value[i]) {
 				TESTCOUT1(" STATUS_STROKE_SEGPULSES pulses", dv.value[i]);
                 return STATUS_STROKE_SEGPULSES;

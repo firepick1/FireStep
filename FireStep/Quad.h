@@ -49,7 +49,7 @@ template<class T> class Quad { // a QUAD_ELEMENTS vector
 		}
 		float norm2() {
 			float sum = 0;
-			for (int8_t i=0; i<QUAD_ELEMENTS; i++) {
+			for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
 				sum += value[i]*value[i];
 			}
 			return sum;
