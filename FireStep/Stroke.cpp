@@ -314,7 +314,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 			TESTCOUT1("minSegsK:", minSegsK);
 			minSegs = minSegsK;
 		}
-		minSegs = max((int16_t)8, min((int16_t)(SEGMENT_COUNT-1), minSegs));
+		minSegs = max((int16_t)16, min((int16_t)(SEGMENT_COUNT-1), minSegs));
 	}
 
     N = max(minSegs, min(maxSegments, (int16_t)N)); 
