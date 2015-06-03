@@ -321,14 +321,15 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 	if (N >= SEGMENT_COUNT) {
         return STATUS_STROKE_MAXLEN;
 	}
-    Quad<StepCoord> s;
-    Quad<StepCoord> v;
-    Quad<StepCoord> sNew;
-    Quad<StepCoord> vNew;
-    Quad<StepCoord> dv;
-    Quad<StepDV> segment;
 	E = phf[iMax].Ekt(E, 0);
 	stroke.length = N;
+#ifdef LEGACY
+    Quad<StepCoord> dv;
+    Quad<StepDV> segment;
+    Quad<StepCoord> sNew;
+    Quad<StepCoord> vNew;
+    Quad<StepCoord> s;
+    Quad<StepCoord> v;
     for (int16_t iSeg = 1; iSeg <= N; iSeg++) {
         PH5TYPE fSeg = iSeg / (PH5TYPE)N;
         E = phf[iMax].Ekt(E, fSeg);
@@ -352,6 +353,31 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         v = vNew;
         s = sNew;
     }
+#else
+	for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
+		StepCoord s = 0;
+		StepCoord v = 0;
+		for (int16_t iSeg = 1; iSeg <= N; iSeg++) {
+			PH5TYPE fSeg = iSeg / (PH5TYPE)N;
+			E = phf[iMax].Ekt(E, fSeg);
+
+			PH5TYPE pos = ph[i].r(E).Re();
+            StepCoord sNew = pos < 0 ? pos-0.5 : pos+0.5;
+			StepCoord vNew = sNew - s;
+			stroke.vPeak = max(stroke.vPeak, (int32_t)abs(vNew));
+			StepCoord dv = vNew - v;
+			TESTCOUT4("fSeg:", fSeg, " sNew:", sNew, " vNew:", vNew, " dv:", dv);
+            if (dv < (StepCoord) - 127 || (StepCoord) 127 < dv) {
+				TESTCOUT2(" STATUS_STROKE_SEGPULSES pulses:", dv, " i:", i);
+                return STATUS_STROKE_SEGPULSES;
+            }
+			stroke.seg[iSeg-1].value[i] = dv;
+			v = vNew;
+			s = sNew;
+		}
+	}
+#endif
+
     TESTCOUT3(" N:", N, " tS:", tS, " dEndPos:", stroke.dEndPos.toString());
     stroke.setTimePlanned(tS);
 
