@@ -318,6 +318,9 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 	}
 
     N = max(minSegs, min(maxSegments, (int16_t)N)); 
+	if (N >= SEGMENT_COUNT) {
+        return STATUS_STROKE_MAXLEN;
+	}
     Quad<StepCoord> s;
     Quad<StepCoord> v;
     Quad<StepCoord> sNew;
@@ -325,6 +328,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     Quad<StepCoord> dv;
     Quad<StepDV> segment;
 	E = phf[iMax].Ekt(E, 0);
+	stroke.length = N;
     for (int16_t iSeg = 1; iSeg <= N; iSeg++) {
         PH5TYPE fSeg = iSeg / (PH5TYPE)N;
         E = phf[iMax].Ekt(E, fSeg);
@@ -344,10 +348,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
             }
             segment.value[i] = dv.value[i];
         }
-		int16_t rc = stroke.append(segment);
-		if (rc < 0) {
-			return (Status) rc;
-		}
+		stroke.seg[iSeg-1] = segment;
         v = vNew;
         s = sNew;
     }

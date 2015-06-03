@@ -29,6 +29,7 @@ typedef class QuadStepper {
 } QuadStepper;
 
 typedef class Stroke {
+	friend class StrokeBuilder;
     private:
         Quad<StepCoord> dPos;				// current offset from start position
         Ticks			dtTotal;			// ticks for planned traversal
