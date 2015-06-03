@@ -306,7 +306,15 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     int16_t N = 1000 * tS / 40; // 40ms/segment
 	int16_t minSegs = minSegments;
 	if (minSegs == 0) {
-		minSegs = max(10, min(SEGMENT_COUNT-1,abs(pulses)/100));
+		minSegs = 5; // minimum number of acceleration segments
+		minSegs = (float)minSegs * (float)abs(pulses) / (vMax * vMaxSeconds);
+		TESTCOUT4("pulses:", pulses, " minSegs:", minSegs, " vMax:", vMax, " vMaxSeconds:", vMaxSeconds);
+		int16_t minSegsK = abs(pulses) / 200.0;
+		if (minSegs < minSegsK) {
+			TESTCOUT1("minSegsK:", minSegsK);
+			minSegs = minSegsK;
+		}
+		minSegs = max((int16_t)8, min((int16_t)(SEGMENT_COUNT-1), minSegs));
 	}
 
     N = max(minSegs, min(maxSegments, (int16_t)N)); 
