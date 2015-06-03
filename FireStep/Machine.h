@@ -11,23 +11,7 @@ namespace firestep {
 
 // #define THROTTLE_SPEED /* Throttles driver speed from high (255) to low (0) */
 
-// A stepper pulse cycle requires 3 digitalWrite()'s for
-// step direction, pulse high, and pulse low.
-// Arduino 16-MHz digitalWrite pair takes 3.833 microseconds,
-// so a full stepper pulse cycle should take ~5.7 microseconds:
-//   http://skpang.co.uk/blog/archives/323
-// A4983 stepper driver pulse cycle requires 2 microseconds
-// DRV8825 stepper driver requires 3.8 microseconds
-//   http://www.ti.com/lit/ds/symlink/drv8825.pdf
-// Therefore, for currently fashionable stepper driver chips,
-// Arduino digitalWrite() is slow enough to be its own delay (feature!)
-// If you need longer pulse time, just add a delay:
-// #define PULSE_WIDTH_DELAY DELAY500NS /* increase pulse cycle by 1 microsecond */
-#define PULSE_WIDTH_DELAY() /* no delay */
 
-#define A4988_PULSE_DELAY 	DELAY500NS;DELAY500NS
-#define DRV8825_PULSE_DELAY DELAY500NS;DELAY500NS;DELAY500NS;DELAY500NS
-#define STEPPER_PULSE_DELAY DRV8825_PULSE_DELAY
 #define DELTA_COUNT 120
 #define MOTOR_COUNT 4
 #define AXIS_COUNT 6
@@ -35,11 +19,6 @@ namespace firestep {
 #define PIN_DISABLE HIGH
 #define MICROSTEPS_DEFAULT 16
 #define INDEX_NONE -1
-
-#ifndef DELAY500NS
-#define DELAY500NS \
-  asm("nop");asm("nop");asm("nop");asm("nop"); asm("nop");asm("nop");asm("nop");asm("nop");
-#endif
 
 typedef int16_t DelayMics; // delay microseconds
 #ifdef TEST
@@ -137,9 +116,7 @@ typedef class Axis {
                 advancing = advance;
                 digitalWrite(pinDir, (advance == dirHIGH) ? HIGH : LOW);
             }
-            digitalWrite(pinStep, HIGH);
-            PULSE_WIDTH_DELAY();
-            digitalWrite(pinStep, LOW);
+			pulseFast(pinStep);
         }
         inline Status readAtMin(bool invertLim) {
             if (pinMin == NOPIN) {
@@ -167,33 +144,6 @@ typedef class Axis {
 typedef int8_t AxisIndex;
 typedef int8_t MotorIndex;
 
-inline void digitalWriteFast(uint8_t pin, uint8_t val)
-{
-	//uint8_t timer = digitalPinToTimer(pin);
-	uint8_t bit = digitalPinToBitMask(pin);
-	uint8_t port = digitalPinToPort(pin);
-	volatile uint8_t *out;
-
-	//if (port == NOT_A_PIN) return;
-
-	// If the pin that support PWM output, we need to turn it off
-	// before doing a digital write.
-	//if (timer != NOT_ON_TIMER) turnOffPWM(timer);
-
-	out = portOutputRegister(port);
-
-	uint8_t oldSREG = SREG;
-	cli();
-
-	if (val == LOW) {
-		*out &= ~bit;
-	} else {
-		*out |= bit;
-	}
-
-	SREG = oldSREG;
-}
-
 typedef class Machine : public QuadStepper {
         friend void ::test_Home();
     private:
@@ -215,30 +165,25 @@ typedef class Machine : public QuadStepper {
         Machine();
         void enable(bool active);
         virtual Status step(const Quad<StepDV> &pulse);
-		inline void pulsePin1(int16_t pinStep) {
-			digitalWriteFast(pinStep, HIGH);
-			PULSE_WIDTH_DELAY();
-			digitalWriteFast(pinStep, LOW);
-		}
 		inline int8_t pulsePin(int16_t pinStep, int8_t n) {
 			switch (n) {
 			case 0:
-				pulsePin1(pinStep);
-				pulsePin1(pinStep);
-				pulsePin1(pinStep);
-				pulsePin1(pinStep);
+				pulseFast(pinStep);
+				pulseFast(pinStep);
+				pulseFast(pinStep);
+				pulseFast(pinStep);
 				return 4;
 			case 3:
-				pulsePin1(pinStep);
-				pulsePin1(pinStep);
-				pulsePin1(pinStep);
+				pulseFast(pinStep);
+				pulseFast(pinStep);
+				pulseFast(pinStep);
 				return 3;
 			case 2:
-				pulsePin1(pinStep);
-				pulsePin1(pinStep);
+				pulseFast(pinStep);
+				pulseFast(pinStep);
 				return 2;
 			case 1:
-				pulsePin1(pinStep);
+				pulseFast(pinStep);
 				return 1;
 			}
 		}
