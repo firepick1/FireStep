@@ -17,3 +17,4 @@ providing smooth motion.
 
 * [PH5Curve Stepper Video](https://www.youtube.com/watch?v=iFprR51CGqE)
 
+[Read more...](https://github.com/firepick1/FireStep/wiki)
