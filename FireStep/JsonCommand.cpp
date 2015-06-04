@@ -21,7 +21,6 @@ size_t JsonCommand::requestAvailable() {
 }
 
 void JsonCommand::clear() {
-	tStart = ticks();
     parsed = false;
     memset(json, 0, sizeof(json));
     memset(error, 0, sizeof(error));
@@ -107,6 +106,7 @@ Status JsonCommand::parseInput(const char *jsonIn) {
  * Check isValid() and getStatus() for parsing status.
  */
 Status JsonCommand::parse(const char *jsonIn) {
+	tStart = ticks();
 	Status status = parseInput(jsonIn);
 
 	if (status < 0) {

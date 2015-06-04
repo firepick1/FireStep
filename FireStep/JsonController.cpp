@@ -10,11 +10,9 @@ using namespace firestep;
 
 JsonController::JsonController(Machine& machine)
     : machine(machine) {
-    lastProcessed = 0;
 }
 
 Status JsonController::setup() {
-    lastProcessed = threadClock.ticks;
     return STATUS_OK;
 }
 
@@ -830,7 +828,6 @@ Status JsonController::process(JsonCommand& jcmd) {
     if (!isProcessing(status)) {
         sendResponse(jcmd);
     }
-    lastProcessed = threadClock.ticks;
 
     return status;
 }

@@ -86,7 +86,7 @@ void test_Thread() {
     ASSERTEQUAL(0x0000, TIMSK1); 	// Timer/Counter1 interrupt mask; no interrupts
     ASSERTEQUAL(0x0000, TCCR1A);	// Timer/Counter1 normal port operation
     ASSERTEQUAL(0x0005, TCCR1B);	// Timer/Counter1 active; prescale 1024
-    ASSERTEQUAL(NOVALUE, SREGI); 	// Global interrupts enabled
+    ASSERTEQUAL(0x1, SREGI); 	// Global interrupts enabled
 	ASSERT(TIMER_ENABLED);
 	cout << "TCNT1:" << (uint16_t) TCNT1 << endl;
     test_ticks(1);
@@ -183,7 +183,6 @@ void test_Machine() {
     ASSERTEQUAL(0,
                 ADCSRA & ((1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0)));	// ADC 1MHz prescale
 #endif
-    ASSERTEQUAL(NOVALUE, SREGI); 	// Global interrupts enabled
 
     // ticks should increase with TCNT1
     Ticks lastClock = ticks();
@@ -428,13 +427,13 @@ void test_JsonController_motor(Machine& machine, JsonController &jc, char motor)
     replace.push_back(motor);
     replace.push_back('!');
     replace.push_back(motor - 1);
-    testJSON(machine, jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!}}}\n");
-    testJSON(machine, jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':!}}\n");
-    testJSON(machine, jc, replace, "{'?ma':4}", "{'s':0,'r':{'?ma':4}}\n");
-    testJSON(machine, jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':4}}\n");
-    testJSON(machine, jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':4}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'ma':!}}", "{'s':0,'r':{'?':{'ma':!}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':!}}}\n");
+    testJSON(machine, jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':!},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?ma':4}", "{'s':0,'r':{'?ma':4},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':4},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':4}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'ma':!}}", "{'s':0,'r':{'?':{'ma':!}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':!}},'t':0.00}\n");
 }
 
 void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
@@ -443,72 +442,73 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
     replace.push_back('"');
     replace.push_back('?');
     replace.push_back(axis);
-    testJSON(machine, jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':0}}\n");		// default
-    testJSON(machine, jc, replace, "{'?tn':111}", "{'s':0,'r':{'?tn':111}}\n");
-    testJSON(machine, jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':111}}\n");
-    testJSON(machine, jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':111}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'tn':0}}", "{'s':0,'r':{'?':{'tn':0}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':0}}}\n");
-    testJSON(machine, jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':32000}}\n");  	// default
-    testJSON(machine, jc, replace, "{'?tm':222}", "{'s':0,'r':{'?tm':222}}\n");
-    testJSON(machine, jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':222}}\n");
-    testJSON(machine, jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':222}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'tm':32000}}", "{'s':0,'r':{'?':{'tm':32000}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':32000}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':16}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'mi':1}}", "{'s':0,'r':{'?':{'mi':1}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':1}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'mi':16}}", "{'s':0,'r':{'?':{'mi':16}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'dh':''}}", "{'s':0,'r':{'?':{'dh':true}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'dh':false}}", "{'s':0,'r':{'?':{'dh':false}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'dh':''}}", "{'s':0,'r':{'?':{'dh':false}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'dh':true}}", "{'s':0,'r':{'?':{'dh':true}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':1.80}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'sa':0.9}}", "{'s':0,'r':{'?':{'sa':0.90}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':0.90}}}\n");
-    testJSON(machine, jc, replace, "{'?':{'sa':1.8}}", "{'s':0,'r':{'?':{'sa':1.80}}}\n");
+    testJSON(machine, jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':0},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?tn':111}", "{'s':0,'r':{'?tn':111},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':111},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':111}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'tn':0}}", "{'s':0,'r':{'?':{'tn':0}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':0}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':32000},'t':0.00}\n");  	// default
+    testJSON(machine, jc, replace, "{'?tm':222}", "{'s':0,'r':{'?tm':222},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':222},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':222}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'tm':32000}}", "{'s':0,'r':{'?':{'tm':32000}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':32000}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':16}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'mi':1}}", "{'s':0,'r':{'?':{'mi':1}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':1}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'mi':16}}", "{'s':0,'r':{'?':{'mi':16}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'dh':''}}", "{'s':0,'r':{'?':{'dh':true}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'dh':false}}", "{'s':0,'r':{'?':{'dh':false}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'dh':''}}", "{'s':0,'r':{'?':{'dh':false}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'dh':true}}", "{'s':0,'r':{'?':{'dh':true}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':1.80}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'sa':0.9}}", "{'s':0,'r':{'?':{'sa':0.90}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':0.90}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'sa':1.8}}", "{'s':0,'r':{'?':{'sa':1.80}},'t':0.00}\n");
 
     testJSON(machine, jc, replace, "{'x':''}",
              "{'s':0,'r':{'x':{'dh':true,'en':true,'ho':0,'is':0,'lb':16,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':55,'pe':38,'pm':255,'pn':3,'po':0,'ps':54,"\
-			 "'sa':1.80,'sd':80,'tm':32000,'tn':0,'ud':0}}}\n");
+			 "'sa':1.80,'sd':80,'tm':32000,'tn':0,'ud':0}},'t':0.00}\n");
     testJSON(machine, jc, replace, "{'y':''}",
              "{'s':0,'r':{'y':{'dh':true,'en':true,'ho':0,'is':0,'lb':16,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':61,'pe':56,'pm':255,'pn':14,'po':0,'ps':60,"\
-			 "'sa':1.80,'sd':80,'tm':32000,'tn':0,'ud':0}}}\n");
+			 "'sa':1.80,'sd':80,'tm':32000,'tn':0,'ud':0}},'t':0.00}\n");
     testJSON(machine, jc, replace, "{'z':''}",
              "{'s':0,'r':{'z':{'dh':true,'en':true,'ho':0,'is':0,'lb':16,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':48,'pe':62,'pm':255,'pn':18,'po':0,'ps':46,"\
-			 "'sa':1.80,'sd':80,'tm':32000,'tn':0,'ud':0}}}\n");
+			 "'sa':1.80,'sd':80,'tm':32000,'tn':0,'ud':0}},'t':0.00}\n");
 }
 
 void test_JsonController_machinePosition(Machine& machine, JsonController &jc) {
     string replace;
     replace.push_back('\'');
     replace.push_back('"');
-    testJSON(machine, jc, replace, "{'mpo':''}", "{'s':0,'r':{'mpo':{'1':0,'2':0,'3':0,'4':0}}}\n");
-    testJSON(machine, jc, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':0}}\n");
-    testJSON(machine, jc, replace, "{'mpo1':32760}", "{'s':0,'r':{'mpo1':32760}}\n");
-    testJSON(machine, jc, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':32760}}\n");
-    testJSON(machine, jc, replace, "{'mpo1':-32760}", "{'s':0,'r':{'mpo1':-32760}}\n");
-    testJSON(machine, jc, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':-32760}}\n");
-    testJSON(machine, jc, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':0}}\n");
-    testJSON(machine, jc, replace, "{'mpo2':32761}", "{'s':0,'r':{'mpo2':32761}}\n");
-    testJSON(machine, jc, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':32761}}\n");
-    testJSON(machine, jc, replace, "{'mpo2':-32761}", "{'s':0,'r':{'mpo2':-32761}}\n");
-    testJSON(machine, jc, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':-32761}}\n");
-    testJSON(machine, jc, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':0}}\n");
-    testJSON(machine, jc, replace, "{'mpo3':32762}", "{'s':0,'r':{'mpo3':32762}}\n");
-    testJSON(machine, jc, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':32762}}\n");
-    testJSON(machine, jc, replace, "{'mpo3':-32762}", "{'s':0,'r':{'mpo3':-32762}}\n");
-    testJSON(machine, jc, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':-32762}}\n");
-    testJSON(machine, jc, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':0}}\n");
-    testJSON(machine, jc, replace, "{'mpo4':32763}", "{'s':0,'r':{'mpo4':32763}}\n");
-    testJSON(machine, jc, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':32763}}\n");
-    testJSON(machine, jc, replace, "{'mpo4':-32763}", "{'s':0,'r':{'mpo4':-32763}}\n");
-    testJSON(machine, jc, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':-32763}}\n");
+    testJSON(machine, jc, replace, 
+		"{'mpo':''}", "{'s':0,'r':{'mpo':{'1':0,'2':0,'3':0,'4':0}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':0},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo1':32760}", "{'s':0,'r':{'mpo1':32760},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':32760},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo1':-32760}", "{'s':0,'r':{'mpo1':-32760},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':-32760},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':0},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo2':32761}", "{'s':0,'r':{'mpo2':32761},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':32761},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo2':-32761}", "{'s':0,'r':{'mpo2':-32761},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':-32761},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':0},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo3':32762}", "{'s':0,'r':{'mpo3':32762},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':32762},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo3':-32762}", "{'s':0,'r':{'mpo3':-32762},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':-32762},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':0},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo4':32763}", "{'s':0,'r':{'mpo4':32763},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':32763},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo4':-32763}", "{'s':0,'r':{'mpo4':-32763},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':-32763},'t':0.00}\n");
     testJSON(machine, jc, replace, "{'mpo':''}",
-             "{'s':0,'r':{'mpo':{'1':-32760,'2':-32761,'3':-32762,'4':-32763}}}\n");
+             "{'s':0,'r':{'mpo':{'1':-32760,'2':-32761,'3':-32762,'4':-32763}},'t':0.00}\n");
 }
 
 MachineThread test_setup() {
@@ -550,10 +550,8 @@ void test_JsonController_tst() {
 
     threadClock.ticks++;
     //usDelay = arduino.get_usDelay();
-    ticks = mt.controller.getLastProcessed();
     Serial.push(JT("{'tstrv':[1,2]}\n")); // tstrv: test revolutions steps
     mt.loop();	// command.parse
-    ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTEQUAL(0, Serial.available()); // expected parse
     ASSERTEQUAL(DISPLAY_BUSY, mt.machine.pDisplay->getStatus());
@@ -567,9 +565,7 @@ void test_JsonController_tst() {
     ydirpulses = arduino.pulses(PC2_Y_DIR_PIN);
     zdirpulses = arduino.pulses(PC2_Z_DIR_PIN);
 
-    ticks = ++threadClock.ticks;
     mt.loop();	// controller.process
-    ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
     ASSERTEQUAL(xpulses + 2 * 3200, arduino.pulses(PC2_X_STEP_PIN));
@@ -583,21 +579,17 @@ void test_JsonController_tst() {
     //ASSERTEQUAL(usDelay+2*6400L*80L, arduino.get_usDelay());
     ASSERTEQUALS("", Serial.output().c_str());
 
-    threadClock.ticks++;
     Serial.push("\n"); // cancel current command
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUAL(DISPLAY_WAIT_CANCELLED, mt.machine.pDisplay->getStatus());
-    ASSERTEQUALS(JT("{'s':-901,'r':{'tstrv':[1,2]}}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':-901,'r':{'tstrv':[1,2]},'t':0.50}\n"), Serial.output().c_str());
 
-    threadClock.ticks++;
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     ASSERTEQUAL(DISPLAY_WAIT_IDLE, mt.machine.pDisplay->getStatus());
 
-    ++threadClock.ticks;
     Serial.push(JT("{'tstsp':[1,100,1000]}\n")); // tstsp: test stepper pulse
-    ticks = mt.controller.getLastProcessed();
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
     ypulses = arduino.pulses(PC2_Y_STEP_PIN);
     zpulses = arduino.pulses(PC2_Z_STEP_PIN);
@@ -606,18 +598,14 @@ void test_JsonController_tst() {
     ASSERTEQUAL(DISPLAY_BUSY, mt.machine.pDisplay->getStatus());
     ASSERTEQUAL(0, Serial.available());
 
-    threadClock.ticks++;
-    ticks = threadClock.ticks;
     mt.loop();	// controller.process
-    ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(DISPLAY_WAIT_IDLE, mt.machine.pDisplay->getStatus());
     ASSERTEQUAL(xpulses + 1, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTEQUAL(ypulses + 100, arduino.pulses(PC2_Y_STEP_PIN));
     ASSERTEQUAL(zpulses + 1000, arduino.pulses(PC2_Z_STEP_PIN));
-    ASSERTEQUALS(JT("{'s':0,'r':{'tstsp':[1,100,1000]}}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'tstsp':[1,100,1000]},'t':0.00}\n"), Serial.output().c_str());
 
-    threadClock.ticks++;
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     ASSERTEQUAL(DISPLAY_WAIT_IDLE, mt.machine.pDisplay->getStatus());
@@ -626,12 +614,8 @@ void test_JsonController_tst() {
     ASSERTEQUAL(zpulses + 1000, arduino.pulses(PC2_Z_STEP_PIN));
     ASSERTEQUALS("", Serial.output().c_str());
 
-    threadClock.ticks++;
-    //usDelay = arduino.get_usDelay();
-    ticks = mt.controller.getLastProcessed();
     Serial.push(JT("{'tstrv':[-1,-2]}\n")); // tstrv: test revolutions steps
     mt.loop();	// command.parse
-    ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTEQUAL(DISPLAY_BUSY, mt.machine.pDisplay->getStatus());
     ASSERTEQUAL(0, Serial.available()); // expected parse
@@ -639,19 +623,14 @@ void test_JsonController_tst() {
     ypulses = arduino.pulses(PC2_Y_STEP_PIN);
     zpulses = arduino.pulses(PC2_Z_STEP_PIN);
 
-    ticks = ++threadClock.ticks;
     mt.loop();	// controller.process
-    ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
     ASSERTEQUAL(xpulses + 2 * 3200, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTEQUAL(ypulses + 2 * 6400, arduino.pulses(PC2_Y_STEP_PIN));
     ASSERTEQUAL(zpulses, arduino.pulses(PC2_Z_STEP_PIN));
-    //ASSERTEQUAL(usDelay+2*6400L*80L, arduino.get_usDelay());
 
-    ticks = ++threadClock.ticks;
     mt.loop();	// controller.process
-    ASSERTEQUAL(ticks, mt.controller.getLastProcessed());
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
     ASSERTEQUAL(xpulses + 4 * 3200L, arduino.pulses(PC2_X_STEP_PIN));
@@ -662,7 +641,6 @@ void test_JsonController_tst() {
     ASSERTEQUAL(zdirpulses, arduino.pulses(PC2_Z_DIR_PIN));
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_X_DIR_PIN));
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_Y_DIR_PIN));
-    //ASSERTEQUAL(usDelay+4*6400L*80L, arduino.get_usDelay());
 }
 
 void test_JsonController_stroke(Machine& machine, JsonController &jc) {
@@ -685,80 +663,96 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
 			"'ztm':32000,'ztn':0,'zpo':5,'zln':false,"\
 			"'atm':32000,'atn':0,'apo':5,'aln':false,'aps':255}"
     string jconfig = STROKE_CONFIG;
-    testJSON(machine, jc, replace, jconfig.c_str(), "{'s':0,'r':" STROKE_CONFIG "}\n");
+    testJSON(machine, jc, replace, jconfig.c_str(), "{'s':0,'r':" STROKE_CONFIG ",'t':0.00}\n");
     ASSERTQUAD(Quad<StepCoord>(5, 5, 5, 5), machine.getMotorPosition());
     Ticks tStart = 101;
-	TCNT1 = 99;
+	TCNT1 = 98;
 
     //////////////////// TEST dEndPos.isZero() ////////////////
     // parse and initialize stroke
     JsonCommand jcmd =
         testJSON(machine, jc, replace,
-                 "{'systc':'','dvs':{'us':128,'1':[1,2],'2':[4,5],'3':[7,8]}}",
+                 "{'systc':'','dvs':{'us':512,'1':[10,20],'2':[40,50],'3':[70,80]}}",
                  "", STATUS_BUSY_MOVING);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), machine.stroke.position());
     ASSERTQUAD(Quad<StepCoord>(5, 5, 5, 5), machine.getMotorPosition());
     ASSERTEQUAL(tStart, machine.stroke.tStart);
-	ASSERTEQUAL(2, machine.stroke.get_dtTotal());
+	ASSERTEQUAL(8, machine.stroke.get_dtTotal());
 	float epsilon = 0.000001;
-    ASSERTEQUALT(0.000128, machine.stroke.getTimePlanned(), epsilon);
-    ASSERTQUAD(Quad<StepCoord>(4, 13, 22, 0), machine.stroke.dEndPos);
+    ASSERTEQUALT(0.000512, machine.stroke.getTimePlanned(), epsilon);
+    ASSERTQUAD(Quad<StepCoord>(40, 130, 220, 0), machine.stroke.dEndPos);
 
 	TCNT1--; // mock ticks() increments TCNT1, so decrement to simulate no change in ticks()
 
-    // traverse first stroke segment
+    // traverse 1
     ASSERTEQUAL(0, digitalRead(PC2_Z_MIN_PIN));
     testJSON_process(machine, jc, jcmd, replace, "", STATUS_BUSY_MOVING);
     ASSERTEQUALS("", Serial.output().c_str());
     ASSERTEQUAL(0, digitalRead(PC2_Z_MIN_PIN));
-    ASSERTQUAD(Quad<StepCoord>(1, 4, 7, 0), machine.stroke.position());
-    ASSERTQUAD(Quad<StepCoord>(6, 9, 12, 5), machine.getMotorPosition()); // axis a NOPIN inactive
-    size_t reqAvail = jcmd.requestAvailable();
-    size_t resAvail = jcmd.responseAvailable();
+    ASSERTQUAD(Quad<StepCoord>(5, 20, 35, 0), machine.stroke.position());
+    ASSERTQUAD(Quad<StepCoord>(10, 25, 40, 5), machine.getMotorPosition()); // axis a NOPIN inactive
+
+    // traverse 2
+    ASSERTEQUAL(0, digitalRead(PC2_Z_MIN_PIN));
+    testJSON_process(machine, jc, jcmd, replace, "", STATUS_BUSY_MOVING);
+    ASSERTEQUALS("", Serial.output().c_str());
+    ASSERTEQUAL(0, digitalRead(PC2_Z_MIN_PIN));
+    ASSERTQUAD(Quad<StepCoord>(17, 62, 107, 0), machine.stroke.position());
+    ASSERTQUAD(Quad<StepCoord>(22, 67, 112, 5), machine.getMotorPosition()); // axis a NOPIN inactive
 
     // finalize stroke
+    size_t reqAvail = jcmd.requestAvailable();
+    size_t resAvail = jcmd.responseAvailable();
     testJSON_process(machine, jc, jcmd, replace,
-                     "{'s':0,'r':{'systc':103,'dvs':{'us':128,'1':4,'2':13,'3':22}}}\n",
+                     "{'s':0,'r':{'systc':108,'dvs':{'us':512,'1':40,'2':130,'3':220}},'t':0.00}\n",
                      STATUS_OK);
-    ASSERTQUAD(Quad<StepCoord>(4, 13, 22, 0), machine.stroke.position());
-    ASSERTQUAD(Quad<StepCoord>(9, 18, 27, 5), machine.getMotorPosition()); // axis a is NOPIN inactive
-    ASSERTEQUAL(tStart + 3, threadClock.ticks);
+    ASSERTQUAD(Quad<StepCoord>(40, 130, 220, 0), machine.stroke.position());
+    ASSERTQUAD(Quad<StepCoord>(45, 135, 225, 5), machine.getMotorPosition()); // axis a is NOPIN inactive
+    ASSERTEQUAL(tStart + 9, threadClock.ticks);
     ASSERTEQUAL(reqAvail, jcmd.requestAvailable());
     ASSERTEQUAL(resAvail, jcmd.responseAvailable());
 
     ////////////////////// TEST !dEndPos.isZero() /////////////
 	machine.setMotorPosition(Quad<StepCoord>(5, 5, 5, 5));
-	tStart = ticks()+2;
+	tStart = ticks()+3;
 
     // parse and initialize stroke
     jcmd = testJSON(machine, jc, replace,
-                    "{'systc':'','dvs':{'us':128,'dp':[10,20],'x':[1,2],'y':[4,5],'z':[7,8]}}",
+                    "{'systc':'','dvs':{'us':512,'dp':[100,200],'x':[10,20],'y':[40,50],'z':[70,80]}}",
                     "", STATUS_BUSY_MOVING);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), machine.stroke.position());
     ASSERTQUAD(Quad<StepCoord>(5, 5, 5, 5), machine.getMotorPosition());
     ASSERTEQUAL(tStart, machine.stroke.tStart);
-    ASSERTEQUAL(2, machine.stroke.getTimePlanned()*TICKS_PER_SECOND);
-    ASSERTQUAD(Quad<StepCoord>(10, 20, 0, 0), machine.stroke.dEndPos);
+    ASSERTEQUAL(8, machine.stroke.getTimePlanned()*TICKS_PER_SECOND);
+    ASSERTQUAD(Quad<StepCoord>(100, 200, 0, 0), machine.stroke.dEndPos);
 
 	TCNT1--; // simulate unchanging ticks()
 
-    // traverse first stroke segment
+    // traverse 1
     ASSERTEQUAL(0, digitalRead(PC2_Z_MIN_PIN));
     testJSON_process(machine, jc, jcmd, replace, "", STATUS_BUSY_MOVING);
     ASSERTEQUALS("", Serial.output().c_str());
     ASSERTEQUAL(0, digitalRead(PC2_Z_MIN_PIN));
-    ASSERTQUAD(Quad<StepCoord>(1, 4, 7, 0), machine.stroke.position());
-    ASSERTQUAD(Quad<StepCoord>(6, 9, 12, 5), machine.getMotorPosition()); // axis a NOPIN inactive
-    reqAvail = jcmd.requestAvailable();
-    resAvail = jcmd.responseAvailable();
+    ASSERTQUAD(Quad<StepCoord>(5,20,35,0), machine.stroke.position());
+    ASSERTQUAD(Quad<StepCoord>(10,25,40,5), machine.getMotorPosition()); // axis a NOPIN inactive
+
+    // traverse 2
+    ASSERTEQUAL(0, digitalRead(PC2_Z_MIN_PIN));
+    testJSON_process(machine, jc, jcmd, replace, "", STATUS_BUSY_MOVING);
+    ASSERTEQUALS("", Serial.output().c_str());
+    ASSERTEQUAL(0, digitalRead(PC2_Z_MIN_PIN));
+    ASSERTQUAD(Quad<StepCoord>(17,62,107,0), machine.stroke.position());
+    ASSERTQUAD(Quad<StepCoord>(22,67,112,5), machine.getMotorPosition()); // axis a NOPIN inactive
 
     // finalize stroke
+    reqAvail = jcmd.requestAvailable();
+    resAvail = jcmd.responseAvailable();
     testJSON_process(machine, jc, jcmd, replace,
-                     "{'s':0,'r':{'systc':109,'dvs':{'us':128,'dp':[10,20],'x':10,'y':20,'z':0}}}\n",
+                     "{'s':0,'r':{'systc':121,'dvs':{'us':512,'dp':[100,200],'x':100,'y':200,'z':0}},'t':0.00}\n",
                      STATUS_OK);
-    ASSERTQUAD(Quad<StepCoord>(10, 20, 0, 0), machine.stroke.position());
-    ASSERTQUAD(Quad<StepCoord>(15, 25, 5, 5), machine.getMotorPosition()); // axis a is NOPIN inactive
-    ASSERTEQUAL(tStart + 3, threadClock.ticks);
+    ASSERTQUAD(Quad<StepCoord>(100, 200, 0, 0), machine.stroke.position());
+    ASSERTQUAD(Quad<StepCoord>(105, 205, 5, 5), machine.getMotorPosition()); // axis a is NOPIN inactive
+    ASSERTEQUAL(tStart + 9, threadClock.ticks);
     ASSERTEQUAL(reqAvail, jcmd.requestAvailable());
     ASSERTEQUAL(resAvail, jcmd.responseAvailable());
 
@@ -794,7 +788,7 @@ void test_JsonController() {
     threadClock.ticks = 12345;
     jc.process(jcmd);
     char sysbuf[500];
-    const char *fmt = "{'s':%d,'r':{'sys':{'fr':1000,'jp':false,'lh':false,'lp':0,'pc':2,'tc':12345,'v':%.2f}}}\n";
+    const char *fmt = "{'s':%d,'r':{'sys':{'fr':1000,'jp':false,'lh':false,'lp':0,'pc':2,'tc':12345,'v':%.2f}},'t':0.00}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
              STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
     ASSERTEQUALS(sysbuf, Serial.output().c_str());
@@ -1193,7 +1187,7 @@ void test_Move() {
     ASSERTEQUAL(ypulses + 10, arduino.pulses(PC2_Y_STEP_PIN));
     ASSERTEQUAL(zpulses + 100, arduino.pulses(PC2_Z_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(1, 10, 100, 0), machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'1':1,'2':10,'3':100,'sr':1}}}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'1':1,'2':10,'3':100,'sr':1}},'t':0.00}\n"), Serial.output().c_str());
     ASSERTEQUALT(usStart + 1000000, delayMicsTotal, 20000);
 
     threadClock.ticks++;
@@ -1222,7 +1216,7 @@ void test_Move() {
     ASSERTEQUAL(ypulses + 10, arduino.pulses(PC2_Y_STEP_PIN));
     ASSERTEQUAL(zpulses + 100, arduino.pulses(PC2_Z_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(1, 10, 100, 0), machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'x':1,'y':10,'z':100}}}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'x':1,'y':10,'z':100}},'t':0.00}\n"), Serial.output().c_str());
     ASSERTEQUALT(usStart, delayMicsTotal, 20000);
 
     cout << "TEST	: test_Move() OK " << endl;
@@ -1244,7 +1238,7 @@ void test_dvs() {
     test_ticks(1); // initialize
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(xpulses, arduino.pulses(PC2_X_STEP_PIN));
-	ASSERTEQUAL(0, threadClock.ticks - machine.stroke.tStart);
+	ASSERTEQUAL(1, threadClock.ticks - machine.stroke.tStart);
 
     test_ticks(1); // start moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
@@ -1253,72 +1247,72 @@ void test_dvs() {
     test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(1, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-	ASSERTEQUAL(MS_TICKS(100)+3, threadClock.ticks - machine.stroke.tStart);
+	ASSERTEQUAL(MS_TICKS(100)+6, threadClock.ticks - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(2, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-	ASSERTEQUAL(MS_TICKS(200)+3, threadClock.ticks - machine.stroke.tStart);
+	ASSERTEQUAL(MS_TICKS(200)+7, threadClock.ticks - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(3, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-	ASSERTEQUAL(MS_TICKS(300)+4, threadClock.ticks - machine.stroke.tStart);
+	ASSERTEQUAL(MS_TICKS(300)+9, threadClock.ticks - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(4, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-	ASSERTEQUAL(MS_TICKS(400)+4, threadClock.ticks - machine.stroke.tStart);
+	ASSERTEQUAL(MS_TICKS(400)+10, threadClock.ticks - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(500) - 4*MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(5, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-	ASSERTEQUAL(MS_TICKS(500)+7, threadClock.ticks - machine.stroke.tStart);
+	ASSERTEQUAL(MS_TICKS(500)+14, threadClock.ticks - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(1000)-MS_TICKS(500)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(10, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-	ASSERTEQUAL(MS_TICKS(1000)+8, threadClock.ticks - machine.stroke.tStart);
+	ASSERTEQUAL(MS_TICKS(1000)+16, threadClock.ticks - machine.stroke.tStart);
 	ASSERTQUAD(Quad<StepCoord>(110,100,100,100), machine.getMotorPosition());
 
     test_ticks(MS_TICKS(500)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(15, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-	ASSERTEQUAL(MS_TICKS(1500)+9, threadClock.ticks - machine.stroke.tStart);
+	ASSERTEQUAL(MS_TICKS(1500)+18, threadClock.ticks - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(1000)-MS_TICKS(500)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(20, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-	ASSERTEQUAL(MS_TICKS(2000)+10, threadClock.ticks - machine.stroke.tStart);
+	ASSERTEQUAL(MS_TICKS(2000)+20, threadClock.ticks - machine.stroke.tStart);
 	ASSERTQUAD(Quad<StepCoord>(120,100,100,100), machine.getMotorPosition());
 
     test_ticks(MS_TICKS(1000)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(30, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-	ASSERTEQUAL(MS_TICKS(3000)+11, threadClock.ticks - machine.stroke.tStart);
+	ASSERTEQUAL(MS_TICKS(3000)+22, threadClock.ticks - machine.stroke.tStart);
 	ASSERTQUAD(Quad<StepCoord>(130,100,100,100), machine.getMotorPosition());
 
     test_ticks(MS_TICKS(500)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(35, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-	ASSERTEQUAL(MS_TICKS(3500)+12, threadClock.ticks - machine.stroke.tStart);
+	ASSERTEQUAL(MS_TICKS(3500)+24, threadClock.ticks - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(600)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(41, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-	ASSERTEQUAL(MS_TICKS(4100)+13, threadClock.ticks - machine.stroke.tStart);
+	ASSERTEQUAL(MS_TICKS(4100)+26, threadClock.ticks - machine.stroke.tStart);
 	ASSERTQUAD(Quad<StepCoord>(141,100,100,100), machine.getMotorPosition());
 
     test_ticks(MS_TICKS(600)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-	ASSERTEQUAL(MS_TICKS(4700)+14, threadClock.ticks - machine.stroke.tStart);
+	ASSERTEQUAL(MS_TICKS(4700)+28, threadClock.ticks - machine.stroke.tStart);
 	ASSERTQUAD(Quad<StepCoord>(147,100,100,100), machine.getMotorPosition());
     ASSERTEQUAL(47, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 
     test_ticks(MS_TICKS(1000)); // done
     ASSERTEQUAL(STATUS_OK, mt.status);
-	ASSERTEQUAL(MS_TICKS(5700)+15, threadClock.ticks - machine.stroke.tStart);
-	ASSERTEQUALS(JT("{'s':0,'r':{'dvs':{'us':5000000,'x':50}}}\n"), Serial.output().c_str());
+	ASSERTEQUAL(MS_TICKS(5700)+30, threadClock.ticks - machine.stroke.tStart);
+	ASSERTEQUALS(JT("{'s':0,'r':{'dvs':{'us':5000000,'x':50}},'t':5.70}\n"), Serial.output().c_str());
     ASSERTEQUAL(50, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 	ASSERTQUAD(Quad<StepCoord>(150,100,100,100), machine.getMotorPosition());
 
@@ -1343,10 +1337,11 @@ void test_errors() {
     MachineThread mt = test_setup();
     Machine &machine = mt.machine;
 
-    test_error(mt, "{'abc':true}\n", STATUS_UNRECOGNIZED_NAME, "{'s':-402,'r':{'abc':true},'e':'abc'}\n");
+    test_error(mt, "{'abc':true}\n", STATUS_UNRECOGNIZED_NAME, 
+		"{'s':-402,'r':{'abc':true},'e':'abc','t':0.00}\n");
     test_error(mt, "{bad-json}\n", STATUS_JSON_PARSE_ERROR, "{'s':-403}\n");
     test_error(mt, "bad-json\n", STATUS_JSON_PARSE_ERROR, "{'s':-403}\n");
-    test_error(mt, "{'xud':50000}\n", STATUS_VALUE_RANGE, "{'s':-133,'r':{'xud':50000}}\n");
+    test_error(mt, "{'xud':50000}\n", STATUS_VALUE_RANGE, "{'s':-133,'r':{'xud':50000},'t':0.00}\n");
 
     cout << "TEST	: test_errors() OK " << endl;
 }
@@ -1389,7 +1384,7 @@ void test_PrettyPrint() {
     threadClock.ticks++;
     mt.loop(); // process
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{\r\n  's': 0,\r\n  'r': {\r\n    'sysjp': true\r\n  }\r\n}\n"),
+    ASSERTEQUALS(JT("{\r\n  's': 0,\r\n  'r': {\r\n    'sysjp': true\r\n  },\r\n  't': 0.00\r\n}\n"),
                  Serial.output().c_str());
 
     cout << "TEST	: test_PrettyPrint() OK " << endl;
@@ -1492,7 +1487,7 @@ void test_Home() {
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_X_DIR_PIN)); // HIGH because we backed off
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_DIR_PIN));
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_Z_DIR_PIN)); // HIGH because we backed off
-    ASSERTEQUALS(JT("{'s':0,'r':{'ho':{'x':5,'z':20}}}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'ho':{'x':5,'z':20}},'t':0.00}\n"), Serial.output().c_str());
 
 	// TEST ONE-AXIS SHORT FORM
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -1524,7 +1519,7 @@ void test_Home() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(xpulses + 32*1 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(5, 100, 100, 100), mt.machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'hox':5}}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'hox':5},'t':0.00}\n"), Serial.output().c_str());
 
 	// TEST SHORT FORM
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -1558,7 +1553,8 @@ void test_Home() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(xpulses + 32*1 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(5, 100, 100, 100), mt.machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'ho':{'1':5,'2':100,'3':100,'4':100}}}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'ho':{'1':5,'2':100,'3':100,'4':100}},'t':0.00}\n"), 
+		Serial.output().c_str());
 
     cout << "TEST	: test_Home() OK " << endl;
 }
@@ -1578,37 +1574,53 @@ void test_MachineThread() {
 
     const char *jsonIn = "'systc':'','xen':true,'yen':true,'zen':true,'aen':true}\n";
     Serial.push(JT(jsonIn));
-	arduino.timer1(1); ticks(); mt.loop();
+	mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTEQUALS("", Serial.output().c_str());
 
-	arduino.timer1(1); ticks(); mt.loop();
+	mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     const char *jsonOut =
-        "{'s':0,'r':{'systc':105,'xen':true,'yen':true,'zen':true,'aen':false}}\n";
+        "{'s':0,'r':{'systc':103,'xen':true,'yen':true,'zen':true,'aen':false},'t':0.00}\n";
     ASSERTEQUALS(JT(jsonOut), Serial.output().c_str());
 
-	arduino.timer1(1); ticks(); mt.loop();
+	mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     ASSERTEQUALS("", Serial.output().c_str());
-    jsonIn = "{'systc':'','dvs':{'us':123,'dp':[10,20],'1':[1,2],'2':[4,5],'3':[7,8]}}\n";
+    jsonIn = "{'systc':'','dvs':{'us':512,'dp':[100,200],'1':[10,20],'2':[40,50],'3':[70,80]}}\n";
     Serial.push(JT(jsonIn));
-	arduino.timer1(1); ticks(); mt.loop();
+	mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTEQUALS("", Serial.output().c_str());
 
-	arduino.timer1(1); ticks(); mt.loop();
+	mt.loop();
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUALS("", Serial.output().c_str());
+    ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
+
+	mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUALS("", Serial.output().c_str());
+    ASSERTQUAD(Quad<StepCoord>(5,20,35,0), mt.machine.getMotorPosition());
+
+	mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUALS("", Serial.output().c_str());
+    ASSERTQUAD(Quad<StepCoord>(10,40,70,0), mt.machine.getMotorPosition());
+
+	mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUALS("", Serial.output().c_str());
+    ASSERTQUAD(Quad<StepCoord>(25,85,145,0), mt.machine.getMotorPosition());
 
     Serial.clear();
-	arduino.timer1(1); ticks(); mt.loop();
+	mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     jsonOut =
-        "{'s':0,'r':{'systc':114,'dvs':{'us':123,'dp':[10,20],'1':10,'2':20,'3':0}}}\n";
+        "{'s':0,'r':{'systc':113,'dvs':{'us':512,'dp':[100,200],'1':100,'2':200,'3':0}},'t':0.00}\n";
     ASSERTEQUALS(JT(jsonOut), Serial.output().c_str());
-    ASSERTQUAD(Quad<StepCoord>(10, 20, 0, 0), mt.machine.getMotorPosition());
+    ASSERTQUAD(Quad<StepCoord>(100, 200, 0, 0), mt.machine.getMotorPosition());
 
     cout << "TEST	: test_MachineThread() OK " << endl;
 }
@@ -1671,10 +1683,10 @@ void test_Display() {
 
     testJSON(mt.machine, mt.controller, "'\"",
              "{'dpycr':10,'dpycg':20,'dpycb':30,'dpyds':12,'dpydl':255}",
-             "{'s':0,'r':{'dpycr':10,'dpycg':20,'dpycb':30,'dpyds':12,'dpydl':255}}\n");
+             "{'s':0,'r':{'dpycr':10,'dpycg':20,'dpycb':30,'dpyds':12,'dpydl':255},'t':0.00}\n");
     testJSON(mt.machine, mt.controller, "'\"",
              "{'dpy':{'ds':30,'dl':255,'cr':1,'cg':2,'cb':3}}",
-             "{'s':25,'r':{'dpy':{'ds':30,'dl':255,'cr':1,'cg':2,'cb':3}}}\n", STATUS_WAIT_BUSY);
+             "{'s':25,'r':{'dpy':{'ds':30,'dl':255,'cr':1,'cg':2,'cb':3}},'t':0.00}\n", STATUS_WAIT_BUSY);
 
     cout << "TEST	: test_Display() OK " << endl;
 }

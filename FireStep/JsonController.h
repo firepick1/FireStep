@@ -12,8 +12,6 @@ namespace firestep {
 
 typedef class JsonController {
     private:
-        Ticks lastProcessed;
-    private:
         Status initializeStrokeArray(JsonCommand &jcmd, JsonObject& stroke,
                                      const char *key, MotorIndex iMotor, int16_t &slen);
         Status processRawSteps(Quad<StepCoord> &steps);
@@ -41,9 +39,6 @@ typedef class JsonController {
         Status setup();
         Status process(JsonCommand& jcmd);
         Status cancel(JsonCommand &jcmd, Status cause);
-        Ticks getLastProcessed() {
-            return lastProcessed;
-        }
 } JsonController;
 
 } // namespace firestep

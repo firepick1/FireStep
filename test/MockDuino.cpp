@@ -153,6 +153,7 @@ void MockDuino::clear() {
     ADCSRA = 0;	// ADC control and status register A (disabled)
     TCNT1 = 0; 	// Timer/Counter1
     CLKPR = 0;	// Clock prescale register
+	sei(); // enable interrupts
 }
 
 uint32_t MockDuino::pulses(int16_t pin) {
