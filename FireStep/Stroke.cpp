@@ -308,20 +308,23 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     stroke.clear();
     stroke.setTimePlanned(tS);
 	stroke.length = N;
-    PH5TYPE E = phfMax.Ekt(0, 0);
+    PH5TYPE E[SEGMENT_COUNT+1];
+	E[0] = phfMax.Ekt(0, 0);
+	for (int16_t iSeg = 1; iSeg <= N; iSeg++) {
+		PH5TYPE fSeg = iSeg / (PH5TYPE)N;
+		E[iSeg] = phfMax.Ekt(E[iSeg-1], fSeg);
+	}
 	for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
 		PH5Curve<PH5TYPE> ph(z[i], q[i]);
 		StepCoord s = 0;
 		StepCoord v = 0;
 		for (int16_t iSeg = 1; iSeg <= N; iSeg++) {
-			PH5TYPE fSeg = iSeg / (PH5TYPE)N;
-			E = phfMax.Ekt(E, fSeg);
-			PH5TYPE pos = ph.r(E).Re();
+			PH5TYPE pos = ph.r(E[iSeg]).Re();
             StepCoord sNew = pos < 0 ? pos-0.5 : pos+0.5;
 			StepCoord vNew = sNew - s;
 			stroke.vPeak = max(stroke.vPeak, (int32_t)abs(vNew));
 			StepCoord dv = vNew - v;
-			TESTCOUT4("fSeg:", fSeg, " sNew:", sNew, " vNew:", vNew, " dv:", dv);
+			TESTCOUT4("iSeg:", iSeg, " sNew:", sNew, " vNew:", vNew, " dv:", dv);
             if (dv < (StepCoord) - 127 || (StepCoord) 127 < dv) {
 				TESTCOUT2(" STATUS_STROKE_SEGPULSES pulses:", dv, " i:", i);
                 return STATUS_STROKE_SEGPULSES;
