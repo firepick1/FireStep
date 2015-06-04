@@ -442,12 +442,12 @@ Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
 	}
 	Ticks tElapsed = ticks() - tStart;
 
-	float te = tElapsed / (float) TICKS_PER_SECOND;
+	float t = tElapsed / (float) TICKS_PER_SECOND;
 	float tp = machine.stroke.getTimePlanned();
 	jobj["lp"] = nSamples;
-	jobj["pp"].set(machine.stroke.vPeak * (machine.stroke.length / te), 1);
+	jobj["pp"].set(machine.stroke.vPeak * (machine.stroke.length / t), 1);
 	jobj["sg"] = machine.stroke.length;
-	jobj["te"].set(te,3);
+	jobj["t"].set(t,3);
 	jobj["tp"].set(tp,3);
 
 	return status;
@@ -465,7 +465,7 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
             node["pp"] = "";
             node["pu"] = "";
             node["sg"] = "";
-            node["te"] = "";
+            node["t"] = "";
             node["tp"] = "";
             node["tv"] = "";
         }
@@ -497,7 +497,7 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
         status = processField<StepCoord, int32_t>(jobj, key, pulses);
     } else if (strcmp("sg", key) == 0) {
         status = processField<int16_t, int32_t>(jobj, key, nSegs);
-    } else if (strcmp("te", key) == 0) {
+    } else if (strcmp("t", key) == 0) {
 		// output variable
     } else if (strcmp("tp", key) == 0) {
 		// output variable

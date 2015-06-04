@@ -21,6 +21,7 @@ size_t JsonCommand::requestAvailable() {
 }
 
 void JsonCommand::clear() {
+	tStart = ticks();
     parsed = false;
     memset(json, 0, sizeof(json));
     memset(error, 0, sizeof(error));

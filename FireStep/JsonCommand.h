@@ -34,6 +34,7 @@ typedef class JsonCommand {
 		StepCoord stepRate; // steps per second
 		JsonVariant jRequestRoot;
 		JsonVariant jResponseRoot;
+		Ticks tStart;
 		char error[8];
 
 	private:
@@ -47,7 +48,10 @@ typedef class JsonCommand {
         Status parse(const char *jsonIn=NULL);
 		bool isValid();
 		inline Status getStatus() { return (Status) (int32_t) jResponseRoot["s"]; }
-		inline void setStatus(Status status) { jResponseRoot["s"] = status; }
+		inline void setStatus(Status status) { 
+			jResponseRoot["t"] = (ticks() - tStart) / (float) TICKS_PER_SECOND;
+			jResponseRoot["s"] = status; 
+		}
 		const char *getError();
 		Status setError(Status status, const char *err);
 		size_t requestAvailable();
