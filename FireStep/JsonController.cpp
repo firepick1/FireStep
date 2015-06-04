@@ -361,16 +361,6 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
     return status;
 }
 
-int freeRam () {
-#ifdef TEST
-    return 1000;
-#else
-    extern int __heap_start, *__brkval;
-    int v;
-    return (int)(size_t)&v - (__brkval == 0 ? (int)(size_t)&__heap_start : (int)(size_t)__brkval);
-#endif
-}
-
 typedef class PHSelfTest {
 	private:
 		int32_t nSamples;
@@ -607,7 +597,8 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             }
         }
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
-        jobj[key] = freeRam();
+		leastFreeRam = min(leastFreeRam, freeRam());
+        jobj[key] = leastFreeRam;
     } else if (strcmp("jp", key) == 0 || strcmp("sysjp", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.jsonPrettyPrint);
     } else if (strcmp("pc", key) == 0 || strcmp("syspc", key) == 0) {

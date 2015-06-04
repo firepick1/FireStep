@@ -241,9 +241,8 @@ StrokeBuilder::StrokeBuilder(int32_t vMax, float vMaxSeconds,
 }
 
 /**
- * Build a rest-to-rest stroke with minimum jerk that continuously accelerates
- * until it reaches the end position located at relPos from current position
- * in the fastest possible time subject to the minimum jerk constraint
+ * Create a line by scaling a known PH5Curve to match the requested linear
+ * offset.
  */
 Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     PH5TYPE K[QUAD_ELEMENTS];
@@ -251,6 +250,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 	StepCoord pulses = 0;
     QuadIndex iMax = 0;
 
+	// Determine scale K for each Quad dimension
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         K[i] = relPos.value[i] / 6400.0;
 		TESTCOUT2("K[", i, "]:", K[i]);
@@ -260,6 +260,8 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 			iMax = i;
 		}
     }
+
+	// Generate scaled PH5Curve coefficients
 	TESTCOUT1("buildLine:", relPos.toString()); 
 #define Z6400 56.568542495
     PHVECTOR<Complex<PH5TYPE> > z[QUAD_ELEMENTS];
@@ -277,35 +279,13 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         q[i].push_back(Complex<PH5TYPE>(3200 * K[i]));
         q[i].push_back(Complex<PH5TYPE>(6400 * K[i]));
     }
-    PH5Curve<PH5TYPE> ph[] = {
-        PH5Curve<PH5TYPE>(z[0], q[0]),
-        PH5Curve<PH5TYPE>(z[1], q[1]),
-        PH5Curve<PH5TYPE>(z[2], q[2]),
-        PH5Curve<PH5TYPE>(z[3], q[3])
-    };
-	TESTCOUT2("ph[0].r(0.5).Re:", ph[0].r(0.5).Re(), " Im:", ph[0].r(0.5).Im());
-	TESTCOUT2("ph[0].r(1).Re:", ph[0].r(1).Re(), " Im:", ph[0].r(1).Im());
-	TESTCOUT2("ph vMax:", vMax, " vMaxSeconds:", vMaxSeconds);
 
-    PHFeed<PH5TYPE> phf[] = {
-        PHFeed<PH5TYPE>(ph[0], vMax, vMaxSeconds),
-        PHFeed<PH5TYPE>(ph[1], vMax, vMaxSeconds),
-        PHFeed<PH5TYPE>(ph[2], vMax, vMaxSeconds),
-        PHFeed<PH5TYPE>(ph[3], vMax, vMaxSeconds)
-    };
-    PH5TYPE tS = 0;
-    for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
-		PH5TYPE tSi = phf[i].get_tS();
-        if (K[i] != 0) { // active axis
-			TESTCOUT3("phf[", i, "] s(1):", phf[0].s(1), " tS:", tSi);
-			if (K[i] != 0 && tSi > tS) {
-				tS = tSi;
-			}
-        }
-    }
-    stroke.clear();
-    PH5TYPE E = 0;
+	// Use the longest PH5Curve to determine the parametric value for all 
+	PH5Curve<PH5TYPE> phMax(z[iMax], q[iMax]);
+	PHFeed<PH5TYPE> phfMax(phMax, vMax, vMaxSeconds);
+    PH5TYPE tS = phfMax.get_tS();
 
+	// Calculate the optimal number of segments using weird heuristics
     int16_t N = 1000 * tS / 40; // 40ms/segment
 	int16_t minSegs = minSegments;
 	if (minSegs == 0) {
@@ -319,21 +299,24 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 		}
 		minSegs = max((int16_t)16, min((int16_t)(SEGMENT_COUNT-1), minSegs));
 	}
-
     N = max(minSegs, min(maxSegments, (int16_t)N)); 
 	if (N >= SEGMENT_COUNT) {
         return STATUS_STROKE_MAXLEN;
 	}
-	E = phf[iMax].Ekt(E, 0);
+
+	// Build the stroke dimension by dimension
+    stroke.clear();
+    stroke.setTimePlanned(tS);
 	stroke.length = N;
+    PH5TYPE E = phfMax.Ekt(0, 0);
 	for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
+		PH5Curve<PH5TYPE> ph(z[i], q[i]);
 		StepCoord s = 0;
 		StepCoord v = 0;
 		for (int16_t iSeg = 1; iSeg <= N; iSeg++) {
 			PH5TYPE fSeg = iSeg / (PH5TYPE)N;
-			E = phf[iMax].Ekt(E, fSeg);
-
-			PH5TYPE pos = ph[i].r(E).Re();
+			E = phfMax.Ekt(E, fSeg);
+			PH5TYPE pos = ph.r(E).Re();
             StepCoord sNew = pos < 0 ? pos-0.5 : pos+0.5;
 			StepCoord vNew = sNew - s;
 			stroke.vPeak = max(stroke.vPeak, (int32_t)abs(vNew));
@@ -349,8 +332,9 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 		}
 	}
 
+	leastFreeRam = min(leastFreeRam, freeRam());
+
     TESTCOUT3(" N:", N, " tS:", tS, " dEndPos:", stroke.dEndPos.toString());
-    stroke.setTimePlanned(tS);
 
     return STATUS_OK;
 }

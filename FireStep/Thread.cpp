@@ -12,7 +12,7 @@ namespace firestep {
 	int 			nThreads;
 	int32_t 		nLoops;
 	int32_t 		nTardies;
-
+	int16_t			leastFreeRam = 32767;
 };
 
 

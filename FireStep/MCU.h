@@ -106,5 +106,15 @@ inline void pulseFast(uint8_t pin) {
 }
 #endif
 
+inline int16_t freeRam () {
+#ifdef ARDUINO
+    extern int __heap_start, *__brkval;
+    int v;
+    return (int)(size_t)&v - (__brkval == 0 ? (int)(size_t)&__heap_start : (int)(size_t)__brkval);
+#else
+    return 1000;
+#endif
+}
+
 
 #endif

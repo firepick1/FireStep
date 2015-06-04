@@ -5,6 +5,8 @@
 
 namespace firestep {
 
+extern int16_t leastFreeRam;
+
 typedef int32_t Ticks;
 
 typedef union ThreadClock  {
