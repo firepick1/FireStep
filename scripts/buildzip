@@ -1,0 +1,34 @@
+#! /bin/bash
+
+echo "SCRIPT	: buildzip"
+echo "HELP	: build zip file for Arduino installation"
+
+TAG=`git log --pretty=format:'%H' -n 1`
+OUTPUT="FireStep-$TAG.zip"
+echo "STATUS	: creating $OUTPUT"
+
+rm -rf ziptmp
+mkdir -p ziptmp/Libraries
+mkdir -p ziptmp/FireStep
+
+pushd ph5
+scripts/buildzip
+popd
+mv ph5*.zip ziptmp
+pushd ArduinoJson
+scripts/buildzip
+popd
+mv ArduinoJson*.zip ziptmp
+
+cp -r FireStep/ ziptmp/FireStep
+cp CHANGELOG.md LICENSE.md README.md ziptmp/FireStep
+
+cd ziptmp/Libraries
+unzip ../ph5*.zip
+unzip ../ArduinoJson*.zip
+
+cd ..
+
+zip -r $OUTPUT \
+	FireStep \
+	Libraries
