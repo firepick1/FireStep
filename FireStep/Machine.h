@@ -227,8 +227,6 @@ typedef class Machine : public QuadStepper {
         Axis& getMotorAxis(MotorIndex iMotor) {
             return axis[motor[iMotor]];
         }
-        Status moveTo(Quad<StepCoord> destination, float seconds);
-        Status moveDelta(Quad<StepCoord> delta, float seconds);
         MotorIndex motorOfName(const char* name);
         AxisIndex axisOfName(const char *name);
         Status setPinConfig(PinConfig pc);

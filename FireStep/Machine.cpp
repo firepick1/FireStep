@@ -15,11 +15,7 @@ using namespace firestep;
 template class Quad<int16_t>;
 template class Quad<int32_t>;
 
-#define PULSEAXIS_MICS 6 /* microseconds for a single pulseAxis() invocation */
-
-#ifdef TEST
-int32_t firestep::delayMicsTotal = 0;
-#endif
+TESTDECL(int32_t,firestep::delayMicsTotal = 0);
 
 Status Axis::enable(bool active) {
     if (pinEnable == NOPIN || pinStep == NOPIN || pinDir == NOPIN || pinMin == NOPIN) {
@@ -126,85 +122,6 @@ Status Machine::home() {
     }
 
     return STATUS_OK;
-}
-
-Status Machine::moveTo(Quad<StepCoord> destination, float seconds) {
-    int32_t micsLeft = seconds * 1000000;
-    Quad<StepCoord> delta(destination - getMotorPosition());
-    Quad<StepCoord> pos;
-    int8_t td = 64;
-    float tdSeconds = seconds / (td + 2);
-    float tdEnd = tdSeconds * 2;
-    //cout << "t:" << (tdSeconds*(td-2) + tdEnd*2) << endl;
-    StepCoord maxSteps = 0;
-    for (int8_t tn = 0; tn <= td; tn++) {
-        Quad<StepCoord> segment;
-        for (MotorIndex i = 0; i < MOTOR_COUNT; i++) {
-            segment.value[i] = (tn * delta.value[i]) / td - pos.value[i];
-        }
-        float t = (tn == 0 || tn == td) ? tdEnd : tdSeconds;	// start/stop ramp
-        //cout <<  t << " segment:" << segment.toString() << endl;
-        Status status = moveDelta(segment, t);
-        if (status < 0) {
-            return status;
-        }
-        pos += segment;
-    }
-    return STATUS_OK;
-}
-
-Status Machine::moveDelta(Quad<StepCoord> delta, float seconds) {
-    int32_t micsDelay = 0;
-    if (delta.isZero()) {
-        return STATUS_OK;	// at destination
-    }
-    int16_t usDelay = 0;
-    StepCoord maxDelta = 0;
-    for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
-        if (delta.value[i]) {
-            if (!motorAxis[i]->enabled) {
-#ifdef TEST
-				cout << "moveDelta(" << delta.value[i] << ") STATUS_AXIS_DISABLED:" << (int) i << endl;
-#endif
-                return STATUS_AXIS_DISABLED;
-            }
-            maxDelta = max(maxDelta, delta.value[i]);
-            usDelay = max(usDelay, motorAxis[i]->usDelay);
-        }
-    }
-    for (StepCoord iStep = 1; iStep <= maxDelta; iStep++) {
-        int8_t pulses = 0;
-        for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
-            StepCoord step = delta.value[i];
-            Axis &a = *motorAxis[i];
-            if (step == 0) {
-                // do nothing
-            } else if (-step >= iStep) {
-                a.readAtMin(invertLim);
-                if (a.atMin) {
-                    return STATUS_LIMIT_MIN;
-                }
-                if (a.position <= a.travelMin) {
-                    return STATUS_TRAVEL_MIN;
-                }
-                a.pulse(false);
-                a.position--;
-                pulses++;
-            } else if (step >= iStep) {
-                if (a.position >= a.travelMax) {
-                    return STATUS_TRAVEL_MAX;
-                }
-                a.pulse(true);
-                a.position++;
-                pulses++;
-            }
-        }
-        int16_t us = (usDelay - (pulses - 1) * PULSEAXIS_MICS);
-        delayMics(us);
-        micsDelay += usDelay;
-    }
-    delayMics(seconds * 1000000 - micsDelay);
-    return STATUS_BUSY_MOVING;
 }
 
 MotorIndex Machine::motorOfName(const char *name) {
@@ -476,6 +393,4 @@ void Machine::setMotorPosition(const Quad<StepCoord> &position) {
         motorAxis[i]->position = position.value[i];
     }
 }
-
-
 

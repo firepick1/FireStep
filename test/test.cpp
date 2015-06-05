@@ -1152,16 +1152,9 @@ void test_Move() {
 
     MachineThread mt = test_setup();
     Machine &machine = mt.machine;
-    int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
-    int32_t ypulses = arduino.pulses(PC2_Y_STEP_PIN);
-    int32_t zpulses = arduino.pulses(PC2_Z_STEP_PIN);
-
-    Status status = machine.moveTo(Quad<StepCoord>(1, 10, 100, 0), 1);
-    ASSERTEQUAL(STATUS_OK, status);
-    ASSERTEQUAL(xpulses + 1, arduino.pulses(PC2_X_STEP_PIN));
-    ASSERTEQUAL(ypulses + 10, arduino.pulses(PC2_Y_STEP_PIN));
-    ASSERTEQUAL(zpulses + 100, arduino.pulses(PC2_Z_STEP_PIN));
-    ASSERTQUAD(Quad<StepCoord>(1, 10, 100, 0), machine.getMotorPosition());
+    int32_t xpulses;
+    int32_t ypulses;
+    int32_t zpulses;
 
 	// mov to (1,10,100)
     xpulses = arduino.pulses(PC2_X_STEP_PIN);

@@ -805,44 +805,6 @@ Status JsonController::processHome(JsonCommand& jcmd, JsonObject& jobj, const ch
     return status;
 }
 
-Status JsonController::initializeMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-    Status status = STATUS_OK;
-    if (strcmp("mov", key) == 0) {
-        JsonObject& kidObj = jobj[key];
-        if (kidObj.success()) {
-            jcmd.move.clear();
-            jcmd.stepRate = 0;
-            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-                status = initializeMove(jcmd, kidObj, it->key);
-                if (status != STATUS_BUSY_MOVING) {
-                    return status;
-                }
-            }
-        }
-    } else if (strcmp("sr", key) == 0) {
-        status = processField<StepCoord, int32_t>(jobj, key, jcmd.stepRate);
-    } else {
-        MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));
-        if (iMotor == INDEX_NONE) {
-            return jcmd.setError(STATUS_NO_MOTOR, key);
-        }
-        status = processField<StepCoord, int32_t>(jobj, key, jcmd.move.value[iMotor]);
-    }
-    return status == STATUS_OK ? STATUS_BUSY_MOVING : status;
-}
-
-Status JsonController::processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-    Status status = jcmd.getStatus();
-    if (status == STATUS_BUSY_PARSED) {
-        status = initializeMove(jcmd, jobj, key);
-    } else if (status == STATUS_BUSY_MOVING) {
-        status = machine.moveTo(jcmd.move, jcmd.stepRate);
-    } else {
-        return jcmd.setError(STATUS_STATE, key);
-    }
-    return status;
-}
-
 Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("dpy", key) == 0) {
