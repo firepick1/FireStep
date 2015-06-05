@@ -286,7 +286,8 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     PH5TYPE tS = phfMax.get_tS();
 
 	// Calculate the optimal number of segments using weird heuristics
-    int16_t N = 1000 * tS / 40; // 40ms/segment
+#define MS_PER_SEGMENT 30
+    int16_t N = 1000 * tS / MS_PER_SEGMENT;
 	int16_t minSegs = minSegments;
 	if (minSegs == 0) {
 		minSegs = 5; // minimum number of acceleration segments
@@ -326,7 +327,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 			StepCoord dv = vNew - v;
 			TESTCOUT4("iSeg:", iSeg, " sNew:", sNew, " vNew:", vNew, " dv:", dv);
             if (dv < (StepCoord) - 127 || (StepCoord) 127 < dv) {
-				TESTCOUT2(" STATUS_STROKE_SEGPULSES pulses:", dv, " i:", i);
+				TESTCOUT3(" STATUS_STROKE_SEGPULSES pulses:", dv, " i:", (int)i, " N:", (int)N);
                 return STATUS_STROKE_SEGPULSES;
             }
 			stroke.seg[iSeg-1].value[i] = dv;
