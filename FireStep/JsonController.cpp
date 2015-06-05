@@ -580,6 +580,18 @@ Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
             node["sg"] = "";
             node["t"] = "";
             node["tp"] = "";
+			if (machine.getMotorAxis(0).isEnabled()) {
+				node["1"] = "";
+			}
+			if (machine.getMotorAxis(1).isEnabled()) {
+				node["2"] = "";
+			}
+			if (machine.getMotorAxis(2).isEnabled()) {
+				node["3"] = "";
+			}
+			if (machine.getMotorAxis(3).isEnabled()) {
+				node["4"] = "";
+			}
         }
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {
@@ -610,6 +622,7 @@ Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     } else {
         MotorIndex iMotor = machine.motorOfName(key);
 		if (iMotor == INDEX_NONE) {
+			TESTCOUT1("STATUS_NO_MOTOR: ", key);
 			return jcmd.setError(STATUS_NO_MOTOR, key);
 		}
         status = processField<StepCoord, int32_t>(jobj, key, destination.value[iMotor]);
@@ -899,7 +912,8 @@ Status JsonController::process(JsonCommand& jcmd) {
         if (strcmp("dvs", it->key) == 0) {
             status = processStroke(jcmd, root, it->key);
         } else if (strcmp("mov", it->key) == 0) {
-            status = processMove(jcmd, root, it->key);
+            //status = processMove(jcmd, root, it->key);
+            status = PHMoveTo(machine).process(jcmd, root, it->key);
         } else if (strncmp("ho", it->key, 2) == 0) {
             status = processHome(jcmd, root, it->key);
         } else if (strncmp("tst", it->key, 3) == 0) {
