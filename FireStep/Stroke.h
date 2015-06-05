@@ -73,7 +73,7 @@ typedef class StrokeBuilder {
 
     public:
         StrokeBuilder(int32_t vMax = 12800, float vMaxSeconds = 0.5,
-                      int16_t minSegments = 20, int16_t maxSegments = 50);
+                      int16_t minSegments = 0, int16_t maxSegments = 0);
         Status buildLine(Stroke & stroke, Quad<StepCoord> dPos);
 } StrokeBuilder;
 

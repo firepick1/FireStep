@@ -1178,7 +1178,7 @@ void test_Move() {
     ASSERTEQUAL(zpulses + 100, arduino.pulses(PC2_Z_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(1, 10, 100, 0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':"\
-                    "{'mov':{'1':1,'2':10,'3':100,'lp':1634,'pp':1911.3,'sg':20,'t':0.105,'tp':0.105}},"\
+                    "{'mov':{'1':1,'2':10,'3':100,'lp':1634,'pp':1834.9,'sg':16,'t':0.105,'tp':0.105}},"\
                     "'t':0.10}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1229,7 +1229,7 @@ void test_Move() {
     ASSERTEQUAL(zpulses + 300, arduino.pulses(PC2_Z_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(50, 10, 300, 0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':"\
-                    "{'mov':{'x':50,'z':300,'lp':2310,'pp':2704.5,'sg':20,'t':0.148,'tp':0.148}},"\
+                    "{'mov':{'x':50,'z':300,'lp':2310,'pp':2704.5,'sg':16,'t':0.148,'tp':0.148}},"\
                     "'t':0.15}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1251,7 +1251,7 @@ void test_Move() {
     ASSERTQUAD(Quad<StepCoord>(10000,5000,9000,0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':"\
                     "{'mov':{'x':10000,'y':5000,'z':9000,'mv':16000,"\
-					"'lp':15234,'pp':16015.8,'sg':32,'t':0.975,'tp':0.975}},"\
+					"'lp':15234,'pp':15999.3,'sg':50,'t':0.975,'tp':0.975}},"\
                     "'t':0.98}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1741,16 +1741,16 @@ void test_ph5() {
     ASSERTQUAD(Quad<StepCoord>(), machine.getMotorPosition());
     Status status = sb.buildLine(machine.stroke, Quad<StepCoord>(6400, 3200, 1600, 0));
     ASSERTEQUAL(STATUS_OK, status);
-    ASSERTEQUAL(33, machine.stroke.length);
+    ASSERTEQUAL(32, machine.stroke.length);
     ASSERTEQUAL(0, machine.stroke.seg[0].value[0]);
     ASSERTEQUAL(3, machine.stroke.seg[1].value[0]);
-    ASSERTEQUAL(8, machine.stroke.seg[2].value[0]);
-    ASSERTEQUAL(15, machine.stroke.seg[3].value[0]);
-    ASSERTEQUAL(25, machine.stroke.seg[4].value[0]);
-    ASSERTEQUAL(30, machine.stroke.seg[5].value[0]);
-    ASSERTEQUAL(39, machine.stroke.seg[6].value[0]); // peak velocity
-    ASSERTEQUAL(41, machine.stroke.seg[7].value[0]);
-    ASSERTEQUAL(44, machine.stroke.seg[8].value[0]);
+    ASSERTEQUAL(10, machine.stroke.seg[2].value[0]);
+    ASSERTEQUAL(16, machine.stroke.seg[3].value[0]);
+    ASSERTEQUAL(27, machine.stroke.seg[4].value[0]);
+    ASSERTEQUAL(35, machine.stroke.seg[5].value[0]);
+    ASSERTEQUAL(40, machine.stroke.seg[6].value[0]); // peak velocity
+    ASSERTEQUAL(46, machine.stroke.seg[7].value[0]);
+    ASSERTEQUAL(46, machine.stroke.seg[8].value[0]);
     int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
     StepCoord xpos = machine.axis[0].position;
 
