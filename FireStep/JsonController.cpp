@@ -549,7 +549,7 @@ Status PHMoveTo::execute(JsonCommand &jcmd, JsonObject& jobj) {
 		if (status != STATUS_OK) {
 			return status;
 		}
-		status = machine.stroke.start(tStart);
+		status = machine.stroke.start(ticks());
 		switch (status) {
 			case STATUS_OK:
 				break;
@@ -560,7 +560,7 @@ Status PHMoveTo::execute(JsonCommand &jcmd, JsonObject& jobj) {
 		}
 		do {
 			nLoops++;
-			status =  machine.stroke.traverse(ticks(), machine);
+			status = machine.stroke.traverse(ticks(), machine);
 		} while (status == STATUS_BUSY_MOVING);
 		tp = machine.stroke.getTimePlanned();
 		Ticks tElapsed = ticks() - tStart;

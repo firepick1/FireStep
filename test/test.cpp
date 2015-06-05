@@ -1178,7 +1178,7 @@ void test_Move() {
     ASSERTEQUAL(zpulses + 100, arduino.pulses(PC2_Z_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(1, 10, 100, 0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':"\
-                    "{'mov':{'1':1,'2':10,'3':100,'lp':1634,'pp':1834.9,'sg':16,'t':0.105,'tp':0.105}},"\
+                    "{'mov':{'1':1,'2':10,'3':100,'lp':1634,'pp':1833.7,'sg':16,'t':0.105,'tp':0.105}},"\
                     "'t':0.10}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1229,7 +1229,7 @@ void test_Move() {
     ASSERTEQUAL(zpulses + 300, arduino.pulses(PC2_Z_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(50, 10, 300, 0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':"\
-                    "{'mov':{'x':50,'z':300,'lp':2310,'pp':2704.5,'sg':16,'t':0.148,'tp':0.148}},"\
+                    "{'mov':{'x':50,'z':300,'lp':2310,'pp':2703.3,'sg':16,'t':0.148,'tp':0.148}},"\
                     "'t':0.15}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1251,7 +1251,7 @@ void test_Move() {
     ASSERTQUAD(Quad<StepCoord>(10000,5000,9000,0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':"\
                     "{'mov':{'x':10000,'y':5000,'z':9000,'mv':16000,"\
-					"'lp':15234,'pp':15999.3,'sg':50,'t':0.975,'tp':0.975}},"\
+					"'lp':15234,'pp':15998.3,'sg':50,'t':0.975,'tp':0.975}},"\
                     "'t':0.98}\n"),
                  Serial.output().c_str());
     mt.loop();
