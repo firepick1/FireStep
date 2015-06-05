@@ -222,7 +222,7 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 }
 
 int16_t Stroke::append(Quad<StepDV> dv) {
-    if (length >= SEGMENT_COUNT) {
+    if (length >= STROKE_SEGMENTS) {
         return STATUS_STROKE_MAXLEN;
     }
     seg[length++] = dv;
@@ -236,8 +236,8 @@ StrokeBuilder::StrokeBuilder(int32_t vMax, float vMaxSeconds,
                              int16_t minSegments, int16_t maxSegments)
     : vMax(vMax), vMaxSeconds(vMaxSeconds),
       minSegments(minSegments), maxSegments(maxSegments) {
-    if (maxSegments == 0 || SEGMENT_COUNT <= maxSegments) {
-        maxSegments = SEGMENT_COUNT - 1;
+    if (maxSegments == 0 || STROKE_SEGMENTS <= maxSegments) {
+        maxSegments = STROKE_SEGMENTS - 1;
     }
 }
 
@@ -299,10 +299,10 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
             TESTCOUT1("minSegsK:", minSegsK);
             minSegs = minSegsK;
         }
-        minSegs = max((int16_t)16, min((int16_t)(SEGMENT_COUNT - 1), minSegs));
+        minSegs = max((int16_t)16, min((int16_t)(STROKE_SEGMENTS - 1), minSegs));
     }
     N = max(minSegs, min(maxSegments, (int16_t)N));
-    if (N >= SEGMENT_COUNT) {
+    if (N >= STROKE_SEGMENTS) {
         return STATUS_STROKE_MAXLEN;
     }
 
@@ -310,7 +310,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     stroke.clear();
     stroke.setTimePlanned(tS);
     stroke.length = N;
-    PH5TYPE E[SEGMENT_COUNT + 1];
+    PH5TYPE E[STROKE_SEGMENTS + 1];
     E[0] = phfMax.Ekt(0, 0);
     for (int16_t iSeg = 1; iSeg <= N; iSeg++) {
         PH5TYPE fSeg = iSeg / (PH5TYPE)N;

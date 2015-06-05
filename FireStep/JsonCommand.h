@@ -14,7 +14,7 @@
 
 namespace firestep {
 
-#define MAX_JSON 1024
+#define MAX_JSON (STROKE_SEGMENTS*2*4 + 200)
 #if defined(TEST)
 #define JSON_REQUEST_BUFFER JSON_OBJECT_SIZE(25)
 #else

@@ -112,19 +112,60 @@ Status JsonController::processStepperPosition(JsonCommand &jcmd, JsonObject& job
     return status;
 }
 
+inline int8_t hexValue(char c) {
+	switch (c) {
+	case '0': return 0;
+	case '1': return 1;
+	case '2': return 2;
+	case '3': return 3;
+	case '4': return 4;
+	case '5': return 5;
+	case '6': return 6;
+	case '7': return 7;
+	case '8': return 8;
+	case '9': return 9;
+	case 'A': 
+	case 'a': return 0xa;
+	case 'B': 
+	case 'b': return 0xb;
+	case 'C': 
+	case 'c': return 0xc;
+	case 'D': 
+	case 'd': return 0xd;
+	case 'E': 
+	case 'e': return 0xe;
+	case 'F': 
+	case 'f': return 0xf;
+	default: return -1;
+	}
+}
+
 Status JsonController::initializeStrokeArray(JsonCommand &jcmd,
         JsonObject& stroke, const char *key, MotorIndex iMotor, int16_t &slen) {
-    JsonArray &jarr = stroke[key];
-    if (!jarr.success()) {
-        return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, key);
-    }
-    for (JsonArray::iterator it2 = jarr.begin(); it2 != jarr.end(); ++it2) {
-        if (*it2 < -127 || 127 < *it2) {
-            return jcmd.setError(STATUS_RANGE_ERROR, key);
-        }
-        machine.stroke.seg[slen++].value[iMotor] = (StepDV) (int32_t) * it2;
-    }
-    stroke[key] = (int32_t) 0;
+	if (stroke.at(key).is<JsonArray&>()) {
+		JsonArray &jarr = stroke[key];
+		for (JsonArray::iterator it2 = jarr.begin(); it2 != jarr.end(); ++it2) {
+			if (*it2 < -127 || 127 < *it2) {
+				return jcmd.setError(STATUS_RANGE_ERROR, key);
+			}
+			machine.stroke.seg[slen++].value[iMotor] = (StepDV) (int32_t) * it2;
+		}
+	} else if (stroke.at(key).is<const char*>()) {
+		const char *s = stroke[key];
+		while (*s) {
+			int8_t high = hexValue(*s++);
+			int8_t low = hexValue(*s++);
+			if (high < 0 || low < 0) {
+				return jcmd.setError(STATUS_FIELD_HEX_ERROR, key);
+			}
+			StepDV dv = ((high<<4) | low);
+			//TESTCOUT3("dv:", (int) dv, " high:", (int) high, " low:", (int) low);
+			machine.stroke.seg[slen++].value[iMotor] = dv;
+		}
+	} else {
+		return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, key);
+	}
+	stroke[key] = (int32_t) 0;
     return STATUS_BUSY_MOVING;
 }
 
@@ -378,9 +419,9 @@ typedef class PHSelfTest {
 } PHSelfTest;
 
 Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
-    int16_t minSegs = nSegs ? nSegs : 0; //max(10, min(SEGMENT_COUNT-1,abs(pulses)/100));
-    int16_t maxSegs = nSegs ? nSegs : 0; // SEGMENT_COUNT-1;
-    if (maxSegs >= SEGMENT_COUNT) {
+    int16_t minSegs = nSegs ? nSegs : 0; //max(10, min(STROKE_SEGMENTS-1,abs(pulses)/100));
+    int16_t maxSegs = nSegs ? nSegs : 0; // STROKE_SEGMENTS-1;
+    if (maxSegs >= STROKE_SEGMENTS) {
         return jcmd.setError(STATUS_STROKE_MAXLEN, "sg");
     }
     StrokeBuilder sb(machine.vMax, machine.tvMax, minSegs, maxSegs);

@@ -12,7 +12,7 @@
 #include "ph5.h"
 namespace firestep {
 
-#define SEGMENT_COUNT 130
+#define STROKE_SEGMENTS 130
 
 typedef int8_t  StepDV;			// change in StepCoord velocity
 typedef int16_t StepCoord;		// stepper coordinate (i.e., pulses)
@@ -40,7 +40,7 @@ typedef class Stroke {
         StepCoord		scale;				// segment velocity unit
         SegIndex		curSeg;				// current segment index
         SegIndex	 	length;				// number of segments
-        Quad<StepDV> 	seg[SEGMENT_COUNT];	// delta velocity
+        Quad<StepDV> 	seg[STROKE_SEGMENTS];	// delta velocity
         Quad<StepCoord>	dEndPos;			// ending offset
     public:
         Stroke();

@@ -718,7 +718,7 @@ void test_JsonController_stroke(Machine& machine, JsonController &jc) {
 
     // parse and initialize stroke
     jcmd = testJSON(machine, jc, replace,
-                    "{'systc':'','dvs':{'us':512,'dp':[100,200],'x':[10,20],'y':[40,50],'z':[70,80]}}",
+                    "{'systc':'','dvs':{'us':512,'dp':[100,200],'x':'0a14','y':'2832','z':'4650'}}",
                     "", STATUS_BUSY_MOVING);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), machine.stroke.position());
     ASSERTQUAD(Quad<StepCoord>(5, 5, 5, 5), machine.getMotorPosition());
