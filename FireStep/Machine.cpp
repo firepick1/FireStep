@@ -32,7 +32,7 @@ Status Axis::enable(bool active) {
 }
 
 Machine::Machine()
-    : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false) {
+    : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800), tvMax(0.7) {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         setAxisIndex((MotorIndex)i, (AxisIndex)i);

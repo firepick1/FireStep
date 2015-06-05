@@ -116,7 +116,7 @@ typedef class Axis {
                 advancing = advance;
                 digitalWrite(pinDir, (advance == dirHIGH) ? HIGH : LOW);
             }
-			pulseFast(pinStep);
+            pulseFast(pinStep);
         }
         inline Status readAtMin(bool invertLim) {
             if (pinMin == NOPIN) {
@@ -157,57 +157,59 @@ typedef class Machine : public QuadStepper {
     public:
         bool	invertLim;
         bool	jsonPrettyPrint;
+        int32_t vMax; // maximum stroke velocity (pulses/second)
+        PH5TYPE tvMax; // time to reach maximum velocity
         Display	*pDisplay;
-        Axis axis[AXIS_COUNT];
-        Stroke stroke;
+        Axis 	axis[AXIS_COUNT];
+        Stroke	stroke;
 
     public:
         Machine();
         void enable(bool active);
         virtual Status step(const Quad<StepDV> &pulse);
-		inline int8_t pulsePin(int16_t pinStep, int8_t n) {
-			switch (n) {
-			case 0:
-				pulseFast(pinStep);
-				pulseFast(pinStep);
-				pulseFast(pinStep);
-				pulseFast(pinStep);
-				return 4;
-			case 3:
-				pulseFast(pinStep);
-				pulseFast(pinStep);
-				pulseFast(pinStep);
-				return 3;
-			case 2:
-				pulseFast(pinStep);
-				pulseFast(pinStep);
-				return 2;
-			case 1:
-				pulseFast(pinStep);
-				return 1;
-			}
-		}
+        inline int8_t pulsePin(int16_t pinStep, int8_t n) {
+            switch (n) {
+            case 0:
+                pulseFast(pinStep);
+                pulseFast(pinStep);
+                pulseFast(pinStep);
+                pulseFast(pinStep);
+                return 4;
+            case 3:
+                pulseFast(pinStep);
+                pulseFast(pinStep);
+                pulseFast(pinStep);
+                return 3;
+            case 2:
+                pulseFast(pinStep);
+                pulseFast(pinStep);
+                return 2;
+            case 1:
+                pulseFast(pinStep);
+                return 1;
+            }
+        }
         inline Status stepFast(Quad<StepDV> &pulse) {
-			Quad<StepDV> p(pulse);
-			//TESTCOUT4("stepFast ", (int) p.value[0], ",", (int) p.value[1], ",", 
-				//(int) p.value[2], ",", (int) p.value[3]);
-			for (bool hasPulses=true; hasPulses;) {
-				hasPulses = false;
-				for (uint8_t i=0; i<QUAD_ELEMENTS; i++) {
-					// emit 0-4 pulse burst per axis
-					int16_t pinStep = motorAxis[i]->pinStep;
-					int8_t pv = p.value[i];
-					if (pv > 0) {
-						p.value[i] -= pulsePin(pinStep, pv & (int8_t) 0x3);
-						hasPulses = true;
-					} else if (pv < 0) {
-						p.value[i] += pulsePin(pinStep, -pv & (int8_t) 0x3);
-						hasPulses = true;
-					}
-				}
-				//TESTCOUT4("stepFast => ", (int) p.value[0], ",", (int) p.value[1], ",", 
-					//(int) p.value[2], ",", (int) p.value[3]);
-			}
+            Quad<StepDV> p(pulse);
+            //TESTCOUT4("stepFast ", (int) p.value[0], ",", (int) p.value[1], ",",
+            //(int) p.value[2], ",", (int) p.value[3]);
+            for (bool hasPulses = true; hasPulses;) {
+                hasPulses = false;
+                for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {
+                    // emit 0-4 pulse burst per axis
+                    int16_t pinStep = motorAxis[i]->pinStep;
+                    int8_t pv = p.value[i];
+                    if (pv > 0) {
+                        p.value[i] -= pulsePin(pinStep, pv & (int8_t) 0x3);
+                        hasPulses = true;
+                    } else if (pv < 0) {
+                        p.value[i] += pulsePin(pinStep, -pv & (int8_t) 0x3);
+                        hasPulses = true;
+                    }
+                }
+                //TESTCOUT4("stepFast => ", (int) p.value[0], ",", (int) p.value[1], ",",
+                //(int) p.value[2], ",", (int) p.value[3]);
+            }
 
             return STATUS_OK;
         }
