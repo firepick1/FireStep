@@ -765,7 +765,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
 
 Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
-    if (strcmp("ho", key) == 0) {
+    if (strcmp("hom", key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
@@ -932,7 +932,7 @@ Status JsonController::process(JsonCommand& jcmd) {
         } else if (strncmp("mov", it->key,3) == 0) {
             //status = processMove(jcmd, root, it->key);
             status = PHMoveTo(machine).process(jcmd, root, it->key);
-        } else if (strncmp("ho", it->key, 2) == 0) {
+        } else if (strncmp("hom", it->key, 3) == 0) {
             status = processHome(jcmd, root, it->key);
         } else if (strncmp("tst", it->key, 3) == 0) {
             status = processTest(jcmd, root, it->key);

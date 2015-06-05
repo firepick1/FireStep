@@ -1463,7 +1463,7 @@ void test_Home() {
 
     // TEST LONG FORM
     threadClock.ticks++;
-    Serial.push(JT("{'ho':{'x':'','z':20}}\n"));
+    Serial.push(JT("{'hom':{'x':'','z':20}}\n"));
     mt.loop();	// parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTQUAD(Quad<StepCoord>(100, 100, 100, 100), mt.machine.getMotorPosition());
@@ -1544,7 +1544,7 @@ void test_Home() {
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_X_DIR_PIN)); // HIGH because we backed off
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_DIR_PIN));
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_Z_DIR_PIN)); // HIGH because we backed off
-    ASSERTEQUALS(JT("{'s':0,'r':{'ho':{'x':5,'z':20}},'t':0.00}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'x':5,'z':20}},'t':0.00}\n"), Serial.output().c_str());
 
     // TEST ONE-AXIS SHORT FORM
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -1555,7 +1555,7 @@ void test_Home() {
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     threadClock.ticks++;
-    Serial.push(JT("{'hox':''}\n"));
+    Serial.push(JT("{'homx':''}\n"));
     mt.loop();	// parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 
@@ -1576,7 +1576,7 @@ void test_Home() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(xpulses + 32 * 1 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(5, 100, 100, 100), mt.machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'hox':5},'t':0.00}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'homx':5},'t':0.00}\n"), Serial.output().c_str());
 
     // TEST SHORT FORM
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -1589,7 +1589,7 @@ void test_Home() {
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     threadClock.ticks++;
-    Serial.push(JT("{'ho':''}\n"));
+    Serial.push(JT("{'hom':''}\n"));
     mt.loop();	// parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 
@@ -1610,7 +1610,7 @@ void test_Home() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(xpulses + 32 * 1 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(5, 100, 100, 100), mt.machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'ho':{'1':5,'2':100,'3':100,'4':100}},'t':0.00}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':5,'2':100,'3':100,'4':100}},'t':0.00}\n"),
                  Serial.output().c_str());
 
     cout << "TEST	: test_Home() OK " << endl;
