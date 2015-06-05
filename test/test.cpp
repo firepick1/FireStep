@@ -1257,6 +1257,25 @@ void test_Move() {
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
+	// mov short form
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+    Serial.push(JT("{'movx':10000,'movy':5000}}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(10000, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(5000, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTQUAD(Quad<StepCoord>(10000,5000,0,0), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'movx':10000,'movy':5000},'t':2.26}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
     cout << "TEST	: test_Move() OK " << endl;
 }
 

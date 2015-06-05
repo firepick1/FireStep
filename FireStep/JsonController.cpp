@@ -513,7 +513,7 @@ typedef class PHMoveTo {
 		Machine &machine;
 
 	private:
-		Status execute(JsonCommand& jcmd, JsonObject& jobj);
+		Status execute(JsonCommand& jcmd, JsonObject *pjobj);
 
     public:
         PHMoveTo(Machine& machine)
@@ -525,7 +525,7 @@ typedef class PHMoveTo {
         Status process(JsonCommand& jcmd, JsonObject& jobj, const char* key);
 } PHMoveTo;
 
-Status PHMoveTo::execute(JsonCommand &jcmd, JsonObject& jobj) {
+Status PHMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     StrokeBuilder sb(machine.vMax, machine.tvMax);
 	Quad<StepCoord> curPos = machine.getMotorPosition();
 	Quad<StepCoord> dPos = destination - curPos;
@@ -564,11 +564,13 @@ Status PHMoveTo::execute(JsonCommand &jcmd, JsonObject& jobj) {
 		sg = machine.stroke.length;
 	}
 
-	jobj["lp"] = nLoops;
-	jobj["pp"].set(pp, 1);
-	jobj["sg"] = sg;
-	jobj["ts"].set(ts,3);
-	jobj["tp"].set(tp,3);
+	if (pjobj) {
+	(*pjobj)["lp"] = nLoops;
+	(*pjobj)["pp"].set(pp, 1);
+	(*pjobj)["sg"] = sg;
+	(*pjobj)["ts"].set(ts,3);
+	(*pjobj)["tp"].set(tp,3);
+	}
 
 	return status;
 }
@@ -587,16 +589,16 @@ Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
             node["ts"] = "";
             node["tp"] = "";
 			if (machine.getMotorAxis(0).isEnabled()) {
-				node["1"] = machine.getMotorAxis(0).position;
+				node["1"] = "";
 			}
 			if (machine.getMotorAxis(1).isEnabled()) {
-				node["2"] = machine.getMotorAxis(1).position;
+				node["2"] = "";
 			}
 			if (machine.getMotorAxis(2).isEnabled()) {
-				node["3"] = machine.getMotorAxis(2).position;
+				node["3"] = "";
 			}
 			if (machine.getMotorAxis(3).isEnabled()) {
-				node["4"] = machine.getMotorAxis(3).position;
+				node["4"] = "";
 			}
         }
         JsonObject& kidObj = jobj[key];
@@ -610,7 +612,17 @@ Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
                 return status;
             }
         }
-		status = execute(jcmd, kidObj);
+		status = execute(jcmd, &kidObj);
+	} else if (strncmp("mov", key, 3) == 0) { // short form
+        MotorIndex iMotor = machine.motorOfName(key+strlen(key)-1);
+		if (iMotor == INDEX_NONE) {
+			TESTCOUT1("STATUS_NO_MOTOR: ", key);
+			return jcmd.setError(STATUS_NO_MOTOR, key);
+		}
+        status = processField<StepCoord, int32_t>(jobj, key, destination.value[iMotor]);
+		if (status == STATUS_OK) {
+			status = execute(jcmd, NULL);
+		}
     } else if (strcmp("lp", key) == 0) {
 		// output variable
     } else if (strcmp("mv", key) == 0) {
@@ -626,7 +638,7 @@ Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     } else if (strcmp("tv", key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.tvMax);
     } else {
-        MotorIndex iMotor = machine.motorOfName(key+strlen(key)-1);
+        MotorIndex iMotor = machine.motorOfName(key);
 		if (iMotor == INDEX_NONE) {
 			TESTCOUT1("STATUS_NO_MOTOR: ", key);
 			return jcmd.setError(STATUS_NO_MOTOR, key);
@@ -917,7 +929,7 @@ Status JsonController::process(JsonCommand& jcmd) {
     for (JsonObject::iterator it = root.begin(); status >= 0 && it != root.end(); ++it) {
         if (strcmp("dvs", it->key) == 0) {
             status = processStroke(jcmd, root, it->key);
-        } else if (strcmp("mov", it->key) == 0) {
+        } else if (strncmp("mov", it->key,3) == 0) {
             //status = processMove(jcmd, root, it->key);
             status = PHMoveTo(machine).process(jcmd, root, it->key);
         } else if (strncmp("ho", it->key, 2) == 0) {
