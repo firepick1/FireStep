@@ -7,16 +7,18 @@
 #define NEO_GRB 0
 #define NEO_KHZ800 0
 /////////////////// MOCK BEGIN ///////////
-typedef class Adafruit_NeoPixel { 
+typedef class Adafruit_NeoPixel {
     public:
-        Adafruit_NeoPixel(int a=0, int b=0, int c=0) {}
+        Adafruit_NeoPixel(int a = 0, int b = 0, int c = 0) {}
         uint32_t Color(int r, int g, int b) {
             return 0;
         }
         void setPixelColor(int pixel, uint32_t color) {}
         void begin() {}
         void show() {}
-        int numPixels() {return 0;}
+        int numPixels() {
+            return 0;
+        }
 } Adafruit_NeoPixel;
 /////////////////// MOCK END ///////////
 #else
@@ -42,7 +44,7 @@ typedef class NeoPixel : public Display {
         uint8_t fgIndex;
         Ticks fgTicks;
         uint32_t fg; // foreground color
-        uint32_t bg; // background color 
+        uint32_t bg; // background color
     public:
         NeoPixel(uint16_t ledCount, PinType pin);
         void setup();

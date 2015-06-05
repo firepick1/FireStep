@@ -6,13 +6,13 @@ using namespace firestep;
 #define MAX_THREADS 32
 
 namespace firestep {
-	ThreadClock 	threadClock;
-	ThreadRunner 	threadRunner;
-	struct Thread *	pThreadList;
-	int 			nThreads;
-	int32_t 		nLoops;
-	int32_t 		nTardies;
-	int16_t			leastFreeRam = 32767;
+ThreadClock 	threadClock;
+ThreadRunner 	threadRunner;
+struct Thread *	pThreadList;
+int 			nThreads;
+int32_t 		nLoops;
+int32_t 		nTardies;
+int16_t			leastFreeRam = 32767;
 };
 
 
@@ -31,7 +31,7 @@ void Thread::setup() {
         if (id == 0) {
             id = 'a' + nThreads;
         }
-		nThreads++;
+        nThreads++;
         if (nThreads >= MAX_THREADS) {
             Error("SC", MAX_THREADS);
         }
@@ -51,9 +51,9 @@ void PulseThread::setup(Ticks period, Ticks pulseWidth) {
 void PulseThread::loop() {
     isHigh = !isHigh;
     if (isHigh) {
-        nextLoop.ticks = threadClock.ticks+m_HighPeriod;
+        nextLoop.ticks = threadClock.ticks + m_HighPeriod;
     } else {
-        nextLoop.ticks = threadClock.ticks+m_LowPeriod;
+        nextLoop.ticks = threadClock.ticks + m_LowPeriod;
     }
 }
 
@@ -63,16 +63,16 @@ void MonitorThread::setup(int pinLED) {
     PulseThread::setup(MS_TICKS(1000), MS_TICKS(250));
     this->pinLED = pinLED;
     verbose = false;
-	if (pinLED != NOPIN) {
-		pinMode(pinLED, OUTPUT);
-	}
+    if (pinLED != NOPIN) {
+        pinMode(pinLED, OUTPUT);
+    }
     blinkLED = true;
 }
 
 void MonitorThread::LED(byte value) {
-	if (pinLED != NOPIN) {
-		digitalWrite(pinLED, value ? HIGH : LOW);
-	}
+    if (pinLED != NOPIN) {
+        digitalWrite(pinLED, value ? HIGH : LOW);
+    }
 }
 
 void MonitorThread::Error(const char *msg, int value) {
@@ -111,11 +111,11 @@ void MonitorThread::loop() {
         verbose = true;
     }
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-        if (threadClock.generation > pThread->nextLoop.generation + 1 && 
-			pThread->nextLoop.generation > 0) {
-			//cout << "ticks:" << threadClock.ticks 
-				//<< " nextLoop:" << pThread->nextLoop.ticks 
-				//<< " pThread:" << pThread->id << endl;
+        if (threadClock.generation > pThread->nextLoop.generation + 1 &&
+                pThread->nextLoop.generation > 0) {
+            //cout << "ticks:" << threadClock.ticks
+            //<< " nextLoop:" << pThread->nextLoop.ticks
+            //<< " pThread:" << pThread->id << endl;
             Error("O@G", pThread->nextLoop.generation);
         }
     }
@@ -142,39 +142,39 @@ void firestep::Error(const char *msg, int value) {
 }
 
 ThreadRunner::ThreadRunner() {
-	clear();
+    clear();
 }
 
 void ThreadRunner::clear() {
-	pThreadList = NULL;
-	threadClock.ticks = 0;
-	nThreads = 0;
-	nLoops = 0;
-	nTardies = 0;
-	generation = threadClock.generation;
-	lastAge = 0;
-	age = 0;
-	nHB = 0;
-	testTardies = 0;
-	fast = 255;
-	TIMER_CLEAR();
+    pThreadList = NULL;
+    threadClock.ticks = 0;
+    nThreads = 0;
+    nLoops = 0;
+    nTardies = 0;
+    generation = threadClock.generation;
+    lastAge = 0;
+    age = 0;
+    nHB = 0;
+    testTardies = 0;
+    fast = 255;
+    TIMER_CLEAR();
 }
 
 void ThreadRunner::setup(int pinLED) {
     monitor.setup(pinLED);
 
-	TIMER_SETUP();
-	lastAge = 0;
+    TIMER_SETUP();
+    lastAge = 0;
     ThreadEnable(true);
 }
 
 /**
  * The generation count has exceeded the maximum.
  * Give the machine a rest and power-cycle it.
- */ 
+ */
 void ThreadRunner::resetGenerations() {
     threadClock.ticks = 0;
-	lastAge = 0;
+    lastAge = 0;
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
         pThread->nextLoop.ticks = 0;
     }
@@ -191,17 +191,17 @@ void firestep::ThreadEnable(boolean enable) {
     }
     DEBUG_EOL();
 #endif
-	TIMER_ENABLE(enable);
+    TIMER_ENABLE(enable);
 }
 
 firestep::Ticks firestep::ticks() {
 #if defined(TEST)
-	arduino.timer1(1);
+    arduino.timer1(1);
 #endif
-	Ticks result = threadRunner.ticks();
+    Ticks result = threadRunner.ticks();
 
-	if (result == 0) {
-		result = threadRunner.ticks();
-	}
+    if (result == 0) {
+        result = threadRunner.ticks();
+    }
     return result;
 }

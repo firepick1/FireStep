@@ -16,15 +16,15 @@ void NeoPixel::setup() {
     //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
     //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
     strip.begin();
-    strip.show(); 
+    strip.show();
     fgIndex = 0;
     fgTicks = 0;
-	cameraR = 0;
-	cameraG = 0;
-	cameraB = 0;
+    cameraR = 0;
+    cameraG = 0;
+    cameraB = 0;
     curLevel = 0;
     curStatus = DISPLAY_WAIT_IDLE;
-	show();
+    show();
 }
 
 void NeoPixel::show() {
@@ -43,7 +43,7 @@ void NeoPixel::show() {
     curStatus = status;
     switch (curStatus) {
     case DISPLAY_WAIT_IDLE:
-        bg = strip.Color(0,0,0);
+        bg = strip.Color(0, 0, 0);
         fg = strip.Color(intensity, intensity, intensity);
         break;
     case DISPLAY_WAIT_EOL:
@@ -65,15 +65,15 @@ void NeoPixel::show() {
         break;
     case DISPLAY_WAIT_CAMERA:
         fg = bg = strip.Color(
-			cameraR?cameraR:intensity, 
-			cameraG?cameraG:intensity, 
-			cameraB?cameraB:intensity);
+                      cameraR ? cameraR : intensity,
+                      cameraG ? cameraG : intensity,
+                      cameraB ? cameraB : intensity);
         break;
     case DISPLAY_BUSY:
         fg = bg = strip.Color(intensity, intensity, 0); // yellow
         break;
     case DISPLAY_BUSY_MOVING:
-        bg = strip.Color(intensity/4, intensity / 4, intensity/4);
+        bg = strip.Color(intensity / 4, intensity / 4, intensity / 4);
         fg = strip.Color(0, intensity, 0);	// green
         break;
     }

@@ -5,9 +5,9 @@
 typedef uint8_t PinType;		// pin specification
 
 enum PinConfig {
-	PC0_NOPIN = 0,
-	PC1_EMC01 = 1,
-	PC2_RAMPS_1_4 = 2,
+    PC0_NOPIN = 0,
+    PC1_EMC01 = 1,
+    PC2_RAMPS_1_4 = 2,
 };
 
 ///////////////////// PC0_NOPIN ////////////////
@@ -33,7 +33,7 @@ enum PinConfig {
 #define PC0_Z_MAX_PIN          NOPIN
 
 ///////////// PC1_EMC01 //////////////
-// FirePick Delta Tin Whiskers 
+// FirePick Delta Tin Whiskers
 // motion controller board
 //////////////////////////////////////
 
@@ -99,7 +99,7 @@ enum PinConfig {
 
 // RAMPS AUX1 BACK   [ 5V GND D1  D0  ]
 // RAMPS AUX1 FRNT   [ 5V GND D57 D58 ]
-#define PC2_DISPLAY_PIN 57  
+#define PC2_DISPLAY_PIN 57
 
 #define PC2_ANALOG_SPEED_PIN	5 /* ADC5 (A5) */
 

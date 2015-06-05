@@ -4,9 +4,9 @@
 #define ARDUINO_MEGA
 
 #ifndef PRR
-	#define PRR PRR0
+#define PRR PRR0
 #endif
-// gnarly 
+// gnarly
 #define adc_DUMP() {DEBUG_HEX("ADC",PRR);DEBUG_HEX("A",ADCSRA);DEBUG_HEX("B",ADCSRB);DEBUG_HEX("D",DIDR0);DEBUG_EOL();}
 #define adc_ENABLE() {PRR &= ~(1<<PRADC); }
 #define adc_DIGITAL_DISABLE(pin) {DIDR0 = (1 << pin); }

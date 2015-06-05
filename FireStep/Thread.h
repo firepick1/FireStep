@@ -59,9 +59,9 @@ typedef class MonitorThread : PulseThread {
         byte	blinkLED;
         int16_t pinLED; /* PRIVATE */
 
-	private:
+    private:
         void 	LED(byte value);
-        void setup(int pinLED=NOPIN); /* PRIVATE */
+        void setup(int pinLED = NOPIN); /* PRIVATE */
         unsigned int Free(); /* PRIVATE */
         void loop(); /* PRIVATE */
 
@@ -92,8 +92,8 @@ typedef class ThreadRunner {
     public:
         ThreadRunner();
         void resetGenerations();
-		void clear();
-        void setup(int pinLED=NOPIN);
+        void clear();
+        void setup(int pinLED = NOPIN);
 
     public:
         void run() {
@@ -129,12 +129,12 @@ typedef class ThreadRunner {
             }
         }
     public:
-		inline Ticks ticks() {
+        inline Ticks ticks() {
             cli();
             threadClock.age = age = TIMER_VALUE();
             if (age < lastAge) {
-                // 1) a generation is 4.194304s 
-				// 2) generation is incremented when TIMER_VALUE() overflows
+                // 1) a generation is 4.194304s
+                // 2) generation is incremented when TIMER_VALUE() overflows
                 // 3) innerLoop MUST complete within a generation
                 lastAge = age;
                 threadClock.generation = ++generation;
@@ -151,12 +151,12 @@ typedef class ThreadRunner {
             }
             lastAge = age;
             sei();
-			return threadClock.ticks;
-		}
+            return threadClock.ticks;
+        }
         inline byte innerLoop() {
-			if (ticks() == 0) {
-				return 0;
-			}
+            if (ticks() == 0) {
+                return 0;
+            }
 
             // inner loop: run active Threads
             for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {

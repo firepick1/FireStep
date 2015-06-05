@@ -15,7 +15,7 @@ using namespace firestep;
 template class Quad<int16_t>;
 template class Quad<int32_t>;
 
-TESTDECL(int32_t,firestep::delayMicsTotal = 0);
+TESTDECL(int32_t, firestep::delayMicsTotal = 0);
 
 Status Axis::enable(bool active) {
     if (pinEnable == NOPIN || pinStep == NOPIN || pinDir == NOPIN || pinMin == NOPIN) {
@@ -211,23 +211,23 @@ Status Machine::step(const Quad<StepDV> &pulse) {
         switch (pulse.value[i]) {
         case 1:
             if (!a.enabled) {
-				TESTCOUT1("step(1): STATUS_AXIS_DISABLED:", (int) i);
+                TESTCOUT1("step(1): STATUS_AXIS_DISABLED:", (int) i);
                 return STATUS_AXIS_DISABLED;
             }
             if (a.position >= a.travelMax) {
                 return STATUS_TRAVEL_MAX;
             }
-			if (!a.advancing) {
-				a.advancing = true;
-				digitalWrite(a.pinDir, a.dirHIGH ? HIGH : LOW);
-			}
+            if (!a.advancing) {
+                a.advancing = true;
+                digitalWrite(a.pinDir, a.dirHIGH ? HIGH : LOW);
+            }
             digitalWrite(a.pinStep, HIGH);
             break;
         case 0:
             break;
         case -1:
             if (!a.enabled) {
-				TESTCOUT1("step(-1): STATUS_AXIS_DISABLED:", (int) i);
+                TESTCOUT1("step(-1): STATUS_AXIS_DISABLED:", (int) i);
                 return STATUS_AXIS_DISABLED;
             }
             a.readAtMin(invertLim);
@@ -237,10 +237,10 @@ Status Machine::step(const Quad<StepDV> &pulse) {
             if (a.position <= a.travelMin) {
                 return STATUS_TRAVEL_MIN;
             }
-			if (a.advancing) {
-				a.advancing = false;
-				digitalWrite(a.pinDir, a.dirHIGH ? LOW : HIGH);
-			}
+            if (a.advancing) {
+                a.advancing = false;
+                digitalWrite(a.pinDir, a.dirHIGH ? LOW : HIGH);
+            }
             digitalWrite(a.pinStep, HIGH);
             break;
         default:
@@ -273,20 +273,20 @@ Status Machine::stepDirection(const Quad<StepDV> &pulse) {
         Axis &a(*motorAxis[i]);
         if (pulse.value[i] > 0) {
             if (!a.enabled) {
-				TESTCOUT1("step(1): STATUS_AXIS_DISABLED:", (int) i);
+                TESTCOUT1("step(1): STATUS_AXIS_DISABLED:", (int) i);
                 return STATUS_AXIS_DISABLED;
             }
             if (a.position + pulse.value[i] > a.travelMax) {
                 return STATUS_TRAVEL_MAX;
             }
-			if (!a.advancing) {
-				a.advancing = true;
-				digitalWrite(a.pinDir, a.dirHIGH ? HIGH : LOW);
-			}
-			a.position += pulse.value[i];
-		} else if (pulse.value[i] < 0) {
+            if (!a.advancing) {
+                a.advancing = true;
+                digitalWrite(a.pinDir, a.dirHIGH ? HIGH : LOW);
+            }
+            a.position += pulse.value[i];
+        } else if (pulse.value[i] < 0) {
             if (!a.enabled) {
-				TESTCOUT1("step(-1): STATUS_AXIS_DISABLED:", (int) i);
+                TESTCOUT1("step(-1): STATUS_AXIS_DISABLED:", (int) i);
                 return STATUS_AXIS_DISABLED;
             }
             a.readAtMin(invertLim);
@@ -296,11 +296,11 @@ Status Machine::stepDirection(const Quad<StepDV> &pulse) {
             if (a.position + pulse.value[i] < a.travelMin) {
                 return STATUS_TRAVEL_MIN;
             }
-			if (a.advancing) {
-				a.advancing = false;
-				digitalWrite(a.pinDir, a.dirHIGH ? LOW : HIGH);
-			}
-			a.position += pulse.value[i];
+            if (a.advancing) {
+                a.advancing = false;
+                digitalWrite(a.pinDir, a.dirHIGH ? LOW : HIGH);
+            }
+            a.position += pulse.value[i];
         }
     }
 
@@ -320,11 +320,11 @@ Status Machine::pulse(Quad<StepCoord> &pulses) {
         motorPos -= pulse;
         setMotorPosition(motorPos); // permit infinite travel
 
-		Quad<StepDV> steps(
-			(StepDV) pulse.value[0],
-			(StepDV) pulse.value[1],
-			(StepDV) pulse.value[2],
-			(StepDV) pulse.value[3]);
+        Quad<StepDV> steps(
+            (StepDV) pulse.value[0],
+            (StepDV) pulse.value[1],
+            (StepDV) pulse.value[2],
+            (StepDV) pulse.value[3]);
         Status status = step(steps);
         if (status != STATUS_OK) {
             return status;

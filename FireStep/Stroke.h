@@ -20,16 +20,16 @@ typedef uint8_t SegIndex;		// Stroke segment index [0..length)
 
 typedef class QuadStepper {
     public:
-		// ProtocolA: step()
+        // ProtocolA: step()
         virtual Status step(const Quad<StepDV> &pulse) = 0;
 
-		// ProtocolB: stepDirection(); stepFast();
+        // ProtocolB: stepDirection(); stepFast();
         virtual Status stepDirection(const Quad<StepDV> &pulse) = 0;
         virtual Status stepFast(Quad<StepDV> &pulse) = 0;
 } QuadStepper;
 
 typedef class Stroke {
-	friend class StrokeBuilder;
+        friend class StrokeBuilder;
     private:
         Quad<StepCoord> dPos;				// current offset from start position
         Ticks			dtTotal;			// ticks for planned traversal

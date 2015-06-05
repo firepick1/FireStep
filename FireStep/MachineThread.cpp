@@ -14,10 +14,10 @@ void MachineThread::setup() {
     ADC_LISTEN8(ANALOG_SPEED_PIN);
 #endif
     Thread::setup();
-	machine.pDisplay->setup();
-	status = STATUS_BUSY_SETUP;
-	displayStatus();
-	controller.setup();
+    machine.pDisplay->setup();
+    status = STATUS_BUSY_SETUP;
+    displayStatus();
+    controller.setup();
 }
 
 MachineThread::MachineThread()
@@ -39,12 +39,12 @@ void MachineThread::displayStatus() {
     case STATUS_WAIT_OPERATOR:
         machine.pDisplay->setStatus(DISPLAY_WAIT_OPERATOR);
         break;
-	case STATUS_BUSY_SETUP:
+    case STATUS_BUSY_SETUP:
     case STATUS_WAIT_BUSY:
     case STATUS_BUSY:
         machine.pDisplay->setStatus(DISPLAY_BUSY);
         break;
-	case STATUS_WAIT_CANCELLED:
+    case STATUS_WAIT_CANCELLED:
         machine.pDisplay->setStatus(DISPLAY_WAIT_CANCELLED);
         break;
     case STATUS_BUSY_MOVING:
@@ -79,19 +79,19 @@ void MachineThread::loop() {
 #endif
 
     switch (status) {
-	default:
+    default:
     case STATUS_WAIT_IDLE:
-	case STATUS_WAIT_CAMERA:
-	case STATUS_WAIT_OPERATOR:
-	case STATUS_WAIT_MOVING:
-	case STATUS_WAIT_BUSY:
-	case STATUS_WAIT_CANCELLED:
+    case STATUS_WAIT_CAMERA:
+    case STATUS_WAIT_OPERATOR:
+    case STATUS_WAIT_MOVING:
+    case STATUS_WAIT_BUSY:
+    case STATUS_WAIT_CANCELLED:
         if (Serial.available()) {
             command.clear();
             status = command.parse();
         } else {
-			machine.idle();
-		}
+            machine.idle();
+        }
         break;
     case STATUS_WAIT_EOL:
         if (Serial.available()) {
@@ -101,21 +101,21 @@ void MachineThread::loop() {
     case STATUS_BUSY_PARSED:
     case STATUS_BUSY:
     case STATUS_BUSY_MOVING:
-		if (Serial.available()) {
-			status = controller.cancel(command, STATUS_SERIAL_CANCEL);
-		} else {
-			status = controller.process(command);
-		}
+        if (Serial.available()) {
+            status = controller.cancel(command, STATUS_SERIAL_CANCEL);
+        } else {
+            status = controller.process(command);
+        }
         break;
-	case STATUS_BUSY_SETUP: {
-		char buf[100];
-		machine.enable(true);
-		snprintf(buf, sizeof(buf), "FireStep %d.%d.%d", 
-			VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-		Serial.println(buf);
+    case STATUS_BUSY_SETUP: {
+        char buf[100];
+        machine.enable(true);
+        snprintf(buf, sizeof(buf), "FireStep %d.%d.%d",
+                 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+        Serial.println(buf);
         status = STATUS_WAIT_IDLE;
         break;
-	}
+    }
     case STATUS_OK:
         status = STATUS_WAIT_IDLE;
         break;

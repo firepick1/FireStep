@@ -132,7 +132,7 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
     Status status = STATUS_BUSY_MOVING;
     int16_t slen[4] = {0, 0, 0, 0};
     bool us_ok = false;
-	machine.stroke.clear();
+    machine.stroke.clear();
     for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
         if (strcmp("us", it->key) == 0) {
             int32_t planMicros;
@@ -360,14 +360,14 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
 }
 
 typedef class PHSelfTest {
-	private:
-		int32_t nLoops;
+    private:
+        int32_t nLoops;
         StepCoord pulses;
-		int16_t nSegs;
-		Machine &machine;
+        int16_t nSegs;
+        Machine &machine;
 
-	private:
-		Status execute(JsonCommand& jcmd, JsonObject& jobj);
+    private:
+        Status execute(JsonCommand& jcmd, JsonObject& jobj);
 
     public:
         PHSelfTest(Machine& machine)
@@ -378,80 +378,80 @@ typedef class PHSelfTest {
 } PHSelfTest;
 
 Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
-	int16_t minSegs = nSegs ? nSegs : 0; //max(10, min(SEGMENT_COUNT-1,abs(pulses)/100));
-	int16_t maxSegs = nSegs ? nSegs : 0; // SEGMENT_COUNT-1;
-	if (maxSegs >= SEGMENT_COUNT) {
-		return jcmd.setError(STATUS_STROKE_MAXLEN, "sg");
-	}
+    int16_t minSegs = nSegs ? nSegs : 0; //max(10, min(SEGMENT_COUNT-1,abs(pulses)/100));
+    int16_t maxSegs = nSegs ? nSegs : 0; // SEGMENT_COUNT-1;
+    if (maxSegs >= SEGMENT_COUNT) {
+        return jcmd.setError(STATUS_STROKE_MAXLEN, "sg");
+    }
     StrokeBuilder sb(machine.vMax, machine.tvMax, minSegs, maxSegs);
-	if (pulses >= 0) {
-		machine.setMotorPosition(Quad<StepCoord>());
-	} else {
-		machine.setMotorPosition(Quad<StepCoord>(
-			machine.getMotorAxis(0).isEnabled() ? -pulses : 0,
-			machine.getMotorAxis(1).isEnabled() ? -pulses : 0,
-			machine.getMotorAxis(2).isEnabled() ? -pulses : 0,
-			machine.getMotorAxis(3).isEnabled() ? -pulses : 0));
-	}
+    if (pulses >= 0) {
+        machine.setMotorPosition(Quad<StepCoord>());
+    } else {
+        machine.setMotorPosition(Quad<StepCoord>(
+                                     machine.getMotorAxis(0).isEnabled() ? -pulses : 0,
+                                     machine.getMotorAxis(1).isEnabled() ? -pulses : 0,
+                                     machine.getMotorAxis(2).isEnabled() ? -pulses : 0,
+                                     machine.getMotorAxis(3).isEnabled() ? -pulses : 0));
+    }
     Status status = sb.buildLine(machine.stroke, Quad<StepCoord>(
-		machine.getMotorAxis(0).isEnabled() ? pulses : 0,
-		machine.getMotorAxis(1).isEnabled() ? pulses : 0,
-		machine.getMotorAxis(2).isEnabled() ? pulses : 0,
-		machine.getMotorAxis(3).isEnabled() ? pulses : 0));
+                                     machine.getMotorAxis(0).isEnabled() ? pulses : 0,
+                                     machine.getMotorAxis(1).isEnabled() ? pulses : 0,
+                                     machine.getMotorAxis(2).isEnabled() ? pulses : 0,
+                                     machine.getMotorAxis(3).isEnabled() ? pulses : 0));
     if (status != STATUS_OK) {
-		return status;
-	}
-	Ticks tStart = ticks();
-	status = machine.stroke.start(tStart);
-	switch (status) {
-		case STATUS_OK:
-			break;
-		case STATUS_STROKE_TIME:
-			return jcmd.setError(status, "tv");
-		default:
-			return status;
-	}
+        return status;
+    }
+    Ticks tStart = ticks();
+    status = machine.stroke.start(tStart);
+    switch (status) {
+    case STATUS_OK:
+        break;
+    case STATUS_STROKE_TIME:
+        return jcmd.setError(status, "tv");
+    default:
+        return status;
+    }
 #ifdef TEST
-	cout << "PHSelfTest::execute() pulses:" << pulses 
-		<< " pos:" << machine.getMotorPosition().toString() << endl;
+    cout << "PHSelfTest::execute() pulses:" << pulses
+         << " pos:" << machine.getMotorPosition().toString() << endl;
 #endif
-	do {
-		nLoops++;
-		status =  machine.stroke.traverse(ticks(), machine);
+    do {
+        nLoops++;
+        status =  machine.stroke.traverse(ticks(), machine);
 #ifdef TEST
-		if (nLoops % 500 == 0) {
-			cout << "PHSelfTest:execute()" 
-				<< " t:"
-				<< (threadClock.ticks - machine.stroke.tStart)/
-					(float) machine.stroke.get_dtTotal()
-				<< " pos:"
-				<< machine.getMotorPosition().toString() << endl;
-		}
+        if (nLoops % 500 == 0) {
+            cout << "PHSelfTest:execute()"
+                 << " t:"
+                 << (threadClock.ticks - machine.stroke.tStart) /
+                 (float) machine.stroke.get_dtTotal()
+                 << " pos:"
+                 << machine.getMotorPosition().toString() << endl;
+        }
 #endif
-	} while (status == STATUS_BUSY_MOVING);
+    } while (status == STATUS_BUSY_MOVING);
 #ifdef TEST
-	cout << "PHSelfTest::execute() pos:" << machine.getMotorPosition().toString() 
-		<< " status:" << status << endl;
+    cout << "PHSelfTest::execute() pos:" << machine.getMotorPosition().toString()
+         << " status:" << status << endl;
 #endif
-	if (status == STATUS_OK) {
-		status = STATUS_BUSY_MOVING; // repeat indefinitely
-	}
-	Ticks tElapsed = ticks() - tStart;
+    if (status == STATUS_OK) {
+        status = STATUS_BUSY_MOVING; // repeat indefinitely
+    }
+    Ticks tElapsed = ticks() - tStart;
 
-	float ts = tElapsed / (float) TICKS_PER_SECOND;
-	float tp = machine.stroke.getTimePlanned();
-	jobj["lp"] = nLoops;
-	jobj["pp"].set(machine.stroke.vPeak * (machine.stroke.length / ts), 1);
-	jobj["sg"] = machine.stroke.length;
-	jobj["ts"].set(ts,3);
-	jobj["tp"].set(tp,3);
+    float ts = tElapsed / (float) TICKS_PER_SECOND;
+    float tp = machine.stroke.getTimePlanned();
+    jobj["lp"] = nLoops;
+    jobj["pp"].set(machine.stroke.vPeak * (machine.stroke.length / ts), 1);
+    jobj["sg"] = machine.stroke.length;
+    jobj["ts"].set(ts, 3);
+    jobj["tp"].set(tp, 3);
 
-	return status;
+    return status;
 }
 
 Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
-	const char *s;
+    const char *s;
 
     if (strcmp("tstph", key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
@@ -473,30 +473,30 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
             status = process(jcmd, kidObj, it->key);
             if (status != STATUS_OK) {
 #ifdef TEST
-				cout << "PHSelfTest::process() status:" << status << endl;
+                cout << "PHSelfTest::process() status:" << status << endl;
 #endif
                 return status;
             }
         }
-		status = execute(jcmd, kidObj);
-		if (status == STATUS_BUSY_MOVING) {
-			pulses = -pulses; //reverse direction
-			status = execute(jcmd, kidObj);
-		}
+        status = execute(jcmd, kidObj);
+        if (status == STATUS_BUSY_MOVING) {
+            pulses = -pulses; //reverse direction
+            status = execute(jcmd, kidObj);
+        }
     } else if (strcmp("lp", key) == 0) {
-		// output variable
+        // output variable
     } else if (strcmp("mv", key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, machine.vMax);
     } else if (strcmp("pp", key) == 0) {
-		// output variable
+        // output variable
     } else if (strcmp("pu", key) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, pulses);
     } else if (strcmp("sg", key) == 0) {
         status = processField<int16_t, int32_t>(jobj, key, nSegs);
     } else if (strcmp("ts", key) == 0) {
-		// output variable
+        // output variable
     } else if (strcmp("tp", key) == 0) {
-		// output variable
+        // output variable
     } else if (strcmp("tv", key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.tvMax);
     } else {
@@ -506,80 +506,79 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
 }
 
 typedef class PHMoveTo {
-	private:
-		int32_t nLoops;
-		Quad<StepCoord> destination;
-		int16_t nSegs;
-		Machine &machine;
+    private:
+        int32_t nLoops;
+        Quad<StepCoord> destination;
+        int16_t nSegs;
+        Machine &machine;
 
-	private:
-		Status execute(JsonCommand& jcmd, JsonObject *pjobj);
+    private:
+        Status execute(JsonCommand& jcmd, JsonObject *pjobj);
 
     public:
         PHMoveTo(Machine& machine)
-            : nLoops(0), nSegs(0), machine(machine)
-        {
-			destination = machine.getMotorPosition();
-		}
+            : nLoops(0), nSegs(0), machine(machine) {
+            destination = machine.getMotorPosition();
+        }
 
         Status process(JsonCommand& jcmd, JsonObject& jobj, const char* key);
 } PHMoveTo;
 
 Status PHMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     StrokeBuilder sb(machine.vMax, machine.tvMax);
-	Quad<StepCoord> curPos = machine.getMotorPosition();
-	Quad<StepCoord> dPos = destination - curPos;
-	for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
-		if (!machine.getMotorAxis(i).isEnabled()) {
-			dPos.value[i] = 0;
-		}
-	}
-	Status status = STATUS_OK;
-	float tp = 0;
-	float ts = 0;
-	float pp = 0;
-	int16_t sg = 0;
-	if (!dPos.isZero()) {
-		status = sb.buildLine(machine.stroke, dPos);
-		if (status != STATUS_OK) {
-			return status;
-		}
-		Ticks tStrokeStart = ticks();
-		status = machine.stroke.start(tStrokeStart);
-		switch (status) {
-			case STATUS_OK:
-				break;
-			case STATUS_STROKE_TIME:
-				return jcmd.setError(status, "tv");
-			default:
-				return status;
-		}
-		do {
-			nLoops++;
-			status = machine.stroke.traverse(ticks(), machine);
-		} while (status == STATUS_BUSY_MOVING);
-		tp = machine.stroke.getTimePlanned();
-		ts = (ticks() - tStrokeStart) / (float) TICKS_PER_SECOND;
-		pp = machine.stroke.vPeak * (machine.stroke.length / ts);
-		sg = machine.stroke.length;
-	}
+    Quad<StepCoord> curPos = machine.getMotorPosition();
+    Quad<StepCoord> dPos = destination - curPos;
+    for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
+        if (!machine.getMotorAxis(i).isEnabled()) {
+            dPos.value[i] = 0;
+        }
+    }
+    Status status = STATUS_OK;
+    float tp = 0;
+    float ts = 0;
+    float pp = 0;
+    int16_t sg = 0;
+    if (!dPos.isZero()) {
+        status = sb.buildLine(machine.stroke, dPos);
+        if (status != STATUS_OK) {
+            return status;
+        }
+        Ticks tStrokeStart = ticks();
+        status = machine.stroke.start(tStrokeStart);
+        switch (status) {
+        case STATUS_OK:
+            break;
+        case STATUS_STROKE_TIME:
+            return jcmd.setError(status, "tv");
+        default:
+            return status;
+        }
+        do {
+            nLoops++;
+            status = machine.stroke.traverse(ticks(), machine);
+        } while (status == STATUS_BUSY_MOVING);
+        tp = machine.stroke.getTimePlanned();
+        ts = (ticks() - tStrokeStart) / (float) TICKS_PER_SECOND;
+        pp = machine.stroke.vPeak * (machine.stroke.length / ts);
+        sg = machine.stroke.length;
+    }
 
-	if (pjobj) {
-	(*pjobj)["lp"] = nLoops;
-	(*pjobj)["pp"].set(pp, 1);
-	(*pjobj)["sg"] = sg;
-	(*pjobj)["ts"].set(ts,3);
-	(*pjobj)["tp"].set(tp,3);
-	}
+    if (pjobj) {
+        (*pjobj)["lp"] = nLoops;
+        (*pjobj)["pp"].set(pp, 1);
+        (*pjobj)["sg"] = sg;
+        (*pjobj)["ts"].set(ts, 3);
+        (*pjobj)["tp"].set(tp, 3);
+    }
 
-	return status;
+    return status;
 }
 
 Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
-	const char *s;
+    const char *s;
 
-	if (strcmp("mov",key) == 0) {
+    if (strcmp("mov", key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
             node["lp"] = "";
@@ -588,18 +587,18 @@ Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
             node["sg"] = "";
             node["ts"] = "";
             node["tp"] = "";
-			if (machine.getMotorAxis(0).isEnabled()) {
-				node["1"] = "";
-			}
-			if (machine.getMotorAxis(1).isEnabled()) {
-				node["2"] = "";
-			}
-			if (machine.getMotorAxis(2).isEnabled()) {
-				node["3"] = "";
-			}
-			if (machine.getMotorAxis(3).isEnabled()) {
-				node["4"] = "";
-			}
+            if (machine.getMotorAxis(0).isEnabled()) {
+                node["1"] = "";
+            }
+            if (machine.getMotorAxis(1).isEnabled()) {
+                node["2"] = "";
+            }
+            if (machine.getMotorAxis(2).isEnabled()) {
+                node["3"] = "";
+            }
+            if (machine.getMotorAxis(3).isEnabled()) {
+                node["4"] = "";
+            }
         }
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {
@@ -608,41 +607,41 @@ Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
         for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
             status = process(jcmd, kidObj, it->key);
             if (status != STATUS_OK) {
-				TESTCOUT1("PHMoveTo::process() status:", status);
+                TESTCOUT1("PHMoveTo::process() status:", status);
                 return status;
             }
         }
-		status = execute(jcmd, &kidObj);
-	} else if (strncmp("mov", key, 3) == 0) { // short form
-        MotorIndex iMotor = machine.motorOfName(key+strlen(key)-1);
-		if (iMotor == INDEX_NONE) {
-			TESTCOUT1("STATUS_NO_MOTOR: ", key);
-			return jcmd.setError(STATUS_NO_MOTOR, key);
-		}
+        status = execute(jcmd, &kidObj);
+    } else if (strncmp("mov", key, 3) == 0) { // short form
+        MotorIndex iMotor = machine.motorOfName(key + strlen(key) - 1);
+        if (iMotor == INDEX_NONE) {
+            TESTCOUT1("STATUS_NO_MOTOR: ", key);
+            return jcmd.setError(STATUS_NO_MOTOR, key);
+        }
         status = processField<StepCoord, int32_t>(jobj, key, destination.value[iMotor]);
-		if (status == STATUS_OK) {
-			status = execute(jcmd, NULL);
-		}
+        if (status == STATUS_OK) {
+            status = execute(jcmd, NULL);
+        }
     } else if (strcmp("lp", key) == 0) {
-		// output variable
+        // output variable
     } else if (strcmp("mv", key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, machine.vMax);
     } else if (strcmp("pp", key) == 0) {
-		// output variable
+        // output variable
     } else if (strcmp("sg", key) == 0) {
         status = processField<int16_t, int32_t>(jobj, key, nSegs);
     } else if (strcmp("ts", key) == 0) {
-		// output variable
+        // output variable
     } else if (strcmp("tp", key) == 0) {
-		// output variable
+        // output variable
     } else if (strcmp("tv", key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.tvMax);
     } else {
         MotorIndex iMotor = machine.motorOfName(key);
-		if (iMotor == INDEX_NONE) {
-			TESTCOUT1("STATUS_NO_MOTOR: ", key);
-			return jcmd.setError(STATUS_NO_MOTOR, key);
-		}
+        if (iMotor == INDEX_NONE) {
+            TESTCOUT1("STATUS_NO_MOTOR: ", key);
+            return jcmd.setError(STATUS_NO_MOTOR, key);
+        }
         status = processField<StepCoord, int32_t>(jobj, key, destination.value[iMotor]);
     }
     return status;
@@ -736,7 +735,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             }
         }
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
-		leastFreeRam = min(leastFreeRam, freeRam());
+        leastFreeRam = min(leastFreeRam, freeRam());
         jobj[key] = leastFreeRam;
     } else if (strcmp("jp", key) == 0 || strcmp("sysjp", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.jsonPrettyPrint);
@@ -891,7 +890,7 @@ Status JsonController::process(JsonCommand& jcmd) {
     for (JsonObject::iterator it = root.begin(); status >= 0 && it != root.end(); ++it) {
         if (strcmp("dvs", it->key) == 0) {
             status = processStroke(jcmd, root, it->key);
-        } else if (strncmp("mov", it->key,3) == 0) {
+        } else if (strncmp("mov", it->key, 3) == 0) {
             //status = processMove(jcmd, root, it->key);
             status = PHMoveTo(machine).process(jcmd, root, it->key);
         } else if (strncmp("hom", it->key, 3) == 0) {

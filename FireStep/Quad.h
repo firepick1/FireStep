@@ -30,33 +30,33 @@ template<class T> class Quad { // a QUAD_ELEMENTS vector
             return string(buf);
         };
 #endif
-		bool isZero() {
-			return value[0] == 0 && value[1] == 0 && value[2] == 0 && value[3] == 0;
-		}
-		Quad<T> sgn() {
-			return Quad<T>(
-				value[0] < 0 ? -1 : (value[0] == 0 ? 0 : 1),
-				value[1] < 0 ? -1 : (value[1] == 0 ? 0 : 1),
-				value[2] < 0 ? -1 : (value[2] == 0 ? 0 : 1),
-				value[3] < 0 ? -1 : (value[3] == 0 ? 0 : 1));
-		}
-		Quad<T> absoluteValue() { // Arduino unkindly uses abs
-			return Quad<T>(
-				value[0] < 0 ? -value[0] : value[0],
-				value[1] < 0 ? -value[1] : value[1],
-				value[2] < 0 ? -value[2] : value[2],
-				value[3] < 0 ? -value[3] : value[3]);
-		}
-		float norm2() {
-			float sum = 0;
-			for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
-				sum += value[i]*value[i];
-			}
-			return sum;
-		}
-		void clear() {
-			value[0] = value[1] = value[2] = value[3] = 0;
-		}
+        bool isZero() {
+            return value[0] == 0 && value[1] == 0 && value[2] == 0 && value[3] == 0;
+        }
+        Quad<T> sgn() {
+            return Quad<T>(
+                       value[0] < 0 ? -1 : (value[0] == 0 ? 0 : 1),
+                       value[1] < 0 ? -1 : (value[1] == 0 ? 0 : 1),
+                       value[2] < 0 ? -1 : (value[2] == 0 ? 0 : 1),
+                       value[3] < 0 ? -1 : (value[3] == 0 ? 0 : 1));
+        }
+        Quad<T> absoluteValue() { // Arduino unkindly uses abs
+            return Quad<T>(
+                       value[0] < 0 ? -value[0] : value[0],
+                       value[1] < 0 ? -value[1] : value[1],
+                       value[2] < 0 ? -value[2] : value[2],
+                       value[3] < 0 ? -value[3] : value[3]);
+        }
+        float norm2() {
+            float sum = 0;
+            for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
+                sum += value[i] * value[i];
+            }
+            return sum;
+        }
+        void clear() {
+            value[0] = value[1] = value[2] = value[3] = 0;
+        }
         Quad<T> operator+(const Quad<T> &that) {
             return Quad<T>(
                        value[0] + that.value[0],
