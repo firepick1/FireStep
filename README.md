@@ -17,4 +17,8 @@ providing smooth motion.
 
 * [PH5Curve Stepper Video](https://www.youtube.com/watch?v=iFprR51CGqE)
 
+Although you can send commands directly to FireStep via a USB serial port running at
+38400 baud, you will most likely want to use a FireStep driver to generate
+complex FireStep commands such as the `dvs` command for traversing 4D strokes.
+
 [Read more...](https://github.com/firepick1/FireStep/wiki)
