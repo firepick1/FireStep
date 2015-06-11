@@ -84,7 +84,7 @@ typedef class Axis {
             pinMax(NOPIN),
             pinEnable(NOPIN),
             home(0),
-            travelMin(0),
+            travelMin(-32000),  // -5 full 400-step revolutiosn @16-microsteps
             travelMax(32000),	// 5 full 400-step revolutions @16-microsteps
             position(0),
             latchBackoff(MICROSTEPS_DEFAULT),

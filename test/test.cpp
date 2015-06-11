@@ -442,12 +442,12 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
     replace.push_back('"');
     replace.push_back('?');
     replace.push_back(axis);
-    testJSON(machine, jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':0},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':-32000},'t':0.00}\n");
     testJSON(machine, jc, replace, "{'?tn':111}", "{'s':0,'r':{'?tn':111},'t':0.00}\n");
     testJSON(machine, jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':111},'t':0.00}\n");
     testJSON(machine, jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':111}},'t':0.00}\n");
-    testJSON(machine, jc, replace, "{'?':{'tn':0}}", "{'s':0,'r':{'?':{'tn':0}},'t':0.00}\n");
-    testJSON(machine, jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':0}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'tn':-32000}}", "{'s':0,'r':{'?':{'tn':-32000}},'t':0.00}\n");
+    testJSON(machine, jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':-32000}},'t':0.00}\n");
     testJSON(machine, jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':32000},'t':0.00}\n");  	// default
     testJSON(machine, jc, replace, "{'?tm':222}", "{'s':0,'r':{'?tm':222},'t':0.00}\n");
     testJSON(machine, jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':222},'t':0.00}\n");
@@ -470,15 +470,15 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
     testJSON(machine, jc, replace, "{'x':''}",
              "{'s':0,'r':{'x':{'dh':true,'en':true,'ho':0,'is':0,'lb':16,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':55,'pe':38,'pm':255,'pn':3,'po':0,'ps':54,"\
-			 "'sa':1.80,'sd':80,'tm':32000,'tn':0,'ud':0}},'t':0.00}\n");
+			 "'sa':1.80,'sd':80,'tm':32000,'tn':-32000,'ud':0}},'t':0.00}\n");
     testJSON(machine, jc, replace, "{'y':''}",
              "{'s':0,'r':{'y':{'dh':true,'en':true,'ho':0,'is':0,'lb':16,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':61,'pe':56,'pm':255,'pn':14,'po':0,'ps':60,"\
-			 "'sa':1.80,'sd':80,'tm':32000,'tn':0,'ud':0}},'t':0.00}\n");
+			 "'sa':1.80,'sd':80,'tm':32000,'tn':-32000,'ud':0}},'t':0.00}\n");
     testJSON(machine, jc, replace, "{'z':''}",
              "{'s':0,'r':{'z':{'dh':true,'en':true,'ho':0,'is':0,'lb':16,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':48,'pe':62,'pm':255,'pn':18,'po':0,'ps':46,"\
-			 "'sa':1.80,'sd':80,'tm':32000,'tn':0,'ud':0}},'t':0.00}\n");
+			 "'sa':1.80,'sd':80,'tm':32000,'tn':-32000,'ud':0}},'t':0.00}\n");
 }
 
 void test_JsonController_machinePosition(Machine& machine, JsonController &jc) {
@@ -1035,6 +1035,10 @@ void test_Machine_step() {
     }
     machine.enable(true);
 
+    machine.axis[0].travelMin = 0;
+    machine.axis[1].travelMin = 0;
+    machine.axis[2].travelMin = 0;
+    machine.axis[3].travelMin = 0;
     machine.axis[0].travelMax = 5;
     machine.axis[1].travelMax = 4;
     machine.axis[2].travelMax = 3;
