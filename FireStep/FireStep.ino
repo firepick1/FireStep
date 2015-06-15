@@ -6,7 +6,22 @@
 #include "NeoPixel.h"
 
 firestep::MachineThread machineThread; // FireStep command interpreter
-firestep::NeoPixel neoPixel(16, PC2_DISPLAY_PIN); // NeoPixel display driver
+
+/////////// NeoPixel display driver (Choose ONE)/////////////
+#define NEOPIXEL_LEDS 16
+#ifdef TEST
+#define PIN_CONFIG PC2_RAMPS_1_4
+#else
+#define PIN_CONFIG PC1_EMC02
+#fi
+
+#if PIN_CONFIG == PC1_EMC02
+firestep::NeoPixel neoPixel(NEOPIXEL_LEDS, PC1_DISPLAY_PIN); // EMC02
+#define LED_PIN PC1_LED_PIN
+#else
+firestep::NeoPixel neoPixel(NEOPIXEL_LEDS, PC2_DISPLAY_PIN); // RAMPS1.4
+#define LED_PIN PC2_LED_PIN
+#fi
 
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
@@ -17,9 +32,9 @@ void setup() { // run once, when the sketch starts
     machineThread.machine.pDisplay = &neoPixel;
 
     // Initialize
-    machineThread.setup();
+    machineThread.setup(PIN_CONFIG);
 
-    firestep::threadRunner.setup(PC2_LED_PIN);
+    firestep::threadRunner.setup(LED_PIN);
 }
 
 void loop() {	// run over and over again

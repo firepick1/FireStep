@@ -58,7 +58,7 @@ Status Machine::setPinConfig(PinConfig pc) {
         setPin(axis[2].pinMin, PC0_Z_MIN_PIN, INPUT);
         setPin(axis[2].pinEnable, PC0_Z_ENABLE_PIN, OUTPUT, HIGH);
         break;
-    case PC1_EMC01:
+    case PC1_EMC02:
         setPin(axis[0].pinStep, PC1_X_STEP_PIN, OUTPUT);
         setPin(axis[0].pinDir, PC1_X_DIR_PIN, OUTPUT);
         setPin(axis[0].pinMin, PC1_X_MIN_PIN, INPUT);
@@ -71,6 +71,18 @@ Status Machine::setPinConfig(PinConfig pc) {
         setPin(axis[2].pinDir, PC1_Z_DIR_PIN, OUTPUT);
         setPin(axis[2].pinMin, PC1_Z_MIN_PIN, INPUT);
         setPin(axis[2].pinEnable, PC1_Z_ENABLE_PIN, OUTPUT, HIGH);
+        setPin(axis[3].pinStep, PC1_TOOL_STEP_PIN, OUTPUT);
+        setPin(axis[3].pinDir, PC1_TOOL_DIR_PIN, OUTPUT);
+        setPin(axis[3].pinMin, NOPIN, INPUT);
+        setPin(axis[3].pinEnable, PC1_TOOL1_ENABLE_PIN, OUTPUT, HIGH);
+        setPin(axis[4].pinStep, PC1_TOOL_STEP_PIN, OUTPUT);
+        setPin(axis[4].pinDir, PC1_TOOL_DIR_PIN, OUTPUT);
+        setPin(axis[4].pinMin, NOPIN, INPUT);
+        setPin(axis[4].pinEnable, PC1_TOOL2_ENABLE_PIN, OUTPUT, HIGH);
+        setPin(axis[5].pinStep, PC1_TOOL_STEP_PIN, OUTPUT);
+        setPin(axis[5].pinDir, PC1_TOOL_DIR_PIN, OUTPUT);
+        setPin(axis[5].pinMin, NOPIN, INPUT);
+        setPin(axis[5].pinEnable, PC1_TOOL3_ENABLE_PIN, OUTPUT, HIGH);
         break;
     case PC2_RAMPS_1_4:
         setPin(axis[0].pinStep, PC2_X_STEP_PIN, OUTPUT);

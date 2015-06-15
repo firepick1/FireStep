@@ -21,7 +21,7 @@ typedef class MachineThread : Thread {
 
     public:
         MachineThread();
-        void setup();
+        void setup(PinConfig pc);
         void loop();
 } MachineThread;
 

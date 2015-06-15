@@ -8,13 +8,14 @@
 
 using namespace firestep;
 
-void MachineThread::setup() {
+void MachineThread::setup(PinConfig pc) {
     id = 'M';
 #ifdef THROTTLE_SPEED
     ADC_LISTEN8(ANALOG_SPEED_PIN);
 #endif
     Thread::setup();
     machine.pDisplay->setup();
+	machine.setPinConfig(pc);
     status = STATUS_BUSY_SETUP;
     displayStatus();
     controller.setup();

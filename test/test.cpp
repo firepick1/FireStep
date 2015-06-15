@@ -163,7 +163,7 @@ void test_Machine() {
 
 
     MachineThread machThread;
-    machThread.setup();
+    machThread.setup(PC2_RAMPS_1_4);
     threadRunner.setup();
     monitor.verbose = false;
 
@@ -517,7 +517,7 @@ MachineThread test_setup() {
     MachineThread mt;
     mt.machine.pDisplay = &testDisplay;
     testDisplay.clear();
-    mt.setup();
+    mt.setup(PC2_RAMPS_1_4);
     Serial.clear();
 	delayMicsTotal = 0;
     arduino.setPin(mt.machine.axis[0].pinMin, 0);
@@ -529,7 +529,7 @@ MachineThread test_setup() {
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_DIR_PIN));
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
-    ASSERTEQUALS("FireStep 0.1.2\n", Serial.output().c_str());
+    ASSERTEQUALS("FireStep 0.1.4\n", Serial.output().c_str());
 	for (int i=0; i<MOTOR_COUNT; i++) {
 		ASSERTEQUAL((size_t) &mt.machine.axis[i], (size_t) &mt.machine.getMotorAxis(i));
 	}
@@ -1121,14 +1121,11 @@ void test_PinConfig() {
 
     MachineThread mt = test_setup();
     Machine &machine = mt.machine;
-	ASSERTEQUAL(NOVALUE, arduino.getPinMode(PC1_X_STEP_PIN));
 
-    threadClock.ticks++;
     Serial.push(JT("{'syspc':1}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 
-    threadClock.ticks++;
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
 	ASSERTEQUAL(PC1_X_STEP_PIN, machine.axis[0].pinStep);
@@ -1146,7 +1143,7 @@ void test_PinConfig() {
 	ASSERTEQUAL(PC1_X_MIN_PIN, machine.axis[0].pinMin);
 	ASSERTEQUAL(PC1_Y_MIN_PIN, machine.axis[1].pinMin);
 	ASSERTEQUAL(PC1_Z_MIN_PIN, machine.axis[2].pinMin);
-	ASSERTEQUAL(PC1_EMC01, machine.getPinConfig());
+	ASSERTEQUAL(PC1_EMC02, machine.getPinConfig());
 
     cout << "TEST	: test_PinConfig() OK " << endl;
 }
@@ -1725,7 +1722,7 @@ void test_Display() {
     ASSERTEQUALS("", testDisplay.message);
 
     mt.machine.pDisplay = &testDisplay;
-    mt.setup();
+    mt.setup(PC2_RAMPS_1_4);
     ASSERTEQUAL(STATUS_BUSY_SETUP, mt.status);
     ASSERTEQUALS("status:30 level:127", testDisplay.message);
 

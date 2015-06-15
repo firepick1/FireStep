@@ -6,7 +6,7 @@ typedef uint8_t PinType;		// pin specification
 
 enum PinConfig {
     PC0_NOPIN = 0,
-    PC1_EMC01 = 1,
+    PC1_EMC02 = 1,
     PC2_RAMPS_1_4 = 2,
 };
 
@@ -32,66 +32,48 @@ enum PinConfig {
 #define PC0_Z_MIN_PIN          NOPIN
 #define PC0_Z_MAX_PIN          NOPIN
 
-///////////// PC1_EMC01 //////////////
-// FirePick Delta Tin Whiskers
-// motion controller board
+///////////// PC1_EMC02 //////////////
+// FirePick Delta Tin Whiskers motion controller board
+// https://github.com/firepick-delta/Marlin/blob/delta/openpnp/Marlin/pins.h
 //////////////////////////////////////
 
+#define PC1_SERVO1			   4
+#define PC1_SERVO2			   5
+#define PC1_SERVO3			   6
+#define PC1_SERVO4			   7
+
+#define PC1_DISPLAY_PIN 	   PC1_SERVO4
+#define PC1_LED_PIN            13
+
 //Delta Motor "X" ***********
-#define PC1_X_STEP_PIN         23 //X is the BACK motor!
-#define PC1_X_DIR_PIN          22
-#define PC1_X_ENABLE_PIN       14
-#define PC1_X_MIN_PIN          21
+#define PC1_X_STEP_PIN         38 //X is the BACK motor!
+#define PC1_X_DIR_PIN          36
+#define PC1_X_ENABLE_PIN       40
+#define PC1_X_MIN_PIN          63 // A9
 #define PC1_X_MAX_PIN          NOPIN
 
 //Delta Motor "Y" ***********
-#define PC1_Y_STEP_PIN         4 //Y is the FRONT LEFT motor!
-#define PC1_Y_DIR_PIN          3
-#define PC1_Y_ENABLE_PIN       14
-#define PC1_Y_MIN_PIN          2
+#define PC1_Y_STEP_PIN         56 //Y is the FRONT LEFT motor!
+#define PC1_Y_DIR_PIN          57
+#define PC1_Y_ENABLE_PIN       54
+#define PC1_Y_MIN_PIN          64
 #define PC1_Y_MAX_PIN          NOPIN
 
 //Delta Motor "Z" ***********
-#define PC1_Z_STEP_PIN         13 //Z is the FRONT RIGHT motor!
-#define PC1_Z_DIR_PIN          12
-#define PC1_Z_ENABLE_PIN       14
-#define PC1_Z_MIN_PIN          11
+#define PC1_Z_STEP_PIN         9 //Z is the FRONT RIGHT motor!
+#define PC1_Z_DIR_PIN          8
+#define PC1_Z_ENABLE_PIN       2
+#define PC1_Z_MIN_PIN          65
 #define PC1_Z_MAX_PIN          NOPIN
 
-//Modular Tool #1 ***********
-#define PC1_E0_STEP_PIN        20
-#define PC1_E0_DIR_PIN         15
-#define PC1_E0_ENABLE_PIN      1
-#define PC1_VACUUM_PIN         30 // Modular Tool #1 for now...
+//All modular tools
+#define PC1_TOOL_STEP_PIN      30
+#define PC1_TOOL_DIR_PIN       32
 
-//Modular Tool #2 ***********
-#define PC1_E1_STEP_PIN        20
-#define PC1_E1_DIR_PIN         15
-#define PC1_E1_ENABLE_PIN      0
-#define PC1_HEATER_0_PIN       28 //Digital numbering
-#define PC1_TEMP_0_PIN         A2 //Analog numbering
-
-//Modular Tool #3 ***********
-#define PC1_E2_STEP_PIN        20
-#define PC1_E2_DIR_PIN         15
-#define PC1_E2_ENABLE_PIN      19
-#define PC1_HEATER_1_PIN       27 //Digital numbering
-#define PC1_TEMP_1_PIN         A5 //Analog numbering
-
-//Modular Tool #4 ***********
-#define PC1_E3_STEP_PIN        20
-#define PC1_E3_DIR_PIN         15
-#define PC1_E3_ENABLE_PIN      18
-#define PC1_HEATER_2_PIN       25
-#define PC1_TEMP_2_PIN         A7 //Analog numbering
-
-#define PC1_HEATER_BED_PIN     NOPIN
-#define PC1_TEMP_BED_PIN       NOPIN
-
-//Vestigial Leftovers *******
-#define PC1_LED_PIN            NOPIN
-#define PC1_FAN_PIN            NOPIN
-#define PC1_PS_ON_PIN          NOPIN
+#define PC1_TOOL1_ENABLE_PIN   44
+#define PC1_TOOL2_ENABLE_PIN   52
+#define PC1_TOOL3_ENABLE_PIN   24
+#define PC1_TOOL4_ENABLE_PIN   34 // UNUSED since FireStep has 6 axes, not 7
 
 ///////////////// PC2_RAMPS_1_4 ////////////////
 // Arduino Mega2560 with RAMPS v1.4 shield
