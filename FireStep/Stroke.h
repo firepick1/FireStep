@@ -14,6 +14,10 @@ namespace firestep {
 
 #define STROKE_SEGMENTS 130
 
+// Scaled strokes usually won't end exactly at desired endpoint,
+// so we allow for some extra pulses to account for that
+#define STROKE_MAX_END_PULSES 110
+
 typedef int8_t  StepDV;			// change in StepCoord velocity
 typedef int16_t StepCoord;		// stepper coordinate (i.e., pulses)
 typedef uint8_t SegIndex;		// Stroke segment index [0..length)
@@ -36,7 +40,6 @@ typedef class Stroke {
     public:
         Ticks			tStart;				// ticks at start of traversal
         int32_t			vPeak;				// peak velocity on any axis
-        StepCoord		maxEndPulses;		// max pulse offset for end position (default 16)
         StepCoord		scale;				// segment velocity unit
         SegIndex		curSeg;				// current segment index
         SegIndex	 	length;				// number of segments

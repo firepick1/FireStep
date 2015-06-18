@@ -146,7 +146,7 @@ Status JsonController::initializeStrokeArray(JsonCommand &jcmd,
 		JsonArray &jarr = stroke[key];
 		for (JsonArray::iterator it2 = jarr.begin(); it2 != jarr.end(); ++it2) {
 			if (*it2 < -127 || 127 < *it2) {
-				return jcmd.setError(STATUS_RANGE_ERROR, key);
+				return STATUS_RANGE_ERROR;
 			}
 			machine.stroke.seg[slen++].value[iMotor] = (StepDV) (int32_t) * it2;
 		}
@@ -156,21 +156,21 @@ Status JsonController::initializeStrokeArray(JsonCommand &jcmd,
 			int8_t high = hexValue(*s++);
 			int8_t low = hexValue(*s++);
 			if (high < 0 || low < 0) {
-				return jcmd.setError(STATUS_FIELD_HEX_ERROR, key);
+				return STATUS_FIELD_HEX_ERROR;
 			}
 			StepDV dv = ((high<<4) | low);
-			//TESTCOUT3("dv:", (int) dv, " high:", (int) high, " low:", (int) low);
+			//TESTCOUT3("initializeStrokeArray(", key, ") sLen:", (int)slen, " dv:", (int) dv);
 			machine.stroke.seg[slen++].value[iMotor] = dv;
 		}
 	} else {
-		return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, key);
+		return STATUS_FIELD_ARRAY_ERROR;
 	}
 	stroke[key] = (int32_t) 0;
-    return STATUS_BUSY_MOVING;
+    return STATUS_OK;
 }
 
 Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
-    Status status = STATUS_BUSY_MOVING;
+    Status status = STATUS_OK;
     int16_t slen[4] = {0, 0, 0, 0};
     bool us_ok = false;
     machine.stroke.clear();
@@ -206,10 +206,10 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
                 return jcmd.setError(STATUS_NO_MOTOR, it->key);
             }
             status = initializeStrokeArray(jcmd, stroke, it->key, iMotor, slen[iMotor]);
+			if (status != STATUS_OK) {
+                return jcmd.setError(status, it->key);
+			}
         }
-    }
-    if (status != STATUS_BUSY_MOVING) {
-        return status;
     }
     if (!us_ok) {
         return jcmd.setError(STATUS_FIELD_REQUIRED, "us");
@@ -227,20 +227,25 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
     if (machine.stroke.length == 0) {
         return STATUS_STROKE_NULL_ERROR;
     }
-    machine.stroke.start(ticks());
-    return status;
+    status = machine.stroke.start(ticks());
+	if (status != STATUS_OK) {
+        return status;
+	}
+    return STATUS_BUSY_MOVING;
 }
 
 Status JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
     Status status =  machine.stroke.traverse(ticks(), machine);
 
     Quad<StepCoord> &pos = machine.stroke.position();
+	int16_t nLoops = 0;
     for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
         MotorIndex iMotor = machine.motorOfName(it->key + (strlen(it->key) - 1));
         if (iMotor != INDEX_NONE) {
             stroke[it->key] = pos.value[iMotor];
         }
     }
+	TESTCOUT1("traverseStroke() nLoops:", nLoops);
 
     return status;
 }

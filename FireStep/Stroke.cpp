@@ -29,7 +29,6 @@ void Stroke::setTimePlanned(float seconds) {
 
 void Stroke::clear() {
     length = 0;
-    maxEndPulses = 16;
     scale = 1;
     curSeg = 0;
     tStart = 0;
@@ -99,11 +98,11 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
             StepCoord v = 0; // segment velocity
             StepCoord pos = 0;
             for (SegIndex s = 0; s < sGoal; s++) {
-                v += scale * (StepCoord) seg[s].value[iMotor];
-                pos += v;
+                v += (StepCoord) seg[s].value[iMotor];
+                pos += v*scale;
             }
-            v += scale * (StepCoord) seg[sGoal].value[iMotor];
-            dGoal.value[iMotor] = pos + (tNum * (int32_t)v) / dtSeg;
+            v += (StepCoord) seg[sGoal].value[iMotor];
+            dGoal.value[iMotor] = pos + scale*((tNum * (int32_t)v) / dtSeg);
         }
     }
     return dGoal;
@@ -128,8 +127,8 @@ Status Stroke::start(Ticks tStart) {
     } else {
         Quad<StepCoord> almostEnd = goalPos(tStart + dtTotal - 1);
         for (QuadIndex i = 0; i < 4; i++) {
-            if (maxEndPulses < abs(dEndPos.value[i] - almostEnd.value[i])) {
-                TESTCOUT4("Stroke::start() STATUS_STROKE_END_ERROR dEndPos[", i,
+            if (STROKE_MAX_END_PULSES < abs(dEndPos.value[i] - almostEnd.value[i])) {
+                TESTCOUT4("Stroke::start() STATUS_STROKE_END_ERROR dEndPos[", (int)i,
                           "]:", dEndPos.value[i],
                           " last interpolated value:", almostEnd.value[i],
                           " delta:", (dEndPos.value[i] - almostEnd.value[i]));
@@ -159,33 +158,6 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
 
     Status status = STATUS_BUSY_MOVING;
     Quad<StepDV> pulse;
-#define SLOWx
-#ifdef SLOW
-    for (bool done = true; ; done = true) {
-        for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
-            StepCoord dp = dGoal.value[i] - dPos.value[i];
-            if (dp) {
-                done = false;
-                if (dp < 0) {
-                    pulse.value[i] = -1;
-                    dPos.value[i]--;
-                } else {
-                    pulse.value[i] = 1;
-                    dPos.value[i]++;
-                }
-            } else {
-                pulse.value[i] = 0;
-            }
-        }
-        if (done) {
-            break;
-        }
-        status = stepper.step(pulse);
-        if (status < 0) {
-            return status;	// abnormal return
-        }
-    }
-#else
 #define PULSE_BLOCK 32 /* pulses emitted without limit checks */
     Quad<StepCoord> dPosSeg = dGoal - dPos;
     for (bool done = true; ; done = true) {
@@ -216,9 +188,11 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
             return status;
         }
     }
-#endif
-    status = (tCurrent >= tStart + dtTotal) ? STATUS_OK : STATUS_BUSY_MOVING;
-    return status;
+	if (tCurrent >= tStart + dtTotal) {
+		TESTCOUT3("Stroke::traverse() tCurrent:", tCurrent, " tStart:", tStart, " dtTotal:", dtTotal);
+		return STATUS_OK;
+	}
+	return STATUS_BUSY_MOVING;
 }
 
 int16_t Stroke::append(Quad<StepDV> dv) {
