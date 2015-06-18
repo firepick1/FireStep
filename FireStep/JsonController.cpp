@@ -238,14 +238,12 @@ Status JsonController::traverseStroke(JsonCommand &jcmd, JsonObject &stroke) {
     Status status =  machine.stroke.traverse(ticks(), machine);
 
     Quad<StepCoord> &pos = machine.stroke.position();
-	int16_t nLoops = 0;
     for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
         MotorIndex iMotor = machine.motorOfName(it->key + (strlen(it->key) - 1));
         if (iMotor != INDEX_NONE) {
             stroke[it->key] = pos.value[iMotor];
         }
     }
-	TESTCOUT1("traverseStroke() nLoops:", nLoops);
 
     return status;
 }

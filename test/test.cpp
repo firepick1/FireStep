@@ -1153,15 +1153,15 @@ void test_stroke_endpos() {
     int32_t xpulses;
     int32_t ypulses;
     int32_t zpulses;
-	const char *pnp;
+	const char *json;
 
 	// TEST: calculated end position
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
     ypulses = arduino.pulses(PC2_Y_STEP_PIN);
     zpulses = arduino.pulses(PC2_Z_STEP_PIN);
     machine.setMotorPosition(Quad<StepCoord>(0, 0, 0, 0));
-	pnp = "{'dvs':{'us':512,'1':[10,20],'2':[40,50],'3':[70,80]}}\n";
-    Serial.push(JT(pnp));
+	json = "{'dvs':{'us':512,'1':[10,20],'2':[40,50],'3':[70,80]}}\n";
+    Serial.push(JT(json));
     test_ticks(1); // parse
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
@@ -1201,9 +1201,9 @@ void test_stroke_endpos() {
     ypulses = arduino.pulses(PC2_Y_STEP_PIN);
     zpulses = arduino.pulses(PC2_Z_STEP_PIN);
     machine.setMotorPosition(Quad<StepCoord>(0, 0, 0, 0));
-	pnp = "{'dvs':{'us':512,'1':[10,20],'2':[40,50],'3':[70,80],"
+	json = "{'dvs':{'us':512,'1':[10,20],'2':[40,50],'3':[70,80],"
 		"'dp':[41,132,223]}}\n";
-    Serial.push(JT(pnp));
+    Serial.push(JT(json));
     test_ticks(1); // parse
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
@@ -1247,22 +1247,18 @@ void test_pnp() {
     int32_t ypulses = arduino.pulses(PC2_Y_STEP_PIN);
     int32_t zpulses = arduino.pulses(PC2_Z_STEP_PIN);
     machine.setMotorPosition(Quad<StepCoord>(9563, 5959, 12228, 100));
-	const char *pnp = "{'dvs':{"
-		"'1':'000000FF00FFFEFEFDFCFBF9F9F6F5F4F1EFEDEBE9E6E5E2E0DEDDDAD9D7D5D5"
-			 "D4D3D3D4D5D6D8DADDE0E3E6E9ECEFF1F4F6F8FAFCFEFF0103040607080A0B0C"
-			 "0D0E1010111313141416161618171919191A1B1A1C1C1C1D1D1D1E1F1F1F2020"
-			 "202221222323232423242222211F1E1B191714110E0C0A070604020200010000',"
-		"'2':'0000FF00FFFEFEFCFBF9F7F6F4F2F1EEEDECEAEAE8E9E8E8E8E9E9EAEBEBECED"
-			 "EFF0F2F3F6F8FAFD000206080B0D0F1113151617191A1A1C1C1E1E1F20202122"
-			 "2223242424252626262627272728272828282828282828292828282828282828"
-			 "282827282827272727252423221F1D1B181513100E0B09070504020101000000',"
-		"'3':'0000000000FFFFFFFFFEFDFDFBFBF9F7F5F4F0EFEBE8E5E1DFDBD7D4D1CDCAC7"
-			 "C5C3C1C0BFBFC0C1C2C5C8CACCD0D2D5D7DADCDFE1E3E5E7EAEBEDEFF0F2F4F5"
-		     "F7F8F9FBFCFDFEFF000102020404050507070709090A0A0B0C0D0D0E0F101011"
-		     "1214131516171718191A191A191818161413100F0C0B08060503030100010000',"
-		"'sc':4,'us':1873817,'dp':[1556,7742,-4881]}}\n";
 
-    Serial.push(JT(pnp));
+    const char *json =
+        "{'dvs':{"
+        "'1':'FF01FDFBFAF7F5F2F1EFEEF0EFF0F3F4FA00080E161818161311100D0D0C0A0A"
+        "090808070606040405040304040303040304040300FCF6F1EEECEAEDF0F6FAFE',"
+        "'2':'FF00FBF9F6F1F3F0F5F5FBFE030306070A0D1113181515110E0C090907060606"
+        "0504040303030102000101000000FFFF01FE00FEFCF7F2EEEDEAECEDF2F6FBFE',"
+        "'3':'0000FEFFFCFBF7F6F0EDE9E6E5E6E3E8ECF3FA050F13151515141211100F0D0D"
+        "0C0A090A070608050507040606060607060708070501FDF8F3F0EFF1F2F7FAFF',"
+        "'sc':2,'us':1873817,'dp':[1556,7742,-4881]}}\n";
+
+    Serial.push(JT(json));
     test_ticks(1); // parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTEQUAL(xpulses, arduino.pulses(PC2_X_STEP_PIN));
@@ -1271,26 +1267,57 @@ void test_pnp() {
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
 
-    test_ticks(MS_TICKS(100)); ASSERTEQUAL(28, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-    test_ticks(MS_TICKS(100)); ASSERTEQUAL(556, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-    test_ticks(MS_TICKS(100)); ASSERTEQUAL(3132, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-    test_ticks(MS_TICKS(100)); ASSERTEQUAL(2971, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-    test_ticks(MS_TICKS(100)); ASSERTEQUAL(6502, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(14, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(154, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(598, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(1432, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(2582, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 
-    test_ticks(MS_TICKS(100)); ASSERTEQUAL(11730, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-    test_ticks(MS_TICKS(100)); ASSERTEQUAL(21493, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-    test_ticks(MS_TICKS(100)); ASSERTEQUAL(28697, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-    test_ticks(MS_TICKS(100)); ASSERTEQUAL(35711, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-    test_ticks(MS_TICKS(100)); ASSERTEQUAL(35711, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(3692, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(4334, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(4514, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(4650, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(5022, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 
-    test_ticks(MS_TICKS(1000)); // done
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(5570, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(6236, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(6998, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(7840, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(8766, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(9708, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(10364, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(10570, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(10584, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUAL(1556, arduino.pulses(PC2_X_STEP_PIN) - xpulses);
-    ASSERTEQUAL(7742, arduino.pulses(PC2_Y_STEP_PIN) - ypulses);
-    ASSERTEQUAL(4881, arduino.pulses(PC2_Z_STEP_PIN) - zpulses);
-    ASSERTEQUAL(MS_TICKS(3000)+3, threadClock.ticks - machine.stroke.tStart);
+    test_ticks(MS_TICKS(100));
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    ASSERTEQUAL(10584, arduino.pulses(PC2_X_STEP_PIN) - xpulses);
+    ASSERTEQUAL(12038, arduino.pulses(PC2_Y_STEP_PIN) - ypulses);
+    ASSERTEQUAL(10423, arduino.pulses(PC2_Z_STEP_PIN) - zpulses);
     ASSERTEQUALS(JT("{'s':0,'r':{'dvs':{'1':1556,'2':7742,'3':-4881,"
-		"'sc':4,'us':1873817,'dp':[1556,7742,-4881]}},'t':3.00}\n"), Serial.output().c_str());
+                    "'sc':2,'us':1873817,'dp':[1556,7742,-4881]}},'t':1.90}\n"), 
+					Serial.output().c_str());
     ASSERTQUAD(Quad<StepCoord>(11119, 13701, 7347, 100), machine.getMotorPosition());
 
     cout << "TEST	: test_pnp() OK " << endl;
@@ -2019,11 +2046,14 @@ int main(int argc, char *argv[]) {
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
     firelog_level(FIRELOG_TRACE);
 
+    for (int i=0; i<argc; i++) {
+        cout << "argv[" << i << "]:\"" << argv[i] << "\"" << endl;
+    }
+
     // test first
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
-        //test_pnp();
-		test_stroke_endpos();
+        test_pnp();
     } else {
         test_Serial();
         test_Thread();
@@ -2044,7 +2074,8 @@ int main(int argc, char *argv[]) {
         test_dvs();
         test_errors();
         test_ph5();
-		//test_pnp();
+        test_stroke_endpos();
+        test_pnp();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;
