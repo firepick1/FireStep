@@ -404,6 +404,7 @@ void test_JsonCommand() {
     ASSERT(cmd4.requestRoot().success());
     ASSERT(cmd4.requestRoot().is<JsonArray&>());
     ASSERT(!cmd4.requestRoot().is<JsonObject&>());
+    ASSERTEQUAL(2, cmd4.requestRoot().size());
 
     cout << "TEST	: test_JsonCommand() OK " << endl;
 }

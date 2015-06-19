@@ -62,6 +62,7 @@ Status JsonCommand::parseCore() {
             return STATUS_JSON_MEM;
         }
         jRequestRoot = jobj;
+		jResponseRoot["r"] = jRequestRoot;
     } else {
 		JsonArray &jarr = jbRequest.parseArray(json);
 		if (!jarr.success()) {
@@ -69,9 +70,9 @@ Status JsonCommand::parseCore() {
 			return STATUS_JSON_PARSE_ERROR;
 		}
         jRequestRoot = jarr;
+		jResponseRoot["r"] = jarr[0];
     }
 	jResponseRoot["s"] = STATUS_BUSY_PARSED;
-	jResponseRoot["r"] = jRequestRoot;
 
     return STATUS_BUSY_PARSED;
 }
