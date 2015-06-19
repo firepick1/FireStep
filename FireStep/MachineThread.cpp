@@ -40,6 +40,7 @@ void MachineThread::displayStatus() {
     case STATUS_WAIT_OPERATOR:
         machine.pDisplay->setStatus(DISPLAY_WAIT_OPERATOR);
         break;
+    case STATUS_BUSY_OK:
     case STATUS_BUSY_SETUP:
     case STATUS_WAIT_BUSY:
     case STATUS_BUSY:
@@ -100,6 +101,7 @@ void MachineThread::loop() {
         }
         break;
     case STATUS_BUSY_PARSED:
+    case STATUS_BUSY_OK:
     case STATUS_BUSY:
     case STATUS_BUSY_MOVING:
         if (Serial.available()) {

@@ -26,6 +26,7 @@ typedef class JsonCommand {
         friend class JsonController;
     private:
         bool parsed;
+		int8_t cmdIndex;
         char json[MAX_JSON];
         char *pJsonFree;
         StaticJsonBuffer<JSON_REQUEST_BUFFER> jbRequest;

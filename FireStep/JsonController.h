@@ -30,6 +30,7 @@ typedef class JsonController {
         Status processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key);
         Status processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key);
         Status traverseStroke(JsonCommand &jcmd, JsonObject &stroke);
+        Status processObj(JsonCommand& jcmd, JsonObject&jobj);
 
     public:
         JsonController(Machine& machine);

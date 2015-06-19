@@ -22,6 +22,7 @@ size_t JsonCommand::requestAvailable() {
 
 void JsonCommand::clear() {
     parsed = false;
+	cmdIndex = 0;
     memset(json, 0, sizeof(json));
     memset(error, 0, sizeof(error));
     pJsonFree = json;

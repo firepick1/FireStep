@@ -9,6 +9,7 @@ enum Status {
     STATUS_BUSY = 11,				// Processing non-motion command
     STATUS_BUSY_MOVING = 12,		// Processing motion command
     STATUS_BUSY_SETUP = 13,			// Processing setup
+    STATUS_BUSY_OK = 14,			// sub-command completed successfully
     STATUS_WAIT_IDLE = 20,			// Awaiting input: inactive
     STATUS_WAIT_EOL = 21,			// Awaiting input: remainder of EOL-terminated command
     STATUS_WAIT_CAMERA = 22,		// Awaiting input: camera ready display
@@ -69,6 +70,7 @@ enum Status {
     STATUS_JSON_ARRAY_LEN = -420,	// JSON array is too short
     STATUS_OUTPUT_FIELD = -421,		// JSON field is for output only
     STATUS_FIELD_HEX_ERROR = -422,	// Expected JSON field hex string value
+    STATUS_JSON_CMD = -423,			// JSON command must be object or array
 
     // events
     STATUS_ESTOP = -900,			// Emergency hardware stop
@@ -85,6 +87,7 @@ inline bool isProcessing(Status status) {
     case STATUS_BUSY_MOVING:
     case STATUS_BUSY_PARSED:
     case STATUS_BUSY_SETUP:
+    case STATUS_BUSY_OK:
         return true;
     default:
         return false;

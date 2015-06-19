@@ -2063,6 +2063,44 @@ void test_ph5() {
     cout << "TEST	: test_ph5() OK " << endl;
 }
 
+void test_command_array() {
+    cout << "TEST	: test_command_arraytest_pnp() =====" << endl;
+
+    MachineThread mt = test_setup();
+    Machine &machine = mt.machine;
+    machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
+
+	// TEST two command array
+    Serial.push(JT("[{'xpo':''},{'ypo':''}]\n"));
+    test_ticks(1); // parse JsonCommand
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    test_ticks(1); // process first command
+    ASSERTEQUALS(JT(""), Serial.output().c_str());
+    ASSERTEQUAL(STATUS_BUSY_OK, mt.status);
+	test_ticks(1); // process second command
+    ASSERTEQUALS(JT(""), Serial.output().c_str());
+    ASSERTEQUAL(STATUS_BUSY_OK, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'ypo':2},'t':0.00}\n"), Serial.output().c_str());
+    test_ticks(1); // done
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	// TEST serial interrupt of command array
+    Serial.push(JT("[{'xpo':''},{'ypo':''},{'zpo':''}]\n"));
+    test_ticks(1); // parse JsonCommand
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    test_ticks(1); // process first command
+    ASSERTEQUALS(JT(""), Serial.output().c_str());
+    ASSERTEQUAL(STATUS_BUSY_OK, mt.status);
+	Serial.push("\n");
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
+    ASSERTEQUALS(JT("{'s':-901,'r':{'xpo':1},'t':0.00}\n"), Serial.output().c_str());
+
+    cout << "TEST	: test_command_arraytest_pnp() OK " << endl;
+}
+
 int main(int argc, char *argv[]) {
     LOGINFO3("INFO	: FireStep test v%d.%d.%d",
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -2075,7 +2113,7 @@ int main(int argc, char *argv[]) {
     // test first
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
-        test_pnp();
+		test_command_array();
     } else {
         test_Serial();
         test_Thread();
@@ -2097,6 +2135,7 @@ int main(int argc, char *argv[]) {
         test_errors();
         test_ph5();
         test_stroke_endpos();
+		test_command_array();
         test_pnp();
     }
 
