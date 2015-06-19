@@ -61,13 +61,17 @@ Status JsonCommand::parseCore() {
         if (kids < 1) {
             return STATUS_JSON_MEM;
         }
-        jResponseRoot["s"] = STATUS_BUSY_PARSED;
         jRequestRoot = jobj;
-        jResponseRoot["r"] = jRequestRoot;
     } else {
-        jResponseRoot["r"] = "?";
-        return STATUS_JSON_PARSE_ERROR;
+		JsonArray &jarr = jbRequest.parseArray(json);
+		if (!jarr.success()) {
+			jResponseRoot["r"] = "?";
+			return STATUS_JSON_PARSE_ERROR;
+		}
+        jRequestRoot = jarr;
     }
+	jResponseRoot["s"] = STATUS_BUSY_PARSED;
+	jResponseRoot["r"] = jRequestRoot;
 
     return STATUS_BUSY_PARSED;
 }

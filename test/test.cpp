@@ -18,6 +18,25 @@ using namespace ArduinoJson;
 
 #define ASSERTQUAD(expected,actual) ASSERTEQUALS( expected.toString().c_str(), actual.toString().c_str() );
 
+void replaceChar(string &s, char cmatch, char creplace) {
+    for (int i = 0; i < s.size(); i++) {
+        if (s[i] == cmatch) {
+            s[i] = creplace;
+        }
+    }
+}
+
+string jsonTemplate(const char *jsonIn, string replace = "'\"") {
+    string ji(jsonIn);
+    for (int i = 0; i < replace.size(); i += 2) {
+        char cmatch = replace[i];
+        char creplace = replace[i + 1];
+        replaceChar(ji, cmatch, creplace);
+    }
+    return ji;
+}
+#define JT(s) (jsonTemplate(s).c_str())
+
 class TestDisplay: public Display {
     public:
         char message[100];
@@ -284,6 +303,16 @@ void test_ArduinoJson() {
     ASSERTEQUAL(48.756080, root2["data"][0]);
     ASSERTEQUAL(2.302038, root2["data"][1]);
 
+	jsonBuffer.clear();
+	char json3[] = "[1,'a',{\"color\":\"red\"}]";
+    JsonObject& obj3 = jsonBuffer.parseObject(json3);
+	ASSERTEQUAL(false, obj3.success());
+    JsonArray& arr3 = jsonBuffer.parseArray(json3);
+	ASSERTEQUAL(true, arr3.success());
+	ASSERTEQUAL(1, arr3[0]);
+	ASSERTEQUALS("a", arr3[1]);
+	ASSERTEQUALS("red", arr3[2]["color"]);
+
     test_BadJson( "{\"a\":1,\"b\":2}" );
     test_BadJson( "{\"a\":1,\"b\":2,\"c\":3}" );
     test_BadJson( "{\"a\":1,\"b\":2,\"c\":3,\"d\":4}" );
@@ -323,6 +352,8 @@ void test_JsonCommand() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, cmd1.parse("{\"sys\":\"\"}"));
     ASSERTEQUAL(STATUS_BUSY_PARSED, cmd1.getStatus());
     ASSERT(cmd1.isValid());
+    ASSERT(!cmd1.requestRoot().is<JsonArray&>());
+    ASSERT(cmd1.requestRoot().is<JsonObject&>());
     JsonVariant& sys = cmd1.requestRoot()["sys"];
     ASSERTEQUALS("", sys);
     ASSERT(!sys.is<double>());
@@ -365,15 +396,16 @@ void test_JsonCommand() {
     cmd3.response().printTo(Serial);
     ASSERTEQUALS("{\"s\":10,\"r\":{\"x\":-0.123}}", Serial.output().c_str());
 
-    cout << "TEST	: test_JsonCommand() OK " << endl;
-}
+    Serial.clear();
+	JsonCommand cmd4;
+	Serial.push(JT("[{\"x\":1},{\"y\":2}]\n"));
+    ASSERTEQUAL(STATUS_BUSY_PARSED, cmd4.parse());
+    ASSERTEQUAL(STATUS_BUSY_PARSED, cmd4.getStatus());
+    ASSERT(cmd4.requestRoot().success());
+    ASSERT(cmd4.requestRoot().is<JsonArray&>());
+    ASSERT(!cmd4.requestRoot().is<JsonObject&>());
 
-void replaceChar(string &s, char cmatch, char creplace) {
-    for (int i = 0; i < s.size(); i++) {
-        if (s[i] == cmatch) {
-            s[i] = creplace;
-        }
-    }
+    cout << "TEST	: test_JsonCommand() OK " << endl;
 }
 
 void testJSON_process(Machine& machine, JsonController&jc, JsonCommand &jcmd, string replace,
@@ -392,17 +424,6 @@ void testJSON_process(Machine& machine, JsonController&jc, JsonCommand &jcmd, st
 	ASSERT(jcmd.responseAvailable() > sizeof(JsonVariant));
     ASSERTEQUALS(jo.c_str(), Serial.output().c_str());
 }
-
-string jsonTemplate(const char *jsonIn, string replace = "'\"") {
-    string ji(jsonIn);
-    for (int i = 0; i < replace.size(); i += 2) {
-        char cmatch = replace[i];
-        char creplace = replace[i + 1];
-        replaceChar(ji, cmatch, creplace);
-    }
-    return ji;
-}
-#define JT(s) (jsonTemplate(s).c_str())
 
 JsonCommand testJSON(Machine& machine, JsonController &jc, string replace, const char *jsonIn,
                      const char* jsonOut, Status processStatus = STATUS_OK) {
