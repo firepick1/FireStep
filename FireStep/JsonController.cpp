@@ -780,6 +780,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             }
         }
     } else if (strcmp("ee", key) == 0 || strcmp("sysee", key) == 0) {
+#ifdef TEST
 		const char *s = jobj[key];
 		if (!s) {
 			return jcmd.setError(STATUS_JSON_STRING, key);
@@ -811,6 +812,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
 				TESTCOUT2("EEPROM[", i, "]:", (char) EEPROM.read(i));
 			}
 		}
+#endif
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
         leastFreeRam = min(leastFreeRam, freeRam());
         jobj[key] = leastFreeRam;
