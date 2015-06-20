@@ -14,7 +14,7 @@ mkdir -p ziptmp/FireStep
 pushd ../ph5
 scripts/buildzip
 popd
-mv ph5*.zip ziptmp
+mv ../ph5*.zip ziptmp
 pushd ArduinoJson
 scripts/buildzip
 popd
