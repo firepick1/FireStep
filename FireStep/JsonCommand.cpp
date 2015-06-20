@@ -78,6 +78,15 @@ Status JsonCommand::parseCore() {
     return STATUS_BUSY_PARSED;
 }
 
+char * JsonCommand::allocate(size_t length) {
+	if ((pJsonFree-json) + length > sizeof(json)) {
+		return NULL;
+	}
+	char * result = pJsonFree;
+	pJsonFree += length;
+	return result;
+}
+
 Status JsonCommand::parseInput(const char *jsonIn) {
     if (parsed) {
         return STATUS_BUSY_PARSED;

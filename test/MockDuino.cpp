@@ -9,6 +9,7 @@
 
 SerialType Serial;
 MockDuino arduino;
+EEPROMType EEPROM;
 
 vector<uint8_t> serialbytes;
 

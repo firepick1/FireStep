@@ -132,8 +132,44 @@ typedef class MockDuino {
 		uint32_t get_usDelay() {return usDelay;}
 } MockDuino;
 
+#define EEPROM_BYTES 512
+typedef class EEPROMType {
+	private:
+		uint8_t data[EEPROM_BYTES];
+		
+	public:
+		EEPROMType() { clear(); }
+		void clear() {
+			for (int16_t i=0; i<EEPROM_BYTES; i++) {
+				data[i] = 255;
+			}
+		}
+		uint8_t read(int16_t addr) {
+			if (addr < 0 || EEPROM_BYTES <= addr) {
+				return 255;
+			}
+			return data[addr];
+		}
+		void write(int16_t addr, uint8_t value) {
+			if (0 <= addr && addr < EEPROM_BYTES) {
+				data[addr] = value;
+			}
+		}
+#ifdef TEST
+		void write(const char *str) {
+			for (int16_t i=0; i<EEPROM_BYTES; i++) {
+				write(i, str[i]);
+				if (!str[i]) {
+					break;
+				}
+			}
+		}
+#endif
+} EEPROMType;
+
 #define DELAY500NS arduino.delay500ns();
 
 extern MockDuino arduino;
+extern EEPROMType EEPROM;
 
 #endif

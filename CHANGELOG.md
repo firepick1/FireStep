@@ -1,11 +1,18 @@
 FireStep: change log
 ====================
 
+DEV (in progress)
+----
+* EEPROM startup command
+
 v0.1.5
 ------
-* EMC02 pins corrected
 * JSON command array
 * dvs scale now supported
+
+v0.1.4
+------
+* EMC02 pins corrected
 
 v0.1.3
 ------

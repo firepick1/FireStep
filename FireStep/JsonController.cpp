@@ -761,6 +761,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
+            node["ee"] = "";
             node["fr"] = "";
             node["jp"] = "";
             node["lh"] = "";
@@ -778,6 +779,38 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
                 }
             }
         }
+    } else if (strcmp("ee", key) == 0 || strcmp("sysee", key) == 0) {
+		const char *s = jobj[key];
+		if (!s) {
+			return jcmd.setError(STATUS_JSON_STRING, key);
+		}
+		if (*s == 0) { // query
+			uint8_t c = EEPROM.read(0);
+			if (c == '{' || c == '[') {
+				char *buf = jcmd.allocate(512);
+				if (!buf) {
+					return jcmd.setError(STATUS_JSON_MEM, key);
+				}
+				for (int16_t i=0; i<512; i++) {
+					c = EEPROM.read(i);
+					if (c == 255 || c == 0) {
+						buf[i] = 0;
+						break;
+					} 
+					buf[i] = c;
+				}
+				jobj[key] = buf;
+			}
+		} else {
+			int16_t len = strlen(s) + 1;
+			if (len >= 512) {
+				return jcmd.setError(STATUS_JSON_EEPROM, key);
+			}
+			for (int16_t i=0; i<len; i++) {
+				EEPROM.write(i, s[i]);
+				TESTCOUT2("EEPROM[", i, "]:", (char) EEPROM.read(i));
+			}
+		}
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
         leastFreeRam = min(leastFreeRam, freeRam());
         jobj[key] = leastFreeRam;

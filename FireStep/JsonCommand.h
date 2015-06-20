@@ -63,6 +63,7 @@ typedef class JsonCommand {
         Status setError(Status status, const char *err);
         size_t requestAvailable();
         size_t responseAvailable();
+		char * allocate(size_t length);
 } JsonCommand;
 
 } // namespace firestep

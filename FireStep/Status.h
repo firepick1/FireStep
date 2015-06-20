@@ -50,19 +50,19 @@ enum Status {
 
     // JSON parsing
     STATUS_JSON_BRACE_ERROR = -400,	// Unbalanced JSON braces
-    STATUS_JSON_BRACKET_ERROR = -401,	// Unbalanced JSON braces
-    STATUS_UNRECOGNIZED_NAME = -402,	// Parse didn't recognize thecommand
+    STATUS_JSON_BRACKET_ERROR = -401,// Unbalanced JSON braces
+    STATUS_UNRECOGNIZED_NAME = -402,// Parse didn't recognize thecommand
     STATUS_JSON_PARSE_ERROR = -403,	// JSON invalid or too long
-    STATUS_JSON_TOO_LONG = -404,		// JSON exceeds buffer size
+    STATUS_JSON_TOO_LONG = -404,	// JSON exceeds buffer size
     STATUS_JSON_OBJECT = -407,		// JSON object expected
-    STATUS_JSON_POSITIVE = -408,		// JSON value >= 0 expected
-    STATUS_JSON_POSITIVE1 = -409,		// JSON value >= 1 expected
+    STATUS_JSON_POSITIVE = -408,	// JSON value >= 0 expected
+    STATUS_JSON_POSITIVE1 = -409,	// JSON value >= 1 expected
     STATUS_JSON_KEY = -410,			// JSON buffer overflow: could not create JSON objecdt key
-    STATUS_JSON_STROKE_ERROR = -411,	// Expected JSON object for stroke
+    STATUS_JSON_STROKE_ERROR = -411,// Expected JSON object for stroke
     STATUS_RANGE_ERROR = -412,		// Stroke segment s1 value out of range [-127,127]
-    STATUS_S1S2LEN_ERROR = -413,		// Stroke segment s1/s2 length mismatch
-    STATUS_S1S3LEN_ERROR = -414,		// Stroke segment s1/s3 length mismatch
-    STATUS_S1S4LEN_ERROR = -415,		// Stroke segment s1/s4 length mismatch
+    STATUS_S1S2LEN_ERROR = -413,	// Stroke segment s1/s2 length mismatch
+    STATUS_S1S3LEN_ERROR = -414,	// Stroke segment s1/s3 length mismatch
+    STATUS_S1S4LEN_ERROR = -415,	// Stroke segment s1/s4 length mismatch
     STATUS_FIELD_ERROR = -416,		// Internal error: could not process field
     STATUS_FIELD_RANGE_ERROR = -417,// Provided field value is out of range
     STATUS_FIELD_ARRAY_ERROR = -418,// Expected JSON field array value
@@ -71,6 +71,8 @@ enum Status {
     STATUS_OUTPUT_FIELD = -421,		// JSON field is for output only
     STATUS_FIELD_HEX_ERROR = -422,	// Expected JSON field hex string value
     STATUS_JSON_CMD = -423,			// JSON command must be object or array
+    STATUS_JSON_STRING = -424,		// JSON string expected
+    STATUS_JSON_EEPROM = -425,		// JSON EEPROM string too long
 
     // events
     STATUS_ESTOP = -900,			// Emergency hardware stop

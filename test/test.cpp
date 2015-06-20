@@ -406,6 +406,18 @@ void test_JsonCommand() {
     ASSERT(!cmd4.requestRoot().is<JsonObject&>());
     ASSERTEQUAL(2, cmd4.requestRoot().size());
 
+    Serial.clear();
+	JsonCommand cmd5;
+	Serial.push(JT("{'sysee':'abcd'}\n"));
+    ASSERTEQUAL(STATUS_BUSY_PARSED, cmd5.parse());
+	char *s = cmd5.allocate(MAX_JSON);
+	ASSERT(!s);
+	s = cmd5.allocate(5);
+	ASSERT(s);
+	strcpy(s, "WXYZ");
+	ASSERTEQUALS("abcd", cmd5.requestRoot()["sysee"]);
+	ASSERTEQUALS("WXYZ", s);
+
     cout << "TEST	: test_JsonCommand() OK " << endl;
 }
 
@@ -551,7 +563,7 @@ MachineThread test_setup() {
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_DIR_PIN));
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
-    ASSERTEQUALS("FireStep 0.1.4\n", Serial.output().c_str());
+    ASSERTEQUALS("FireStep 0.1.5\n", Serial.output().c_str());
 	for (int i=0; i<MOTOR_COUNT; i++) {
 		ASSERTEQUAL((size_t) &mt.machine.axis[i], (size_t) &mt.machine.getMotorAxis(i));
 	}
@@ -682,7 +694,7 @@ void test_JsonController() {
     threadClock.ticks = 12345;
     jc.process(jcmd);
     char sysbuf[500];
-    const char *fmt = "{'s':%d,'r':{'sys':{'fr':1000,'jp':false,'lh':false,'lp':0,'pc':2,'tc':12345,'v':%.2f}},'t':0.00}\n";
+    const char *fmt = "{'s':%d,'r':{'sys':{'ee':'','fr':1000,'jp':false,'lh':false,'lp':0,'pc':2,'tc':12345,'v':%.2f}},'t':0.00}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
              STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
     ASSERTEQUALS(sysbuf, Serial.output().c_str());
@@ -2101,6 +2113,36 @@ void test_command_array() {
     cout << "TEST	: test_command_arraytest_pnp() OK " << endl;
 }
 
+void test_eeprom() {
+    cout << "TEST	: test_eeprom() =====" << endl;
+
+    MachineThread mt = test_setup();
+    Machine &machine = mt.machine;
+
+    Serial.push(JT("{'sysee':''}\n"));
+    test_ticks(1); // parse JsonCommand
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    test_ticks(1); // process command
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'sysee':''},'t':0.00}\n"), Serial.output().c_str());
+    test_ticks(1); // done
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    Serial.push(JT("{'sysee':'{\\\"sysv\\\":\\\"\\\"}'}\n"));
+    test_ticks(1); // parse JsonCommand
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    test_ticks(1); // process command
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'sysee':'{\\\"sysv\\\":\\\"\\\"}'},'t':0.00}\n"), Serial.output().c_str());
+    test_ticks(1); // done
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	int16_t addr = 0;
+	ASSERTEQUAL('{', EEPROM.read(addr++));
+	ASSERTEQUAL('"', EEPROM.read(addr++));
+
+    cout << "TEST	: test_eeprom() OK " << endl;
+}
+
 int main(int argc, char *argv[]) {
     LOGINFO3("INFO	: FireStep test v%d.%d.%d",
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -2137,6 +2179,7 @@ int main(int argc, char *argv[]) {
         test_stroke_endpos();
 		test_command_array();
         test_pnp();
+		test_eeprom();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;
