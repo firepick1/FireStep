@@ -5,6 +5,10 @@ DEV (in progress)
 ----
 * EEPROM startup command
 
+v0.1.6
+------
+* fix for individual axis homing bug 
+
 v0.1.5
 ------
 * JSON command array

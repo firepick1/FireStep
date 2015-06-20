@@ -1644,33 +1644,39 @@ void test_Home() {
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
     machine.setMotorPosition(Quad<StepCoord>(100, 100, 100, 100));
     arduino.setPin(PC2_X_MIN_PIN, LOW);
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
     threadClock.ticks++;
     mt.loop(); // ready for next command
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     threadClock.ticks++;
-    Serial.push(JT("{'homx':''}\n"));
+    Serial.push(JT("{'homy':''}\n"));
     mt.loop();	// parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 
     threadClock.ticks++;
     mt.loop(); // initializing
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(xpulses, arduino.pulses(PC2_X_STEP_PIN));
+    ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUALS("", Serial.output().c_str());
+    ASSERTEQUAL(false, machine.axis[0].homing);
+    ASSERTEQUAL(true, machine.axis[1].homing);
+    ASSERTEQUAL(false, machine.axis[2].homing);
 
     threadClock.ticks++;
     mt.loop(); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUALS("", Serial.output().c_str());
 
-    arduino.setPin(PC2_X_MIN_PIN, HIGH);
+    arduino.setPin(PC2_Y_MIN_PIN, HIGH);
     threadClock.ticks++;
     mt.loop(); // hit limit switch
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUAL(xpulses + 32 * 1 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_X_STEP_PIN));
-    ASSERTQUAD(Quad<StepCoord>(5, 100, 100, 100), mt.machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'homx':5},'t':0.00}\n"), Serial.output().c_str());
+    ASSERTEQUAL(32 * 1 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTQUAD(Quad<StepCoord>(100, 10, 100, 100), mt.machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'homy':10},'t':0.00}\n"), Serial.output().c_str());
 
     // TEST SHORT FORM
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
