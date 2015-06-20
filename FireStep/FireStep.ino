@@ -19,7 +19,7 @@ firestep::NeoPixel neoPixel(NEOPIXEL_LEDS, PC1_DISPLAY_PIN); // EMC02
 #else
 firestep::NeoPixel neoPixel(NEOPIXEL_LEDS, PC2_DISPLAY_PIN); // RAMPS1.4
 #define LED_PIN PC2_LED_PIN
-#fi
+#endif
 
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
