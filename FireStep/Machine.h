@@ -125,6 +125,7 @@ typedef class Axis {
             bool minHigh = digitalRead(pinMin);
             bool atMinNew = (invertLim == !minHigh);
             if (atMinNew != atMin) {
+				TESTCOUT2("readAtMin() pinMin:", pinMin, " atMinNew:", atMinNew);
                 atMin = atMinNew;
             }
             return STATUS_OK;

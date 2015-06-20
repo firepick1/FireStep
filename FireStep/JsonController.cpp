@@ -786,14 +786,14 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
 			return jcmd.setError(STATUS_JSON_STRING, key);
 		}
 		if (*s == 0) { // query
-			uint8_t c = EEPROM.read(0);
+			uint8_t c = eeprom_read_byte((uint8_t*) 0);
 			if (c == '{' || c == '[') {
-				char *buf = jcmd.allocate(512);
+				char *buf = jcmd.allocate(EEPROM_BYTES);
 				if (!buf) {
 					return jcmd.setError(STATUS_JSON_MEM, key);
 				}
-				for (int16_t i=0; i<512; i++) {
-					c = EEPROM.read(i);
+				for (int16_t i=0; i<EEPROM_BYTES; i++) {
+					c = eeprom_read_byte((uint8_t*) (size_t) i);
 					if (c == 255 || c == 0) {
 						buf[i] = 0;
 						break;
@@ -804,12 +804,12 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
 			}
 		} else {
 			int16_t len = strlen(s) + 1;
-			if (len >= 512) {
+			if (len >= EEPROM_BYTES) {
 				return jcmd.setError(STATUS_JSON_EEPROM, key);
 			}
 			for (int16_t i=0; i<len; i++) {
-				EEPROM.write(i, s[i]);
-				TESTCOUT2("EEPROM[", i, "]:", (char) EEPROM.read(i));
+				eeprom_write_byte((uint8_t*) (size_t) i, s[i]);
+				TESTCOUT2("EEPROM[", i, "]:", (char) eeprom_read_byte((uint8_t *) (size_t) i));
 			}
 		}
 #endif
@@ -841,8 +841,13 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     return status;
 }
 
-Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear) {
     Status status = STATUS_OK;
+	if (clear) {
+		for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
+			machine.getMotorAxis(i).homing = false;
+		}
+	}
     if (strcmp("hom", key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
@@ -855,7 +860,7 @@ Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-                status = initializeHome(jcmd, kidObj, it->key);
+                status = initializeHome(jcmd, kidObj, it->key, false);
                 if (status != STATUS_BUSY_MOVING) {
                     return status;
                 }
@@ -874,7 +879,7 @@ Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const
 Status JsonController::processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = jcmd.getStatus();
     if (status == STATUS_BUSY_PARSED) {
-        status = initializeHome(jcmd, jobj, key);
+        status = initializeHome(jcmd, jobj, key, true);
     } else if (status == STATUS_BUSY_MOVING) {
         status = machine.home();
     } else {

@@ -19,7 +19,7 @@ typedef class JsonController {
     protected:
         Machine &machine;
         Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);
-        Status initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+        Status initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
         Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
         Status processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key);
         Status processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key);

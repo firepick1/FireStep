@@ -1538,6 +1538,10 @@ void test_Home() {
     machine.axis[2].home = 15;
     machine.axis[3].home = 20;
     machine.setMotorPosition(Quad<StepCoord>(100, 100, 100, 100));
+	ASSERT(!machine.axis[0].atMin);
+	ASSERT(!machine.axis[1].atMin);
+	ASSERT(!machine.axis[2].atMin);
+	ASSERT(!machine.axis[3].atMin);
 
     // TEST LONG FORM
     threadClock.ticks++;
@@ -1591,6 +1595,10 @@ void test_Home() {
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_DIR_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_DIR_PIN));
     ASSERTEQUALS("", Serial.output().c_str());
+	ASSERT(!machine.axis[0].atMin);
+	ASSERT(!machine.axis[1].atMin);
+	ASSERT(!machine.axis[2].atMin);
+	ASSERT(!machine.axis[3].atMin);
 
     arduino.setPin(PC2_X_MIN_PIN, HIGH);
     threadClock.ticks++;
@@ -1607,6 +1615,10 @@ void test_Home() {
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_DIR_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_DIR_PIN));
     ASSERTEQUALS("", Serial.output().c_str());
+	ASSERT(machine.axis[0].atMin);
+	ASSERT(!machine.axis[1].atMin);
+	ASSERT(!machine.axis[2].atMin);
+	ASSERT(!machine.axis[3].atMin);
 
     arduino.setPin(PC2_Z_MIN_PIN, HIGH);
     threadClock.ticks++;
@@ -1623,6 +1635,10 @@ void test_Home() {
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_DIR_PIN));
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_Z_DIR_PIN)); // HIGH because we backed off
     ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'x':5,'z':20}},'t':0.00}\n"), Serial.output().c_str());
+	ASSERT(machine.axis[0].atMin);
+	ASSERT(!machine.axis[1].atMin);
+	ASSERT(machine.axis[2].atMin);
+	ASSERT(!machine.axis[3].atMin);
 
     // TEST ONE-AXIS SHORT FORM
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -2136,9 +2152,9 @@ void test_eeprom() {
     ASSERTEQUALS(JT("{'s':0,'r':{'sysee':'{\\\"sysv\\\":\\\"\\\"}'},'t':0.00}\n"), Serial.output().c_str());
     test_ticks(1); // done
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-	int16_t addr = 0;
-	ASSERTEQUAL('{', EEPROM.read(addr++));
-	ASSERTEQUAL('"', EEPROM.read(addr++));
+	uint8_t * addr = 0;
+	ASSERTEQUAL('{', eeprom_read_byte(addr++));
+	ASSERTEQUAL('"', eeprom_read_byte(addr++));
 
     cout << "TEST	: test_eeprom() OK " << endl;
 }
@@ -2155,7 +2171,7 @@ int main(int argc, char *argv[]) {
     // test first
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
-		test_command_array();
+		test_Home();
     } else {
         test_Serial();
         test_Thread();

@@ -9,7 +9,6 @@
 
 SerialType Serial;
 MockDuino arduino;
-EEPROMType EEPROM;
 
 vector<uint8_t> serialbytes;
 
@@ -244,5 +243,22 @@ void MockDuino::setPinMode(int16_t pin, int16_t value) {
 
 void delay(int ms) {
     arduino.timer1(MS_TICKS(ms));
+}
+
+/////////////// avr/eeprom.h /////////////////
+
+uint8_t eeprom_data[EEPROM_BYTES];
+
+uint8_t eeprom_read_byte(uint8_t *addr) {
+    if ((size_t) addr < 0 || EEPROM_BYTES <= (size_t) addr) {
+        return 255;
+    }
+    return eeprom_data[(size_t) addr];
+}
+
+void eeprom_write_byte(uint8_t *addr, uint8_t value) {
+    if (0 <= (size_t) addr && (size_t) addr < EEPROM_BYTES) {
+        eeprom_data[(size_t) addr] = value;
+    }
 }
 
