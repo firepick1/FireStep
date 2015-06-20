@@ -563,7 +563,7 @@ MachineThread test_setup() {
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_DIR_PIN));
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
-    ASSERTEQUALS("FireStep 0.1.5\n", Serial.output().c_str());
+    ASSERTEQUALS("FireStep 0.1.6\n", Serial.output().c_str());
 	for (int i=0; i<MOTOR_COUNT; i++) {
 		ASSERTEQUAL((size_t) &mt.machine.axis[i], (size_t) &mt.machine.getMotorAxis(i));
 	}
