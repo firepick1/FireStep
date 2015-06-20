@@ -11,7 +11,7 @@ rm -rf ziptmp
 mkdir -p ziptmp/Libraries
 mkdir -p ziptmp/FireStep
 
-pushd ph5
+pushd ../ph5
 scripts/buildzip
 popd
 mv ph5*.zip ziptmp
