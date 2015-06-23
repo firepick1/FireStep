@@ -354,7 +354,7 @@ void test_JsonCommand() {
 
     JsonCommand cmd1;
     ASSERT(!cmd1.requestRoot().success());
-    ASSERTEQUAL(STATUS_BUSY_PARSED, cmd1.parse("{\"sys\":\"\"}"));
+    ASSERTEQUAL(STATUS_BUSY_PARSED, cmd1.parse("{\"sys\":\"\"}", STATUS_WAIT_IDLE));
     ASSERTEQUAL(STATUS_BUSY_PARSED, cmd1.getStatus());
     ASSERT(cmd1.isValid());
     ASSERT(!cmd1.requestRoot().is<JsonArray&>());
@@ -366,7 +366,7 @@ void test_JsonCommand() {
     ASSERT(sys.is<const char *>());
 
     JsonCommand cmd2;
-    ASSERTEQUAL(STATUS_BUSY_PARSED, cmd2.parse("{\"x\":123,\"y\":2.3}"));
+    ASSERTEQUAL(STATUS_BUSY_PARSED, cmd2.parse("{\"x\":123,\"y\":2.3}", STATUS_WAIT_IDLE));
     ASSERTEQUAL(STATUS_BUSY_PARSED, cmd2.getStatus());
     ASSERT(cmd2.isValid());
     ASSERTEQUALT(2.3, cmd2.requestRoot()["y"], 0.001);
@@ -384,9 +384,9 @@ void test_JsonCommand() {
     const char *json2 = "23}\n";
     Serial.push(json1);
     JsonCommand cmd3;
-    ASSERTEQUAL(STATUS_WAIT_EOL, cmd3.parse());
+    ASSERTEQUAL(STATUS_WAIT_EOL, cmd3.parse(NULL, STATUS_WAIT_IDLE));
     Serial.push(json2);
-    ASSERTEQUAL(STATUS_BUSY_PARSED, cmd3.parse());
+    ASSERTEQUAL(STATUS_BUSY_PARSED, cmd3.parse(NULL, STATUS_WAIT_EOL));
     ASSERTEQUAL(STATUS_BUSY_PARSED, cmd3.getStatus());
     ASSERT(cmd3.isValid());
     ASSERT(cmd3.requestRoot().success());
@@ -404,7 +404,7 @@ void test_JsonCommand() {
     Serial.clear();
 	JsonCommand cmd4;
 	Serial.push(JT("[{\"x\":1},{\"y\":2}]\n"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, cmd4.parse());
+    ASSERTEQUAL(STATUS_BUSY_PARSED, cmd4.parse(NULL, STATUS_WAIT_IDLE));
     ASSERTEQUAL(STATUS_BUSY_PARSED, cmd4.getStatus());
     ASSERT(cmd4.requestRoot().success());
     ASSERT(cmd4.requestRoot().is<JsonArray&>());
@@ -435,7 +435,7 @@ JsonCommand testJSON(Machine& machine, JsonController &jc, string replace, const
                      const char* jsonOut, Status processStatus = STATUS_OK) {
     string ji(jsonTemplate(jsonIn, replace));
     JsonCommand jcmd;
-    Status status = jcmd.parse(ji.c_str());
+    Status status = jcmd.parse(ji.c_str(), STATUS_WAIT_IDLE);
     ASSERTEQUAL(STATUS_BUSY_PARSED, status);
     char parseOut[MAX_JSON];
     jcmd.requestRoot().printTo(parseOut, sizeof(parseOut));
@@ -538,8 +538,10 @@ void test_JsonController_machinePosition(Machine& machine, JsonController &jc) {
              "{'s':0,'r':{'mpo':{'1':-32760,'2':-32761,'3':-32762,'4':-32763}},'t':0.00}\n");
 }
 
-MachineThread test_setup() {
-    arduino.clear();
+MachineThread test_setup(bool clearArduino=true) {
+	if (clearArduino) {
+		arduino.clear();
+	}
     threadRunner.clear();
     MachineThread mt;
     mt.machine.pDisplay = &testDisplay;
@@ -554,11 +556,13 @@ MachineThread test_setup() {
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_DIR_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_DIR_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_DIR_PIN));
-    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	if (clearArduino) {
+		ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+		char buf[100];
+		snprintf(buf, sizeof(buf), "FireStep %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+		ASSERTEQUALS(buf, Serial.output().c_str());
+	}
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
-	char buf[100];
-	snprintf(buf, sizeof(buf), "FireStep %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-    ASSERTEQUALS(buf, Serial.output().c_str());
 	for (int i=0; i<MOTOR_COUNT; i++) {
 		ASSERTEQUAL((size_t) &mt.machine.axis[i], (size_t) &mt.machine.getMotorAxis(i));
 	}
@@ -685,7 +689,7 @@ void test_JsonController() {
     Serial.clear();
     machine.pDisplay->setStatus(DISPLAY_WAIT_IDLE);
     JsonCommand jcmd;
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jcmd.parse("{\"sys\":\"\"}"));
+    ASSERTEQUAL(STATUS_BUSY_PARSED, jcmd.parse("{\"sys\":\"\"}", STATUS_WAIT_IDLE));
     threadClock.ticks = 12345;
     jc.process(jcmd);
     char sysbuf[500];
@@ -1520,23 +1524,52 @@ void test_PrettyPrint() {
 void test_eep() {
     cout << "TEST	: test_eep() =====" << endl;
 
-    MachineThread mt = test_setup();
+	uint8_t *eeaddr = 0;
+	arduino.clear();
+	eeprom_write_byte(eeaddr++, '{');
+	eeprom_write_byte(eeaddr++, '"');
+	eeprom_write_byte(eeaddr++, 's');
+	eeprom_write_byte(eeaddr++, 'y');
+	eeprom_write_byte(eeaddr++, 's');
+	eeprom_write_byte(eeaddr++, 'f');
+	eeprom_write_byte(eeaddr++, 'r');
+	eeprom_write_byte(eeaddr++, '"');
+	eeprom_write_byte(eeaddr++, ':');
+	eeprom_write_byte(eeaddr++, '"');
+	eeprom_write_byte(eeaddr++, '"');
+	eeprom_write_byte(eeaddr++, '}');
+    MachineThread mt = test_setup(false);
     Machine &machine = mt.machine;
-
-    Serial.push(JT("{'eep':{'0':''}}\n"));
 	test_ticks(1);
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 	test_ticks(1);
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'0':''}},'t':0.00}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'sysfr':1000},'t':0.00}\n"), Serial.output().c_str());
 	test_ticks(1);
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-    Serial.push(JT("{'eep0':'{\\\"sysv\\\":\\\"\\\"}'}\n"));
+    Serial.push(JT("{'eep':{'100':''}}\n"));
 	test_ticks(1);
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 	test_ticks(1);
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'eep0':'{\\\"sysv\\\":\\\"\\\"}'},'t':0.00}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'100':''}},'t':0.00}\n"), Serial.output().c_str());
+	test_ticks(1);
+
+    Serial.push(JT("{'eep100':{'sysv':''}}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'eep100':{'sysv':''}},'t':0.00}\n"), Serial.output().c_str());
+	test_ticks(1);
+
+    Serial.push(JT("{'eep100':''}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'eep100':'{\\\"sysv\\\":\\\"\\\"}'},'t':0.00}\n"), Serial.output().c_str());
 	test_ticks(1);
 
     Serial.push(JT("{'eep':{'123':'hello'}}\n"));
@@ -1560,7 +1593,7 @@ void test_eep() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 	test_ticks(1);
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'0':'{\\\"sysv\\\":\\\"\\\"}'}},'t':0.00}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'0':'{\\\"sysfr\\\":\\\"\\\"}'}},'t':0.00}\n"), Serial.output().c_str());
 	test_ticks(1);
 
     cout << "TEST	: test_eep() OK " << endl;

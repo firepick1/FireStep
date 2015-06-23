@@ -87,7 +87,7 @@ char * JsonCommand::allocate(size_t length) {
 	return result;
 }
 
-Status JsonCommand::parseInput(const char *jsonIn) {
+Status JsonCommand::parseInput(const char *jsonIn, Status status) {
     if (parsed) {
         return STATUS_BUSY_PARSED;
     }
@@ -98,7 +98,7 @@ Status JsonCommand::parseInput(const char *jsonIn) {
             return STATUS_JSON_TOO_LONG;
         }
         return parseCore();
-    } else {
+    } else if (pJsonFree == json || status == STATUS_WAIT_EOL) {
         while (Serial.available()) {
             if (pJsonFree - json >= MAX_JSON - 1) {
                 parsed = true;
@@ -112,6 +112,8 @@ Status JsonCommand::parseInput(const char *jsonIn) {
             }
         }
         return STATUS_WAIT_EOL;
+	} else {
+		return parseCore();
     }
 }
 
@@ -120,9 +122,9 @@ Status JsonCommand::parseInput(const char *jsonIn) {
  * Return true if parsing is complete.
  * Check isValid() and getStatus() for parsing status.
  */
-Status JsonCommand::parse(const char *jsonIn) {
+Status JsonCommand::parse(const char *jsonIn, Status statusIn) {
     tStart = ticks();
-    Status status = parseInput(jsonIn);
+    Status status = parseInput(jsonIn, statusIn);
 
     if (status < 0) {
         char error[100];

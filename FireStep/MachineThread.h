@@ -12,6 +12,7 @@ typedef class MachineThread : Thread {
 
     protected:
         void displayStatus();
+		void executeEEPROM(uint8_t *eeprom_addr);
 
     public:
         Status status;

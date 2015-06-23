@@ -42,6 +42,7 @@ void MachineThread::displayStatus() {
         break;
     case STATUS_BUSY_OK:
     case STATUS_BUSY_SETUP:
+	case STATUS_BUSY_EEPROM:
     case STATUS_WAIT_BUSY:
     case STATUS_BUSY:
         machine.pDisplay->setStatus(DISPLAY_BUSY);
@@ -63,6 +64,31 @@ void MachineThread::displayStatus() {
     }
 
     machine.pDisplay->show();
+}
+
+void MachineThread::executeEEPROM(uint8_t *eeprom_addr) {
+    uint8_t c = eeprom_read_byte(eeprom_addr);
+    if (c == '{' || c == '[') {
+        command.clear();
+        char *buf = command.allocate(MAX_JSON);
+        if (!buf) {
+            status = STATUS_JSON_MEM;
+        } else {
+            int16_t i = 0;
+            for (i=0; i<MAX_JSON-2; i++) {
+                c = eeprom_read_byte(eeprom_addr+i);
+                if (c == 255 || c == 0) {
+                    break;
+                }
+                buf[i] = c;
+            }
+            buf[i++] = 0;
+            status = command.parse(NULL, status);
+            TESTCOUT2("EEPROM:", buf, " status:", (int) status);
+        }
+    } else {
+        status = STATUS_JSON_EEPROM;
+    }
 }
 
 void MachineThread::loop() {
@@ -90,14 +116,14 @@ void MachineThread::loop() {
     case STATUS_WAIT_CANCELLED:
         if (Serial.available()) {
             command.clear();
-            status = command.parse();
+            status = command.parse(NULL, status);
         } else {
             machine.idle();
         }
         break;
     case STATUS_WAIT_EOL:
         if (Serial.available()) {
-            status = command.parse();
+            status = command.parse(NULL, status);
         }
         break;
     case STATUS_BUSY_PARSED:
@@ -110,13 +136,21 @@ void MachineThread::loop() {
             status = controller.process(command);
         }
         break;
+    case STATUS_BUSY_EEPROM:
+        executeEEPROM(0);
+        break;
     case STATUS_BUSY_SETUP: {
-        char buf[100];
         machine.enable(true);
-        snprintf(buf, sizeof(buf), "FireStep %d.%d.%d",
-                 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-        Serial.println(buf);
-        status = STATUS_WAIT_IDLE;
+        uint8_t c = eeprom_read_byte((uint8_t*) 0);
+        if (c == '{' || c == '[') {
+            status = STATUS_BUSY_EEPROM;
+        } else {
+			char msg[100];
+			snprintf(msg, sizeof(msg), "FireStep %d.%d.%d",
+					 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+			Serial.println(msg);
+            status = STATUS_WAIT_IDLE;
+        }
         break;
     }
     case STATUS_OK:

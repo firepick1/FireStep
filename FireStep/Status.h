@@ -10,6 +10,7 @@ enum Status {
     STATUS_BUSY_MOVING = 12,		// Processing motion command
     STATUS_BUSY_SETUP = 13,			// Processing setup
     STATUS_BUSY_OK = 14,			// sub-command completed successfully
+    STATUS_BUSY_EEPROM = 15,		// EEPROM command queued for processing
     STATUS_WAIT_IDLE = 20,			// Awaiting input: inactive
     STATUS_WAIT_EOL = 21,			// Awaiting input: remainder of EOL-terminated command
     STATUS_WAIT_CAMERA = 22,		// Awaiting input: camera ready display
@@ -42,6 +43,7 @@ enum Status {
 	STATUS_CORE_PIN = -135,			// Attempt to assign a core pin for custom io
 	STATUS_NO_SUCH_PIN = -136,		// pin number out of range
 	STATUS_EEPROM_ADDR = -137,		// EEPROM address out of range
+	STATUS_EEPROM_JSON = -138,		// No JSON to execute at EEPROM address 
 
     // stroke
     STATUS_STROKE_SEGPULSES = -200,	// Stroke has too many pulses per segment [-127,127]
@@ -96,6 +98,7 @@ inline bool isProcessing(Status status) {
     case STATUS_BUSY_PARSED:
     case STATUS_BUSY_SETUP:
     case STATUS_BUSY_OK:
+    case STATUS_BUSY_EEPROM:
         return true;
     default:
         return false;

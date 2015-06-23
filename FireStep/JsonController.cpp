@@ -862,11 +862,23 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
 	if (addrLong<0 || EEPROM_END <= addrLong) {
 		return STATUS_EEPROM_ADDR;
 	}
-	const char *s = jobj[key];
-	if (!s) {
+	JsonVariant &jvalue = jobj[key];
+	char buf[EEPROM_BYTES];
+	buf[0] = 0;
+	if (jvalue.is<JsonArray&>()) {
+		JsonArray &jeep = jvalue;
+		jeep.printTo(buf, EEPROM_BYTES);
+	} else if (jvalue.is<JsonObject&>()) {
+		JsonObject &jeep = jvalue;
+		jeep.printTo(buf, EEPROM_BYTES);
+	} else if (jvalue.is<const char *>()) {
+		const char *s = jvalue;
+		snprintf(buf, sizeof(buf), "%s", s);
+	}
+	if (!buf) {
 		return STATUS_JSON_STRING;
 	}
-	if (*s == 0) { // query
+	if (buf[0] == 0) { // query
 		uint8_t c = eeprom_read_byte((uint8_t*) addrLong);
 		if (c && c != 255) {
 			char *buf = jcmd.allocate(EEPROM_BYTES);
@@ -884,12 +896,12 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
 			jobj[key] = buf;
 		}
 	} else {
-		int16_t len = strlen(s) + 1;
+		int16_t len = strlen(buf) + 1;
 		if (len >= EEPROM_BYTES) {
 			return jcmd.setError(STATUS_JSON_EEPROM, key);
 		}
 		for (int16_t i=0; i<len; i++) {
-			eeprom_write_byte((uint8_t*)addrLong+i, s[i]);
+			eeprom_write_byte((uint8_t*)addrLong+i, buf[i]);
 			TESTCOUT2("EEPROM[", ((int)addrLong+i), "]:", (char) eeprom_read_byte((uint8_t *) addrLong+i));
 		}
 	}

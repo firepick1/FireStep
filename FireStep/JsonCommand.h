@@ -40,7 +40,7 @@ typedef class JsonCommand {
 
     private:
         Status parseCore();
-        Status parseInput(const char *jsonIn);
+        Status parseInput(const char *jsonIn, Status status);
     public:
         JsonCommand();
         void clear();
@@ -50,7 +50,7 @@ typedef class JsonCommand {
         inline JsonObject & response() {
             return jResponseRoot;
         }
-        Status parse(const char *jsonIn = NULL);
+        Status parse(const char *jsonIn, Status status);
         bool isValid();
         inline Status getStatus() {
             return (Status) (int32_t) jResponseRoot["s"];
