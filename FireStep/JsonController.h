@@ -25,6 +25,8 @@ typedef class JsonController {
         Status processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key);
 		Status processIOPin(JsonCommand& jcmd, JsonObject& jobj, const char* key);
 		Status processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+		Status processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, const char* key, const char *addr);
+		Status processEEPROM(JsonCommand& jcmd, JsonObject& jobj, const char* key);
         Status processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
         Status processPin(JsonObject& jobj, const char *key, PinType &pin, int16_t mode, int16_t value = LOW);
         Status processStepperPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);

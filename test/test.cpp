@@ -411,18 +411,6 @@ void test_JsonCommand() {
     ASSERT(!cmd4.requestRoot().is<JsonObject&>());
     ASSERTEQUAL(2, cmd4.requestRoot().size());
 
-    Serial.clear();
-	JsonCommand cmd5;
-	Serial.push(JT("{'sysee':'abcd'}\n"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, cmd5.parse());
-	char *s = cmd5.allocate(MAX_JSON);
-	ASSERT(!s);
-	s = cmd5.allocate(5);
-	ASSERT(s);
-	strcpy(s, "WXYZ");
-	ASSERTEQUALS("abcd", cmd5.requestRoot()["sysee"]);
-	ASSERTEQUALS("WXYZ", s);
-
     cout << "TEST	: test_JsonCommand() OK " << endl;
 }
 
@@ -701,7 +689,7 @@ void test_JsonController() {
     threadClock.ticks = 12345;
     jc.process(jcmd);
     char sysbuf[500];
-    const char *fmt = "{'s':%d,'r':{'sys':{'ee':'','fr':1000,'jp':false,'lh':false,'lp':0,'pc':2,'tc':12345,'v':%.2f}},'t':0.00}\n";
+    const char *fmt = "{'s':%d,'r':{'sys':{'fr':1000,'jp':false,'lh':false,'lp':0,'pc':2,'tc':12345,'v':%.2f}},'t':0.00}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
              STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
     ASSERTEQUALS(sysbuf, Serial.output().c_str());
@@ -1529,6 +1517,55 @@ void test_PrettyPrint() {
     cout << "TEST	: test_PrettyPrint() OK " << endl;
 }
 
+void test_eep() {
+    cout << "TEST	: test_eep() =====" << endl;
+
+    MachineThread mt = test_setup();
+    Machine &machine = mt.machine;
+
+    Serial.push(JT("{'eep':{'0':''}}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'0':''}},'t':0.00}\n"), Serial.output().c_str());
+	test_ticks(1);
+
+    Serial.push(JT("{'eep0':'{\\\"sysv\\\":\\\"\\\"}'}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'eep0':'{\\\"sysv\\\":\\\"\\\"}'},'t':0.00}\n"), Serial.output().c_str());
+	test_ticks(1);
+
+    Serial.push(JT("{'eep':{'123':'hello'}}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'123':'hello'}},'t':0.00}\n"), Serial.output().c_str());
+	test_ticks(1);
+
+    Serial.push(JT("{'eep':{'124':''}}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'124':'ello'}},'t':0.00}\n"), Serial.output().c_str());
+	test_ticks(1);
+
+    Serial.push(JT("{'eep':{'0':''}}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'0':'{\\\"sysv\\\":\\\"\\\"}'}},'t':0.00}\n"), Serial.output().c_str());
+	test_ticks(1);
+
+    cout << "TEST	: test_eep() OK " << endl;
+}
+
 void test_io() {
     cout << "TEST	: test_io() =====" << endl;
 
@@ -2224,36 +2261,6 @@ void test_command_array() {
     cout << "TEST	: test_command_arraytest_pnp() OK " << endl;
 }
 
-void test_eeprom() {
-    cout << "TEST	: test_eeprom() =====" << endl;
-
-    MachineThread mt = test_setup();
-    Machine &machine = mt.machine;
-
-    Serial.push(JT("{'sysee':''}\n"));
-    test_ticks(1); // parse JsonCommand
-    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    test_ticks(1); // process command
-    ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'sysee':''},'t':0.00}\n"), Serial.output().c_str());
-    test_ticks(1); // done
-    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-
-    Serial.push(JT("{'sysee':'{\\\"sysv\\\":\\\"\\\"}'}\n"));
-    test_ticks(1); // parse JsonCommand
-    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    test_ticks(1); // process command
-    ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'sysee':'{\\\"sysv\\\":\\\"\\\"}'},'t':0.00}\n"), Serial.output().c_str());
-    test_ticks(1); // done
-    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-	uint8_t * addr = 0;
-	ASSERTEQUAL('{', eeprom_read_byte(addr++));
-	ASSERTEQUAL('"', eeprom_read_byte(addr++));
-
-    cout << "TEST	: test_eeprom() OK " << endl;
-}
-
 int main(int argc, char *argv[]) {
     LOGINFO3("INFO	: FireStep test v%d.%d.%d",
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -2290,8 +2297,8 @@ int main(int argc, char *argv[]) {
         test_stroke_endpos();
 		test_command_array();
         test_pnp();
-		test_eeprom();
 		test_io();
+		test_eep();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;

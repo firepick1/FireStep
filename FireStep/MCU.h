@@ -117,6 +117,7 @@ inline int16_t freeRam () {
 }
 
 #define EEPROM_BYTES 512 /* Actual capacity will be less because eeprom buffer is part of MAX_JSON */
+#define EEPROM_END 4096
 extern uint8_t eeprom_read_byte(uint8_t *addr);
 extern void eeprom_write_byte(uint8_t *addr, uint8_t value);
 

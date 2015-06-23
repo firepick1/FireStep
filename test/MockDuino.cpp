@@ -9,8 +9,9 @@
 
 SerialType Serial;
 MockDuino arduino;
-
 vector<uint8_t> serialbytes;
+int16_t eeprom_data[EEPROM_BYTES];
+
 
 void SerialType::clear() {
     serialbytes.clear();
@@ -141,13 +142,16 @@ int16_t& MockDuino::MEM(int addr) {
 void MockDuino::clear() {
     int novalue = 0xfe;
     Serial.output();	// discard
-    for (int i = 0; i < ARDUINO_PINS; i++) {
+    for (int16_t i = 0; i < ARDUINO_PINS; i++) {
         pin[i] = NOVALUE;
         _pinMode[i] = NOVALUE;
     }
-    for (int i = 0; i < ARDUINO_MEM; i++) {
+    for (int16_t i = 0; i < ARDUINO_MEM; i++) {
         mem[i] = NOVALUE;
     }
+	for (int16_t i=0; i<EEPROM_BYTES; i++) {
+		eeprom_data[i] = NOVALUE;
+	}
     memset(pinPulses, 0, sizeof(pinPulses));
     usDelay = 0;
     ADCSRA = 0;	// ADC control and status register A (disabled)
@@ -261,8 +265,6 @@ void delay(int ms) {
 }
 
 /////////////// avr/eeprom.h /////////////////
-
-uint8_t eeprom_data[EEPROM_BYTES];
 
 uint8_t eeprom_read_byte(uint8_t *addr) {
     if ((size_t) addr < 0 || EEPROM_BYTES <= (size_t) addr) {

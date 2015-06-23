@@ -41,6 +41,7 @@ enum Status {
     STATUS_STATE = -134,			// Internal error: invalid state
 	STATUS_CORE_PIN = -135,			// Attempt to assign a core pin for custom io
 	STATUS_NO_SUCH_PIN = -136,		// pin number out of range
+	STATUS_EEPROM_ADDR = -137,		// EEPROM address out of range
 
     // stroke
     STATUS_STROKE_SEGPULSES = -200,	// Stroke has too many pulses per segment [-127,127]
@@ -75,9 +76,9 @@ enum Status {
     STATUS_JSON_CMD = -423,			// JSON command must be object or array
     STATUS_JSON_STRING = -424,		// JSON string expected
     STATUS_JSON_EEPROM = -425,		// JSON EEPROM string too long
-	STATUS_IO_OBJ = -426,			// Expected JSON object after "io"
 	STATUS_JSON_BOOL = -427,		// Expected JSON true or false
 	STATUS_JSON_255 = -428,			// Expected JSON value between 0 and 255
+	STATUS_JSON_DIGIT = -429,		// Expected numeric suffix for attribute
 
     // events
     STATUS_ESTOP = -900,			// Emergency hardware stop

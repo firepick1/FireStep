@@ -761,7 +761,6 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["ee"] = "";
             node["fr"] = "";
             node["jp"] = "";
             node["lh"] = "";
@@ -779,40 +778,6 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
                 }
             }
         }
-    } else if (strcmp("ee", key) == 0 || strcmp("sysee", key) == 0) {
-#ifdef TEST
-		const char *s = jobj[key];
-		if (!s) {
-			return jcmd.setError(STATUS_JSON_STRING, key);
-		}
-		if (*s == 0) { // query
-			uint8_t c = eeprom_read_byte((uint8_t*) 0);
-			if (c == '{' || c == '[') {
-				char *buf = jcmd.allocate(EEPROM_BYTES);
-				if (!buf) {
-					return jcmd.setError(STATUS_JSON_MEM, key);
-				}
-				for (int16_t i=0; i<EEPROM_BYTES; i++) {
-					c = eeprom_read_byte((uint8_t*) (size_t) i);
-					if (c == 255 || c == 0) {
-						buf[i] = 0;
-						break;
-					} 
-					buf[i] = c;
-				}
-				jobj[key] = buf;
-			}
-		} else {
-			int16_t len = strlen(s) + 1;
-			if (len >= EEPROM_BYTES) {
-				return jcmd.setError(STATUS_JSON_EEPROM, key);
-			}
-			for (int16_t i=0; i<len; i++) {
-				eeprom_write_byte((uint8_t*) (size_t) i, s[i]);
-				TESTCOUT2("EEPROM[", i, "]:", (char) eeprom_read_byte((uint8_t *) (size_t) i));
-			}
-		}
-#endif
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
         leastFreeRam = min(leastFreeRam, freeRam());
         jobj[key] = leastFreeRam;
@@ -888,6 +853,70 @@ Status JsonController::processHome(JsonCommand& jcmd, JsonObject& jobj, const ch
     return status;
 }
 
+Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, const char* key, const char*addr) {
+	Status status = STATUS_OK;
+	if (!addr || *addr<'0' || '9'<*addr) {
+		return STATUS_JSON_DIGIT;
+	}
+	long addrLong = strtol(addr, NULL, 10);
+	if (addrLong<0 || EEPROM_END <= addrLong) {
+		return STATUS_EEPROM_ADDR;
+	}
+	const char *s = jobj[key];
+	if (!s) {
+		return STATUS_JSON_STRING;
+	}
+	if (*s == 0) { // query
+		uint8_t c = eeprom_read_byte((uint8_t*) addrLong);
+		if (c && c != 255) {
+			char *buf = jcmd.allocate(EEPROM_BYTES);
+			if (!buf) {
+				return jcmd.setError(STATUS_JSON_MEM, key);
+			}
+			for (int16_t i=0; i<EEPROM_BYTES; i++) {
+				c = eeprom_read_byte((uint8_t*) addrLong+i);
+				if (c == 255 || c == 0) {
+					buf[i] = 0;
+					break;
+				} 
+				buf[i] = c;
+			}
+			jobj[key] = buf;
+		}
+	} else {
+		int16_t len = strlen(s) + 1;
+		if (len >= EEPROM_BYTES) {
+			return jcmd.setError(STATUS_JSON_EEPROM, key);
+		}
+		for (int16_t i=0; i<len; i++) {
+			eeprom_write_byte((uint8_t*)addrLong+i, s[i]);
+			TESTCOUT2("EEPROM[", ((int)addrLong+i), "]:", (char) eeprom_read_byte((uint8_t *) addrLong+i));
+		}
+	}
+	return status;
+}
+
+Status JsonController::processEEPROM(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+	Status status = STATUS_OK;
+	if (strcmp("eep", key) == 0) {
+		JsonObject& kidObj = jobj[key];
+		if (!kidObj.success()) {
+			return jcmd.setError(STATUS_JSON_OBJECT, key);
+		}
+		for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+			status = processEEPROMValue(jcmd, kidObj, it->key, it->key);
+		}
+	} else if (strncmp("eep",key,3) == 0) {
+		status = processEEPROMValue(jcmd, jobj, key, key+3);
+	} else {
+		status = STATUS_UNRECOGNIZED_NAME;
+	}
+	if (status < 0) {
+		return jcmd.setError(status, key);
+	}
+	return status;
+}
+
 Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
 	const char *pinStr = *key == 'd' || *key == 'a' ? key+1 : key+3;
 	long pinLong = strtol(pinStr, NULL, 10);
@@ -938,17 +967,9 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
 Status JsonController::processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
 	Status status = STATUS_NOT_IMPLEMENTED;
     if (strcmp("io", key) == 0) {
-        const char *s;
-        if ((s = jobj[key]) && *s == 0) {
-            JsonObject& node = jobj.createNestedObject(key);
-            node["1"] = "";
-            node["2"] = "";
-            node["3"] = "";
-            node["4"] = "";
-        }
         JsonObject& kidObj = jobj[key];
 		if (!kidObj.success()) {
-			return jcmd.setError(STATUS_IO_OBJ, key);
+			return jcmd.setError(STATUS_JSON_OBJECT, key);
 		}
 		for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
 			status = processIO(jcmd, kidObj, it->key);
@@ -1061,6 +1082,8 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
             status = processStepperPosition(jcmd, jobj, it->key);
         } else if (strncmp("io", it->key, 2) == 0) {
             status = processIO(jcmd, jobj, it->key);
+        } else if (strncmp("eep", it->key, 3) == 0) {
+            status = processEEPROM(jcmd, jobj, it->key);
         } else {
             switch (it->key[0]) {
             case '1':
