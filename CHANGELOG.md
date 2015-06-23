@@ -3,7 +3,7 @@ FireStep: change log
 
 DEV (in progress)
 ----
-* EEPROM startup command
+* TBD
 
 v0.1.8
 ------
