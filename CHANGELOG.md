@@ -5,6 +5,11 @@ DEV (in progress)
 ----
 * EEPROM startup command
 
+v0.1.8
+------
+* EEPROM read/write
+* EEPROM startup command
+
 v0.1.7
 ------
 * io for digital/analog pins
