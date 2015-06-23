@@ -166,6 +166,11 @@ void test_Machine() {
     ASSERTEQUAL(1, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTEQUAL(1, arduino.pulses(PC2_Y_STEP_PIN));
     ASSERTEQUAL(1, arduino.pulses(PC2_Z_STEP_PIN));
+	ASSERT(machine.isCorePin(PC2_X_STEP_PIN));
+	ASSERT(machine.isCorePin(PC2_Y_DIR_PIN));
+	ASSERT(machine.isCorePin(PC2_Z_MIN_PIN));
+	ASSERT(machine.isCorePin(PC2_Z_ENABLE_PIN));
+	ASSERT(!machine.isCorePin(17));
 
     ASSERT(machine.axis[0].isEnabled());
     ASSERT(machine.axis[1].isEnabled());
@@ -563,7 +568,9 @@ MachineThread test_setup() {
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_DIR_PIN));
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
-    ASSERTEQUALS("FireStep 0.1.6\n", Serial.output().c_str());
+	char buf[100];
+	snprintf(buf, sizeof(buf), "FireStep %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+    ASSERTEQUALS(buf, Serial.output().c_str());
 	for (int i=0; i<MOTOR_COUNT; i++) {
 		ASSERTEQUAL((size_t) &mt.machine.axis[i], (size_t) &mt.machine.getMotorAxis(i));
 	}
@@ -1488,20 +1495,17 @@ void test_Idle() {
     Machine &machine = mt.machine;
     int32_t xenpulses = arduino.pulses(PC2_X_ENABLE_PIN);
 
-    threadClock.ticks++;
-    mt.loop(); // parse
+	test_ticks(1);
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-    ASSERTEQUAL(xenpulses + 1, arduino.pulses(PC2_X_ENABLE_PIN));
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_ENABLE_PIN)-xenpulses);
 
-    threadClock.ticks++;
-    mt.loop(); // parse
+	test_ticks(1);
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-    ASSERTEQUAL(xenpulses + 2, arduino.pulses(PC2_X_ENABLE_PIN));
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_ENABLE_PIN)-xenpulses);
 
-    threadClock.ticks++;
-    mt.loop(); // parse
+	test_ticks(1);
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-    ASSERTEQUAL(xenpulses + 3, arduino.pulses(PC2_X_ENABLE_PIN));
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_ENABLE_PIN)-xenpulses);
 
     cout << "TEST	: test_Idle() OK " << endl;
 }
@@ -1523,6 +1527,91 @@ void test_PrettyPrint() {
                  Serial.output().c_str());
 
     cout << "TEST	: test_PrettyPrint() OK " << endl;
+}
+
+void test_io() {
+    cout << "TEST	: test_io() =====" << endl;
+
+    MachineThread mt = test_setup();
+    Machine &machine = mt.machine;
+
+	arduino.setPin(22, HIGH);
+    Serial.push(JT("{'io':{'d22':''}}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUAL(INPUT, arduino.getPinMode(22));
+    ASSERTEQUALS(JT("{'s':0,'r':{'io':{'d22':true}},'t':0.00}\n"), Serial.output().c_str());
+	test_ticks(1);
+
+	arduino.setPin(22, LOW);
+    Serial.push(JT("{'iod22':''}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'iod22':false},'t':0.00}\n"), Serial.output().c_str());
+	ASSERTEQUAL(INPUT, arduino.getPinMode(22));
+	test_ticks(1);
+
+    Serial.push(JT("{'io':{'d220':''}}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_NO_SUCH_PIN, mt.status);
+    ASSERTEQUALS(JT("{'s':-136,'r':{'io':{'d220':''}},'e':'d220','t':0.00}\n"), Serial.output().c_str());
+	test_ticks(1);
+
+    Serial.push(JT("{'iod22':true}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'iod22':true},'t':0.00}\n"), Serial.output().c_str());
+	ASSERT(arduino.getPin(22));
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(22));
+	test_ticks(1);
+
+    Serial.push(JT("{'io':{'d22':0}}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'io':{'d22':0}},'t':0.00}\n"), Serial.output().c_str());
+	ASSERT(!arduino.getPin(22));
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(22));
+	test_ticks(1);
+
+    Serial.push(JT("{'io':{'d22':1}}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'io':{'d22':1}},'t':0.00}\n"), Serial.output().c_str());
+	ASSERT(arduino.getPin(22));
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(22));
+	test_ticks(1);
+
+    Serial.push(JT("{'io':{'a6':123}}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUAL(OUTPUT, arduino.getPinMode(A6));
+    ASSERTEQUALS(JT("{'s':0,'r':{'io':{'a6':123}},'t':0.00}\n"), Serial.output().c_str());
+	test_ticks(1);
+
+    Serial.push(JT("{'io':{'a6':''}}\n"));
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUAL(INPUT, arduino.getPinMode(A6));
+    ASSERTEQUALS(JT("{'s':0,'r':{'io':{'a6':123}},'t':0.00}\n"), Serial.output().c_str());
+	test_ticks(1);
+
+    cout << "TEST	: test_io() OK " << endl;
 }
 
 void test_Home() {
@@ -2202,6 +2291,7 @@ int main(int argc, char *argv[]) {
 		test_command_array();
         test_pnp();
 		test_eeprom();
+		test_io();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;

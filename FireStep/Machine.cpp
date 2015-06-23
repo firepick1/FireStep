@@ -40,6 +40,19 @@ Machine::Machine()
     }
 }
 
+bool Machine::isCorePin(int16_t pin) {
+	for (AxisIndex i=0; i<AXIS_COUNT; i++) {
+		if (axis[i].pinStep == pin ||
+			axis[i].pinDir == pin ||
+			axis[i].pinMin == pin ||
+			axis[i].pinMax == pin ||
+			axis[i].pinEnable == pin) {
+			return true;
+		}
+	}
+	return false;
+}
+
 Status Machine::setPinConfig(PinConfig pc) {
     switch (pc) {
     default:
@@ -389,7 +402,7 @@ Quad<StepCoord> Machine::getMotorPosition() {
 
 void Machine::idle() {
     for (MotorIndex i = 0; i < MOTOR_COUNT; i++) {
-        if (motorAxis[i]->enabled) {
+        if (motorAxis[i]->enabled && motorAxis[i]->idleSnooze) {
             motorAxis[i]->enable(false);
             delayMics(motorAxis[i]->idleSnooze);
             motorAxis[i]->enable(true);

@@ -168,6 +168,7 @@ typedef class Machine : public QuadStepper {
         Machine();
         void enable(bool active);
         virtual Status step(const Quad<StepDV> &pulse);
+		bool isCorePin(int16_t pin);
         inline int8_t pulsePin(int16_t pinStep, int8_t n) {
             switch (n) {
             case 0:
