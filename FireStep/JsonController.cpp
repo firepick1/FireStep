@@ -888,6 +888,81 @@ Status JsonController::processHome(JsonCommand& jcmd, JsonObject& jobj, const ch
     return status;
 }
 
+Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+	const char *pinStr = *key == 'd' || *key == 'a' ? key+1 : key+3;
+	long pinLong = strtol(pinStr, NULL, 10);
+	if (machine.isCorePin(pinLong)) {
+		return jcmd.setError(STATUS_CORE_PIN, key);
+	}
+	if (pinLong < 0 || MAX_PIN < pinLong) {
+		return jcmd.setError(STATUS_NO_SUCH_PIN, key);
+	}
+	int16_t pin = (int16_t) pinLong;
+	const char *s = jobj[key];
+	bool isAnalog = *key == 'a' || strncmp("ioa",key,3)==0;
+	if (s && *s == 0) { // read
+		if (isAnalog) {
+			pinMode(pin+A0, INPUT);
+			jobj[key] = analogRead(pin+A0);
+		} else {
+			pinMode(pin, INPUT);
+			jobj[key] = (bool) digitalRead(pin);
+		}
+	} else if (isAnalog) {
+		if (jobj[key].is<long>()) { // write
+			long value = jobj[key];
+			if (value < 0 || 255 < value) {
+				return jcmd.setError(STATUS_JSON_255, key);
+			}
+			pinMode(pin+A0, OUTPUT);
+			analogWrite(pin+A0, (int16_t) value);
+		} else {
+			return jcmd.setError(STATUS_JSON_255, key);
+		}
+	} else {
+		if (jobj[key].is<bool>()) { // write
+			bool value = jobj[key];
+			pinMode(pin, OUTPUT);
+			digitalWrite(pin, value);
+		} else if (jobj[key].is<long>()) { // write
+			bool value = (bool) (long)jobj[key];
+			pinMode(pin, OUTPUT);
+			digitalWrite(pin, value);
+		} else {
+			return jcmd.setError(STATUS_JSON_BOOL, key);
+		}
+	}
+	return STATUS_OK;
+}
+
+Status JsonController::processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+	Status status = STATUS_NOT_IMPLEMENTED;
+    if (strcmp("io", key) == 0) {
+        const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+            node["1"] = "";
+            node["2"] = "";
+            node["3"] = "";
+            node["4"] = "";
+        }
+        JsonObject& kidObj = jobj[key];
+		if (!kidObj.success()) {
+			return jcmd.setError(STATUS_IO_OBJ, key);
+		}
+		for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+			status = processIO(jcmd, kidObj, it->key);
+		}
+    } else if (strncmp("d",key,1)==0 || strncmp("iod",key,3)==0) {
+		status = processIOPin(jcmd, jobj, key);
+    } else if (strncmp("a",key,1)==0 || strncmp("ioa",key,3)==0) {
+		status = processIOPin(jcmd, jobj, key);
+	} else {
+		return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+	}
+	return status;
+}
+
 Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("dpy", key) == 0) {
@@ -973,7 +1048,6 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
         if (strcmp("dvs", it->key) == 0) {
             status = processStroke(jcmd, jobj, it->key);
         } else if (strncmp("mov", it->key, 3) == 0) {
-            //status = processMove(jcmd, jobj, it->key);
             status = PHMoveTo(machine).process(jcmd, jobj, it->key);
         } else if (strncmp("hom", it->key, 3) == 0) {
             status = processHome(jcmd, jobj, it->key);
@@ -985,6 +1059,8 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
             status = processDisplay(jcmd, jobj, it->key);
         } else if (strncmp("mpo", it->key, 3) == 0) {
             status = processStepperPosition(jcmd, jobj, it->key);
+        } else if (strncmp("io", it->key, 2) == 0) {
+            status = processIO(jcmd, jobj, it->key);
         } else {
             switch (it->key[0]) {
             case '1':

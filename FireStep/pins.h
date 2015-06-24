@@ -10,6 +10,8 @@ enum PinConfig {
     PC2_RAMPS_1_4 = 2,
 };
 
+#define MAX_PIN				   69
+
 ///////////////////// PC0_NOPIN ////////////////
 // No pin assignments
 ////////////////////////////////////////////////

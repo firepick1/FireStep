@@ -5,6 +5,11 @@ DEV (in progress)
 ----
 * EEPROM startup command
 
+v0.1.7
+------
+* io for digital/analog pins
+* remove idle whine
+
 v0.1.6
 ------
 * fix for individual axis homing bug 
