@@ -141,7 +141,7 @@ void test_Machine() {
     arduino.setPin(PC2_Y_MIN_PIN, 0);
     arduino.setPin(PC2_Z_MIN_PIN, 0);
     Machine machine;
-    machine.enable(true);
+	machine.setPinConfig(PC2_RAMPS_1_4);
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_X_STEP_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_STEP_PIN));
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_X_DIR_PIN));
@@ -556,6 +556,9 @@ MachineThread test_setup(bool clearArduino=true) {
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_DIR_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_DIR_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_DIR_PIN));
+    ASSERTEQUAL(LOW, arduino.getPin(PC2_X_ENABLE_PIN)); // enabled
+    ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_ENABLE_PIN)); // enabled
+    ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_ENABLE_PIN)); // enabled
 	if (clearArduino) {
 		ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 		char buf[100];
@@ -680,7 +683,7 @@ void test_JsonController() {
     cout << "TEST	: test_JsonController() =====" << endl;
 
     Machine machine;
-    machine.enable(true);
+	machine.setPinConfig(PC2_RAMPS_1_4);
     JsonController jc(machine);
     arduino.setPin(PC2_X_MIN_PIN, false);
     arduino.setPin(PC2_Y_MIN_PIN, false);
@@ -935,11 +938,6 @@ void test_Machine_step() {
     cout << "TEST	: test_Machine_step() =====" << endl;
 
     Machine machine;
-    for (int i = 0; i < 4; i++) {
-        arduino.setPin(machine.axis[i].pinMin, 0);
-    }
-    machine.enable(true);
-
     machine.axis[0].travelMin = 0;
     machine.axis[1].travelMin = 0;
     machine.axis[2].travelMin = 0;
@@ -952,6 +950,10 @@ void test_Machine_step() {
     ASSERTEQUAL(false, machine.axis[1].atMin);
     ASSERTEQUAL(false, machine.axis[2].atMin);
     ASSERTEQUAL(false, machine.axis[3].atMin);
+	machine.setPinConfig(PC2_RAMPS_1_4);
+    for (int i = 0; i < 4; i++) {
+        arduino.setPin(machine.axis[i].pinMin, 0);
+    }
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(machine.axis[0].pinEnable));
     ASSERTEQUAL(LOW, arduino.getPin(machine.axis[0].pinEnable));
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(machine.axis[1].pinEnable));
@@ -1880,13 +1882,17 @@ void test_MachineThread() {
 
     threadRunner.clear();
     MachineThread mt;
+	mt.setup(PC2_RAMPS_1_4);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
+
+    Serial.clear();
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     Serial.clear();
     Serial.push("{");
     TCNT1 = 100;
-    ticks();
-    mt.loop();
+	test_ticks(1);
     ASSERTEQUAL(STATUS_WAIT_EOL, mt.status);
     ASSERTEQUALS("", Serial.output().c_str());
 
@@ -2306,7 +2312,7 @@ int main(int argc, char *argv[]) {
     // test first
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
-		test_Home();
+        test_PinConfig();
     } else {
         test_Serial();
         test_Thread();

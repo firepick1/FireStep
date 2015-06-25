@@ -140,7 +140,6 @@ void MachineThread::loop() {
         executeEEPROM(0);
         break;
     case STATUS_BUSY_SETUP: {
-        machine.enable(true);
         uint8_t c = eeprom_read_byte((uint8_t*) 0);
         if (c == '{' || c == '[') {
             status = STATUS_BUSY_EEPROM;

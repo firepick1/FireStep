@@ -33,7 +33,6 @@ Machine::Machine()
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         setAxisIndex((MotorIndex)i, (AxisIndex)i);
     }
-    setPinConfig(PC2_RAMPS_1_4);
 
     for (MotorIndex i = 0; i < MOTOR_COUNT; i++) {
         motor[i] = i;
@@ -54,6 +53,9 @@ bool Machine::isCorePin(int16_t pin) {
 }
 
 Status Machine::setPinConfig(PinConfig pc) {
+	for (AxisIndex i=0; i<AXIS_COUNT; i++) {
+		axis[i].enable(false);
+	}
     switch (pc) {
     default:
         return STATUS_PIN_CONFIG;
@@ -114,6 +116,9 @@ Status Machine::setPinConfig(PinConfig pc) {
     }
 
     pinConfig = pc;
+	for (AxisIndex i=0; i<AXIS_COUNT; i++) {
+		axis[i].enable(true);
+	}
     return STATUS_OK;
 }
 
@@ -211,12 +216,6 @@ void Machine::setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t valu
         if (mode == OUTPUT) {
             digitalWrite(pinDst, value);
         }
-    }
-}
-
-void Machine::enable(bool active) {
-    for (AxisIndex i = 0; i < AXIS_COUNT; i++) {
-        axis[i].enable(active);
     }
 }
 
