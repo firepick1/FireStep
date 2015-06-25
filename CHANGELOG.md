@@ -5,6 +5,11 @@ DEV (in progress)
 ----
 * TBD
 
+v0.1.9
+------
+* BUGFIX: stepper enabled flag now matches actual enable pin value on startup.
+* BUGFIX: steppers disabled/enabled during pin configuration change
+
 v0.1.8
 ------
 * EEPROM read/write
