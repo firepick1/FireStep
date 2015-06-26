@@ -5,6 +5,10 @@ DEV (in progress)
 ----
 * TBD
 
+v0.1.10
+------
+* BUGFIX: direction pin cache did not track configuration direction inversion
+
 v0.1.9
 ------
 * BUGFIX: stepper enabled flag now matches actual enable pin value on startup.
