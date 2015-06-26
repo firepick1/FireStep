@@ -357,6 +357,10 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
         }
     } else if (strcmp("dh", key) == 0 || strcmp("dh", key + 1) == 0) {
         status = processField<bool, bool>(jobj, key, axis.dirHIGH);
+		if (axis.pinDir != NOPIN && status == STATUS_OK) {	// force setting of direction bit in case meaning changed
+			axis.setAdvancing(false);
+			axis.setAdvancing(true);
+		}
     } else if (strcmp("ho", key) == 0 || strcmp("ho", key + 1) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, axis.home);
     } else if (strcmp("is", key) == 0 || strcmp("is", key + 1) == 0) {

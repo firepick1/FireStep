@@ -111,11 +111,14 @@ typedef class Axis {
             ::pinMode(pin, mode);
             return STATUS_OK;
         }
-        inline void pulse(bool advance) {
+		inline void setAdvancing(bool advance) {
             if (advance != advancing) {
                 advancing = advance;
                 digitalWrite(pinDir, (advance == dirHIGH) ? HIGH : LOW);
             }
+		}
+        inline void pulse(bool advance) {
+			setAdvancing(advance);
             pulseFast(pinStep);
         }
         inline Status readAtMin(bool invertLim) {

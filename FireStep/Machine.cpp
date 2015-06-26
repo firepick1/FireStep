@@ -22,7 +22,7 @@ Status Axis::enable(bool active) {
         return STATUS_NOPIN;
     }
     digitalWrite(pinEnable, active ? PIN_ENABLE : PIN_DISABLE);
-    digitalWrite(pinDir, (advancing == dirHIGH) ? HIGH : LOW);
+	setAdvancing(true);
     enabled = active;
     return STATUS_OK;
 }
@@ -143,6 +143,7 @@ Status Machine::home() {
                 return STATUS_AXIS_DISABLED;
             }
             a.position = a.home;
+			a.setAdvancing(false);
             searchDelay = max(searchDelay, a.searchDelay);
         }
     }
@@ -241,10 +242,7 @@ Status Machine::step(const Quad<StepDV> &pulse) {
             if (a.position >= a.travelMax) {
                 return STATUS_TRAVEL_MAX;
             }
-            if (!a.advancing) {
-                a.advancing = true;
-                digitalWrite(a.pinDir, a.dirHIGH ? HIGH : LOW);
-            }
+			a.setAdvancing(true);
             digitalWrite(a.pinStep, HIGH);
             break;
         case 0:
@@ -261,10 +259,7 @@ Status Machine::step(const Quad<StepDV> &pulse) {
             if (a.position <= a.travelMin) {
                 return STATUS_TRAVEL_MIN;
             }
-            if (a.advancing) {
-                a.advancing = false;
-                digitalWrite(a.pinDir, a.dirHIGH ? LOW : HIGH);
-            }
+			a.setAdvancing(false);
             digitalWrite(a.pinStep, HIGH);
             break;
         default:
@@ -303,10 +298,7 @@ Status Machine::stepDirection(const Quad<StepDV> &pulse) {
             if (a.position + pulse.value[i] > a.travelMax) {
                 return STATUS_TRAVEL_MAX;
             }
-            if (!a.advancing) {
-                a.advancing = true;
-                digitalWrite(a.pinDir, a.dirHIGH ? HIGH : LOW);
-            }
+			a.setAdvancing(true);
             a.position += pulse.value[i];
         } else if (pulse.value[i] < 0) {
             if (!a.enabled) {
@@ -320,10 +312,7 @@ Status Machine::stepDirection(const Quad<StepDV> &pulse) {
             if (a.position + pulse.value[i] < a.travelMin) {
                 return STATUS_TRAVEL_MIN;
             }
-            if (a.advancing) {
-                a.advancing = false;
-                digitalWrite(a.pinDir, a.dirHIGH ? LOW : HIGH);
-            }
+			a.setAdvancing(false);
             a.position += pulse.value[i];
         }
     }

@@ -145,21 +145,21 @@ void test_Machine() {
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_X_STEP_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_STEP_PIN));
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_X_DIR_PIN));
-    ASSERTEQUAL(LOW, arduino.getPin(PC2_X_DIR_PIN));
+    ASSERTEQUAL(HIGH, arduino.getPin(PC2_X_DIR_PIN));
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_X_ENABLE_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_ENABLE_PIN));
     ASSERTEQUAL(INPUT, arduino.getPinMode(PC2_X_MIN_PIN));
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_Y_STEP_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_STEP_PIN));
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_Y_DIR_PIN));
-    ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_DIR_PIN));
+    ASSERTEQUAL(HIGH, arduino.getPin(PC2_Y_DIR_PIN));
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_Y_ENABLE_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_ENABLE_PIN));
     ASSERTEQUAL(INPUT, arduino.getPinMode(PC2_Y_MIN_PIN));
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_Z_STEP_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_STEP_PIN));
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_Z_DIR_PIN));
-    ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_DIR_PIN));
+    ASSERTEQUAL(HIGH, arduino.getPin(PC2_Z_DIR_PIN));
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_Z_ENABLE_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_ENABLE_PIN));
     ASSERTEQUAL(INPUT, arduino.getPinMode(PC2_Z_MIN_PIN));
@@ -553,9 +553,9 @@ MachineThread test_setup(bool clearArduino=true) {
     arduino.setPin(mt.machine.axis[1].pinMin, 0);
     arduino.setPin(mt.machine.axis[2].pinMin, 0);
     mt.loop();
-    ASSERTEQUAL(LOW, arduino.getPin(PC2_X_DIR_PIN));
-    ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_DIR_PIN));
-    ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_DIR_PIN));
+    ASSERTEQUAL(HIGH, arduino.getPin(PC2_X_DIR_PIN));
+    ASSERTEQUAL(HIGH, arduino.getPin(PC2_Y_DIR_PIN));
+    ASSERTEQUAL(HIGH, arduino.getPin(PC2_Z_DIR_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_ENABLE_PIN)); // enabled
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_ENABLE_PIN)); // enabled
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_ENABLE_PIN)); // enabled
@@ -591,8 +591,8 @@ void test_JsonController_tst() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTEQUAL(0, Serial.available()); // expected parse
     ASSERTEQUAL(DISPLAY_BUSY, mt.machine.pDisplay->getStatus());
-    ASSERTEQUAL(LOW, arduino.getPin(PC2_X_DIR_PIN));
-    ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_DIR_PIN));
+    ASSERTEQUAL(HIGH, arduino.getPin(PC2_X_DIR_PIN));
+    ASSERTEQUAL(HIGH, arduino.getPin(PC2_Y_DIR_PIN));
     //ASSERTEQUAL(usDelay, arduino.get_usDelay());
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
     ypulses = arduino.pulses(PC2_Y_STEP_PIN);
@@ -1753,7 +1753,7 @@ void test_Home() {
     ASSERTEQUAL(false, machine.axis[1].homing);
     ASSERTEQUAL(true, machine.axis[2].homing);
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_DIR_PIN));
-    ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_DIR_PIN));
+    ASSERTEQUAL(HIGH, arduino.getPin(PC2_Y_DIR_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_DIR_PIN));
     ASSERTEQUALS("", Serial.output().c_str());
 	ASSERT(!machine.axis[0].atMin);
@@ -1773,8 +1773,8 @@ void test_Home() {
     ASSERTEQUAL(false, machine.axis[1].homing);
     ASSERTEQUAL(true, machine.axis[2].homing);
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_X_DIR_PIN)); // HIGH because we backed off
-    ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_DIR_PIN));
-    ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_DIR_PIN));
+    ASSERTEQUAL(HIGH, arduino.getPin(PC2_Y_DIR_PIN)); // HIGH because no change
+    ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_DIR_PIN)); 
     ASSERTEQUALS("", Serial.output().c_str());
 	ASSERT(machine.axis[0].atMin);
 	ASSERT(!machine.axis[1].atMin);
@@ -1793,7 +1793,7 @@ void test_Home() {
     ASSERTEQUAL(false, machine.axis[1].homing);
     ASSERTEQUAL(false, machine.axis[2].homing);
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_X_DIR_PIN)); // HIGH because we backed off
-    ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_DIR_PIN));
+    ASSERTEQUAL(HIGH, arduino.getPin(PC2_Y_DIR_PIN));
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_Z_DIR_PIN)); // HIGH because we backed off
     ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'x':5,'z':20}},'t':0.00}\n"), Serial.output().c_str());
 	ASSERT(machine.axis[0].atMin);
