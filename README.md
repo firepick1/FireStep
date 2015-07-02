@@ -15,6 +15,7 @@ are smooth, polynomial paths defined by on-path control points. FireStep also
 implements PHFeed, which controls feed acceleration continuously during path traversal, 
 providing smooth motion.
 
+* [FireStep Pong](https://www.youtube.com/watch?v=8J1oGlf6AdE)
 * [PH5Curve Stepper Video](https://www.youtube.com/watch?v=iFprR51CGqE)
 
 Although you can send commands directly to FireStep via a USB serial port running at
