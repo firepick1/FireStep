@@ -18,7 +18,7 @@ template class Quad<int32_t>;
 TESTDECL(int32_t, firestep::delayMicsTotal = 0);
 
 Status Axis::enable(bool active) {
-    if (pinEnable == NOPIN || pinStep == NOPIN || pinDir == NOPIN || pinMin == NOPIN) {
+    if (pinEnable == NOPIN || pinStep == NOPIN || pinDir == NOPIN) {
         return STATUS_NOPIN;
     }
     digitalWrite(pinEnable, active ? PIN_ENABLE : PIN_DISABLE);

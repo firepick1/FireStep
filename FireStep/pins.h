@@ -77,6 +77,13 @@ enum PinConfig {
 #define PC1_TOOL3_ENABLE_PIN   24
 #define PC1_TOOL4_ENABLE_PIN   34 // UNUSED since FireStep has 6 axes, not 7
 
+#define PC1_TOOL1_DOUT         44
+#define PC1_TOOL2_DOUT         50
+#define PC1_TOOL3_DOUT         22
+#define PC1_TOOL4_DOUT         26
+
+#define PC1_PWR_SUPPLY_PIN     28
+
 ///////////////// PC2_RAMPS_1_4 ////////////////
 // Arduino Mega2560 with RAMPS v1.4 shield
 ////////////////////////////////////////////////
