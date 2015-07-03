@@ -98,6 +98,34 @@ Status Machine::setPinConfig(PinConfig pc) {
         setPin(axis[5].pinDir, PC1_TOOL_DIR_PIN, OUTPUT);
         setPin(axis[5].pinMin, NOPIN, INPUT);
         setPin(axis[5].pinEnable, PC1_TOOL3_ENABLE_PIN, OUTPUT, HIGH);
+	
+		//FirePick Delta specific stuff
+		pinMode(PC1_TOOL1_ENABLE_PIN,OUTPUT);
+		pinMode(PC1_TOOL2_ENABLE_PIN,OUTPUT);
+		pinMode(PC1_TOOL3_ENABLE_PIN,OUTPUT);
+		pinMode(PC1_TOOL4_ENABLE_PIN,OUTPUT);
+		pinMode(PC1_PWR_SUPPLY_PIN,OUTPUT);
+		pinMode(PC1_TOOL1_DOUT,OUTPUT);
+		pinMode(PC1_TOOL2_DOUT,OUTPUT);
+		pinMode(PC1_TOOL3_DOUT,OUTPUT);
+		pinMode(PC1_TOOL4_DOUT,OUTPUT);
+		pinMode(PC1_SERVO1,OUTPUT);
+		pinMode(PC1_SERVO2,OUTPUT);
+		pinMode(PC1_SERVO3,OUTPUT);
+		pinMode(PC1_SERVO4,OUTPUT);
+		digitalWrite(PC1_TOOL1_ENABLE_PIN,HIGH);
+		digitalWrite(PC1_TOOL2_ENABLE_PIN,HIGH);
+		digitalWrite(PC1_TOOL3_ENABLE_PIN,HIGH);
+		digitalWrite(PC1_TOOL4_ENABLE_PIN,HIGH);
+		digitalWrite(PC1_PWR_SUPPLY_PIN,LOW);
+		digitalWrite(PC1_TOOL1_DOUT,LOW);
+		digitalWrite(PC1_TOOL2_DOUT,LOW);
+		digitalWrite(PC1_TOOL3_DOUT,LOW);
+		digitalWrite(PC1_TOOL4_DOUT,LOW);
+		digitalWrite(PC1_SERVO1,LOW);
+		digitalWrite(PC1_SERVO2,LOW);
+		digitalWrite(PC1_SERVO3,LOW);
+		digitalWrite(PC1_SERVO4,LOW);
         break;
     case PC2_RAMPS_1_4:
         setPin(axis[0].pinStep, PC2_X_STEP_PIN, OUTPUT);
