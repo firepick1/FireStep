@@ -5,6 +5,10 @@ DEV (in progress)
 ----
 * TBD
 
+v0.1.11
+------
+* MERGE: Neil's changes for OpenPnP support and full EMC02 setup
+
 v0.1.10
 ------
 * BUGFIX: direction pin cache did not track configuration direction inversion
