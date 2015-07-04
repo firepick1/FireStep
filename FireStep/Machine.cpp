@@ -52,7 +52,67 @@ bool Machine::isCorePin(int16_t pin) {
 	return false;
 }
 
+Status Machine::setPinConfig_EMC02() {
+	Status status = STATUS_OK;
+
+	setPin(axis[0].pinStep, PC1_X_STEP_PIN, OUTPUT);
+	setPin(axis[0].pinDir, PC1_X_DIR_PIN, OUTPUT);
+	setPin(axis[0].pinMin, PC1_X_MIN_PIN, INPUT);
+	setPin(axis[0].pinEnable, PC1_X_ENABLE_PIN, OUTPUT, HIGH);
+	setPin(axis[1].pinStep, PC1_Y_STEP_PIN, OUTPUT);
+	setPin(axis[1].pinDir, PC1_Y_DIR_PIN, OUTPUT);
+	setPin(axis[1].pinMin, PC1_Y_MIN_PIN, INPUT);
+	setPin(axis[1].pinEnable, PC1_Y_ENABLE_PIN, OUTPUT, HIGH);
+	setPin(axis[2].pinStep, PC1_Z_STEP_PIN, OUTPUT);
+	setPin(axis[2].pinDir, PC1_Z_DIR_PIN, OUTPUT);
+	setPin(axis[2].pinMin, PC1_Z_MIN_PIN, INPUT);
+	setPin(axis[2].pinEnable, PC1_Z_ENABLE_PIN, OUTPUT, HIGH);
+	setPin(axis[3].pinStep, PC1_TOOL_STEP_PIN, OUTPUT);
+	setPin(axis[3].pinDir, PC1_TOOL_DIR_PIN, OUTPUT);
+	setPin(axis[3].pinMin, NOPIN, INPUT);
+	setPin(axis[3].pinEnable, PC1_TOOL1_ENABLE_PIN, OUTPUT, HIGH);
+	setPin(axis[4].pinStep, PC1_TOOL_STEP_PIN, OUTPUT);
+	setPin(axis[4].pinDir, PC1_TOOL_DIR_PIN, OUTPUT);
+	setPin(axis[4].pinMin, NOPIN, INPUT);
+	setPin(axis[4].pinEnable, PC1_TOOL2_ENABLE_PIN, OUTPUT, HIGH);
+	setPin(axis[5].pinStep, PC1_TOOL_STEP_PIN, OUTPUT);
+	setPin(axis[5].pinDir, PC1_TOOL_DIR_PIN, OUTPUT);
+	setPin(axis[5].pinMin, NOPIN, INPUT);
+	setPin(axis[5].pinEnable, PC1_TOOL3_ENABLE_PIN, OUTPUT, HIGH);
+
+	//FirePick Delta specific stuff
+	pinMode(PC1_TOOL1_ENABLE_PIN,OUTPUT);
+	pinMode(PC1_TOOL2_ENABLE_PIN,OUTPUT);
+	pinMode(PC1_TOOL3_ENABLE_PIN,OUTPUT);
+	pinMode(PC1_TOOL4_ENABLE_PIN,OUTPUT);
+	pinMode(PC1_PWR_SUPPLY_PIN,OUTPUT);
+	pinMode(PC1_TOOL1_DOUT,OUTPUT);
+	pinMode(PC1_TOOL2_DOUT,OUTPUT);
+	pinMode(PC1_TOOL3_DOUT,OUTPUT);
+	pinMode(PC1_TOOL4_DOUT,OUTPUT);
+	pinMode(PC1_SERVO1,OUTPUT);
+	pinMode(PC1_SERVO2,OUTPUT);
+	pinMode(PC1_SERVO3,OUTPUT);
+	pinMode(PC1_SERVO4,OUTPUT);
+	digitalWrite(PC1_TOOL1_ENABLE_PIN,HIGH);
+	digitalWrite(PC1_TOOL2_ENABLE_PIN,HIGH);
+	digitalWrite(PC1_TOOL3_ENABLE_PIN,HIGH);
+	digitalWrite(PC1_TOOL4_ENABLE_PIN,HIGH);
+	digitalWrite(PC1_PWR_SUPPLY_PIN,LOW);
+	digitalWrite(PC1_TOOL1_DOUT,LOW);
+	digitalWrite(PC1_TOOL2_DOUT,LOW);
+	digitalWrite(PC1_TOOL3_DOUT,LOW);
+	digitalWrite(PC1_TOOL4_DOUT,LOW);
+	digitalWrite(PC1_SERVO1,LOW);
+	digitalWrite(PC1_SERVO2,LOW);
+	digitalWrite(PC1_SERVO3,LOW);
+	digitalWrite(PC1_SERVO4,LOW);
+
+	return status;	
+}
+
 Status Machine::setPinConfig(PinConfig pc) {
+	Status status = STATUS_OK;
 	for (AxisIndex i=0; i<AXIS_COUNT; i++) {
 		axis[i].enable(false);
 	}
@@ -74,58 +134,7 @@ Status Machine::setPinConfig(PinConfig pc) {
         setPin(axis[2].pinEnable, PC0_Z_ENABLE_PIN, OUTPUT, HIGH);
         break;
     case PC1_EMC02:
-        setPin(axis[0].pinStep, PC1_X_STEP_PIN, OUTPUT);
-        setPin(axis[0].pinDir, PC1_X_DIR_PIN, OUTPUT);
-        setPin(axis[0].pinMin, PC1_X_MIN_PIN, INPUT);
-        setPin(axis[0].pinEnable, PC1_X_ENABLE_PIN, OUTPUT, HIGH);
-        setPin(axis[1].pinStep, PC1_Y_STEP_PIN, OUTPUT);
-        setPin(axis[1].pinDir, PC1_Y_DIR_PIN, OUTPUT);
-        setPin(axis[1].pinMin, PC1_Y_MIN_PIN, INPUT);
-        setPin(axis[1].pinEnable, PC1_Y_ENABLE_PIN, OUTPUT, HIGH);
-        setPin(axis[2].pinStep, PC1_Z_STEP_PIN, OUTPUT);
-        setPin(axis[2].pinDir, PC1_Z_DIR_PIN, OUTPUT);
-        setPin(axis[2].pinMin, PC1_Z_MIN_PIN, INPUT);
-        setPin(axis[2].pinEnable, PC1_Z_ENABLE_PIN, OUTPUT, HIGH);
-        setPin(axis[3].pinStep, PC1_TOOL_STEP_PIN, OUTPUT);
-        setPin(axis[3].pinDir, PC1_TOOL_DIR_PIN, OUTPUT);
-        setPin(axis[3].pinMin, NOPIN, INPUT);
-        setPin(axis[3].pinEnable, PC1_TOOL1_ENABLE_PIN, OUTPUT, HIGH);
-        setPin(axis[4].pinStep, PC1_TOOL_STEP_PIN, OUTPUT);
-        setPin(axis[4].pinDir, PC1_TOOL_DIR_PIN, OUTPUT);
-        setPin(axis[4].pinMin, NOPIN, INPUT);
-        setPin(axis[4].pinEnable, PC1_TOOL2_ENABLE_PIN, OUTPUT, HIGH);
-        setPin(axis[5].pinStep, PC1_TOOL_STEP_PIN, OUTPUT);
-        setPin(axis[5].pinDir, PC1_TOOL_DIR_PIN, OUTPUT);
-        setPin(axis[5].pinMin, NOPIN, INPUT);
-        setPin(axis[5].pinEnable, PC1_TOOL3_ENABLE_PIN, OUTPUT, HIGH);
-	
-		//FirePick Delta specific stuff
-		pinMode(PC1_TOOL1_ENABLE_PIN,OUTPUT);
-		pinMode(PC1_TOOL2_ENABLE_PIN,OUTPUT);
-		pinMode(PC1_TOOL3_ENABLE_PIN,OUTPUT);
-		pinMode(PC1_TOOL4_ENABLE_PIN,OUTPUT);
-		pinMode(PC1_PWR_SUPPLY_PIN,OUTPUT);
-		pinMode(PC1_TOOL1_DOUT,OUTPUT);
-		pinMode(PC1_TOOL2_DOUT,OUTPUT);
-		pinMode(PC1_TOOL3_DOUT,OUTPUT);
-		pinMode(PC1_TOOL4_DOUT,OUTPUT);
-		pinMode(PC1_SERVO1,OUTPUT);
-		pinMode(PC1_SERVO2,OUTPUT);
-		pinMode(PC1_SERVO3,OUTPUT);
-		pinMode(PC1_SERVO4,OUTPUT);
-		digitalWrite(PC1_TOOL1_ENABLE_PIN,HIGH);
-		digitalWrite(PC1_TOOL2_ENABLE_PIN,HIGH);
-		digitalWrite(PC1_TOOL3_ENABLE_PIN,HIGH);
-		digitalWrite(PC1_TOOL4_ENABLE_PIN,HIGH);
-		digitalWrite(PC1_PWR_SUPPLY_PIN,LOW);
-		digitalWrite(PC1_TOOL1_DOUT,LOW);
-		digitalWrite(PC1_TOOL2_DOUT,LOW);
-		digitalWrite(PC1_TOOL3_DOUT,LOW);
-		digitalWrite(PC1_TOOL4_DOUT,LOW);
-		digitalWrite(PC1_SERVO1,LOW);
-		digitalWrite(PC1_SERVO2,LOW);
-		digitalWrite(PC1_SERVO3,LOW);
-		digitalWrite(PC1_SERVO4,LOW);
+		status = setPinConfig_EMC02();
         break;
     case PC2_RAMPS_1_4:
         setPin(axis[0].pinStep, PC2_X_STEP_PIN, OUTPUT);
@@ -147,7 +156,7 @@ Status Machine::setPinConfig(PinConfig pc) {
 	for (AxisIndex i=0; i<AXIS_COUNT; i++) {
 		axis[i].enable(true);
 	}
-    return STATUS_OK;
+    return status;
 }
 
 Status Machine::setAxisIndex(MotorIndex iMotor, AxisIndex iAxis) {

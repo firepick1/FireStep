@@ -35,7 +35,6 @@ enum PinConfig {
 #define PC0_Z_MAX_PIN          NOPIN
 
 ///////////// PC1_EMC02 //////////////
-// FirePick Delta Tin Whiskers motion controller board
 // https://github.com/firepick-delta/Marlin/blob/delta/openpnp/Marlin/pins.h
 //////////////////////////////////////
 
@@ -112,13 +111,13 @@ enum PinConfig {
 #define PC2_Z_MIN_PIN          18 //18
 #define PC2_Z_MAX_PIN          NOPIN
 
-#define PC2_E0_STEP_PIN        26
-#define PC2_E0_DIR_PIN         28
-#define PC2_E0_ENABLE_PIN      24
+#define PC2_E0_STEP_PIN        26 // RepRap
+#define PC2_E0_DIR_PIN         28 // RepRap
+#define PC2_E0_ENABLE_PIN      24 // RepRap
 
-#define PC2_E1_STEP_PIN        36
-#define PC2_E1_DIR_PIN         34
-#define PC2_E1_ENABLE_PIN      30
+#define PC2_E1_STEP_PIN        36 // RepRap
+#define PC2_E1_DIR_PIN         34 // RepRap
+#define PC2_E1_ENABLE_PIN      30 // RepRap
 
 #define PC2_LED_PIN            13
 #define PC2_FAN_PIN            NOPIN

@@ -157,6 +157,9 @@ typedef class Machine : public QuadStepper {
         Axis *	motorAxis[MOTOR_COUNT];
         AxisIndex	motor[MOTOR_COUNT];
         PinConfig	pinConfig;
+	
+	protected:
+		Status setPinConfig_EMC02();
 
     public:
         bool	invertLim;
