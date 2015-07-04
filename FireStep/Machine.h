@@ -160,6 +160,7 @@ typedef class Machine : public QuadStepper {
 	
 	protected:
 		Status setPinConfig_EMC02();
+		Status setPinConfig_RAMPS1_4();
 
     public:
         bool	invertLim;
@@ -228,9 +229,7 @@ typedef class Machine : public QuadStepper {
         virtual Status home();
         void idle();
         Status setAxisIndex(MotorIndex iMotor, AxisIndex iAxis);
-        AxisIndex getAxisIndex(MotorIndex iMotor) {
-            return motor[iMotor];
-        }
+        AxisIndex getAxisIndex(MotorIndex iMotor) { return motor[iMotor]; }
         Axis& getMotorAxis(MotorIndex iMotor) {
             return axis[motor[iMotor]];
         }

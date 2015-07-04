@@ -111,6 +111,29 @@ Status Machine::setPinConfig_EMC02() {
 	return status;	
 }
 
+Status Machine::setPinConfig_RAMPS1_4() {
+	Status status = STATUS_OK;
+	setPin(axis[0].pinStep, PC2_X_STEP_PIN, OUTPUT);
+	setPin(axis[0].pinDir, PC2_X_DIR_PIN, OUTPUT);
+	setPin(axis[0].pinMin, PC2_X_MIN_PIN, INPUT);
+	setPin(axis[0].pinEnable, PC2_X_ENABLE_PIN, OUTPUT, HIGH);
+	setPin(axis[1].pinStep, PC2_Y_STEP_PIN, OUTPUT);
+	setPin(axis[1].pinDir, PC2_Y_DIR_PIN, OUTPUT);
+	setPin(axis[1].pinMin, PC2_Y_MIN_PIN, INPUT);
+	setPin(axis[1].pinEnable, PC2_Y_ENABLE_PIN, OUTPUT, HIGH);
+	setPin(axis[2].pinStep, PC2_Z_STEP_PIN, OUTPUT);
+	setPin(axis[2].pinDir, PC2_Z_DIR_PIN, OUTPUT);
+	setPin(axis[2].pinMin, PC2_Z_MIN_PIN, INPUT);
+	setPin(axis[2].pinEnable, PC2_Z_ENABLE_PIN, OUTPUT, HIGH);
+	setPin(axis[3].pinStep, PC2_E0_STEP_PIN, OUTPUT);
+	setPin(axis[3].pinDir, PC2_E0_DIR_PIN, OUTPUT);
+	setPin(axis[3].pinEnable, PC2_E0_ENABLE_PIN, OUTPUT, HIGH);
+	setPin(axis[4].pinStep, PC2_E1_STEP_PIN, OUTPUT);
+	setPin(axis[4].pinDir, PC2_E1_DIR_PIN, OUTPUT);
+	setPin(axis[4].pinEnable, PC2_E1_ENABLE_PIN, OUTPUT, HIGH);
+	return status;	
+}
+
 Status Machine::setPinConfig(PinConfig pc) {
 	Status status = STATUS_OK;
 	for (AxisIndex i=0; i<AXIS_COUNT; i++) {
@@ -137,18 +160,7 @@ Status Machine::setPinConfig(PinConfig pc) {
 		status = setPinConfig_EMC02();
         break;
     case PC2_RAMPS_1_4:
-        setPin(axis[0].pinStep, PC2_X_STEP_PIN, OUTPUT);
-        setPin(axis[0].pinDir, PC2_X_DIR_PIN, OUTPUT);
-        setPin(axis[0].pinMin, PC2_X_MIN_PIN, INPUT);
-        setPin(axis[0].pinEnable, PC2_X_ENABLE_PIN, OUTPUT, HIGH);
-        setPin(axis[1].pinStep, PC2_Y_STEP_PIN, OUTPUT);
-        setPin(axis[1].pinDir, PC2_Y_DIR_PIN, OUTPUT);
-        setPin(axis[1].pinMin, PC2_Y_MIN_PIN, INPUT);
-        setPin(axis[1].pinEnable, PC2_Y_ENABLE_PIN, OUTPUT, HIGH);
-        setPin(axis[2].pinStep, PC2_Z_STEP_PIN, OUTPUT);
-        setPin(axis[2].pinDir, PC2_Z_DIR_PIN, OUTPUT);
-        setPin(axis[2].pinMin, PC2_Z_MIN_PIN, INPUT);
-        setPin(axis[2].pinEnable, PC2_Z_ENABLE_PIN, OUTPUT, HIGH);
+		status = setPinConfig_RAMPS1_4();
         break;
     }
 

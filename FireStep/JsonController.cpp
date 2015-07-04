@@ -41,12 +41,13 @@ template Status processField<bool, bool>(JsonObject& jobj, const char *key, bool
 
 Status processHomeField(Machine& machine, AxisIndex iAxis, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
     Status status = processField<StepCoord, int32_t>(jobj, key, machine.axis[iAxis].home);
-    if (machine.axis[iAxis].isEnabled()) {
-        jobj[key] = machine.axis[iAxis].home;
-        machine.axis[iAxis].homing = true;
+	Axis &a = machine.axis[iAxis];
+    if (a.isEnabled() && a.pinMin != NOPIN) {
+        jobj[key] = a.home;
+        a.homing = true;
     } else {
-        jobj[key] = machine.axis[iAxis].position;
-        machine.axis[iAxis].homing = false;
+        jobj[key] = a.position;
+        a.homing = false;
     }
 
     return status;
