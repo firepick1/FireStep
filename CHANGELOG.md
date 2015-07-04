@@ -5,6 +5,10 @@ DEV (in progress)
 ----
 * TBD
 
+v0.1.12
+------
+* BUGFIX: homing will now ignore axes with no minimum limit switch
+
 v0.1.11
 ------
 * MERGE: Neil's changes for OpenPnP support and full EMC02 setup
