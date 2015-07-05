@@ -811,7 +811,9 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     return status;
 }
 
-Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear) {
+Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj, 
+	const char* key, bool clear) 
+{
     Status status = STATUS_OK;
 	if (clear) {
 		for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {

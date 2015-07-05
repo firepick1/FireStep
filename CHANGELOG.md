@@ -5,6 +5,10 @@ DEV (in progress)
 ----
 * TBD
 
+v0.1.13
+------
+* NEW: homing pulses synchronized for smoothness
+
 v0.1.12
 ------
 * BUGFIX: homing will now ignore axes with no minimum limit switch

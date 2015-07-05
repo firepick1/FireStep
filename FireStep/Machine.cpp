@@ -188,7 +188,7 @@ Status Machine::home() {
     for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         Axis &a(*motorAxis[i]);
         if (a.homing) {
-            if (!a.enabled && a.pinMin != NOPIN) {
+            if (!a.enabled || a.pinMin == NOPIN) {
                 return STATUS_AXIS_DISABLED;
             }
             a.position = a.home;
@@ -404,7 +404,7 @@ int8_t Machine::stepHome(int16_t pulsesPerAxis, int16_t searchDelay) {
     for (int8_t iPulse = 0; iPulse < pulsesPerAxis; iPulse++) {
         for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {
             Axis &a(*motorAxis[i]);
-            if (a.homing && a.enabled) {
+            if (a.homing) {
                 a.readAtMin(invertLim);
                 if (a.atMin) {
                     a.homing = false;
@@ -413,13 +413,19 @@ int8_t Machine::stepHome(int16_t pulsesPerAxis, int16_t searchDelay) {
                         a.pulse(true);
                         delayMics(a.searchDelay);
                     }
-                } else {
-                    a.pulse(false);
-                    pulses++;
                 }
             }
         }
         delayMics(searchDelay); // maximum pulse rate throttle
+
+		// Move pulses as synchronously as possible for smoothness
+        for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {
+            Axis &a(*motorAxis[i]);
+            if (a.homing) {
+				pulseFast(a.pinStep);
+				pulses++;
+            }
+        }
     }
 
     return pulses;
