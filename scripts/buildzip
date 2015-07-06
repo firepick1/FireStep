@@ -8,7 +8,7 @@ OUTPUT="FireStep-$TAG.zip"
 echo "STATUS	: creating $OUTPUT"
 
 rm -rf ziptmp
-mkdir -p ziptmp/Libraries
+mkdir -p ziptmp/libraries
 mkdir -p ziptmp/FireStep
 
 pushd ../ph5
@@ -23,12 +23,13 @@ mv ArduinoJson*.zip ziptmp
 cp -r FireStep/ ziptmp/FireStep
 cp CHANGELOG.md LICENSE.md README.md ziptmp/FireStep
 
-cd ziptmp/Libraries
+cd ziptmp/libraries
 unzip ../ph5*.zip
 unzip ../ArduinoJson*.zip
+cp -r ../../Adafruit_NeoPixel .
 
 cd ..
 
 zip -r $OUTPUT \
 	FireStep \
-	Libraries
+	libraries
