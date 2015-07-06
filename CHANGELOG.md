@@ -8,6 +8,8 @@ DEV (in progress)
 v0.1.13
 ------
 * NEW: homing pulses synchronized for smoothness
+* NEW: "syshp" configures homing pulses, which controls homing speed
+* NEW: homing pulses reduced from 32 to 8
 * BUFIX: renamed Libraries to libraries as per Arduino standards
 
 v0.1.12
