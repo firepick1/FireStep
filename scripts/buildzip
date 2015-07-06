@@ -26,7 +26,6 @@ cp CHANGELOG.md LICENSE.md README.md ziptmp/FireStep
 cd ziptmp/libraries
 unzip ../ph5*.zip
 unzip ../ArduinoJson*.zip
-cp -r ../../Adafruit_NeoPixel .
 
 cd ..
 
