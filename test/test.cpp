@@ -696,7 +696,7 @@ void test_JsonController() {
     threadClock.ticks = 12345;
     jc.process(jcmd);
     char sysbuf[500];
-    const char *fmt = "{'s':%d,'r':{'sys':{'fr':1000,'jp':false,'lh':false,'lp':0,'pc':2,'tc':12345,'v':%.2f}},'t':0.00}\n";
+    const char *fmt = "{'s':%d,'r':{'sys':{'fr':1000,'hp':8,'jp':false,'lh':false,'lp':0,'pc':2,'tc':12345,'v':%.2f}},'t':0.00}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
              STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
     ASSERTEQUALS(sysbuf, Serial.output().c_str());
@@ -1697,6 +1697,7 @@ void test_Home() {
     int32_t ypulses = arduino.pulses(PC2_Y_STEP_PIN);
     int32_t zpulses = arduino.pulses(PC2_Z_STEP_PIN);
     int32_t e0pulses = arduino.pulses(PC2_E0_STEP_PIN);
+	int16_t hPulses = machine.homingPulses;
     machine.axis[0].home = 5;
     machine.axis[1].home = 10;
     machine.axis[2].home = 15;
@@ -1735,9 +1736,9 @@ void test_Home() {
     ASSERT(!machine.motorAxis[1]->homing);
     ASSERT(machine.motorAxis[2]->homing);
     ASSERT(!machine.motorAxis[3]->homing);
-    ASSERTEQUAL(xpulses + 32 * 1, arduino.pulses(PC2_X_STEP_PIN));
+    ASSERTEQUAL(xpulses + hPulses * 1, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTEQUAL(ypulses, arduino.pulses(PC2_Y_STEP_PIN));
-    ASSERTEQUAL(zpulses + 32 * 1, arduino.pulses(PC2_Z_STEP_PIN));
+    ASSERTEQUAL(zpulses + hPulses * 1, arduino.pulses(PC2_Z_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(5, 100, 20, 100), mt.machine.getMotorPosition());
     ASSERTEQUALS("", Serial.output().c_str());
 
@@ -1748,9 +1749,9 @@ void test_Home() {
     ASSERT(!machine.motorAxis[1]->homing);
     ASSERT(machine.motorAxis[2]->homing);
     ASSERT(!machine.motorAxis[3]->homing);
-    ASSERTEQUAL(xpulses + 32 * 2, arduino.pulses(PC2_X_STEP_PIN));
+    ASSERTEQUAL(xpulses + hPulses * 2, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTEQUAL(ypulses, arduino.pulses(PC2_Y_STEP_PIN));
-    ASSERTEQUAL(zpulses + 32 * 2, arduino.pulses(PC2_Z_STEP_PIN));
+    ASSERTEQUAL(zpulses + hPulses * 2, arduino.pulses(PC2_Z_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(5, 100, 20, 100), mt.machine.getMotorPosition());
     ASSERTEQUAL(true, machine.axis[0].homing);
     ASSERTEQUAL(false, machine.axis[1].homing);
@@ -1768,9 +1769,9 @@ void test_Home() {
     threadClock.ticks++;
     mt.loop(); // hit first limit switch
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(xpulses + 32 * 2 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_X_STEP_PIN));
+    ASSERTEQUAL(xpulses + hPulses * 2 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTEQUAL(ypulses, arduino.pulses(PC2_Y_STEP_PIN));
-    ASSERTEQUAL(zpulses + 32 * 3, arduino.pulses(PC2_Z_STEP_PIN));
+    ASSERTEQUAL(zpulses + hPulses * 3, arduino.pulses(PC2_Z_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(5, 100, 20, 100), mt.machine.getMotorPosition());
     ASSERTEQUAL(false, machine.axis[0].homing);
     ASSERTEQUAL(false, machine.axis[1].homing);
@@ -1788,9 +1789,9 @@ void test_Home() {
     threadClock.ticks++;
     mt.loop(); // hit final limit switch
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUAL(32 * 2 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(hPulses * 2 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
-    ASSERTEQUAL(32 * 3 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(hPulses * 3 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
     ASSERTQUAD(Quad<StepCoord>(5, 100, 20, 100), mt.machine.getMotorPosition());
     ASSERTEQUAL(false, machine.axis[0].homing);
@@ -1841,7 +1842,7 @@ void test_Home() {
     threadClock.ticks++;
     mt.loop(); // hit limit switch
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUAL(32 * 1 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(hPulses * 1 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTQUAD(Quad<StepCoord>(100, 10, 100, 100), mt.machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'homy':10},'t':0.00}\n"), Serial.output().c_str());
 
@@ -1880,7 +1881,7 @@ void test_Home() {
     threadClock.ticks++;
     mt.loop(); // hit limit switch
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUAL(32 * 1 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(hPulses * 1 + MICROSTEPS_DEFAULT, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
     ASSERTQUAD(Quad<StepCoord>(5, 100, 100, 100), mt.machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':5,'2':100,'3':100,'4':100}},'t':0.00}\n"),

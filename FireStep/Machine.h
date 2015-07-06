@@ -170,6 +170,7 @@ typedef class Machine : public QuadStepper {
         Display	*pDisplay;
         Axis 	axis[AXIS_COUNT];
         Stroke	stroke;
+		int16_t homingPulses; 
 
     public:
         Machine();

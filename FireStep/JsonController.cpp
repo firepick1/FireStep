@@ -767,6 +767,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
             node["fr"] = "";
+            node["hp"] = "";
             node["jp"] = "";
             node["lh"] = "";
             node["lp"] = "";
@@ -786,6 +787,8 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
         leastFreeRam = min(leastFreeRam, freeRam());
         jobj[key] = leastFreeRam;
+    } else if (strcmp("hp", key) == 0 || strcmp("syshp", key) == 0) {
+        status = processField<int16_t, long>(jobj, key, machine.homingPulses);
     } else if (strcmp("jp", key) == 0 || strcmp("sysjp", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.jsonPrettyPrint);
     } else if (strcmp("pc", key) == 0 || strcmp("syspc", key) == 0) {
