@@ -8,6 +8,7 @@ DEV (in progress)
 v0.1.13
 ------
 * NEW: homing pulses synchronized for smoothness
+* BUFIX: renamed Libraries to libraries as per Arduino standards
 
 v0.1.12
 ------
