@@ -11,6 +11,7 @@ enum Status {
     STATUS_BUSY_SETUP = 13,			// Processing setup
     STATUS_BUSY_OK = 14,			// sub-command completed successfully
     STATUS_BUSY_EEPROM = 15,		// EEPROM command queued for processing
+	STATUS_BUSY_CALIBRATING = 16,	// Processing calibration command
     STATUS_WAIT_IDLE = 20,			// Awaiting input: inactive
     STATUS_WAIT_EOL = 21,			// Awaiting input: remainder of EOL-terminated command
     STATUS_WAIT_CAMERA = 22,		// Awaiting input: camera ready display
@@ -95,6 +96,7 @@ inline bool isProcessing(Status status) {
     switch (status) {
     case STATUS_BUSY:
     case STATUS_BUSY_MOVING:
+    case STATUS_BUSY_CALIBRATING:
     case STATUS_BUSY_PARSED:
     case STATUS_BUSY_SETUP:
     case STATUS_BUSY_OK:

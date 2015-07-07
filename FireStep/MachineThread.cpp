@@ -50,6 +50,9 @@ void MachineThread::displayStatus() {
     case STATUS_WAIT_CANCELLED:
         machine.pDisplay->setStatus(DISPLAY_WAIT_CANCELLED);
         break;
+    case STATUS_BUSY_CALIBRATING:
+        machine.pDisplay->setStatus(DISPLAY_BUSY_CALIBRATING);
+        break;
     case STATUS_BUSY_MOVING:
     case STATUS_WAIT_MOVING:
         machine.pDisplay->setStatus(DISPLAY_BUSY_MOVING);
@@ -129,6 +132,7 @@ void MachineThread::loop() {
     case STATUS_BUSY_PARSED:
     case STATUS_BUSY_OK:
     case STATUS_BUSY:
+    case STATUS_BUSY_CALIBRATING:
     case STATUS_BUSY_MOVING:
         if (Serial.available()) {
             status = controller.cancel(command, STATUS_SERIAL_CANCEL);

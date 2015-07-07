@@ -72,6 +72,10 @@ void NeoPixel::show() {
     case DISPLAY_BUSY:
         fg = bg = strip.Color(intensity, intensity, 0); // yellow
         break;
+    case DISPLAY_BUSY_CALIBRATING:
+        bg = strip.Color(intensity / 2, intensity / 2, intensity / 2);
+        fg = strip.Color(0, 255, 0);	// green
+        break;
     case DISPLAY_BUSY_MOVING:
         bg = strip.Color(intensity / 4, intensity / 4, intensity / 4);
         fg = strip.Color(0, intensity, 0);	// green

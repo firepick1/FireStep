@@ -1,20 +1,23 @@
 FireStep: change log
 ====================
 
-DEV (in progress)
-----
-* TBD
+v0.1.14
+-------
+* NEW: "prb" command probes to specified coordinate, testing given pin
 
 v0.1.13
 ------
 * NEW: homing pulses synchronized for smoothness
 * NEW: "syshp" configures homing pulses, which controls homing speed
 * NEW: homing pulses reduced from 32 to 8
-* BUFIX: renamed Libraries to libraries as per Arduino standards
+* NEW: latchBackoff is now universal instead of per axis (i.e., "syslb")
+* NEW: "hom" now double checks at a slower speed for higher accuracy
+* NEW: latchBackoff default is now 200 vs 32 pulses
+* FIX: renamed Libraries to libraries as per Arduino standards
 
 v0.1.12
 ------
-* BUGFIX: homing will now ignore axes with no minimum limit switch
+* FIX: homing will now ignore axes with no minimum limit switch
 
 v0.1.11
 ------
@@ -22,12 +25,12 @@ v0.1.11
 
 v0.1.10
 ------
-* BUGFIX: direction pin cache did not track configuration direction inversion
+* FIX: direction pin cache did not track configuration direction inversion
 
 v0.1.9
 ------
-* BUGFIX: stepper enabled flag now matches actual enable pin value on startup.
-* BUGFIX: steppers disabled/enabled during pin configuration change
+* FIX: stepper enabled flag now matches actual enable pin value on startup.
+* FIX: steppers disabled/enabled during pin configuration change
 
 v0.1.8
 ------

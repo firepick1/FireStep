@@ -29,7 +29,7 @@ Status Axis::enable(bool active) {
 
 Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
-      tvMax(0.7), homingPulses(8) {
+      tvMax(0.7), homingPulses(8), latchBackoff(LATCH_BACKOFF) {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         setAxisIndex((MotorIndex)i, (AxisIndex)i);
@@ -181,27 +181,6 @@ Status Machine::setAxisIndex(MotorIndex iMotor, AxisIndex iAxis) {
     }
     motor[iMotor] = iAxis;
     motorAxis[iMotor] = &axis[iAxis];
-    return STATUS_OK;
-}
-
-Status Machine::home() {
-    int16_t searchDelay = 0;
-    for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
-        Axis &a(*motorAxis[i]);
-        if (a.homing) {
-            if (!a.enabled || a.pinMin == NOPIN) {
-                return STATUS_AXIS_DISABLED;
-            }
-            a.position = a.home;
-            a.setAdvancing(false);
-            searchDelay = max(searchDelay, a.searchDelay);
-        }
-    }
-
-    if (stepHome(homingPulses, searchDelay) > 0) {
-        return STATUS_BUSY_MOVING;
-    }
-
     return STATUS_OK;
 }
 
@@ -398,6 +377,60 @@ Status Machine::pulse(Quad<StepCoord> &pulses) {
     return STATUS_OK;
 }
 
+Status Machine::home(Status status) {
+    int16_t searchDelay = 0;
+	for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
+		Axis &a(*motorAxis[i]);
+		if (a.homing) {
+			if (!a.enabled || a.pinMin == NOPIN) {
+				return STATUS_AXIS_DISABLED;
+			}
+			searchDelay = max(searchDelay, a.searchDelay);
+		}
+	}
+	int16_t calibrationDelay = searchDelay*10;
+
+    switch (status) {
+    default:
+        if (stepHome(homingPulses, searchDelay) > 0) {
+            status = STATUS_BUSY_MOVING;
+        } else {
+			backoffHome(calibrationDelay);
+            status = STATUS_BUSY_CALIBRATING;
+        }
+        break;
+    case STATUS_BUSY_CALIBRATING:
+		delayMics(100000); // wait 0.1s for machine to settle
+        while (stepHome(1, calibrationDelay) > 0) { }
+        backoffHome(calibrationDelay);
+        for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
+            Axis &a(*motorAxis[i]);
+            if (a.homing) {
+                a.position = a.home;
+				a.homing = false;
+            }
+        }
+        status = STATUS_OK;
+        break;
+    }
+
+    return status;
+}
+
+void Machine::backoffHome(int16_t searchDelay) {
+    bool backingOff = true;
+    for (StepCoord pulses=0; backingOff==true; pulses++) {
+        backingOff = false;
+        for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {
+            Axis &a(*motorAxis[i]);
+            if (a.homing && pulses < latchBackoff) {
+                a.pulse(true);
+                backingOff = true;
+            }
+        }
+        delayMics(searchDelay);
+    }
+}
 
 int8_t Machine::stepHome(int16_t pulsesPerAxis, int16_t searchDelay) {
     int8_t pulses = 0;
@@ -407,14 +440,7 @@ int8_t Machine::stepHome(int16_t pulsesPerAxis, int16_t searchDelay) {
             Axis &a(*motorAxis[i]);
             if (a.homing) {
                 a.readAtMin(invertLim);
-                if (a.atMin) {
-                    a.homing = false;
-                    delayMics(100000); // wait 0.1s for machine to settle
-                    for (StepCoord lb = a.latchBackoff; lb > 0; lb--) {
-                        a.pulse(true);
-                        delayMics(a.searchDelay);
-                    }
-                }
+				a.setAdvancing(false);
             }
         }
         delayMics(searchDelay); // maximum pulse rate throttle
@@ -422,12 +448,13 @@ int8_t Machine::stepHome(int16_t pulsesPerAxis, int16_t searchDelay) {
         // Move pulses as synchronously as possible for smoothness
         for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {
             Axis &a(*motorAxis[i]);
-            if (a.homing) {
+            if (a.homing && !a.atMin) {
                 pulseFast(a.pinStep);
                 pulses++;
             }
         }
     }
+
 
     return pulses;
 }

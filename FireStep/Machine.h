@@ -12,6 +12,7 @@ namespace firestep {
 // #define THROTTLE_SPEED /* Throttles driver speed from high (255) to low (0) */
 
 
+#define LATCH_BACKOFF 200
 #define DELTA_COUNT 120
 #define MOTOR_COUNT 4
 #define AXIS_COUNT 6
@@ -65,7 +66,6 @@ typedef class Axis {
         StepCoord 	travelMin; // soft minimum travel limit
         StepCoord 	travelMax; // soft maximum travel limit
         StepCoord 	position; // current position (pulses)
-        StepCoord 	latchBackoff; // pulses to send for backing off limit switch
         DelayMics	usDelay; // minimum time between stepper pulses
         DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
         DelayMics	idleSnooze; // idle enable-off snooze delay (microseconds)
@@ -87,7 +87,6 @@ typedef class Axis {
             travelMin(-32000),  // -5 full 400-step revolutiosn @16-microsteps
             travelMax(32000),	// 5 full 400-step revolutions @16-microsteps
             position(0),
-            latchBackoff(MICROSTEPS_DEFAULT),
             usDelay(0), // Suggest 80us (12.8kHz) for microsteps 1
             searchDelay(80), // a slow, cautious but accurate speed
             idleSnooze(0), // 0:disabled; 1000:weak, noisy, cooler
@@ -161,6 +160,7 @@ typedef class Machine : public QuadStepper {
 	protected:
 		Status setPinConfig_EMC02();
 		Status setPinConfig_RAMPS1_4();
+		void backoffHome(int16_t searchDelay);
 
     public:
         bool	invertLim;
@@ -171,6 +171,7 @@ typedef class Machine : public QuadStepper {
         Axis 	axis[AXIS_COUNT];
         Stroke	stroke;
 		int16_t homingPulses; 
+		StepCoord latchBackoff;
 
     public:
         Machine();
@@ -227,7 +228,7 @@ typedef class Machine : public QuadStepper {
         void setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value = LOW);
         Quad<StepCoord> getMotorPosition();
         void setMotorPosition(const Quad<StepCoord> &position);
-        virtual Status home();
+        virtual Status home(Status status);
         void idle();
         Status setAxisIndex(MotorIndex iMotor, AxisIndex iAxis);
         AxisIndex getAxisIndex(MotorIndex iMotor) { return motor[iMotor]; }
