@@ -11,7 +11,7 @@ enum Status {
     STATUS_BUSY_SETUP = 13,			// Processing setup
     STATUS_BUSY_OK = 14,			// sub-command completed successfully
     STATUS_BUSY_EEPROM = 15,		// EEPROM command queued for processing
-	STATUS_BUSY_CALIBRATING = 16,	// Processing calibration command
+    STATUS_BUSY_CALIBRATING = 16,	// Processing calibration command
     STATUS_WAIT_IDLE = 20,			// Awaiting input: inactive
     STATUS_WAIT_EOL = 21,			// Awaiting input: remainder of EOL-terminated command
     STATUS_WAIT_CAMERA = 22,		// Awaiting input: camera ready display
@@ -41,10 +41,10 @@ enum Status {
     STATUS_PIN_CONFIG = -132,		// Invalid pin configuration
     STATUS_VALUE_RANGE = -133,		// Provided value out of range
     STATUS_STATE = -134,			// Internal error: invalid state
-	STATUS_CORE_PIN = -135,			// Attempt to assign a core pin for custom io
-	STATUS_NO_SUCH_PIN = -136,		// pin number out of range
-	STATUS_EEPROM_ADDR = -137,		// EEPROM address out of range
-	STATUS_EEPROM_JSON = -138,		// No JSON to execute at EEPROM address 
+    STATUS_CORE_PIN = -135,			// Attempt to assign a core pin for custom io
+    STATUS_NO_SUCH_PIN = -136,		// pin number out of range
+    STATUS_EEPROM_ADDR = -137,		// EEPROM address out of range
+    STATUS_EEPROM_JSON = -138,		// No JSON to execute at EEPROM address
 
     // stroke
     STATUS_STROKE_SEGPULSES = -200,	// Stroke has too many pulses per segment [-127,127]
@@ -79,9 +79,9 @@ enum Status {
     STATUS_JSON_CMD = -423,			// JSON command must be object or array
     STATUS_JSON_STRING = -424,		// JSON string expected
     STATUS_JSON_EEPROM = -425,		// JSON EEPROM string too long
-	STATUS_JSON_BOOL = -427,		// Expected JSON true or false
-	STATUS_JSON_255 = -428,			// Expected JSON value between 0 and 255
-	STATUS_JSON_DIGIT = -429,		// Expected numeric suffix for attribute
+    STATUS_JSON_BOOL = -427,		// Expected JSON true or false
+    STATUS_JSON_255 = -428,			// Expected JSON value between 0 and 255
+    STATUS_JSON_DIGIT = -429,		// Expected numeric suffix for attribute
 
     // events
     STATUS_ESTOP = -900,			// Emergency hardware stop

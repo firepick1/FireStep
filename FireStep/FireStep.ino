@@ -32,7 +32,7 @@ void setup() { // run once, when the sketch starts
 
     // Initialize
     machineThread.setup(PIN_CONFIG);
-    
+
     firestep::threadRunner.setup(LED_PIN);
 }
 

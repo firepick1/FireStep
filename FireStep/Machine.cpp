@@ -22,7 +22,7 @@ Status Axis::enable(bool active) {
         return STATUS_NOPIN;
     }
     digitalWrite(pinEnable, active ? PIN_ENABLE : PIN_DISABLE);
-	setAdvancing(true);
+    setAdvancing(true);
     enabled = active;
     return STATUS_OK;
 }
@@ -379,35 +379,35 @@ Status Machine::pulse(Quad<StepCoord> &pulses) {
 
 Status Machine::home(Status status) {
     int16_t searchDelay = 0;
-	for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
-		Axis &a(*motorAxis[i]);
-		if (a.homing) {
-			if (!a.enabled || a.pinMin == NOPIN) {
-				return STATUS_AXIS_DISABLED;
-			}
-			searchDelay = max(searchDelay, a.searchDelay);
-		}
-	}
-	int16_t calibrationDelay = searchDelay*10;
+    for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
+        Axis &a(*motorAxis[i]);
+        if (a.homing) {
+            if (!a.enabled || a.pinMin == NOPIN) {
+                return STATUS_AXIS_DISABLED;
+            }
+            searchDelay = max(searchDelay, a.searchDelay);
+        }
+    }
+    int16_t calibrationDelay = searchDelay*10;
 
     switch (status) {
     default:
         if (stepHome(homingPulses, searchDelay) > 0) {
             status = STATUS_BUSY_MOVING;
         } else {
-			backoffHome(calibrationDelay);
+            backoffHome(calibrationDelay);
             status = STATUS_BUSY_CALIBRATING;
         }
         break;
     case STATUS_BUSY_CALIBRATING:
-		delayMics(100000); // wait 0.1s for machine to settle
+        delayMics(100000); // wait 0.1s for machine to settle
         while (stepHome(1, calibrationDelay) > 0) { }
         backoffHome(calibrationDelay);
         for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
             Axis &a(*motorAxis[i]);
             if (a.homing) {
                 a.position = a.home;
-				a.homing = false;
+                a.homing = false;
             }
         }
         status = STATUS_OK;
@@ -440,7 +440,7 @@ int8_t Machine::stepHome(int16_t pulsesPerAxis, int16_t searchDelay) {
             Axis &a(*motorAxis[i]);
             if (a.homing) {
                 a.readAtMin(invertLim);
-				a.setAdvancing(false);
+                a.setAdvancing(false);
             }
         }
         delayMics(searchDelay); // maximum pulse rate throttle

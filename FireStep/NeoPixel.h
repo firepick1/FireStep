@@ -8,17 +8,17 @@
 #define NEO_KHZ800 0
 /////////////////// MOCK BEGIN ///////////
 typedef class Adafruit_NeoPixel {
-    public:
-        Adafruit_NeoPixel(int a = 0, int b = 0, int c = 0) {}
-        uint32_t Color(int r, int g, int b) {
-            return 0;
-        }
-        void setPixelColor(int pixel, uint32_t color) {}
-        void begin() {}
-        void show() {}
-        int numPixels() {
-            return 0;
-        }
+public:
+    Adafruit_NeoPixel(int a = 0, int b = 0, int c = 0) {}
+    uint32_t Color(int r, int g, int b) {
+        return 0;
+    }
+    void setPixelColor(int pixel, uint32_t color) {}
+    void begin() {}
+    void show() {}
+    int numPixels() {
+        return 0;
+    }
 } Adafruit_NeoPixel;
 /////////////////// MOCK END ///////////
 #else
@@ -37,18 +37,18 @@ namespace firestep {
 // on a live circuit...if you must, connect GND first.
 //
 typedef class NeoPixel : public Display {
-    protected:
-        Adafruit_NeoPixel strip;
-        uint8_t curLevel;
-        uint8_t curStatus;
-        uint8_t fgIndex;
-        Ticks fgTicks;
-        uint32_t fg; // foreground color
-        uint32_t bg; // background color
-    public:
-        NeoPixel(uint16_t ledCount, PinType pin);
-        void setup();
-        void show();
+protected:
+    Adafruit_NeoPixel strip;
+    uint8_t curLevel;
+    uint8_t curStatus;
+    uint8_t fgIndex;
+    Ticks fgTicks;
+    uint32_t fg; // foreground color
+    uint32_t bg; // background color
+public:
+    NeoPixel(uint16_t ledCount, PinType pin);
+    void setup();
+    void show();
 } NeoPixel;
 
 } // namespace firestep

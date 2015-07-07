@@ -22,7 +22,7 @@ size_t JsonCommand::requestAvailable() {
 
 void JsonCommand::clear() {
     parsed = false;
-	cmdIndex = 0;
+    cmdIndex = 0;
     memset(json, 0, sizeof(json));
     memset(error, 0, sizeof(error));
     pJsonFree = json;
@@ -63,28 +63,28 @@ Status JsonCommand::parseCore() {
             return STATUS_JSON_MEM;
         }
         jRequestRoot = jobj;
-		jResponseRoot["r"] = jRequestRoot;
+        jResponseRoot["r"] = jRequestRoot;
     } else {
-		JsonArray &jarr = jbRequest.parseArray(json);
-		if (!jarr.success()) {
-			jResponseRoot["r"] = "?";
-			return STATUS_JSON_PARSE_ERROR;
-		}
+        JsonArray &jarr = jbRequest.parseArray(json);
+        if (!jarr.success()) {
+            jResponseRoot["r"] = "?";
+            return STATUS_JSON_PARSE_ERROR;
+        }
         jRequestRoot = jarr;
-		jResponseRoot["r"] = jarr[0];
+        jResponseRoot["r"] = jarr[0];
     }
-	jResponseRoot["s"] = STATUS_BUSY_PARSED;
+    jResponseRoot["s"] = STATUS_BUSY_PARSED;
 
     return STATUS_BUSY_PARSED;
 }
 
 char * JsonCommand::allocate(size_t length) {
-	if ((pJsonFree-json) + length > sizeof(json)) {
-		return NULL;
-	}
-	char * result = pJsonFree;
-	pJsonFree += length;
-	return result;
+    if ((pJsonFree-json) + length > sizeof(json)) {
+        return NULL;
+    }
+    char * result = pJsonFree;
+    pJsonFree += length;
+    return result;
 }
 
 Status JsonCommand::parseInput(const char *jsonIn, Status status) {
@@ -112,8 +112,8 @@ Status JsonCommand::parseInput(const char *jsonIn, Status status) {
             }
         }
         return STATUS_WAIT_EOL;
-	} else {
-		return parseCore();
+    } else {
+        return parseCore();
     }
 }
 

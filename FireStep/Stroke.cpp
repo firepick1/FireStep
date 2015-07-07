@@ -188,11 +188,11 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
             return status;
         }
     }
-	if (tCurrent >= tStart + dtTotal) {
-		TESTCOUT3("Stroke::traverse() tCurrent:", tCurrent, " tStart:", tStart, " dtTotal:", dtTotal);
-		return STATUS_OK;
-	}
-	return STATUS_BUSY_MOVING;
+    if (tCurrent >= tStart + dtTotal) {
+        TESTCOUT3("Stroke::traverse() tCurrent:", tCurrent, " tStart:", tStart, " dtTotal:", dtTotal);
+        return STATUS_OK;
+    }
+    return STATUS_BUSY_MOVING;
 }
 
 int16_t Stroke::append(Quad<StepDV> dv) {

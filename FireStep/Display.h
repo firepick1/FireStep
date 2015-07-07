@@ -21,33 +21,33 @@ enum DisplayStatus {
 };
 
 typedef class Display {
-        friend class JsonController;
-    protected:
-        uint8_t status;	// DisplayStatus
-        uint8_t level; // 0:off, 255:brightest
-        uint8_t cameraR; // camera red intensity [0,255]
-        uint8_t cameraG; // camera green intensity [0,255]
-        uint8_t cameraB; // camera blue intensity [0,255]
-    public:
-        Display() : status(DISPLAY_BUSY), level(127) {}
-        virtual void setup() {
-            show();
-        }
-        virtual void show() {}
-        inline DisplayStatus getStatus() {
-            return (DisplayStatus) status;
-        }
-        virtual void setStatus(DisplayStatus status = DISPLAY_WAIT_IDLE) {
-            this->status = status;
-            show();
-        }
-        inline uint8_t getLevel() {
-            return level;
-        }
-        virtual void setLevel(uint8_t level = 127) {
-            this->level = level;
-            show();
-        }
+    friend class JsonController;
+protected:
+    uint8_t status;	// DisplayStatus
+    uint8_t level; // 0:off, 255:brightest
+    uint8_t cameraR; // camera red intensity [0,255]
+    uint8_t cameraG; // camera green intensity [0,255]
+    uint8_t cameraB; // camera blue intensity [0,255]
+public:
+    Display() : status(DISPLAY_BUSY), level(127) {}
+    virtual void setup() {
+        show();
+    }
+    virtual void show() {}
+    inline DisplayStatus getStatus() {
+        return (DisplayStatus) status;
+    }
+    virtual void setStatus(DisplayStatus status = DISPLAY_WAIT_IDLE) {
+        this->status = status;
+        show();
+    }
+    inline uint8_t getLevel() {
+        return level;
+    }
+    virtual void setLevel(uint8_t level = 127) {
+        this->level = level;
+        show();
+    }
 } Display;
 
 } // namespace firestep

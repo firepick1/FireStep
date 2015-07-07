@@ -15,7 +15,7 @@ void MachineThread::setup(PinConfig pc) {
 #endif
     Thread::setup();
     machine.pDisplay->setup();
-	machine.setPinConfig(pc);
+    machine.setPinConfig(pc);
     status = STATUS_BUSY_SETUP;
     displayStatus();
     controller.setup();
@@ -42,7 +42,7 @@ void MachineThread::displayStatus() {
         break;
     case STATUS_BUSY_OK:
     case STATUS_BUSY_SETUP:
-	case STATUS_BUSY_EEPROM:
+    case STATUS_BUSY_EEPROM:
     case STATUS_WAIT_BUSY:
     case STATUS_BUSY:
         machine.pDisplay->setStatus(DISPLAY_BUSY);
@@ -148,10 +148,10 @@ void MachineThread::loop() {
         if (c == '{' || c == '[') {
             status = STATUS_BUSY_EEPROM;
         } else {
-			char msg[100];
-			snprintf(msg, sizeof(msg), "FireStep %d.%d.%d",
-					 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-			Serial.println(msg);
+            char msg[100];
+            snprintf(msg, sizeof(msg), "FireStep %d.%d.%d",
+                     VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+            Serial.println(msg);
             status = STATUS_WAIT_IDLE;
         }
         break;
