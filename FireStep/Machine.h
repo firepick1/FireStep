@@ -63,6 +63,7 @@ public:
     PinType 	pinMax;	// maximum limit switch (optional)
     PinType 	pinEnable; // stepper driver enable pin (nENBL)
     StepCoord	home; // home position
+    StepCoord	probe; // probe position
     StepCoord 	travelMin; // soft minimum travel limit
     StepCoord 	travelMax; // soft maximum travel limit
     StepCoord 	position; // current position (pulses)
@@ -76,6 +77,7 @@ public:
     bool		atMin; // minimum limit switch (last value read)
     bool		atMax; // maximum limit switch (last value read)
     bool		homing; // true:axis is active for homing
+    bool		probing; // true:axis is active for probing
 
     Axis() :
         pinStep(NOPIN),
@@ -97,7 +99,8 @@ public:
         atMin(false),
         atMax(false),
         enabled(false),
-        homing(false)
+        homing(false),
+        probing(false)
     {};
     Status enable(bool active);
     bool isEnabled() {
@@ -150,32 +153,34 @@ typedef int8_t MotorIndex;
 typedef class Machine : public QuadStepper {
     friend void ::test_Home();
 private:
-    bool	pinEnableHigh;
-    Display nullDisplay;
-    int8_t 	stepHome(int16_t pulsesPerAxis, int16_t searchDelay);
-    Axis *	motorAxis[MOTOR_COUNT];
+    bool	 	pinEnableHigh;
+    Display 	nullDisplay;
+    StepCoord 	stepHome(StepCoord pulsesPerAxis, int16_t searchDelay);
+    Status	 	stepProbe(int16_t searchDelay);
+    Axis *		motorAxis[MOTOR_COUNT];
     AxisIndex	motor[MOTOR_COUNT];
     PinConfig	pinConfig;
 
 protected:
-    Status setPinConfig_EMC02();
-    Status setPinConfig_RAMPS1_4();
-    void backoffHome(int16_t searchDelay);
+    Status		setPinConfig_EMC02();
+    Status 		setPinConfig_RAMPS1_4();
+    void 		backoffHome(int16_t searchDelay);
 
 public:
-    bool	invertLim;
-    bool	jsonPrettyPrint;
-    int32_t vMax; // maximum stroke velocity (pulses/second)
-    PH5TYPE tvMax; // time to reach maximum velocity
-    Display	*pDisplay;
-    Axis 	axis[AXIS_COUNT];
-    Stroke	stroke;
-    int16_t homingPulses;
-    StepCoord latchBackoff;
+    bool		invertLim;
+    bool		jsonPrettyPrint;
+    int32_t 	vMax; // maximum stroke velocity (pulses/second)
+    PH5TYPE 	tvMax; // time to reach maximum velocity
+    Display*	pDisplay;
+    Axis 		axis[AXIS_COUNT];
+    Stroke		stroke;
+    int16_t		homingPulses;
+    StepCoord	latchBackoff;
+    PinType 	pinProbe; // pin used for probe limit
 
 public:
     Machine();
-    virtual Status step(const Quad<StepDV> &pulse);
+    virtual	Status step(const Quad<StepDV> &pulse);
     bool isCorePin(int16_t pin);
     inline int8_t pulsePin(int16_t pinStep, int8_t n) {
         switch (n) {
@@ -229,6 +234,7 @@ public:
     Quad<StepCoord> getMotorPosition();
     void setMotorPosition(const Quad<StepCoord> &position);
     virtual Status home(Status status);
+    virtual Status probe(Status status);
     void idle();
     Status setAxisIndex(MotorIndex iMotor, AxisIndex iAxis);
     AxisIndex getAxisIndex(MotorIndex iMotor) {

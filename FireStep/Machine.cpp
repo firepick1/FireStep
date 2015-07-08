@@ -29,7 +29,8 @@ Status Axis::enable(bool active) {
 
 Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
-      tvMax(0.7), homingPulses(8), latchBackoff(LATCH_BACKOFF) {
+      tvMax(0.7), homingPulses(8), latchBackoff(LATCH_BACKOFF), pinProbe(NOPIN) 
+{
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         setAxisIndex((MotorIndex)i, (AxisIndex)i);
@@ -417,6 +418,81 @@ Status Machine::home(Status status) {
     return status;
 }
 
+Status Machine::probe(Status status) {
+    int16_t searchDelay = 0;
+	if (pinProbe == NOPIN) {
+		return STATUS_PROBE_PIN;
+	}
+    for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
+        Axis &a(*motorAxis[i]);
+        if (a.probing) {
+            if (!a.enabled) {
+                return STATUS_AXIS_DISABLED;
+            }
+            searchDelay = max(searchDelay, a.searchDelay);
+        }
+    }
+
+	pinMode(pinProbe, INPUT);
+	bool probeHigh = digitalRead(pinProbe);
+	bool probeTripped = (invertLim == !probeHigh);
+	if (probeTripped) {
+		status = STATUS_OK;
+	} else {
+		status = stepProbe(searchDelay*10);
+	}
+	if (status == STATUS_OK) {
+		for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
+			motorAxis[i]->probing = false;
+		}
+	}
+
+    return status;
+}
+
+Status Machine::stepProbe(int16_t searchDelay) {
+    Status status = STATUS_BUSY_CALIBRATING;
+	StepCoord dMax = 0;
+
+    Quad<StepCoord> goal;
+	for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
+		Axis &a(*motorAxis[i]);
+		if (a.probing) {
+			goal.value[i] = a.probe;
+			StepCoord diff = a.probe - a.position;
+			dMax = max(dMax, (StepCoord)(diff>0 ? diff : -diff));
+		} else {
+			goal.value[i] = a.position;
+		}
+	}
+	if (dMax == 0) {
+		return STATUS_OK; // done
+	}
+	Quad<StepCoord> dGoal = goal - getMotorPosition();
+    Quad<StepDV> pulse;
+	for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
+		float dpf = dGoal.value[i] / (float) dMax;
+		StepCoord dp = (StepCoord)(dpf + (dpf >= 0 ? 0.5 : -0.5));
+		if (dp < -1) {
+			pulse.value[i] = -1;
+		} else if (dp > 1) {
+			pulse.value[i] = 1;
+		} else if (dp) {
+			pulse.value[i] = dp;
+		} else {
+			pulse.value[i] = 0;
+		}
+		dGoal.value[i] -= (StepCoord) pulse.value[i];
+	}
+	if (0 > (status = stepDirection(pulse))) {
+		return status;
+	}
+	if (0 > (status = stepFast(pulse))) {
+		return status;
+	}
+	return goal == getMotorPosition() ? STATUS_OK : STATUS_BUSY_CALIBRATING;
+}
+
 void Machine::backoffHome(int16_t searchDelay) {
     bool backingOff = true;
     for (StepCoord pulses=0; backingOff==true; pulses++) {
@@ -432,8 +508,8 @@ void Machine::backoffHome(int16_t searchDelay) {
     }
 }
 
-int8_t Machine::stepHome(int16_t pulsesPerAxis, int16_t searchDelay) {
-    int8_t pulses = 0;
+StepCoord Machine::stepHome(StepCoord pulsesPerAxis, int16_t searchDelay) {
+    StepCoord pulses = 0;
 
     for (int8_t iPulse = 0; iPulse < pulsesPerAxis; iPulse++) {
         for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {
@@ -454,7 +530,6 @@ int8_t Machine::stepHome(int16_t pulsesPerAxis, int16_t searchDelay) {
             }
         }
     }
-
 
     return pulses;
 }

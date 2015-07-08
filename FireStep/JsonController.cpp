@@ -39,6 +39,20 @@ template Status processField<uint8_t, int32_t>(JsonObject& jobj, const char *key
 template Status processField<PH5TYPE, PH5TYPE>(JsonObject& jobj, const char *key, PH5TYPE& field);
 template Status processField<bool, bool>(JsonObject& jobj, const char *key, bool& field);
 
+Status processProbeField(Machine& machine, AxisIndex iAxis, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
+    Status status = processField<StepCoord, int32_t>(jobj, key, machine.axis[iAxis].probe);
+    Axis &a = machine.axis[iAxis];
+    if (a.isEnabled()) {
+        jobj[key] = a.probe;
+        a.probing = true;
+    } else {
+        jobj[key] = a.position;
+        a.probing = false;
+    }
+
+    return status;
+}
+
 Status processHomeField(Machine& machine, AxisIndex iAxis, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
     Status status = processField<StepCoord, int32_t>(jobj, key, machine.axis[iAxis].home);
     Axis &a = machine.axis[iAxis];
@@ -941,23 +955,69 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
     return status;
 }
 
-Status JsonController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+Status JsonController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
+                                      const char* key, bool clear)
+{
     Status status = STATUS_OK;
-    if (strcmp("eep", key) == 0) {
-        JsonObject& kidObj = jobj[key];
-        if (!kidObj.success()) {
-            return jcmd.setError(STATUS_JSON_OBJECT, key);
+    if (clear) {
+        for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
+            machine.getMotorAxis(i).probing = false;
         }
-        for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-            status = processEEPROMValue(jcmd, kidObj, it->key, it->key);
-        }
-    } else if (strncmp("eep",key,3) == 0) {
-        status = processEEPROMValue(jcmd, jobj, key, key+3);
-    } else {
-        status = STATUS_UNRECOGNIZED_NAME;
     }
-    if (status < 0) {
-        return jcmd.setError(status, key);
+    if (strcmp("prb", key) == 0) {
+        const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+            node["1"] = "";
+            node["2"] = "";
+            node["3"] = "";
+            node["4"] = "";
+			node["pn"] = "";
+        }
+        JsonObject& kidObj = jobj[key];
+        if (kidObj.success()) {
+            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+                status = initializeProbe(jcmd, kidObj, it->key, false);
+                if (status < 0) {
+					return jcmd.setError(status, it->key);
+                }
+            }
+			if (status == STATUS_BUSY_CALIBRATING && machine.pinProbe==NOPIN) {
+				return jcmd.setError(STATUS_FIELD_REQUIRED, "pn");
+			}
+        }
+	} else if (strcmp("prbpn", key) == 0 || strcmp("pn", key) == 0) {
+        status = processField<PinType, int32_t>(jobj, key, machine.pinProbe);
+    } else {
+        MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));
+        if (iMotor == INDEX_NONE) {
+            return jcmd.setError(STATUS_NO_MOTOR, key);
+        }
+        status = processProbeField(machine, iMotor, jcmd, jobj, key);
+    }
+    return status == STATUS_OK ? STATUS_BUSY_CALIBRATING : status;
+}
+
+Status JsonController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = jcmd.getStatus();
+    switch (status) {
+    case STATUS_BUSY_PARSED:
+        status = initializeProbe(jcmd, jobj, key, true);
+        break;
+    case STATUS_BUSY_CALIBRATING:
+        status = machine.probe(status);
+		if (status == STATUS_OK) {
+			JsonObject& kidObj = jobj[key];
+            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+				MotorIndex iMotor = machine.motorOfName(it->key + (strlen(it->key) - 1));
+				if (iMotor != INDEX_NONE) {
+					kidObj[it->key] = machine.getMotorAxis(iMotor).position;
+				}
+			}
+		}
+        break;
+    default:
+        return jcmd.setError(STATUS_STATE, key);
     }
     return status;
 }
@@ -979,7 +1039,7 @@ Status JsonController::processEEPROM(JsonCommand& jcmd, JsonObject& jobj, const 
     }
     if (status < 0) {
         return jcmd.setError(status, key);
-    }
+	}
     return status;
 }
 
