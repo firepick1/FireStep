@@ -362,7 +362,6 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             node["po"] = "";
             node["ps"] = "";
             node["sa"] = "";
-            node["sd"] = "";
             node["tm"] = "";
             node["tn"] = "";
             node["ud"] = "";
@@ -425,7 +424,7 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
     } else if (strcmp("sa", key) == 0 || strcmp("sa", key + 1) == 0) {
         status = processField<float, double>(jobj, key, axis.stepAngle);
     } else if (strcmp("sd", key) == 0 || strcmp("sd", key + 1) == 0) {
-        status = processField<DelayMics, int32_t>(jobj, key, axis.searchDelay);
+        status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else if (strcmp("tm", key) == 0 || strcmp("tm", key + 1) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, axis.travelMax);
     } else if (strcmp("tn", key) == 0 || strcmp("tn", key + 1) == 0) {
@@ -803,6 +802,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             node["lh"] = "";
             node["lp"] = "";
             node["pc"] = "";
+            node["sd"] = "";
             node["tc"] = "";
             node["v"] = "";
         }
@@ -837,6 +837,8 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         status = processField<bool, bool>(jobj, key, machine.invertLim);
     } else if (strcmp("lp", key) == 0 || strcmp("syslp", key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, nLoops);
+    } else if (strcmp("sd", key) == 0 || strcmp("sd", key + 1) == 0) {
+        status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
         jobj[key] = threadClock.ticks;
     } else if (strcmp("v", key) == 0 || strcmp("sysv", key) == 0) {

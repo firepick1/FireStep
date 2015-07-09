@@ -497,15 +497,15 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
     testJSON(machine, jc, replace, "{'x':''}",
              "{'s':0,'r':{'x':{'dh':true,'en':true,'ho':0,'is':0,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':55,'pe':38,'pm':255,'pn':3,'po':0,'ps':54,"\
-			 "'sa':1.80,'sd':80,'tm':32000,'tn':-32000,'ud':0}},'t':0.00}\n");
+			 "'sa':1.80,'tm':32000,'tn':-32000,'ud':0}},'t':0.00}\n");
     testJSON(machine, jc, replace, "{'y':''}",
              "{'s':0,'r':{'y':{'dh':true,'en':true,'ho':0,'is':0,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':61,'pe':56,'pm':255,'pn':14,'po':0,'ps':60,"\
-			 "'sa':1.80,'sd':80,'tm':32000,'tn':-32000,'ud':0}},'t':0.00}\n");
+			 "'sa':1.80,'tm':32000,'tn':-32000,'ud':0}},'t':0.00}\n");
     testJSON(machine, jc, replace, "{'z':''}",
              "{'s':0,'r':{'z':{'dh':true,'en':true,'ho':0,'is':0,'lm':false,'ln':false,"\
 			 "'mi':16,'pd':48,'pe':62,'pm':255,'pn':18,'po':0,'ps':46,"\
-			 "'sa':1.80,'sd':80,'tm':32000,'tn':-32000,'ud':0}},'t':0.00}\n");
+			 "'sa':1.80,'tm':32000,'tn':-32000,'ud':0}},'t':0.00}\n");
 }
 
 void test_JsonController_machinePosition(Machine& machine, JsonController &jc) {
@@ -698,7 +698,7 @@ void test_JsonController() {
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
                       "{'fr':1000,'hp':8,'jp':false,'lb':200,'lh':false,"\
-					  "'lp':0,'pc':2,'tc':12345,'v':%.2f}"\
+					  "'lp':0,'pc':2,'sd':80,'tc':12345,'v':%.2f}"\
                       "},'t':0.00}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
              STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);

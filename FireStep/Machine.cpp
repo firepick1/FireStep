@@ -29,7 +29,8 @@ Status Axis::enable(bool active) {
 
 Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
-      tvMax(0.7), homingPulses(8), latchBackoff(LATCH_BACKOFF), pinProbe(NOPIN) 
+      tvMax(0.7), homingPulses(8), latchBackoff(LATCH_BACKOFF), pinProbe(NOPIN),
+	  searchDelay(80)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -379,14 +380,12 @@ Status Machine::pulse(Quad<StepCoord> &pulses) {
 }
 
 Status Machine::home(Status status) {
-    int16_t searchDelay = 0;
     for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         Axis &a(*motorAxis[i]);
         if (a.homing) {
             if (!a.enabled || a.pinMin == NOPIN) {
                 return STATUS_AXIS_DISABLED;
             }
-            searchDelay = max(searchDelay, a.searchDelay);
         }
     }
     int16_t calibrationDelay = searchDelay*10;
@@ -419,17 +418,13 @@ Status Machine::home(Status status) {
 }
 
 Status Machine::probe(Status status) {
-    int16_t searchDelay = 0;
 	if (pinProbe == NOPIN) {
 		return STATUS_PROBE_PIN;
 	}
     for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         Axis &a(*motorAxis[i]);
-        if (a.probing) {
-            if (!a.enabled) {
-                return STATUS_AXIS_DISABLED;
-            }
-            searchDelay = max(searchDelay, a.searchDelay);
+        if (a.probing && !a.enabled) {
+			return STATUS_AXIS_DISABLED;
         }
     }
 
@@ -450,7 +445,7 @@ Status Machine::probe(Status status) {
     return status;
 }
 
-Status Machine::stepProbe(int16_t searchDelay) {
+Status Machine::stepProbe(int16_t delay) {
     Status status = STATUS_BUSY_CALIBRATING;
 	StepCoord dMax = 0;
 
@@ -490,10 +485,11 @@ Status Machine::stepProbe(int16_t searchDelay) {
 	if (0 > (status = stepFast(pulse))) {
 		return status;
 	}
+	delayMics(delay);
 	return goal == getMotorPosition() ? STATUS_OK : STATUS_BUSY_CALIBRATING;
 }
 
-void Machine::backoffHome(int16_t searchDelay) {
+void Machine::backoffHome(int16_t delay) {
     bool backingOff = true;
     for (StepCoord pulses=0; backingOff==true; pulses++) {
         backingOff = false;
@@ -504,11 +500,11 @@ void Machine::backoffHome(int16_t searchDelay) {
                 backingOff = true;
             }
         }
-        delayMics(searchDelay);
+        delayMics(delay);
     }
 }
 
-StepCoord Machine::stepHome(StepCoord pulsesPerAxis, int16_t searchDelay) {
+StepCoord Machine::stepHome(StepCoord pulsesPerAxis, int16_t delay) {
     StepCoord pulses = 0;
 
     for (int8_t iPulse = 0; iPulse < pulsesPerAxis; iPulse++) {
@@ -519,7 +515,7 @@ StepCoord Machine::stepHome(StepCoord pulsesPerAxis, int16_t searchDelay) {
                 a.setAdvancing(false);
             }
         }
-        delayMics(searchDelay); // maximum pulse rate throttle
+        delayMics(delay); // maximum pulse rate throttle
 
         // Move pulses as synchronously as possible for smoothness
         for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {

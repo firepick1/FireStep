@@ -68,7 +68,6 @@ public:
     StepCoord 	travelMax; // soft maximum travel limit
     StepCoord 	position; // current position (pulses)
     DelayMics	usDelay; // minimum time between stepper pulses
-    DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
     DelayMics	idleSnooze; // idle enable-off snooze delay (microseconds)
     float		stepAngle; // 1.8:200 steps/rev; 0.9:400 steps/rev
     uint8_t		microsteps;	// normally 1,2,4,8,16 or 32
@@ -90,7 +89,6 @@ public:
         travelMax(32000),	// 5 full 400-step revolutions @16-microsteps
         position(0),
         usDelay(0), // Suggest 80us (12.8kHz) for microsteps 1
-        searchDelay(80), // a slow, cautious but accurate speed
         idleSnooze(0), // 0:disabled; 1000:weak, noisy, cooler
         stepAngle(1.8),
         microsteps(MICROSTEPS_DEFAULT),
@@ -177,6 +175,7 @@ public:
     int16_t		homingPulses;
     StepCoord	latchBackoff;
     PinType 	pinProbe; // pin used for probe limit
+    DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
 
 public:
     Machine();

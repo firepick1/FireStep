@@ -4,6 +4,7 @@ FireStep: change log
 v0.1.14
 -------
 * NEW: "prb" command probes to specified coordinate, testing given pin
+* NEW: "sd" search delay consolidated from individual axes into common "syssd"	
 
 v0.1.13
 ------
