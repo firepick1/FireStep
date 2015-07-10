@@ -29,7 +29,7 @@ Status Axis::enable(bool active) {
 
 Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
-      tvMax(0.7), homingPulses(2), latchBackoff(LATCH_BACKOFF), 
+      tvMax(0.7), homingPulses(3), latchBackoff(LATCH_BACKOFF), 
 	  searchDelay(800)
 {
     pinEnableHigh = false;
