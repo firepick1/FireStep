@@ -906,10 +906,13 @@ Status JsonController::processHome(JsonCommand& jcmd, JsonObject& jobj, const ch
         status = initializeHome(jcmd, jobj, key, true);
         break;
     case STATUS_BUSY_MOVING:
+	case STATUS_BUSY_OK:
     case STATUS_BUSY_CALIBRATING:
         status = machine.home(status);
         break;
     default:
+		TESTCOUT1("status:", status);
+		ASSERT(false);
         return jcmd.setError(STATUS_STATE, key);
     }
     return status;
@@ -1020,6 +1023,7 @@ Status JsonController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const c
     case STATUS_BUSY_PARSED:
         status = initializeProbe(jcmd, jobj, key, true);
         break;
+	case STATUS_BUSY_OK:
     case STATUS_BUSY_CALIBRATING:
         status = machine.probe(status);
 		if (status == STATUS_OK) {
@@ -1033,6 +1037,7 @@ Status JsonController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const c
 		}
         break;
     default:
+		ASSERT(false);
         return jcmd.setError(STATUS_STATE, key);
     }
     return status;

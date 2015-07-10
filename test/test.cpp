@@ -2429,6 +2429,29 @@ void test_command_array() {
     test_ticks(1);
     ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(JT("{'s':-901,'r':{'xpo':1},'t':0.00}\n"), Serial.output().c_str());
+    test_ticks(1);
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // TEST two command array
+    Serial.push(JT("[{'syspc':2},{'hom':''}]\n"));
+    test_ticks(1); // parse JsonCommand
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    test_ticks(1); // process first command
+    ASSERTEQUALS(JT(""), Serial.output().c_str());
+    ASSERTEQUAL(STATUS_BUSY_OK, mt.status);
+    test_ticks(1); // process second command
+    ASSERTEQUALS(JT(""), Serial.output().c_str());
+    arduino.setPin(machine.axis[0].pinMin, 1);
+    arduino.setPin(machine.axis[1].pinMin, 1);
+    arduino.setPin(machine.axis[2].pinMin, 1);
+    ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+    test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_OK, mt.status);
+    test_ticks(1); // done
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':''},'t':0.00}\n"), Serial.output().c_str());
+    test_ticks(1); // done
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     cout << "TEST	: test_command_arraytest_pnp() OK " << endl;
 }
