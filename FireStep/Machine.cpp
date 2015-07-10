@@ -400,8 +400,8 @@ Status Machine::home(Status status) {
         break;
     case STATUS_BUSY_CALIBRATING:
         delayMics(100000); // wait 0.1s for machine to settle
-        while (stepHome(1, calibrationDelay) > 0) { }
-        backoffHome(calibrationDelay);
+        while (stepHome(1, searchDelay) > 0) { }
+        backoffHome(searchDelay);
         for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
             Axis &a(*motorAxis[i]);
             if (a.homing) {

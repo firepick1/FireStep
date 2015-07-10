@@ -697,8 +697,8 @@ void test_JsonController() {
     jc.process(jcmd);
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
-                      "{'fr':1000,'hp':8,'jp':false,'lb':200,'lh':false,"\
-					  "'lp':0,'pc':2,'sd':80,'tc':12345,'v':%.2f}"\
+                      "{'fr':1000,'hp':2,'jp':false,'lb':200,'lh':false,"\
+					  "'lp':0,'pc':2,'sd':800,'tc':12345,'v':%.2f}"\
                       "},'t':0.00}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
              STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);

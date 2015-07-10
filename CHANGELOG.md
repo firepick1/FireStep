@@ -5,6 +5,8 @@ v0.1.14
 -------
 * NEW: "prb" command probes to specified coordinate, testing given pin
 * NEW: "sd" search delay consolidated from individual axes into common "syssd"	
+* CHANGE: "syssd" defaults to 800 for calibration delay
+* CHANGE: "syshp" defaults to 2 for homing speed
 
 v0.1.13
 ------
