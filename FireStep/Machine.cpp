@@ -391,8 +391,10 @@ Status Machine::home(Status status) {
     switch (status) {
     default:
         if (stepHome(homingPulses, searchDelay/5) > 0) {
+			TESTCOUT1("home.A homingPulses:", homingPulses);
             status = STATUS_BUSY_MOVING;
         } else {
+			TESTCOUT1("home.B homingPulses:", homingPulses);
             backoffHome(searchDelay);
             status = STATUS_BUSY_CALIBRATING;
         }
@@ -491,6 +493,7 @@ StepCoord Machine::stepHome(StepCoord pulsesPerAxis, int16_t delay) {
             Axis &a(*motorAxis[i]);
             if (a.homing) {
                 a.readAtMin(invertLim);
+				TESTCOUT2("stepHome a:", (int) i, " atMin:", (int) a.atMin );
                 a.setAdvancing(false);
             }
         }

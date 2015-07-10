@@ -1275,7 +1275,8 @@ Status JsonController::process(JsonCommand& jcmd) {
             TESTCOUT3("JsonController::process(", (int) jcmd.cmdIndex+1,
                       " of ", jarr.size(), ") status:", status);
             if (status == STATUS_OK) {
-                status = STATUS_BUSY_OK;
+                //status = STATUS_BUSY_OK;
+				status = STATUS_BUSY_PARSED;
                 jcmd.cmdIndex++;
             }
         } else {

@@ -2408,10 +2408,10 @@ void test_command_array() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1); // process first command
     ASSERTEQUALS(JT(""), Serial.output().c_str());
-    ASSERTEQUAL(STATUS_BUSY_OK, mt.status);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1); // process second command
     ASSERTEQUALS(JT(""), Serial.output().c_str());
-    ASSERTEQUAL(STATUS_BUSY_OK, mt.status);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1);
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'ypo':2},'t':0.00}\n"), Serial.output().c_str());
@@ -2424,7 +2424,7 @@ void test_command_array() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1); // process first command
     ASSERTEQUALS(JT(""), Serial.output().c_str());
-    ASSERTEQUAL(STATUS_BUSY_OK, mt.status);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     Serial.push("\n");
     test_ticks(1);
     ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
@@ -2433,23 +2433,33 @@ void test_command_array() {
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     // TEST two command array
+    int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
     Serial.push(JT("[{'syspc':2},{'hom':''}]\n"));
     test_ticks(1); // parse JsonCommand
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1); // process first command
-    ASSERTEQUALS(JT(""), Serial.output().c_str());
-    ASSERTEQUAL(STATUS_BUSY_OK, mt.status);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1); // process second command
-    ASSERTEQUALS(JT(""), Serial.output().c_str());
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(1); // process second command
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(3, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(1); // process second command
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUAL(6, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    test_ticks(1); // process second command
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     arduino.setPin(machine.axis[0].pinMin, 1);
     arduino.setPin(machine.axis[1].pinMin, 1);
     arduino.setPin(machine.axis[2].pinMin, 1);
+    test_ticks(1);
     ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
     test_ticks(1);
-    ASSERTEQUAL(STATUS_BUSY_OK, mt.status);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1); // done
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'hom':''},'t':0.00}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':0,'2':0,'3':0,'4':4}},'t':0.00}\n"), Serial.output().c_str());
     test_ticks(1); // done
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
