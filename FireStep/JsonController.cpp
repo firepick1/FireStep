@@ -39,17 +39,30 @@ template Status processField<uint8_t, int32_t>(JsonObject& jobj, const char *key
 template Status processField<PH5TYPE, PH5TYPE>(JsonObject& jobj, const char *key, PH5TYPE& field);
 template Status processField<bool, bool>(JsonObject& jobj, const char *key, bool& field);
 
-Status processProbeField(Machine& machine, AxisIndex iAxis, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
-    Status status = processField<StepCoord, int32_t>(jobj, key, machine.axis[iAxis].probe);
-    Axis &a = machine.axis[iAxis];
-    if (a.isEnabled()) {
-        jobj[key] = a.probe;
-        a.probing = true;
-    } else {
-        jobj[key] = a.position;
-        a.probing = false;
-    }
+//Status processProbeField(Machine& machine, AxisIndex iAxis, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
+    //Status status = processField<StepCoord, int32_t>(jobj, key, machine.axis[iAxis].probe);
+    //Axis &a = machine.axis[iAxis];
+    //if (a.isEnabled()) {
+        //jobj[key] = a.probe;
+        //a.probing = true;
+    //} else {
+        //jobj[key] = a.position;
+        //a.probing = false;
+    //}
+//
+    //return status;
+//}
 
+Status processProbeField(Machine& machine, MotorIndex iMotor, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
+    Status status = processField<StepCoord, int32_t>(jobj, key, machine.op.probe.end.value[iMotor]);
+	if (status == STATUS_OK) {
+		Axis &a = machine.getMotorAxis(iMotor);
+		if (!a.isEnabled()) {
+			return jcmd.setError(STATUS_AXIS_DISABLED, key);
+		}
+		StepCoord delta = abs(machine.op.probe.end.value[iMotor] - a.position);
+		machine.op.probe.maxDelta = max(machine.op.probe.maxDelta, delta);
+	}
     return status;
 }
 
@@ -962,9 +975,10 @@ Status JsonController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
 {
     Status status = STATUS_OK;
     if (clear) {
-        for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
-            machine.getMotorAxis(i).probing = false;
-        }
+        //for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
+            //machine.getMotorAxis(i).probing = false;
+        //}
+		machine.op.probe.init(machine.getMotorPosition());
     }
     if (strcmp("prb", key) == 0) {
         const char *s;
@@ -984,12 +998,12 @@ Status JsonController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
 					return jcmd.setError(status, it->key);
                 }
             }
-			if (status == STATUS_BUSY_CALIBRATING && machine.pinProbe==NOPIN) {
+			if (status == STATUS_BUSY_CALIBRATING && machine.op.probe.pinProbe==NOPIN) {
 				return jcmd.setError(STATUS_FIELD_REQUIRED, "pn");
 			}
         }
 	} else if (strcmp("prbpn", key) == 0 || strcmp("pn", key) == 0) {
-        status = processField<PinType, int32_t>(jobj, key, machine.pinProbe);
+        status = processField<PinType, int32_t>(jobj, key, machine.op.probe.pinProbe);
     } else {
         MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));
         if (iMotor == INDEX_NONE) {

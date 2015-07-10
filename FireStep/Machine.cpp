@@ -29,7 +29,8 @@ Status Axis::enable(bool active) {
 
 Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
-      tvMax(0.7), homingPulses(8), latchBackoff(LATCH_BACKOFF), pinProbe(NOPIN),
+      tvMax(0.7), homingPulses(8), latchBackoff(LATCH_BACKOFF), 
+	  //pinProbe(NOPIN),
 	  searchDelay(80)
 {
     pinEnableHigh = false;
@@ -418,56 +419,60 @@ Status Machine::home(Status status) {
 }
 
 Status Machine::probe(Status status) {
-	if (pinProbe == NOPIN) {
+	if (op.probe.pinProbe == NOPIN) {
 		return STATUS_PROBE_PIN;
 	}
     for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         Axis &a(*motorAxis[i]);
-        if (a.probing && !a.enabled) {
+        //if (a.probing && !a.enabled) {
+        if (op.probe.start.value[i]!=op.probe.end.value[i] && !a.enabled) {
 			return STATUS_AXIS_DISABLED;
         }
     }
 
-	pinMode(pinProbe, INPUT);
-	bool probeHigh = digitalRead(pinProbe);
-	bool probeTripped = (invertLim == !probeHigh);
-	if (probeTripped) {
-		status = STATUS_OK;
-	} else {
+	pinMode(op.probe.pinProbe, INPUT);
+	op.probe.probing = !isAtLimit(op.probe.pinProbe);
+	if (op.probe.probing) {
 		status = stepProbe(searchDelay*10);
+	} else {
+		status = STATUS_OK;
 	}
-	if (status == STATUS_OK) {
-		for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
-			motorAxis[i]->probing = false;
-		}
-	}
+	//if (status == STATUS_OK) {
+		//for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
+			//motorAxis[i]->probing = false;
+		//}
+	//}
 
     return status;
 }
 
 Status Machine::stepProbe(int16_t delay) {
     Status status = STATUS_BUSY_CALIBRATING;
-	StepCoord dMax = 0;
+	//StepCoord dMax = 0;
 
-    Quad<StepCoord> goal;
-	for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
-		Axis &a(*motorAxis[i]);
-		if (a.probing) {
-			goal.value[i] = a.probe;
-			StepCoord diff = a.probe - a.position;
-			dMax = max(dMax, (StepCoord)(diff>0 ? diff : -diff));
-		} else {
-			goal.value[i] = a.position;
-		}
-	}
-	if (dMax == 0) {
+	if (op.probe.curDelta >= op.probe.maxDelta) {
 		return STATUS_OK; // done
 	}
-	Quad<StepCoord> dGoal = goal - getMotorPosition();
+	op.probe.curDelta++;
+    //Quad<StepCoord> goal;
+	//for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
+		//Axis &a(*motorAxis[i]);
+		//if (a.probing) {
+			//goal.value[i] = a.probe;
+			//StepCoord diff = a.probe - a.position;
+			//dMax = max(dMax, (StepCoord)(diff>0 ? diff : -diff));
+		//} else {
+			//goal.value[i] = a.position;
+		//}
+	//}
+	//if (dMax == 0) {
+		//return STATUS_OK; // done
+	//}
+	//Quad<StepCoord> dGoal = goal - getMotorPosition();
     Quad<StepDV> pulse;
 	for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
-		float dpf = dGoal.value[i] / (float) dMax;
-		StepCoord dp = (StepCoord)(dpf + (dpf >= 0 ? 0.5 : -0.5));
+		//float dpf = dGoal.value[i] / (float) dMax;
+		StepCoord dp = op.probe.interpolate(i) - getMotorAxis(i).position;
 		if (dp < -1) {
 			pulse.value[i] = -1;
 		} else if (dp > 1) {
@@ -477,7 +482,7 @@ Status Machine::stepProbe(int16_t delay) {
 		} else {
 			pulse.value[i] = 0;
 		}
-		dGoal.value[i] -= (StepCoord) pulse.value[i];
+		//dGoal.value[i] -= (StepCoord) pulse.value[i];
 	}
 	if (0 > (status = stepDirection(pulse))) {
 		return status;
@@ -486,7 +491,7 @@ Status Machine::stepProbe(int16_t delay) {
 		return status;
 	}
 	delayMics(delay);
-	return goal == getMotorPosition() ? STATUS_OK : STATUS_BUSY_CALIBRATING;
+	return STATUS_BUSY_CALIBRATING;
 }
 
 void Machine::backoffHome(int16_t delay) {

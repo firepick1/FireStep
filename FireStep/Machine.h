@@ -63,7 +63,7 @@ public:
     PinType 	pinMax;	// maximum limit switch (optional)
     PinType 	pinEnable; // stepper driver enable pin (nENBL)
     StepCoord	home; // home position
-    StepCoord	probe; // probe position
+    //StepCoord	probe; // probe position
     StepCoord 	travelMin; // soft minimum travel limit
     StepCoord 	travelMax; // soft maximum travel limit
     StepCoord 	position; // current position (pulses)
@@ -148,6 +148,32 @@ public:
 typedef int8_t AxisIndex;
 typedef int8_t MotorIndex;
 
+typedef class OpProbe {
+public:
+    Quad<StepCoord> start; // probe starting point
+    Quad<StepCoord> end; // probe goal
+    StepCoord	maxDelta; // absolute value of maximum stepper displacement
+    StepCoord	curDelta; // absolute value of current stepper displacement
+    PinType 	pinProbe; // pin used for probe limit
+    bool		probing;
+
+	OpProbe() {
+		init(Quad<StepCoord>());
+	}
+    void init(Quad<StepCoord> position) {
+        start = position;
+        end = position;
+        maxDelta = 0;
+        curDelta = 0;
+        pinProbe = NOPIN;
+        probing = true;
+    }
+    StepCoord interpolate(MotorIndex iMotor) {
+        float t = maxDelta ? (float)curDelta/(float)maxDelta : 0;
+        return (StepCoord)(start.value[iMotor]*(1-t) + end.value[iMotor]*t + 0.5);
+    }
+} OpProbe;
+
 typedef class Machine : public QuadStepper {
     friend void ::test_Home();
 private:
@@ -174,13 +200,19 @@ public:
     Stroke		stroke;
     int16_t		homingPulses;
     StepCoord	latchBackoff;
-    PinType 	pinProbe; // pin used for probe limit
     DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
+	struct {
+		OpProbe		probe;
+	} op;
 
 public:
     Machine();
     virtual	Status step(const Quad<StepDV> &pulse);
     bool isCorePin(int16_t pin);
+    inline bool isAtLimit(PinType pin) {
+        bool pinValue = digitalRead(pin);
+        return (invertLim == !pinValue);
+    }
     inline int8_t pulsePin(int16_t pinStep, int8_t n) {
         switch (n) {
         case 0:
