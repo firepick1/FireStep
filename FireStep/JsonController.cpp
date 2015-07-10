@@ -802,7 +802,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             node["lp"] = "";
             node["mv"] = "";
             node["pc"] = "";
-            node["ps"] = "";
+            node["pi"] = "";
             node["sd"] = "";
             node["tc"] = "";
             node["tv"] = "";
@@ -841,8 +841,13 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         } else {
             machine.setPinConfig(pc);
         }
-    } else if (strcmp("ps", key) == 0 || strcmp("sysps", key) == 0) {
-        status = processField<PinType, int32_t>(jobj, key, machine.pinStatus);
+    } else if (strcmp("pi", key) == 0 || strcmp("syspi", key) == 0) {
+		PinType pinStatus = machine.pinStatus;
+        status = processField<PinType, int32_t>(jobj, key, pinStatus);
+		if (pinStatus != machine.pinStatus) {
+			machine.pinStatus = pinStatus;
+			machine.pDisplay->setup(pinStatus);
+		}
     } else if (strcmp("sd", key) == 0 || strcmp("syssd", key + 1) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
