@@ -39,20 +39,6 @@ template Status processField<uint8_t, int32_t>(JsonObject& jobj, const char *key
 template Status processField<PH5TYPE, PH5TYPE>(JsonObject& jobj, const char *key, PH5TYPE& field);
 template Status processField<bool, bool>(JsonObject& jobj, const char *key, bool& field);
 
-//Status processProbeField(Machine& machine, AxisIndex iAxis, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
-    //Status status = processField<StepCoord, int32_t>(jobj, key, machine.axis[iAxis].probe);
-    //Axis &a = machine.axis[iAxis];
-    //if (a.isEnabled()) {
-        //jobj[key] = a.probe;
-        //a.probing = true;
-    //} else {
-        //jobj[key] = a.position;
-        //a.probing = false;
-    //}
-//
-    //return status;
-//}
-
 Status processProbeField(Machine& machine, MotorIndex iMotor, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
     Status status = processField<StepCoord, int32_t>(jobj, key, machine.op.probe.end.value[iMotor]);
 	if (status == STATUS_OK) {
@@ -850,7 +836,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         status = processField<bool, bool>(jobj, key, machine.invertLim);
     } else if (strcmp("lp", key) == 0 || strcmp("syslp", key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, nLoops);
-    } else if (strcmp("sd", key) == 0 || strcmp("sd", key + 1) == 0) {
+    } else if (strcmp("sd", key) == 0 || strcmp("syssd", key + 1) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
         jobj[key] = threadClock.ticks;
@@ -975,9 +961,6 @@ Status JsonController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
 {
     Status status = STATUS_OK;
     if (clear) {
-        //for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
-            //machine.getMotorAxis(i).probing = false;
-        //}
 		machine.op.probe.init(machine.getMotorPosition());
     }
     if (strcmp("prb", key) == 0) {

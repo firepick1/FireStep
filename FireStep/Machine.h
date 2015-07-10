@@ -63,7 +63,6 @@ public:
     PinType 	pinMax;	// maximum limit switch (optional)
     PinType 	pinEnable; // stepper driver enable pin (nENBL)
     StepCoord	home; // home position
-    //StepCoord	probe; // probe position
     StepCoord 	travelMin; // soft minimum travel limit
     StepCoord 	travelMax; // soft maximum travel limit
     StepCoord 	position; // current position (pulses)
@@ -179,8 +178,8 @@ typedef class Machine : public QuadStepper {
 private:
     bool	 	pinEnableHigh;
     Display 	nullDisplay;
-    StepCoord 	stepHome(StepCoord pulsesPerAxis, int16_t searchDelay);
-    Status	 	stepProbe(int16_t searchDelay);
+    StepCoord 	stepHome(StepCoord pulsesPerAxis, int16_t delay);
+    Status	 	stepProbe(int16_t delay);
     Axis *		motorAxis[MOTOR_COUNT];
     AxisIndex	motor[MOTOR_COUNT];
     PinConfig	pinConfig;
@@ -188,7 +187,7 @@ private:
 protected:
     Status		setPinConfig_EMC02();
     Status 		setPinConfig_RAMPS1_4();
-    void 		backoffHome(int16_t searchDelay);
+    void 		backoffHome(int16_t delay);
 
 public:
     bool		invertLim;
