@@ -14,7 +14,6 @@ void MachineThread::setup(PinConfig pc) {
     ADC_LISTEN8(ANALOG_SPEED_PIN);
 #endif
     Thread::setup();
-    machine.pDisplay->setup();
     machine.setPinConfig(pc);
     status = STATUS_BUSY_SETUP;
     displayStatus();

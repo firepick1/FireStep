@@ -16,23 +16,25 @@ enum PinConfig {
 // No pin assignments
 ////////////////////////////////////////////////
 
-#define PC0_X_STEP_PIN         NOPIN
-#define PC0_X_DIR_PIN          NOPIN
-#define PC0_X_ENABLE_PIN       NOPIN
-#define PC0_X_MIN_PIN          NOPIN
-#define PC0_X_MAX_PIN          NOPIN
+#define PC0_X_STEP_PIN          NOPIN
+#define PC0_X_DIR_PIN           NOPIN
+#define PC0_X_ENABLE_PIN        NOPIN
+#define PC0_X_MIN_PIN           NOPIN
+#define PC0_X_MAX_PIN           NOPIN
 
-#define PC0_Y_STEP_PIN         NOPIN
-#define PC0_Y_DIR_PIN          NOPIN
-#define PC0_Y_ENABLE_PIN       NOPIN
-#define PC0_Y_MIN_PIN          NOPIN
-#define PC0_Y_MAX_PIN          NOPIN
+#define PC0_Y_STEP_PIN          NOPIN
+#define PC0_Y_DIR_PIN           NOPIN
+#define PC0_Y_ENABLE_PIN        NOPIN
+#define PC0_Y_MIN_PIN           NOPIN
+#define PC0_Y_MAX_PIN           NOPIN
+ 
+#define PC0_Z_STEP_PIN          NOPIN
+#define PC0_Z_DIR_PIN           NOPIN
+#define PC0_Z_ENABLE_PIN        NOPIN
+#define PC0_Z_MIN_PIN           NOPIN
+#define PC0_Z_MAX_PIN           NOPIN
 
-#define PC0_Z_STEP_PIN         NOPIN
-#define PC0_Z_DIR_PIN          NOPIN
-#define PC0_Z_ENABLE_PIN       NOPIN
-#define PC0_Z_MIN_PIN          NOPIN
-#define PC0_Z_MAX_PIN          NOPIN
+#define PC0_PIN_STATUS			NOPIN
 
 ///////////// PC1_EMC02 //////////////
 // https://github.com/firepick-delta/Marlin/blob/delta/openpnp/Marlin/pins.h
@@ -43,7 +45,7 @@ enum PinConfig {
 #define PC1_SERVO3			   6
 #define PC1_SERVO4			   7
 
-#define PC1_DISPLAY_PIN 	   PC1_SERVO4
+#define PC1_PIN_STATUS	 	   PC1_SERVO4
 #define PC1_LED_PIN            13
 
 //Delta Motor "X" ***********
@@ -87,9 +89,12 @@ enum PinConfig {
 // Arduino Mega2560 with RAMPS v1.4 shield
 ////////////////////////////////////////////////
 
-// RAMPS AUX1 BACK   [ 5V GND D1  D0  ]
-// RAMPS AUX1 FRNT   [ 5V GND D57 D58 ]
-#define PC2_DISPLAY_PIN 57
+#define PC2_SERVO1			   4
+#define PC2_SERVO2			   5
+#define PC2_SERVO3			   6
+#define PC2_SERVO4			   11
+
+#define PC2_PIN_STATUS		PC2_SERVO4
 
 #define PC2_ANALOG_SPEED_PIN	5 /* ADC5 (A5) */
 

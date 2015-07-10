@@ -16,6 +16,8 @@ public:
     void setPixelColor(int pixel, uint32_t color) {}
     void begin() {}
     void show() {}
+	void setPin(int  pin) {
+	}
     int numPixels() {
         return 0;
     }
@@ -46,8 +48,8 @@ protected:
     uint32_t fg; // foreground color
     uint32_t bg; // background color
 public:
-    NeoPixel(uint16_t ledCount, PinType pin);
-    void setup();
+    NeoPixel(uint16_t ledCount);
+    void setup(int pin);
     void show();
 } NeoPixel;
 

@@ -3,11 +3,11 @@
 
 using namespace firestep;
 
-NeoPixel::NeoPixel(uint16_t ledCount, PinType pin)
-    : strip(ledCount, pin, NEO_GRB + NEO_KHZ800)
+NeoPixel::NeoPixel(uint16_t ledCount)
+    : strip(ledCount, 0, NEO_GRB + NEO_KHZ800)
 {}
 
-void NeoPixel::setup() {
+void NeoPixel::setup(int pin) {
     // Parameter 1 = number of pixels in strip
     // Parameter 2 = Arduino pin number (most are valid)
     // Parameter 3 = pixel type flags, add together as needed:
@@ -15,8 +15,11 @@ void NeoPixel::setup() {
     //   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
     //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
     //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-    strip.begin();
-    strip.show();
+	if (pin != NOPIN) {
+		strip.setPin(pin);
+		strip.begin();
+		strip.show();
+	}
     fgIndex = 0;
     fgTicks = 0;
     cameraR = 0;

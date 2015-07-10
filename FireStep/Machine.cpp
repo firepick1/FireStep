@@ -30,7 +30,7 @@ Status Axis::enable(bool active) {
 Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
       tvMax(0.7), homingPulses(3), latchBackoff(LATCH_BACKOFF), 
-	  searchDelay(800)
+	  searchDelay(800), pinStatus(NOPIN)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -58,6 +58,7 @@ bool Machine::isCorePin(int16_t pin) {
 Status Machine::setPinConfig_EMC02() {
     Status status = STATUS_OK;
 
+	pinStatus = PC1_PIN_STATUS;
     setPin(axis[0].pinStep, PC1_X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, PC1_X_DIR_PIN, OUTPUT);
     setPin(axis[0].pinMin, PC1_X_MIN_PIN, INPUT);
@@ -116,6 +117,7 @@ Status Machine::setPinConfig_EMC02() {
 
 Status Machine::setPinConfig_RAMPS1_4() {
     Status status = STATUS_OK;
+	pinStatus = PC2_PIN_STATUS;
     setPin(axis[0].pinStep, PC2_X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, PC2_X_DIR_PIN, OUTPUT);
     setPin(axis[0].pinMin, PC2_X_MIN_PIN, INPUT);
@@ -146,18 +148,13 @@ Status Machine::setPinConfig(PinConfig pc) {
     default:
         return STATUS_PIN_CONFIG;
     case PC0_NOPIN:
-        setPin(axis[0].pinStep, PC0_X_STEP_PIN, OUTPUT);
-        setPin(axis[0].pinDir, PC0_X_DIR_PIN, OUTPUT);
-        setPin(axis[0].pinMin, PC0_X_MIN_PIN, INPUT);
-        setPin(axis[0].pinEnable, PC0_X_ENABLE_PIN, OUTPUT, HIGH);
-        setPin(axis[1].pinStep, PC0_Y_STEP_PIN, OUTPUT);
-        setPin(axis[1].pinDir, PC0_Y_DIR_PIN, OUTPUT);
-        setPin(axis[1].pinMin, PC0_Y_MIN_PIN, INPUT);
-        setPin(axis[1].pinEnable, PC0_Y_ENABLE_PIN, OUTPUT, HIGH);
-        setPin(axis[2].pinStep, PC0_Z_STEP_PIN, OUTPUT);
-        setPin(axis[2].pinDir, PC0_Z_DIR_PIN, OUTPUT);
-        setPin(axis[2].pinMin, PC0_Z_MIN_PIN, INPUT);
-        setPin(axis[2].pinEnable, PC0_Z_ENABLE_PIN, OUTPUT, HIGH);
+		pinStatus = NOPIN;
+		for (AxisIndex iAxis=0; iAxis<AXIS_COUNT; iAxis++) {
+			axis[iAxis].pinStep = NOPIN;
+			axis[iAxis].pinDir = NOPIN;
+			axis[iAxis].pinMin = NOPIN;
+			axis[iAxis].pinEnable = NOPIN;
+		}
         break;
     case PC1_EMC02:
         status = setPinConfig_EMC02();
@@ -171,6 +168,8 @@ Status Machine::setPinConfig(PinConfig pc) {
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
         axis[i].enable(true);
     }
+    pDisplay->setup(pinStatus);
+
     return status;
 }
 

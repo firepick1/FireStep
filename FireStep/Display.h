@@ -30,7 +30,7 @@ protected:
     uint8_t cameraB; // camera blue intensity [0,255]
 public:
     Display() : status(DISPLAY_BUSY), level(127) {}
-    virtual void setup() {
+    virtual void setup(int pin) {
         show();
     }
     virtual void show() {}

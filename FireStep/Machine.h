@@ -200,6 +200,7 @@ public:
     int16_t		homingPulses;
     StepCoord	latchBackoff;
     DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
+	PinType		pinStatus;
 	struct {
 		OpProbe		probe;
 	} op;

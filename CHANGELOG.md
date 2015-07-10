@@ -1,6 +1,13 @@
 FireStep: change log
 ====================
 
+v0.1.15
+-------
+* NEW: "sysps" display status pin (e.g., NeoPixel) is soft configurable
+* NEW: "sysmv" maximum stepper velocity (default: 12800 pulses/second) 
+* NEW: "systv" time to  maximum stepper velocity (default: 0.7 microseconds) 
+* NEW: "prbsd" probe search delay (default: syssd)
+
 v0.1.14
 -------
 * NEW: "prb" command probes to specified coordinate, testing given pin
