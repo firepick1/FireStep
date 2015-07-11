@@ -7,6 +7,7 @@ v0.1.15
 * NEW: "sysmv" maximum stepper velocity (default: 12800 pulses/second) 
 * NEW: "systv" time to  maximum stepper velocity (default: 0.7 microseconds) 
 * NEW: "prbsd" probe search delay (default: syssd)
+* NEW: "prbip" probe invert logic (default: false)
 * FIX: [command array] now processes homing commands correctly
 
 v0.1.14

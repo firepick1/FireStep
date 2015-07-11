@@ -988,6 +988,7 @@ Status JsonController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
             node["2"] = "";
             node["3"] = "";
             node["4"] = "";
+			node["ip"] = "";
 			node["pn"] = "";
 			node["sd"] = "";
         }
@@ -1003,6 +1004,8 @@ Status JsonController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
 				return jcmd.setError(STATUS_FIELD_REQUIRED, "pn");
 			}
         }
+	} else if (strcmp("prbip", key) == 0 || strcmp("ip", key) == 0) {
+        status = processField<bool, bool>(jobj, key, machine.op.probe.invertProbe);
 	} else if (strcmp("prbpn", key) == 0 || strcmp("pn", key) == 0) {
         status = processField<PinType, int32_t>(jobj, key, machine.op.probe.pinProbe);
 	} else if (strcmp("prbsd", key) == 0 || strcmp("sd", key) == 0) {

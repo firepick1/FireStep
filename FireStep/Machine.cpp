@@ -430,6 +430,9 @@ Status Machine::probe(Status status) {
 
 	pinMode(op.probe.pinProbe, INPUT);
 	op.probe.probing = !isAtLimit(op.probe.pinProbe);
+	if (op.probe.invertProbe) {
+		op.probe.probing = !op.probe.probing;
+	}
 	if (op.probe.probing) {
 		status = stepProbe(searchDelay);
 	} else {

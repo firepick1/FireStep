@@ -1701,10 +1701,6 @@ void test_probe() {
     int32_t zpulses = arduino.pulses(PC2_Z_STEP_PIN);
     int32_t e0pulses = arduino.pulses(PC2_E0_STEP_PIN);
     machine.setMotorPosition(Quad<StepCoord>(100, 100, 100, 100));
-    ASSERT(!machine.axis[0].probing);
-    ASSERT(!machine.axis[1].probing);
-    ASSERT(!machine.axis[2].probing);
-    ASSERT(!machine.axis[3].probing);
 	PinType pinProbe = 2;
 	ASSERTEQUAL(NOVALUE, arduino.getPin(pinProbe));
 	arduino.setPin(pinProbe, LOW);
@@ -1785,9 +1781,96 @@ void test_probe() {
     ASSERTQUAD(Quad<StepCoord>(99, 97, 94, 100), mt.machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'prb':{'1':99,'2':97,'3':94,'pn':2}},'t':0.00}\n"), 
 		Serial.output().c_str());
+    test_ticks(1);	// tripped
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	// Invert pin sense
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    e0pulses = arduino.pulses(PC2_E0_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>(100, 100, 100, 100));
+	arduino.setPin(pinProbe, HIGH);
+
+    Serial.push(JT("{'prb':{'1':99,'2':95,'3':90,'pn':2,'ip':true}}\n"));
+    test_ticks(1);	// parse
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    ASSERTQUAD(Quad<StepCoord>(100, 100, 100, 100), mt.machine.getMotorPosition());
+
+    test_ticks(1);	// initialize
+    ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+    ASSERT(machine.op.probe.probing);
+    ASSERTQUAD(Quad<StepCoord>(100, 100, 100, 100), mt.machine.getMotorPosition());
+
+    test_ticks(1);	// calibrating
+    ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+    ASSERT(machine.op.probe.probing);
+    ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
+    ASSERTEQUAL(1, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTQUAD(Quad<StepCoord>(100, 100, 99, 100), mt.machine.getMotorPosition());
+
+    test_ticks(1);	// calibrating
+    ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+    ASSERT(machine.op.probe.probing);
+    ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
+    ASSERTEQUAL(2, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(1, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTQUAD(Quad<StepCoord>(100, 99, 98, 100), mt.machine.getMotorPosition());
+
+    test_ticks(1);	// calibrating
+    ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+    ASSERT(machine.op.probe.probing);
+    ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
+    ASSERTEQUAL(3, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(1, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTQUAD(Quad<StepCoord>(100, 99, 97, 100), mt.machine.getMotorPosition());
+
+    test_ticks(1);	// calibrating
+    ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+    ASSERT(machine.op.probe.probing);
+    ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
+    ASSERTEQUAL(4, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(2, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTQUAD(Quad<StepCoord>(100, 98, 96, 100), mt.machine.getMotorPosition());
+
+    test_ticks(1);	// calibrating
+    ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+    ASSERT(machine.op.probe.probing);
+    ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
+    ASSERTEQUAL(5, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(2, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTQUAD(Quad<StepCoord>(100, 98, 95, 100), mt.machine.getMotorPosition());
+
+    test_ticks(1);	// calibrating
+    ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+    ASSERT(machine.op.probe.probing);
+    ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
+    ASSERTEQUAL(6, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(3, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(1, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTQUAD(Quad<StepCoord>(99, 97, 94, 100), mt.machine.getMotorPosition());
+
+	arduino.setPin(pinProbe, LOW);
+    test_ticks(1);	// tripped
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERT(!machine.op.probe.probing);
+    ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
+    ASSERTEQUAL(6, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(3, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(1, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTQUAD(Quad<StepCoord>(99, 97, 94, 100), mt.machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'prb':{'1':99,'2':97,'3':94,'pn':2,'ip':true}},'t':0.00}\n"), 
+		Serial.output().c_str());
 
     cout << "TEST	: test_probe() OK " << endl;
 }
+
 void test_Home() {
     cout << "TEST	: test_Home() =====" << endl;
 

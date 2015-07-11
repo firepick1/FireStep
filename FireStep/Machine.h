@@ -75,7 +75,6 @@ public:
     bool		atMin; // minimum limit switch (last value read)
     bool		atMax; // maximum limit switch (last value read)
     bool		homing; // true:axis is active for homing
-    bool		probing; // true:axis is active for probing
 
     Axis() :
         pinStep(NOPIN),
@@ -96,8 +95,7 @@ public:
         atMin(false),
         atMax(false),
         enabled(false),
-        homing(false),
-        probing(false)
+        homing(false)
     {};
     Status enable(bool active);
     bool isEnabled() {
@@ -155,6 +153,7 @@ public:
     StepCoord	curDelta; // absolute value of current stepper displacement
     PinType 	pinProbe; // pin used for probe limit
     bool		probing;
+	bool		invertProbe; // invert logic sense of probe
 
 	OpProbe() {
 		init(Quad<StepCoord>());
@@ -166,6 +165,7 @@ public:
         curDelta = 0;
         pinProbe = NOPIN;
         probing = true;
+		invertProbe = false;
     }
     StepCoord interpolate(MotorIndex iMotor) {
         float t = maxDelta ? (float)curDelta/(float)maxDelta : 0;
