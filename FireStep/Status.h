@@ -91,6 +91,7 @@ enum Status {
     STATUS_TRAVEL_MAX = -903,		// Travel would exceed maximum
     STATUS_LIMIT_MIN = -904,		// Minimum limit switch tripped
     STATUS_LIMIT_MAX = -905,		// Maximum limit switch tripped
+	STATUS_PROBE_FAILED = -906,		// Probe never contacted surface
 };
 
 inline bool isProcessing(Status status) {

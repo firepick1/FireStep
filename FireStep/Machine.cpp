@@ -447,7 +447,7 @@ Status Machine::stepProbe(int16_t delay) {
 	//StepCoord dMax = 0;
 
 	if (op.probe.curDelta >= op.probe.maxDelta) {
-		return STATUS_OK; // done
+		return STATUS_PROBE_FAILED; // done
 	}
 	op.probe.curDelta++;
     Quad<StepDV> pulse;

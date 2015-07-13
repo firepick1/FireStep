@@ -1867,6 +1867,44 @@ void test_probe() {
     ASSERTQUAD(Quad<StepCoord>(99, 97, 94, 100), mt.machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'prb':{'1':99,'2':97,'3':94,'pn':2,'ip':true}},'t':0.00}\n"), 
 		Serial.output().c_str());
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	// Test non-contact
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    e0pulses = arduino.pulses(PC2_E0_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>(100, 100, 100, 100));
+	arduino.setPin(pinProbe, HIGH);
+
+    Serial.push(JT("{'prb':{'1':99,'2':99,'3':99,'pn':2,'ip':true}}\n"));
+    test_ticks(1);	// parse
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    ASSERTQUAD(Quad<StepCoord>(100, 100, 100, 100), mt.machine.getMotorPosition());
+
+    test_ticks(1);	// initialize
+    ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+    ASSERT(machine.op.probe.probing);
+    ASSERTQUAD(Quad<StepCoord>(100, 100, 100, 100), mt.machine.getMotorPosition());
+
+    test_ticks(1);	// calibrating
+    ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+    ASSERT(machine.op.probe.probing);
+    ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
+    ASSERTEQUAL(1, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(1, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(1, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTQUAD(Quad<StepCoord>(99, 99, 99, 100), mt.machine.getMotorPosition());
+
+    test_ticks(1);	// calibrating
+    ASSERTEQUAL(STATUS_PROBE_FAILED, mt.status);
+    ASSERT(machine.op.probe.probing);
+    ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
+    ASSERTEQUAL(1, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(1, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(1, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTQUAD(Quad<StepCoord>(99, 99, 99, 100), mt.machine.getMotorPosition());
 
     cout << "TEST	: test_probe() OK " << endl;
 }

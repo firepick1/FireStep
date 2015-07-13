@@ -9,6 +9,7 @@ v0.1.15
 * NEW: "prbsd" probe search delay (default: syssd)
 * NEW: "prbip" probe invert logic (default: false)
 * FIX: [command array] now processes homing commands correctly
+* FIX: "prb" returns STATUS_PROBE_FAILED on non-contact
 
 v0.1.14
 -------
