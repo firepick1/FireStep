@@ -14,7 +14,7 @@ firestep::MachineThread machineThread; // FireStep command interpreter
 
 /////////// NeoPixel display driver /////////////
 #define NEOPIXEL_LEDS 16
-firestep::NeoPixel neoPixel(NEOPIXEL_LEDS); 
+firestep::NeoPixel neoPixel(NEOPIXEL_LEDS);
 
 #if PIN_CONFIG == PC1_EMC02
 #define LED_PIN PC1_LED_PIN

@@ -153,11 +153,11 @@ public:
     StepCoord	curDelta; // absolute value of current stepper displacement
     PinType 	pinProbe; // pin used for probe limit
     bool		probing;
-	bool		invertProbe; // invert logic sense of probe
+    bool		invertProbe; // invert logic sense of probe
 
-	OpProbe() {
-		init(Quad<StepCoord>());
-	}
+    OpProbe() {
+        init(Quad<StepCoord>());
+    }
     void init(Quad<StepCoord> position) {
         start = position;
         end = position;
@@ -165,7 +165,7 @@ public:
         curDelta = 0;
         pinProbe = NOPIN;
         probing = true;
-		invertProbe = false;
+        invertProbe = false;
     }
     StepCoord interpolate(MotorIndex iMotor) {
         float t = maxDelta ? (float)curDelta/(float)maxDelta : 0;
@@ -200,10 +200,10 @@ public:
     int16_t		homingPulses;
     StepCoord	latchBackoff;
     DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
-	PinType		pinStatus;
-	struct {
-		OpProbe		probe;
-	} op;
+    PinType		pinStatus;
+    struct {
+        OpProbe		probe;
+    } op;
 
 public:
     Machine();

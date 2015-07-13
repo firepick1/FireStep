@@ -16,8 +16,8 @@ public:
     void setPixelColor(int pixel, uint32_t color) {}
     void begin() {}
     void show() {}
-	void setPin(int  pin) {
-	}
+    void setPin(int  pin) {
+    }
     int numPixels() {
         return 0;
     }

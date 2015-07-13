@@ -41,14 +41,14 @@ template Status processField<bool, bool>(JsonObject& jobj, const char *key, bool
 
 Status processProbeField(Machine& machine, MotorIndex iMotor, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
     Status status = processField<StepCoord, int32_t>(jobj, key, machine.op.probe.end.value[iMotor]);
-	if (status == STATUS_OK) {
-		Axis &a = machine.getMotorAxis(iMotor);
-		if (!a.isEnabled()) {
-			return jcmd.setError(STATUS_AXIS_DISABLED, key);
-		}
-		StepCoord delta = abs(machine.op.probe.end.value[iMotor] - a.position);
-		machine.op.probe.maxDelta = max(machine.op.probe.maxDelta, delta);
-	}
+    if (status == STATUS_OK) {
+        Axis &a = machine.getMotorAxis(iMotor);
+        if (!a.isEnabled()) {
+            return jcmd.setError(STATUS_AXIS_DISABLED, key);
+        }
+        StepCoord delta = abs(machine.op.probe.end.value[iMotor] - a.position);
+        machine.op.probe.maxDelta = max(machine.op.probe.maxDelta, delta);
+    }
     return status;
 }
 
@@ -842,12 +842,12 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             machine.setPinConfig(pc);
         }
     } else if (strcmp("pi", key) == 0 || strcmp("syspi", key) == 0) {
-		PinType pinStatus = machine.pinStatus;
+        PinType pinStatus = machine.pinStatus;
         status = processField<PinType, int32_t>(jobj, key, pinStatus);
-		if (pinStatus != machine.pinStatus) {
-			machine.pinStatus = pinStatus;
-			machine.pDisplay->setup(pinStatus);
-		}
+        if (pinStatus != machine.pinStatus) {
+            machine.pinStatus = pinStatus;
+            machine.pDisplay->setup(pinStatus);
+        }
     } else if (strcmp("sd", key) == 0 || strcmp("syssd", key + 1) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
@@ -906,13 +906,13 @@ Status JsonController::processHome(JsonCommand& jcmd, JsonObject& jobj, const ch
         status = initializeHome(jcmd, jobj, key, true);
         break;
     case STATUS_BUSY_MOVING:
-	case STATUS_BUSY_OK:
+    case STATUS_BUSY_OK:
     case STATUS_BUSY_CALIBRATING:
         status = machine.home(status);
         break;
     default:
-		TESTCOUT1("status:", status);
-		ASSERT(false);
+        TESTCOUT1("status:", status);
+        ASSERT(false);
         return jcmd.setError(STATUS_STATE, key);
     }
     return status;
@@ -974,11 +974,11 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
 }
 
 Status JsonController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
-                                      const char* key, bool clear)
+                                       const char* key, bool clear)
 {
     Status status = STATUS_OK;
     if (clear) {
-		machine.op.probe.init(machine.getMotorPosition());
+        machine.op.probe.init(machine.getMotorPosition());
     }
     if (strcmp("prb", key) == 0) {
         const char *s;
@@ -988,27 +988,27 @@ Status JsonController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
             node["2"] = "";
             node["3"] = "";
             node["4"] = "";
-			node["ip"] = "";
-			node["pn"] = "";
-			node["sd"] = "";
+            node["ip"] = "";
+            node["pn"] = "";
+            node["sd"] = "";
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
                 status = initializeProbe(jcmd, kidObj, it->key, false);
                 if (status < 0) {
-					return jcmd.setError(status, it->key);
+                    return jcmd.setError(status, it->key);
                 }
             }
-			if (status == STATUS_BUSY_CALIBRATING && machine.op.probe.pinProbe==NOPIN) {
-				return jcmd.setError(STATUS_FIELD_REQUIRED, "pn");
-			}
+            if (status == STATUS_BUSY_CALIBRATING && machine.op.probe.pinProbe==NOPIN) {
+                return jcmd.setError(STATUS_FIELD_REQUIRED, "pn");
+            }
         }
-	} else if (strcmp("prbip", key) == 0 || strcmp("ip", key) == 0) {
+    } else if (strcmp("prbip", key) == 0 || strcmp("ip", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.op.probe.invertProbe);
-	} else if (strcmp("prbpn", key) == 0 || strcmp("pn", key) == 0) {
+    } else if (strcmp("prbpn", key) == 0 || strcmp("pn", key) == 0) {
         status = processField<PinType, int32_t>(jobj, key, machine.op.probe.pinProbe);
-	} else if (strcmp("prbsd", key) == 0 || strcmp("sd", key) == 0) {
+    } else if (strcmp("prbsd", key) == 0 || strcmp("sd", key) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else {
         MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));
@@ -1026,21 +1026,21 @@ Status JsonController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const c
     case STATUS_BUSY_PARSED:
         status = initializeProbe(jcmd, jobj, key, true);
         break;
-	case STATUS_BUSY_OK:
+    case STATUS_BUSY_OK:
     case STATUS_BUSY_CALIBRATING:
         status = machine.probe(status);
-		if (status == STATUS_OK) {
-			JsonObject& kidObj = jobj[key];
+        if (status == STATUS_OK) {
+            JsonObject& kidObj = jobj[key];
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-				MotorIndex iMotor = machine.motorOfName(it->key + (strlen(it->key) - 1));
-				if (iMotor != INDEX_NONE) {
-					kidObj[it->key] = machine.getMotorAxis(iMotor).position;
-				}
-			}
-		}
+                MotorIndex iMotor = machine.motorOfName(it->key + (strlen(it->key) - 1));
+                if (iMotor != INDEX_NONE) {
+                    kidObj[it->key] = machine.getMotorAxis(iMotor).position;
+                }
+            }
+        }
         break;
     default:
-		ASSERT(false);
+        ASSERT(false);
         return jcmd.setError(STATUS_STATE, key);
     }
     return status;
@@ -1063,7 +1063,7 @@ Status JsonController::processEEPROM(JsonCommand& jcmd, JsonObject& jobj, const 
     }
     if (status < 0) {
         return jcmd.setError(status, key);
-	}
+    }
     return status;
 }
 
@@ -1279,7 +1279,7 @@ Status JsonController::process(JsonCommand& jcmd) {
                       " of ", jarr.size(), ") status:", status);
             if (status == STATUS_OK) {
                 //status = STATUS_BUSY_OK;
-				status = STATUS_BUSY_PARSED;
+                status = STATUS_BUSY_PARSED;
                 jcmd.cmdIndex++;
             }
         } else {

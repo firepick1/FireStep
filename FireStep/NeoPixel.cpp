@@ -15,11 +15,11 @@ void NeoPixel::setup(int pin) {
     //   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
     //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
     //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-	if (pin != NOPIN) {
-		strip.setPin(pin);
-		strip.begin();
-		strip.show();
-	}
+    if (pin != NOPIN) {
+        strip.setPin(pin);
+        strip.begin();
+        strip.show();
+    }
     fgIndex = 0;
     fgTicks = 0;
     cameraR = 0;

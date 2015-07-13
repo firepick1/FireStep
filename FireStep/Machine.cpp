@@ -29,8 +29,8 @@ Status Axis::enable(bool active) {
 
 Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
-      tvMax(0.7), homingPulses(3), latchBackoff(LATCH_BACKOFF), 
-	  searchDelay(800), pinStatus(NOPIN)
+      tvMax(0.7), homingPulses(3), latchBackoff(LATCH_BACKOFF),
+      searchDelay(800), pinStatus(NOPIN)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -58,7 +58,7 @@ bool Machine::isCorePin(int16_t pin) {
 Status Machine::setPinConfig_EMC02() {
     Status status = STATUS_OK;
 
-	pinStatus = PC1_PIN_STATUS;
+    pinStatus = PC1_PIN_STATUS;
     setPin(axis[0].pinStep, PC1_X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, PC1_X_DIR_PIN, OUTPUT);
     setPin(axis[0].pinMin, PC1_X_MIN_PIN, INPUT);
@@ -117,7 +117,7 @@ Status Machine::setPinConfig_EMC02() {
 
 Status Machine::setPinConfig_RAMPS1_4() {
     Status status = STATUS_OK;
-	pinStatus = PC2_PIN_STATUS;
+    pinStatus = PC2_PIN_STATUS;
     setPin(axis[0].pinStep, PC2_X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, PC2_X_DIR_PIN, OUTPUT);
     setPin(axis[0].pinMin, PC2_X_MIN_PIN, INPUT);
@@ -148,13 +148,13 @@ Status Machine::setPinConfig(PinConfig pc) {
     default:
         return STATUS_PIN_CONFIG;
     case PC0_NOPIN:
-		pinStatus = NOPIN;
-		for (AxisIndex iAxis=0; iAxis<AXIS_COUNT; iAxis++) {
-			axis[iAxis].pinStep = NOPIN;
-			axis[iAxis].pinDir = NOPIN;
-			axis[iAxis].pinMin = NOPIN;
-			axis[iAxis].pinEnable = NOPIN;
-		}
+        pinStatus = NOPIN;
+        for (AxisIndex iAxis=0; iAxis<AXIS_COUNT; iAxis++) {
+            axis[iAxis].pinStep = NOPIN;
+            axis[iAxis].pinDir = NOPIN;
+            axis[iAxis].pinMin = NOPIN;
+            axis[iAxis].pinEnable = NOPIN;
+        }
         break;
     case PC1_EMC02:
         status = setPinConfig_EMC02();
@@ -391,10 +391,10 @@ Status Machine::home(Status status) {
     switch (status) {
     default:
         if (stepHome(homingPulses, searchDelay/5) > 0) {
-			TESTCOUT1("home.A homingPulses:", homingPulses);
+            TESTCOUT1("home.A homingPulses:", homingPulses);
             status = STATUS_BUSY_MOVING;
         } else {
-			TESTCOUT1("home.B homingPulses:", homingPulses);
+            TESTCOUT1("home.B homingPulses:", homingPulses);
             backoffHome(searchDelay);
             status = STATUS_BUSY_CALIBRATING;
         }
@@ -418,59 +418,59 @@ Status Machine::home(Status status) {
 }
 
 Status Machine::probe(Status status) {
-	if (op.probe.pinProbe == NOPIN) {
-		return STATUS_PROBE_PIN;
-	}
+    if (op.probe.pinProbe == NOPIN) {
+        return STATUS_PROBE_PIN;
+    }
     for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         Axis &a(*motorAxis[i]);
         if (op.probe.start.value[i]!=op.probe.end.value[i] && !a.enabled) {
-			return STATUS_AXIS_DISABLED;
+            return STATUS_AXIS_DISABLED;
         }
     }
 
-	pinMode(op.probe.pinProbe, INPUT);
-	op.probe.probing = !isAtLimit(op.probe.pinProbe);
-	if (op.probe.invertProbe) {
-		op.probe.probing = !op.probe.probing;
-	}
-	if (op.probe.probing) {
-		status = stepProbe(searchDelay);
-	} else {
-		status = STATUS_OK;
-	}
+    pinMode(op.probe.pinProbe, INPUT);
+    op.probe.probing = !isAtLimit(op.probe.pinProbe);
+    if (op.probe.invertProbe) {
+        op.probe.probing = !op.probe.probing;
+    }
+    if (op.probe.probing) {
+        status = stepProbe(searchDelay);
+    } else {
+        status = STATUS_OK;
+    }
 
     return status;
 }
 
 Status Machine::stepProbe(int16_t delay) {
     Status status = STATUS_BUSY_CALIBRATING;
-	//StepCoord dMax = 0;
+    //StepCoord dMax = 0;
 
-	if (op.probe.curDelta >= op.probe.maxDelta) {
-		return STATUS_PROBE_FAILED; // done
-	}
-	op.probe.curDelta++;
+    if (op.probe.curDelta >= op.probe.maxDelta) {
+        return STATUS_PROBE_FAILED; // done
+    }
+    op.probe.curDelta++;
     Quad<StepDV> pulse;
-	for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
-		StepCoord dp = op.probe.interpolate(i) - getMotorAxis(i).position;
-		if (dp < -1) {
-			pulse.value[i] = -1;
-		} else if (dp > 1) {
-			pulse.value[i] = 1;
-		} else if (dp) {
-			pulse.value[i] = dp;
-		} else {
-			pulse.value[i] = 0;
-		}
-	}
-	if (0 > (status = stepDirection(pulse))) {
-		return status;
-	}
-	if (0 > (status = stepFast(pulse))) {
-		return status;
-	}
-	delayMics(delay);
-	return STATUS_BUSY_CALIBRATING;
+    for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
+        StepCoord dp = op.probe.interpolate(i) - getMotorAxis(i).position;
+        if (dp < -1) {
+            pulse.value[i] = -1;
+        } else if (dp > 1) {
+            pulse.value[i] = 1;
+        } else if (dp) {
+            pulse.value[i] = dp;
+        } else {
+            pulse.value[i] = 0;
+        }
+    }
+    if (0 > (status = stepDirection(pulse))) {
+        return status;
+    }
+    if (0 > (status = stepFast(pulse))) {
+        return status;
+    }
+    delayMics(delay);
+    return STATUS_BUSY_CALIBRATING;
 }
 
 void Machine::backoffHome(int16_t delay) {
@@ -496,7 +496,7 @@ StepCoord Machine::stepHome(StepCoord pulsesPerAxis, int16_t delay) {
             Axis &a(*motorAxis[i]);
             if (a.homing) {
                 a.readAtMin(invertLim);
-				TESTCOUT2("stepHome a:", (int) i, " atMin:", (int) a.atMin );
+                TESTCOUT2("stepHome a:", (int) i, " atMin:", (int) a.atMin );
                 a.setAdvancing(false);
             }
         }

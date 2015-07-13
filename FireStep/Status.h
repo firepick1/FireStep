@@ -45,7 +45,7 @@ enum Status {
     STATUS_NO_SUCH_PIN = -136,		// pin number out of range
     STATUS_EEPROM_ADDR = -137,		// EEPROM address out of range
     STATUS_EEPROM_JSON = -138,		// No JSON to execute at EEPROM address
-	STATUS_PROBE_PIN = -139,		// No probe pin specified
+    STATUS_PROBE_PIN = -139,		// No probe pin specified
 
     // stroke
     STATUS_STROKE_SEGPULSES = -200,	// Stroke has too many pulses per segment [-127,127]
@@ -91,7 +91,7 @@ enum Status {
     STATUS_TRAVEL_MAX = -903,		// Travel would exceed maximum
     STATUS_LIMIT_MIN = -904,		// Minimum limit switch tripped
     STATUS_LIMIT_MAX = -905,		// Maximum limit switch tripped
-	STATUS_PROBE_FAILED = -906,		// Probe never contacted surface
+    STATUS_PROBE_FAILED = -906,		// Probe never contacted surface
 };
 
 inline bool isProcessing(Status status) {

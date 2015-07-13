@@ -27,7 +27,7 @@ enum PinConfig {
 #define PC0_Y_ENABLE_PIN        NOPIN
 #define PC0_Y_MIN_PIN           NOPIN
 #define PC0_Y_MAX_PIN           NOPIN
- 
+
 #define PC0_Z_STEP_PIN          NOPIN
 #define PC0_Z_DIR_PIN           NOPIN
 #define PC0_Z_ENABLE_PIN        NOPIN
