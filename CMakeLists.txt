@@ -74,6 +74,7 @@ link_directories(
 )
 
 add_executable(test 
+	FireStep/DeltaCalculator.cpp
 	FireStep/JsonCommand.cpp
 	FireStep/JsonController.cpp
 	FireStep/NeoPixel.cpp

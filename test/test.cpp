@@ -9,6 +9,7 @@
 
 #include "MachineThread.h"
 #include "Display.h"
+#include "DeltaCalculator.h"
 
 byte lastByte;
 
@@ -2587,6 +2588,48 @@ void test_command_array() {
     cout << "TEST	: test_command_arraytest_pnp() OK " << endl;
 }
 
+void test_DeltaCalculator() {
+    cout << "TEST	: test_DeltaCalculator() =====" << endl;
+	DeltaCalculator dc;
+
+	Step3D homePulses = dc.getHomePulses();
+	ASSERTEQUAL(-5600, homePulses.p1);
+	ASSERTEQUAL(-5600, homePulses.p2);
+	ASSERTEQUAL(-5600, homePulses.p3);
+	ASSERTEQUALT(131.636, dc.getEffectorTriangleSide(), 0.0001);
+	ASSERTEQUALT(190.526, dc.getBaseTriangleSide(), 0.0001);
+	ASSERTEQUALT(270, dc.getEffectorLength(), 0.000001);
+	ASSERTEQUALT(90, dc.getBaseArmLength(), 0.000001);
+	ASSERTEQUALT(200, dc.getSteps360(), 0.000001);
+	ASSERTEQUALT(16, dc.getMicrosteps(), 0.000001);
+	ASSERTEQUALT(150/16.0, dc.getGearRatio(), 0.000001);
+
+	XYZ3D xyz = dc.calcXYZ(Angle3D());
+	ASSERT(xyz.isValid());
+	ASSERTEQUALT(0, xyz.x, 0.00001);
+	ASSERTEQUALT(0, xyz.y, 0.00001);
+	ASSERTEQUALT(0, xyz.z, 0.00001);
+	xyz = dc.calcXYZ(Angle3D(1,1,1));
+	ASSERT(xyz.isValid());
+	ASSERTEQUAL(0, xyz.x);
+	ASSERTEQUAL(0, xyz.y);
+	ASSERTEQUALT(-1.57663, xyz.z, 0.00001);
+	Angle3D angles = dc.calcAngles(xyz);
+	ASSERTEQUALT(1, angles.theta1, 0.00001);
+	ASSERTEQUALT(1, angles.theta2, 0.00001);
+	ASSERTEQUALT(1, angles.theta3, 0.00001);
+	Step3D pulses = dc.calcPulses(XYZ3D(1,2,3));
+	ASSERTEQUAL(-113, pulses.p1);
+	ASSERTEQUAL(-203, pulses.p2);
+	ASSERTEQUAL(-163, pulses.p3);
+	xyz = dc.calcXYZ(pulses);
+	ASSERTEQUALT(1, xyz.x, 0.01);
+	ASSERTEQUALT(2, xyz.y, 0.01);
+	ASSERTEQUALT(3, xyz.z, 0.01);
+
+    cout << "TEST	: test_DeltaCalculator() OK " << endl;
+}
+
 int main(int argc, char *argv[]) {
     LOGINFO3("INFO	: FireStep test v%d.%d.%d",
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -2599,7 +2642,7 @@ int main(int argc, char *argv[]) {
     // test first
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
-        test_PinConfig();
+		test_DeltaCalculator();
     } else {
         test_Serial();
         test_Thread();
@@ -2626,6 +2669,7 @@ int main(int argc, char *argv[]) {
         test_io();
         test_eep();
 		test_probe();
+		test_DeltaCalculator();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;
