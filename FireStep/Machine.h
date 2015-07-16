@@ -3,6 +3,7 @@
 
 #include "Stroke.h"
 #include "Display.h"
+#include "DeltaCalculator.h"
 #include "pins.h"
 
 extern void test_Home();
@@ -190,6 +191,7 @@ protected:
     void 		backoffHome(int16_t delay);
 
 public:
+	DeltaCalculator delta;
     bool		invertLim;
     bool		jsonPrettyPrint;
     int32_t 	vMax; // maximum stroke velocity (pulses/second)
