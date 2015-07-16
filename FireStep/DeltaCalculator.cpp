@@ -1,6 +1,7 @@
 #ifdef CMAKE
 #include <cstring>
 #include <cmath>
+#include <float.h>
 #endif
 #include "Arduino.h"
 #include "Machine.h"
@@ -25,7 +26,7 @@ PH5TYPE DeltaCalculator::tan30_half = tan30 / 2.0;
 PH5TYPE DeltaCalculator::pi = 3.14159265359;
 PH5TYPE DeltaCalculator::dtr = pi / 180.0;
 
-StepCoord round(PH5TYPE value) { return (StepCoord)(value + (value < 0 ? -0.5: 0.5)); }
+StepCoord round(PH5TYPE value) { return (StepCoord)(value + (value < 0 ? -0.5 : +0.5)); }
 
 DeltaCalculator::DeltaCalculator()
     : e(131.636), // effector equilateral triangle side
@@ -54,7 +55,7 @@ PH5TYPE DeltaCalculator::calcAngleYZ(PH5TYPE X, PH5TYPE Y, PH5TYPE Z) {
     PH5TYPE d = -(a + b * y1) * (a + b * y1) + rf * (b * b * rf + rf);
     if (d < 0) {
 		TESTCOUT3("DeltaCalculator calcAngleYZ X:", X, " Y:", Y, " Z:", Z);
-		throw "No solution";
+		return FLT_MAX;
     }
     PH5TYPE yj = (y1 - a * b - sqrt(d)) / (b * b + 1.0); // choosing outer point
     PH5TYPE zj = a + b * yj;
@@ -76,18 +77,23 @@ Step3D DeltaCalculator::calcPulses(XYZ3D xyz) {
 }
 
 Angle3D DeltaCalculator::calcAngles(XYZ3D xyz) {
-	try {
-		PH5TYPE x = xyz.x;
-		PH5TYPE y = xyz.y;
-		PH5TYPE z = xyz.z - dz;
-		return Angle3D(
-			calcAngleYZ(x, y, z) + eTheta.theta1,
-			calcAngleYZ(x * cos120 + y * sin120, y * cos120 - x * sin120, z) + eTheta.theta2,
-			calcAngleYZ(x * cos120 - y * sin120, y * cos120 + x * sin120, z) + eTheta.theta3
-		);
-	} catch (const char* err) {
-        return Angle3D(false);
+	PH5TYPE x = xyz.x;
+	PH5TYPE y = xyz.y;
+	PH5TYPE z = xyz.z - dz;
+	Angle3D angles(
+		calcAngleYZ(x, y, z),
+		calcAngleYZ(x * cos120 + y * sin120, y * cos120 - x * sin120, z),
+		calcAngleYZ(x * cos120 - y * sin120, y * cos120 + x * sin120, z)
+	);
+	if (angles.theta1 == FLT_MAX ||
+		angles.theta2 == FLT_MAX ||
+		angles.theta3 == FLT_MAX) {
+		return Angle3D(false);
 	}
+	angles.theta1 += eTheta.theta1;
+	angles.theta2 += eTheta.theta2;
+	angles.theta3 += eTheta.theta3;
+	return angles;
 }
 
 XYZ3D DeltaCalculator::calcXYZ(Step3D pulses) {
