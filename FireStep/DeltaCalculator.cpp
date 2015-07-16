@@ -1,7 +1,6 @@
 #ifdef CMAKE
 #include <cstring>
 #include <cmath>
-#include <float.h>
 #endif
 #include "Arduino.h"
 #include "Machine.h"
@@ -16,6 +15,8 @@
 using namespace firestep;
 using namespace ph5;
 
+#define NO_SOLUTION 1E20
+
 PH5TYPE DeltaCalculator::sqrt3 = sqrt(3.0);
 PH5TYPE DeltaCalculator::sin120 = sqrt3 / 2.0;
 PH5TYPE DeltaCalculator::cos120 = -0.5;
@@ -26,7 +27,7 @@ PH5TYPE DeltaCalculator::tan30_half = tan30 / 2.0;
 PH5TYPE DeltaCalculator::pi = 3.14159265359;
 PH5TYPE DeltaCalculator::dtr = pi / 180.0;
 
-StepCoord round(PH5TYPE value) { return (StepCoord)(value + (value < 0 ? -0.5 : +0.5)); }
+StepCoord roundStep(PH5TYPE value) { return (StepCoord)(value + (value < 0 ? -0.5 : +0.5)); }
 
 DeltaCalculator::DeltaCalculator()
     : e(131.636), // effector equilateral triangle side
@@ -37,7 +38,7 @@ DeltaCalculator::DeltaCalculator()
       microsteps(16),
       gearRatio(150/16.0)
 {
-	StepCoord hp = round(-67.2 * degreePulses());
+	StepCoord hp = roundStep(-67.2 * degreePulses());
 	homePulses = Step3D(hp,hp,hp);
 
     dz = 0;
@@ -55,7 +56,7 @@ PH5TYPE DeltaCalculator::calcAngleYZ(PH5TYPE X, PH5TYPE Y, PH5TYPE Z) {
     PH5TYPE d = -(a + b * y1) * (a + b * y1) + rf * (b * b * rf + rf);
     if (d < 0) {
 		TESTCOUT3("DeltaCalculator calcAngleYZ X:", X, " Y:", Y, " Z:", Z);
-		return FLT_MAX;
+		return NO_SOLUTION;
     }
     PH5TYPE yj = (y1 - a * b - sqrt(d)) / (b * b + 1.0); // choosing outer point
     PH5TYPE zj = a + b * yj;
@@ -70,9 +71,9 @@ Step3D DeltaCalculator::calcPulses(XYZ3D xyz) {
 		return Step3D(false);
 	}
     PH5TYPE dp = degreePulses();
-	pulses.p1 = round(angles.theta1*dp);
-	pulses.p2 = round(angles.theta2*dp);
-	pulses.p3 = round(angles.theta3*dp);
+	pulses.p1 = roundStep(angles.theta1*dp);
+	pulses.p2 = roundStep(angles.theta2*dp);
+	pulses.p3 = roundStep(angles.theta3*dp);
 	return pulses;
 }
 
@@ -85,9 +86,9 @@ Angle3D DeltaCalculator::calcAngles(XYZ3D xyz) {
 		calcAngleYZ(x * cos120 + y * sin120, y * cos120 - x * sin120, z),
 		calcAngleYZ(x * cos120 - y * sin120, y * cos120 + x * sin120, z)
 	);
-	if (angles.theta1 == FLT_MAX ||
-		angles.theta2 == FLT_MAX ||
-		angles.theta3 == FLT_MAX) {
+	if (angles.theta1 == NO_SOLUTION ||
+		angles.theta2 == NO_SOLUTION ||
+		angles.theta3 == NO_SOLUTION) {
 		return Angle3D(false);
 	}
 	angles.theta1 += eTheta.theta1;
