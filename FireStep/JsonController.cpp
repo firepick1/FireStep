@@ -920,6 +920,15 @@ Status JsonController::processHome(JsonCommand& jcmd, JsonObject& jobj, const ch
 
 Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, const char* key, const char*addr) {
     Status status = STATUS_OK;
+    JsonVariant &jvalue = jobj[key];
+	if (addr && *addr == '!') {
+		status = processObj(jcmd, jvalue);
+		if (status != STATUS_OK) {
+			return jcmd.setError(status, key);
+		}
+		TESTCOUT1("processEEPROMValue!:", addr);
+		addr++;
+	}
     if (!addr || *addr<'0' || '9'<*addr) {
         return STATUS_JSON_DIGIT;
     }
@@ -927,7 +936,6 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
     if (addrLong<0 || EEPROM_END <= addrLong) {
         return STATUS_EEPROM_ADDR;
     }
-    JsonVariant &jvalue = jobj[key];
     char buf[EEPROM_BYTES];
     buf[0] = 0;
     if (jvalue.is<JsonArray&>()) {
@@ -1053,7 +1061,7 @@ Status JsonController::processEEPROM(JsonCommand& jcmd, JsonObject& jobj, const 
         if (!kidObj.success()) {
             return jcmd.setError(STATUS_JSON_OBJECT, key);
         }
-        for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+        for (JsonObject::iterator it = kidObj.begin(); status>=0 && it != kidObj.end(); ++it) {
             status = processEEPROMValue(jcmd, kidObj, it->key, it->key);
         }
     } else if (strncmp("eep",key,3) == 0) {

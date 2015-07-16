@@ -1604,6 +1604,28 @@ void test_eep() {
     ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'0':'{\\\"sysfr\\\":\\\"\\\"}'}},'t':0.00}\n"), Serial.output().c_str());
     test_ticks(1);
 
+    Serial.push(JT("{'eep!0':{'sysmv':''}}\n"));
+    test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    test_ticks(1);
+    ASSERTEQUALS(JT("{'s':0,'r':{'eep!0':{'sysmv':12800}},'t':0.00}\n"), Serial.output().c_str());
+    Serial.push(JT("{'eep':{'!0':{'systv':''}}}\n"));
+    test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'!0':{'systv':0.70}}},'t':0.00}\n"), Serial.output().c_str());
+    test_ticks(1);
+    Serial.push(JT("{'eep':{'0':''}}\n"));
+    test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'0':'{\\\"systv\\\":0.70}'}},'t':0.00}\n"), Serial.output().c_str());
+    test_ticks(1);
+
     cout << "TEST	: test_eep() OK " << endl;
 }
 
@@ -2650,7 +2672,7 @@ int main(int argc, char *argv[]) {
     // test first
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
-        test_DeltaCalculator();
+        test_eep();
     } else {
         test_Serial();
         test_Thread();

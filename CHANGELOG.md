@@ -4,6 +4,7 @@ FireStep: change log
 v0.2.0
 ------
 * NEW: "mov" scaled by 2 for memory savings
+* NEW: "eep!" executes value as JSON command before saving it to EEPROM (great way to save config)
 * NEW: DeltaCalculator support
 
 v0.1.15
