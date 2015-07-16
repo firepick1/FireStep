@@ -2627,6 +2627,14 @@ void test_DeltaCalculator() {
 	ASSERTEQUALT(2, xyz.y, 0.01);
 	ASSERTEQUALT(3, xyz.z, 0.01);
 
+	Step3D pulses4(
+		pulses.p1+4,
+		pulses.p2+4,
+		pulses.p3+4
+	);
+	XYZ3D xyz4 = dc.calcXYZ(pulses4);
+	ASSERTEQUALT(0.0742645, xyz.z - xyz4.z, 0.00001);
+
     cout << "TEST	: test_DeltaCalculator() OK " << endl;
 }
 
@@ -2642,7 +2650,7 @@ int main(int argc, char *argv[]) {
     // test first
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
-        test_Move();
+        test_DeltaCalculator();
     } else {
         test_Serial();
         test_Thread();
