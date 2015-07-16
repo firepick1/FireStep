@@ -1,6 +1,11 @@
 FireStep: change log
 ====================
 
+v0.2.0
+------
+* NEW: "mov" scaled by 2 for memory savings
+* NEW: DeltaCalculator support
+
 v0.1.15
 -------
 * NEW: "sysps" display status pin (e.g., NeoPixel) is soft configurable
