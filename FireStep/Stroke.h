@@ -12,7 +12,7 @@
 #include "ph5.h"
 namespace firestep {
 
-#define STROKE_SEGMENTS 130
+#define STROKE_SEGMENTS 100
 
 // Scaled strokes usually won't end exactly at desired endpoint,
 // so we allow for some extra pulses to account for that
