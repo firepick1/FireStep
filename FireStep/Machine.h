@@ -42,6 +42,11 @@ inline void delayMics(int32_t usDelay) {
     }
 }
 
+enum Topology {
+	MTO_STEPPER = 0,
+	MTO_FPD = 1,
+};
+
 enum AxisIndexValue {
     X_AXIS = 0,
     Y_AXIS = 1,
@@ -204,6 +209,7 @@ public:
     DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
     PinType		pinStatus;
 	int16_t		eeUser;	// EEPROM user startup commands
+	Topology	topology;
     struct {
         OpProbe		probe;
     } op;

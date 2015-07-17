@@ -699,7 +699,7 @@ void test_JsonController() {
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
                       "{'eu':2000,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
-					  "'lp':0,'mv':12800,'pc':2,'pi':11,'sd':800,'tc':12345,'tv':0.70,'v':%.2f}"\
+					  "'lp':0,'mv':12800,'pc':2,'pi':11,'sd':800,'tc':12345,'to':0,'tv':0.70,'v':%.2f}"\
                       "},'t':0.00}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
              STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
@@ -2655,9 +2655,10 @@ void test_DeltaCalculator() {
 	DeltaCalculator dc;
 
 	Step3D homePulses = dc.getHomePulses();
-	ASSERTEQUAL(-5600, homePulses.p1);
-	ASSERTEQUAL(-5600, homePulses.p2);
-	ASSERTEQUAL(-5600, homePulses.p3);
+	ASSERT(homePulses.isValid());
+	ASSERTEQUAL(-4361, homePulses.p1);
+	ASSERTEQUAL(-4361, homePulses.p2);
+	ASSERTEQUAL(-4361, homePulses.p3);
 	ASSERTEQUALT(131.636, dc.getEffectorTriangleSide(), 0.0001);
 	ASSERTEQUALT(190.526, dc.getBaseTriangleSide(), 0.0001);
 	ASSERTEQUALT(270, dc.getEffectorLength(), 0.000001);
@@ -2688,6 +2689,10 @@ void test_DeltaCalculator() {
 	ASSERTEQUALT(1, xyz.x, 0.01);
 	ASSERTEQUALT(2, xyz.y, 0.01);
 	ASSERTEQUALT(3, xyz.z, 0.01);
+	PH5TYPE dz = dc.getZOffset();
+	ASSERTEQUALT(247.893, dz, 0.001);
+	Angle3D dzAngles = dc.calcAngles(XYZ3D(0,0,dz-1));
+	ASSERTEQUALT(1e20, dzAngles.theta1, 1e16);
 
 	Step3D pulses4(
 		pulses.p1+4,

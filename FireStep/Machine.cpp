@@ -30,7 +30,7 @@ Status Axis::enable(bool active) {
 Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
       tvMax(0.7), homingPulses(3), latchBackoff(LATCH_BACKOFF),
-      searchDelay(800), pinStatus(NOPIN), eeUser(2000)
+      searchDelay(800), pinStatus(NOPIN), eeUser(2000), topology(MTO_STEPPER)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {

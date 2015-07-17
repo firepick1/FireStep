@@ -60,7 +60,6 @@ protected:
     PH5TYPE gearRatio;
     PH5TYPE dz;
     Angle3D eTheta;
-    Step3D homePulses;
     static PH5TYPE sqrt3;
     static PH5TYPE sin120;
     static PH5TYPE cos120;
@@ -72,12 +71,6 @@ protected:
     static PH5TYPE dtr;
 public:
     DeltaCalculator();
-    inline void setHomePulses(Step3D value) {
-        homePulses = value;
-    }
-    inline Step3D getHomePulses() {
-        return homePulses;
-    }
     inline PH5TYPE getBaseTriangleSide() {
         return f;
     }
@@ -129,6 +122,12 @@ public:
     inline PH5TYPE degreePulses() {
         return steps360 * microsteps * gearRatio / 360.0;
     }
+	inline PH5TYPE getZOffset() {
+		return dz;
+	}
+	PH5TYPE getMinDegrees(); // Math blows up here, so stay below this!
+    Step3D getHomePulses();
+	Angle3D getHomeAngles();
     Step3D calcPulses(XYZ3D xyz);
     Angle3D calcAngles(XYZ3D xyz);
     XYZ3D calcXYZ(Step3D pulses);

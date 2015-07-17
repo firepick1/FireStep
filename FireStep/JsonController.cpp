@@ -788,6 +788,76 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
     return status;
 }
 
+Status JsonController::processDimension(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = STATUS_OK;
+    if (strcmp("dim", key) == 0) {
+        const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+			switch (machine.topology) {
+			case MTO_FPD:
+				node["e"] = "";
+				node["f"] = "";
+				node["gr"] = "";
+				node["et1"] = "";
+				node["et2"] = "";
+				node["et3"] = "";
+				node["re"] = "";
+				node["rf"] = "";
+				node["us"] = "";
+			}
+        }
+        JsonObject& kidObj = jobj[key];
+        if (kidObj.success()) {
+            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+                status = processDimension(jcmd, kidObj, it->key);
+                if (status != STATUS_OK) {
+                    return status;
+                }
+            }
+        }
+    } else if (strcmp("e", key) == 0 || strcmp("dime", key) == 0) {
+		PH5TYPE value = machine.delta.getEffectorLength();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+		machine.delta.setEffectorLength(value);
+    } else if (strcmp("et1", key) == 0 || strcmp("dimet1", key) == 0) {
+		Angle3D eTheta = machine.delta.getHomingError().theta1;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, eTheta.theta1);
+		machine.delta.setHomingError(eTheta);
+    } else if (strcmp("et2", key) == 0 || strcmp("dimet2", key) == 0) {
+		Angle3D eTheta = machine.delta.getHomingError().theta2;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, eTheta.theta1);
+		machine.delta.setHomingError(eTheta);
+    } else if (strcmp("et3", key) == 0 || strcmp("dimet3", key) == 0) {
+		Angle3D eTheta = machine.delta.getHomingError().theta3;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, eTheta.theta3);
+		machine.delta.setHomingError(eTheta);
+    } else if (strcmp("f", key) == 0 || strcmp("dimf", key) == 0) {
+		PH5TYPE value = machine.delta.getBaseArmLength();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+		machine.delta.setBaseArmLength(value);
+    } else if (strcmp("gr", key) == 0 || strcmp("dimgr", key) == 0) {
+		PH5TYPE value = machine.delta.getGearRatio();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+		machine.delta.setGearRatio(value);
+    } else if (strcmp("re", key) == 0 || strcmp("dimre", key) == 0) {
+		PH5TYPE value = machine.delta.getEffectorTriangleSide();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+		machine.delta.setEffectorTriangleSide(value);
+    } else if (strcmp("rf", key) == 0 || strcmp("dimrf", key) == 0) {
+		PH5TYPE value = machine.delta.getBaseTriangleSide();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+		machine.delta.setBaseTriangleSide(value);
+    } else if (strcmp("us", key) == 0 || strcmp("dimus", key) == 0) {
+		PH5TYPE value = machine.delta.getMicrosteps();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+		machine.delta.setMicrosteps(value);
+    } else {
+        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+    }
+    return status;
+}
+
 Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("sys", key) == 0) {
@@ -806,6 +876,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             node["pi"] = "";
             node["sd"] = "";
             node["tc"] = "";
+            node["to"] = "";
             node["tv"] = "";
             node["v"] = "";
         }
@@ -857,6 +928,8 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         }
     } else if (strcmp("sd", key) == 0 || strcmp("syssd", key + 1) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
+    } else if (strcmp("to", key) == 0 || strcmp("systo", key) == 0) {
+        status = processField<Topology, int32_t>(jobj, key, machine.topology);
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
         jobj[key] = threadClock.ticks;
     } else if (strcmp("tv", key) == 0 || strcmp("systv", key) == 0) {
@@ -1253,6 +1326,8 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
             status = processIO(jcmd, jobj, it->key);
         } else if (strncmp("eep", it->key, 3) == 0) {
             status = processEEPROM(jcmd, jobj, it->key);
+        } else if (strncmp("dim", it->key, 3) == 0) {
+            status = processDimension(jcmd, jobj, it->key);
         } else if (strncmp("prb", it->key, 3) == 0) {
             status = processProbe(jcmd, jobj, it->key);
         } else {

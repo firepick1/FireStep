@@ -23,6 +23,7 @@ protected:
     Status initializeProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
     Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
     Status processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+	Status processDimension(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status processIOPin(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key);

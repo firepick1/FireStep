@@ -38,12 +38,41 @@ DeltaCalculator::DeltaCalculator()
       microsteps(16),
       gearRatio(150/16.0)
 {
-	StepCoord hp = roundStep(-67.2 * degreePulses());
-	homePulses = Step3D(hp,hp,hp);
-
     dz = 0;
     XYZ3D xyz = calcXYZ(Angle3D());
+	TESTCOUT1("xyz:", xyz.isValid());
     dz = -xyz.z;
+	TESTCOUT3("DeltaCalculator.dx:", xyz.x, " dy:", xyz.y, " dz:", dz);
+	TESTCOUT1("DeltaCalculator.degreePulses:", degreePulses());
+}
+
+PH5TYPE DeltaCalculator::getMinDegrees() {
+	PH5TYPE crf = f / sqrt3; // base circumcircle radius
+	PH5TYPE minDegrees = 180*asin(crf/(re-rf))/pi - 90;
+	TESTCOUT3("minDegrees:", minDegrees, " crf:", crf, " re-rf:", re-rf);
+	return minDegrees;
+}
+
+Angle3D DeltaCalculator::getHomeAngles() {
+	PH5TYPE minDegrees = getMinDegrees();	
+
+	return Angle3D(
+		minDegrees+eTheta.theta1,
+		minDegrees+eTheta.theta2,
+		minDegrees+eTheta.theta3
+	);
+}
+
+Step3D DeltaCalculator::getHomePulses() {
+	Angle3D angles(getHomeAngles());
+	PH5TYPE dp = degreePulses();
+	Step3D pulses(
+		roundStep(angles.theta1*dp),
+		roundStep(angles.theta2*dp),
+		roundStep(angles.theta3*dp)
+	);
+	TESTCOUT3("DeltaCalculator.homeAngle:", angles.theta1, " valid:", angles.isValid(), " pulses:", pulses.p1);
+	return pulses;
 }
 
 PH5TYPE DeltaCalculator::calcAngleYZ(PH5TYPE X, PH5TYPE Y, PH5TYPE Z) {
@@ -69,8 +98,7 @@ Step3D DeltaCalculator::calcPulses(XYZ3D xyz) {
 	Angle3D angles = calcAngles(xyz);
 	if (!angles.isValid()) {
 		return Step3D(false);
-	}
-    PH5TYPE dp = degreePulses();
+	} PH5TYPE dp = degreePulses();
 	pulses.p1 = roundStep(angles.theta1*dp);
 	pulses.p2 = roundStep(angles.theta2*dp);
 	pulses.p3 = roundStep(angles.theta3*dp);
