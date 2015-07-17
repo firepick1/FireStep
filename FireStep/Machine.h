@@ -203,6 +203,7 @@ public:
     StepCoord	latchBackoff;
     DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
     PinType		pinStatus;
+	int16_t		eeUser;	// EEPROM user startup commands
     struct {
         OpProbe		probe;
     } op;

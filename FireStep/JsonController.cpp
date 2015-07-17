@@ -794,6 +794,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
+            node["eu"] = "";
             node["fr"] = "";
             node["hp"] = "";
             node["jp"] = "";
@@ -817,6 +818,12 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
                 }
             }
         }
+    } else if (strcmp("eu", key) == 0 || strcmp("syseu", key) == 0) {
+		int16_t eu = machine.eeUser;
+        status = processField<int16_t, long>(jobj, key, eu);
+		if (eu < 0 || EEPROM_END <= eu) {
+    		return jcmd.setError(STATUS_EEPROM_ADDR, key);
+		}
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
         leastFreeRam = min(leastFreeRam, freeRam());
         jobj[key] = leastFreeRam;
@@ -975,7 +982,11 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
         }
         for (int16_t i=0; i<len; i++) {
             eeprom_write_byte((uint8_t*)addrLong+i, buf[i]);
-            TESTCOUT2("EEPROM[", ((int)addrLong+i), "]:", (char) eeprom_read_byte((uint8_t *) addrLong+i));
+            TESTCOUT3("EEPROM[", ((int)addrLong+i), "]:", 
+				(char) eeprom_read_byte((uint8_t *) addrLong+i),
+				" ",
+				(int) eeprom_read_byte((uint8_t *) addrLong+i)
+				);
         }
     }
     return status;

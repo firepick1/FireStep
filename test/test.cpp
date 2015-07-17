@@ -698,7 +698,7 @@ void test_JsonController() {
     jc.process(jcmd);
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
-                      "{'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
+                      "{'eu':2000,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
 					  "'lp':0,'mv':12800,'pc':2,'pi':11,'sd':800,'tc':12345,'tv':0.70,'v':%.2f}"\
                       "},'t':0.00}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
@@ -1625,6 +1625,46 @@ void test_eep() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'0':'{\\\"systv\\\":0.70}'}},'t':0.00}\n"), Serial.output().c_str());
     test_ticks(1);
+
+	// test restart
+	mt.status = STATUS_BUSY_SETUP;
+	machine.tvMax = 0.5;
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_EEPROM, mt.status);
+	ASSERTEQUALT(0.5, machine.tvMax, 0.0001);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	ASSERTEQUALT(0.5, machine.tvMax, 0.0001);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUALT(0.7, machine.tvMax, 0.0001);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	ASSERTEQUALT(0.7, machine.tvMax, 0.0001);
+
+	// test eeUser
+	Serial.clear();
+    Serial.push(JT("{'eep':{'2000':{'systv':0.6}}}\n"));
+    test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'2000':{'systv':0.6}}},'t':0.00}\n"), Serial.output().c_str());
+    test_ticks(1);
+	mt.status = STATUS_BUSY_SETUP;
+	machine.tvMax = 0.5;
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_EEPROM, mt.status);
+	ASSERTEQUALT(0.5, machine.tvMax, 0.0001);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	ASSERTEQUALT(0.5, machine.tvMax, 0.0001);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUALT(0.6, machine.tvMax, 0.0001);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	ASSERTEQUALT(0.6, machine.tvMax, 0.0001);
 
     cout << "TEST	: test_eep() OK " << endl;
 }
