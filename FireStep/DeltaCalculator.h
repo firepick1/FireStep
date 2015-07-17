@@ -122,10 +122,10 @@ public:
     inline PH5TYPE degreePulses() {
         return steps360 * microsteps * gearRatio / 360.0;
     }
-	inline PH5TYPE getZOffset() {
+	inline PH5TYPE getZOffset() { // Z distance from base to effector at zero degrees
 		return dz;
 	}
-	PH5TYPE getMinDegrees(); // Math blows up here, so stay below this!
+	PH5TYPE getMinDegrees(); // base/effector arms are colinear here (which is usually bad mechanically)
     Step3D getHomePulses();
 	Angle3D getHomeAngles();
     Step3D calcPulses(XYZ3D xyz);

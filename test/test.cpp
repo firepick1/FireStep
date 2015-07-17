@@ -2691,8 +2691,6 @@ void test_DeltaCalculator() {
 	ASSERTEQUALT(3, xyz.z, 0.01);
 	PH5TYPE dz = dc.getZOffset();
 	ASSERTEQUALT(247.893, dz, 0.001);
-	Angle3D dzAngles = dc.calcAngles(XYZ3D(0,0,dz-1));
-	ASSERTEQUALT(1e20, dzAngles.theta1, 1e16);
 
 	Step3D pulses4(
 		pulses.p1+4,

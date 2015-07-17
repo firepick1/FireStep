@@ -36,12 +36,19 @@ DeltaCalculator::DeltaCalculator()
       rf(90.000), // base arm length
       steps360(200),
       microsteps(16),
-      gearRatio(150/16.0)
+      gearRatio(150/16.0),
+	  dz(0)
 {
-    dz = 0;
+#ifdef TEST
+	// Show base origin offsets
+	for (PH5TYPE a=-90; a<=90; a+=30) {
+		XYZ3D xyza = calcXYZ(Angle3D(a,a,a));
+		TESTCOUT2("angle:", a, " z:", xyza.z);
+	}
+#endif
     XYZ3D xyz = calcXYZ(Angle3D());
 	TESTCOUT1("xyz:", xyz.isValid());
-    dz = -xyz.z;
+    dz = -xyz.z; // use effector origin instead of base origin at zero degrees
 	TESTCOUT3("DeltaCalculator.dx:", xyz.x, " dy:", xyz.y, " dz:", dz);
 	TESTCOUT1("DeltaCalculator.degreePulses:", degreePulses());
 }
