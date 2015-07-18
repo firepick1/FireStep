@@ -289,6 +289,7 @@ public:
     PinConfig getPinConfig() {
         return pinConfig;
     }
+	XYZ3D getXYZ3D();
 } Machine;
 
 #ifdef TEST

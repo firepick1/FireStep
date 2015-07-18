@@ -7,6 +7,7 @@
 #include "Status.h"
 #include "Machine.h"
 #include "JsonCommand.h"
+#include "DeltaCalculator.h"
 
 namespace firestep {
 
@@ -34,7 +35,8 @@ protected:
     Status processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
     Status processPin(JsonObject& jobj, const char *key,
                       PinType &pin, int16_t mode, int16_t value = LOW);
-    Status processStepperPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);
+    Status processPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);
+    Status processPosition_MTO_FPD(JsonCommand &jcmd, JsonObject& jobj, const char* key);
     Status processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key);
     Status processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key);

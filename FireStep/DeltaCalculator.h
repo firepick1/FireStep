@@ -29,6 +29,12 @@ public:
     PH5TYPE z;
     XYZ3D(PH5TYPE x, PH5TYPE y, PH5TYPE z) : valid(true), x(x), y(y), z(z) {}
     XYZ3D(bool valid=true): valid(valid), x(0), y(0), z(0) {}
+	bool operator==(const XYZ3D& that) {
+		return x == that.x && y == that.y && z == that.z && valid == that.valid;
+	}
+	bool operator!=(const XYZ3D& that) {
+		return x != that.x || y != that.y || z != that.z || valid != that.valid;
+	}
     inline bool isValid() {
         return valid;
     }
@@ -122,7 +128,7 @@ public:
     inline PH5TYPE degreePulses() {
         return steps360 * microsteps * gearRatio / 360.0;
     }
-	inline PH5TYPE getZOffset() { // Z distance from base to effector at zero degrees
+	inline PH5TYPE getZOffset() { // Z distance from base to effector with arms level (0 degrees)
 		return dz;
 	}
 	PH5TYPE getMinDegrees(); // base/effector arms are colinear here (which is usually bad mechanically)

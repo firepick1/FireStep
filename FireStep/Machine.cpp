@@ -546,3 +546,20 @@ void Machine::setMotorPosition(const Quad<StepCoord> &position) {
     }
 }
 
+XYZ3D Machine::getXYZ3D() {
+	switch (topology) {
+	case MTO_STEPPER:
+	default:
+		return XYZ3D(
+			motorAxis[0]->position,
+			motorAxis[1]->position,
+			motorAxis[2]->position
+		);
+	case MTO_FPD:
+		return delta.calcXYZ(Step3D(
+			motorAxis[0]->position,
+			motorAxis[1]->position,
+			motorAxis[2]->position
+		));
+	}
+}
