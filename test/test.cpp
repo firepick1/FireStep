@@ -1249,6 +1249,22 @@ void test_Topology() {
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
+	// mpo short form write
+    machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
+    Serial.push(JT("{'mpox':1,'mpoy':1,'mpo':''}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+	xyz = machine.getXYZ3D();
+	ASSERTEQUALT(0.9833, xyz.x, 0.0001);
+	ASSERTEQUALT(1.0046, xyz.y, 0.0001);
+	ASSERTEQUALT(-0.0338, xyz.z, 0.0001);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'mpo':{'1':25,'2':-29,'3':10,'4':4,'x':0.983,'y':1.005,'z':-0.034}},'t':0.000}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
     cout << "TEST	: testTopology() OK " << endl;
 }
 
