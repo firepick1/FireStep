@@ -34,7 +34,7 @@ enum PinConfig {
 #define PC0_Z_MIN_PIN           NOPIN
 #define PC0_Z_MAX_PIN           NOPIN
 
-#define PC0_PIN_STATUS			NOPIN
+#define PC0_STATUS_PIN			NOPIN
 
 ///////////// PC1_EMC02 //////////////
 // https://github.com/firepick-delta/Marlin/blob/delta/openpnp/Marlin/pins.h
@@ -45,7 +45,8 @@ enum PinConfig {
 #define PC1_SERVO3			   6
 #define PC1_SERVO4			   7
 
-#define PC1_PIN_STATUS	 	   PC1_SERVO4
+#define PC1_PROBE_PIN		   PC1_SERVO3
+#define PC1_STATUS_PIN	 	   PC1_SERVO4
 #define PC1_LED_PIN            13
 
 //Delta Motor "X" ***********
@@ -85,6 +86,7 @@ enum PinConfig {
 
 #define PC1_PWR_SUPPLY_PIN     28
 
+
 ///////////////// PC2_RAMPS_1_4 ////////////////
 // Arduino Mega2560 with RAMPS v1.4 shield
 ////////////////////////////////////////////////
@@ -94,7 +96,8 @@ enum PinConfig {
 #define PC2_SERVO3			   6
 #define PC2_SERVO4			   11
 
-#define PC2_PIN_STATUS		PC2_SERVO4
+#define PC2_PROBE_PIN			2
+#define PC2_STATUS_PIN		PC2_SERVO4
 
 #define PC2_ANALOG_SPEED_PIN	5 /* ADC5 (A5) */
 

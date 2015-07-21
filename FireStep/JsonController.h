@@ -36,12 +36,17 @@ protected:
     Status processPin(JsonObject& jobj, const char *key,
                       PinType &pin, int16_t mode, int16_t value = LOW);
     Status processPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);
-    Status processPosition_MTO_FPD(JsonCommand &jcmd, JsonObject& jobj, const char* key);
+
     Status processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key);
     Status processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status traverseStroke(JsonCommand &jcmd, JsonObject &stroke);
     Status processObj(JsonCommand& jcmd, JsonObject&jobj);
+
+    Status initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
+    Status processProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+    Status processPosition_MTO_FPD(JsonCommand &jcmd, JsonObject& jobj, const char* key);
+	void finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key);
 
 public:
     JsonController(Machine& machine);

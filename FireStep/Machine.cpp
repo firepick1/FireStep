@@ -58,7 +58,8 @@ bool Machine::isCorePin(int16_t pin) {
 Status Machine::setPinConfig_EMC02() {
     Status status = STATUS_OK;
 
-    pinStatus = PC1_PIN_STATUS;
+    pinStatus = PC1_STATUS_PIN;
+	op.probe.pinProbe = PC1_PROBE_PIN;
     setPin(axis[0].pinStep, PC1_X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, PC1_X_DIR_PIN, OUTPUT);
     setPin(axis[0].pinMin, PC1_X_MIN_PIN, INPUT);
@@ -117,7 +118,8 @@ Status Machine::setPinConfig_EMC02() {
 
 Status Machine::setPinConfig_RAMPS1_4() {
     Status status = STATUS_OK;
-    pinStatus = PC2_PIN_STATUS;
+    pinStatus = PC2_STATUS_PIN;
+	op.probe.pinProbe = PC2_PROBE_PIN;
     setPin(axis[0].pinStep, PC2_X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, PC2_X_DIR_PIN, OUTPUT);
     setPin(axis[0].pinMin, PC2_X_MIN_PIN, INPUT);

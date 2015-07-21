@@ -161,7 +161,7 @@ public:
     bool		probing;
     bool		invertProbe; // invert logic sense of probe
 
-    OpProbe() {
+    OpProbe() : pinProbe(NOPIN), invertProbe(false) {
         init(Quad<StepCoord>());
     }
     void init(Quad<StepCoord> position) {
@@ -169,9 +169,7 @@ public:
         end = position;
         maxDelta = 0;
         curDelta = 0;
-        pinProbe = NOPIN;
         probing = true;
-        invertProbe = false;
     }
     StepCoord interpolate(MotorIndex iMotor) {
         float t = maxDelta ? (float)curDelta/(float)maxDelta : 0;

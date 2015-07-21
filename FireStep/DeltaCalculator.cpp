@@ -50,7 +50,7 @@ DeltaCalculator::DeltaCalculator()
 	TESTCOUT1("xyz:", xyz.isValid());
     dz = -xyz.z; // use effector origin instead of base origin at zero degrees
 	TESTCOUT3("DeltaCalculator.dx:", xyz.x, " dy:", xyz.y, " dz:", dz);
-	TESTCOUT1("DeltaCalculator.degreePulses:", degreePulses());
+	TESTCOUT2("DeltaCalculator.degreePulses:", degreePulses(), " minZ:", getMinZ());
 }
 
 PH5TYPE DeltaCalculator::getMinDegrees() {
@@ -145,6 +145,11 @@ XYZ3D DeltaCalculator::calcXYZ(Step3D pulses) {
 	return calcXYZ(angles);
 }
 
+PH5TYPE DeltaCalculator::getMinZ() { 
+	XYZ3D xyz = calcXYZ(Angle3D(90,90,90));
+	return xyz.z;
+}
+
 XYZ3D DeltaCalculator::calcXYZ(Angle3D angles) {
     XYZ3D xyz;
     PH5TYPE t = (f - e) * tan30 / 2;
@@ -180,10 +185,12 @@ XYZ3D DeltaCalculator::calcXYZ(Angle3D angles) {
         return XYZ3D(false);
     }
     PH5TYPE z = -0.5 * (b + sqrt(d)) / a;
-    return XYZ3D(
+    XYZ3D result(
         (a1 * z + b1) / dnm,
         (a2 * z + b2) / dnm,
         z + dz
     );
+
+	return result;
 }
 

@@ -1201,6 +1201,85 @@ Status JsonController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
     return status == STATUS_OK ? STATUS_BUSY_CALIBRATING : status;
 }
 
+Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj,
+                                       const char* key, bool clear)
+{
+    Status status = STATUS_OK;
+    if (clear) {
+        machine.op.probe.init(machine.getMotorPosition());
+    }
+	XYZ3D xyzStart = machine.getXYZ3D();
+	XYZ3D xyzEnd = xyzStart;
+	xyzEnd.z = machine.delta.getMinZ();
+	TESTCOUT1("minZ:", xyzEnd.z);
+	const char *s;
+    if (strcmp("prb", key) == 0) {
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+			node["1"] = "";
+			node["2"] = "";
+			node["3"] = "";
+			node["4"] = "";
+            node["x"] = xyzEnd.x;
+            node["y"] = xyzEnd.y;
+            node["z"] = xyzEnd.z;
+            node["ip"] = "";
+            node["pn"] = machine.op.probe.pinProbe;
+            node["sd"] = "";
+        }
+        JsonObject& kidObj = jobj[key];
+        if (kidObj.success()) {
+            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+                status = initializeProbe_MTO_FPD(jcmd, kidObj, it->key, false);
+                if (status < 0) {
+                    return jcmd.setError(status, it->key);
+                }
+            }
+            if (status == STATUS_BUSY_CALIBRATING && machine.op.probe.pinProbe==NOPIN) {
+                return jcmd.setError(STATUS_FIELD_REQUIRED, "pn");
+            }
+        }
+    } else if (strcmp("prbip", key) == 0 || strcmp("ip", key) == 0) {
+        status = processField<bool, bool>(jobj, key, machine.op.probe.invertProbe);
+    } else if (strcmp("prbpn", key) == 0 || strcmp("pn", key) == 0) {
+        status = processField<PinType, int32_t>(jobj, key, machine.op.probe.pinProbe);
+    } else if (strcmp("prbsd", key) == 0 || strcmp("sd", key) == 0) {
+        status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
+    } else if (strcmp("prbx", key) == 0 || strcmp("x", key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.x);
+    } else if (strcmp("prby", key) == 0 || strcmp("y", key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.y);
+    } else if (strcmp("prbz", key) == 0 || strcmp("z", key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.z);
+    } else {
+		MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));
+		if (iMotor != INDEX_NONE) {
+			if ((s = jobj[key]) && *s == 0) { 
+				// query is fine
+			} else {
+				return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+			}
+		} else {
+			return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+		}
+    }
+
+	// This code only works for probes along a single cartesian axis
+	Step3D pEnd = machine.delta.calcPulses(xyzEnd);
+	machine.op.probe.end.value[0] = pEnd.p1;
+	machine.op.probe.end.value[1] = pEnd.p2;
+	machine.op.probe.end.value[2] = pEnd.p3;
+	TESTCOUT3(" xyzEnd:", xyzEnd.x, ", ", xyzEnd.y, ", ", xyzEnd.z);
+	TESTCOUT3(" pEnd:", pEnd.p1, ", ", pEnd.p2, ", ", pEnd.p3);
+	machine.op.probe.maxDelta = 0;
+	for (MotorIndex iMotor=0; iMotor<3; iMotor++) {
+		StepCoord delta = machine.op.probe.end.value[iMotor] - machine.op.probe.start.value[iMotor];
+		machine.op.probe.maxDelta = max((StepCoord)abs(machine.op.probe.maxDelta), delta);
+	}
+
+    return status == STATUS_OK ? STATUS_BUSY_CALIBRATING : status;
+}
+
 Status JsonController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = jcmd.getStatus();
     switch (status) {
@@ -1218,6 +1297,52 @@ Status JsonController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const c
                     kidObj[it->key] = machine.getMotorAxis(iMotor).position;
                 }
             }
+        }
+        break;
+    default:
+        ASSERT(false);
+        return jcmd.setError(STATUS_STATE, key);
+    }
+    return status;
+}
+
+void JsonController::finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+	XYZ3D xyz = machine.getXYZ3D();
+	if (strcmp("prbx",key) == 0 || strcmp("x",key) == 0) {
+		jobj[key] = xyz.x;
+	} else if (strcmp("prby",key) == 0 || strcmp("y",key) == 0) {
+		jobj[key] = xyz.y;
+	} else if (strcmp("prbz",key) == 0 || strcmp("z",key) == 0) {
+		jobj[key] = xyz.z;
+	} else if (strcmp("1",key) == 0) {
+		jobj[key] = machine.getMotorAxis(0).position;
+	} else if (strcmp("2",key) == 0) {
+		jobj[key] = machine.getMotorAxis(1).position;
+	} else if (strcmp("3",key) == 0) {
+		jobj[key] = machine.getMotorAxis(2).position;
+	} else if (strcmp("4",key) == 0) {
+		jobj[key] = machine.getMotorAxis(3).position;
+	}
+}
+
+Status JsonController::processProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = jcmd.getStatus();
+    switch (status) {
+    case STATUS_BUSY_PARSED:
+        status = initializeProbe_MTO_FPD(jcmd, jobj, key, true);
+        break;
+    case STATUS_BUSY_OK:
+    case STATUS_BUSY_CALIBRATING:
+        status = machine.probe(status);
+        if (status == STATUS_OK) {
+			if (jobj[key].is<JsonObject&>()) {
+				JsonObject &kidObj = jobj[key];
+				for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+					finalizeProbe_MTO_FPD(jcmd, kidObj, it->key);
+				}
+			} else {
+				finalizeProbe_MTO_FPD(jcmd, jobj, key);
+			}
         }
         break;
     default:
@@ -1426,7 +1551,15 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
         } else if (strncmp("dim", it->key, 3) == 0) {
             status = processDimension(jcmd, jobj, it->key);
         } else if (strncmp("prb", it->key, 3) == 0) {
-            status = processProbe(jcmd, jobj, it->key);
+			switch (machine.topology) {
+			case MTO_STEPPER:
+			default:
+				status = processProbe(jcmd, jobj, it->key);
+				break;
+			case MTO_FPD:
+				status = processProbe_MTO_FPD(jcmd, jobj, it->key);
+				break;
+			}
         } else {
             switch (it->key[0]) {
             case '1':
