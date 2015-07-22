@@ -2835,6 +2835,7 @@ void test_DeltaCalculator() {
 	ASSERTEQUALT(16, dc.getMicrosteps(), 0.000001);
 	ASSERTEQUALT(150/16.0, dc.getGearRatio(), 0.000001);
 	ASSERTEQUALT(-111.571, dc.getMinZ(), 0.001);
+	ASSERTEQUALT(-52.33, dc.getMinDegrees(), 0.001);
 
 	XYZ3D xyz = dc.calcXYZ(Angle3D());
 	ASSERT(xyz.isValid());
