@@ -39,13 +39,13 @@ DeltaCalculator::DeltaCalculator()
       gearRatio(150/16.0),
 	  dz(0)
 {
-#ifdef TEST
-	// Show base origin offsets
-	for (PH5TYPE a=-90; a<=90; a+=30) {
-		XYZ3D xyza = calcXYZ(Angle3D(a,a,a));
-		TESTCOUT2("angle:", a, " z:", xyza.z);
-	}
-#endif
+//#ifdef TEST
+	//// Show base origin offsets
+	//for (PH5TYPE a=-90; a<=90; a+=30) {
+		//XYZ3D xyza = calcXYZ(Angle3D(a,a,a));
+		//TESTCOUT2("angle:", a, " z:", xyza.z);
+	//}
+//#endif
     XYZ3D xyz = calcXYZ(Angle3D());
 	TESTCOUT1("xyz:", xyz.isValid());
     dz = -xyz.z; // use effector origin instead of base origin at zero degrees
@@ -189,10 +189,17 @@ XYZ3D DeltaCalculator::calcXYZ(Angle3D angles) {
     // discriminant
     PH5TYPE d = b * b - 4.0 * a * c;
     if (d < 0) { // point exists
-        TESTCOUT3("DeltaCalculator calcXYZ() negative discriminant angles:", angles.theta1, ", ", angles.theta2, ", ", angles.theta3);
+        TESTCOUT3("DeltaCalculator calcXYZ() negative discriminant angles:", angles.theta1, 
+			", ", angles.theta2, ", ", angles.theta3);
         return XYZ3D(false);
     }
     PH5TYPE z = -0.5 * (b + sqrt(d)) / a;
+	if (isnan(z)) Serial.println("znan");
+	if (isnan(a)) Serial.println("anan");
+	if (isnan(b)) Serial.println("bnan");
+	if (isnan(d)) Serial.println("dnan");
+	if (isnan(sqrt(d))) Serial.println("sqrt(d)nan");
+	if (isnan(dz)) Serial.println("dznan");
     XYZ3D result(
         (a1 * z + b1) / dnm,
         (a2 * z + b2) / dnm,

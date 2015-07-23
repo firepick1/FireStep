@@ -46,6 +46,7 @@ enum Status {
     STATUS_EEPROM_ADDR = -137,		// EEPROM address out of range
     STATUS_EEPROM_JSON = -138,		// No JSON to execute at EEPROM address
     STATUS_PROBE_PIN = -139,		// No probe pin specified
+	STATUS_KINEMATIC_XYZ = -140,	// Could not solve XYZ cartesian kinematics
 
     // stroke
     STATUS_STROKE_SEGPULSES = -200,	// Stroke has too many pulses per segment [-127,127]

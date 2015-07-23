@@ -1195,12 +1195,35 @@ void test_Topology() {
     int32_t ypulses;
     int32_t zpulses;
 
+	// systo:1
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+    Serial.push(JT("{'systo':1}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.getMotorPosition());
+	XYZ3D xyz = machine.getXYZ3D();
+	ASSERTEQUALT(0, xyz.x, 0.0001);
+	ASSERTEQUALT(0, xyz.y, 0.0001);
+	ASSERTEQUALT(0, xyz.z, 0.0001);
+    ASSERTEQUALS(JT("{'s':0,'r':{'systo':1},'t':0.000}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	
 	// mov long form
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
     ypulses = arduino.pulses(PC2_Y_STEP_PIN);
     zpulses = arduino.pulses(PC2_Z_STEP_PIN);
     machine.setMotorPosition(Quad<StepCoord>());
-    Serial.push(JT("{'systo':1, 'mov':{'z':1}}\n"));
+    Serial.push(JT("{'mov':{'z':1}}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
@@ -1209,7 +1232,7 @@ void test_Topology() {
     ASSERTEQUAL(53, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(53, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTQUAD(Quad<StepCoord>(-53,-53,-53,0), machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'systo':1,'mov':{'z':1.000,'lp':1682,'pp':1188.4,'sg':16,'tp':0.108,'ts':0.108}},'t':0.108}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'z':1.000,'lp':1682,'pp':1188.4,'sg':16,'tp':0.108,'ts':0.108}},'t':0.108}\n"),
                  Serial.output().c_str());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -1239,7 +1262,7 @@ void test_Topology() {
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
-	XYZ3D xyz = machine.getXYZ3D();
+	xyz = machine.getXYZ3D();
 	ASSERTEQUALT(1.0085, xyz.x, 0.0001);
 	ASSERTEQUALT(0.0000, xyz.y, 0.0001);
 	ASSERTEQUALT(0.0020, xyz.z, 0.0001);

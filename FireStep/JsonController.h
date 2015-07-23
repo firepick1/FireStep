@@ -45,7 +45,7 @@ protected:
     Status initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
     Status processProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status processPosition_MTO_FPD(JsonCommand &jcmd, JsonObject& jobj, const char* key);
-	void finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+	Status finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key);
 	Status processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key);
 
 public:

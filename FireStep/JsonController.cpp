@@ -1380,8 +1380,11 @@ Status JsonController::process(JsonCommand& jcmd) {
 
 //////////////// MTO_FPD /////////
 Status JsonController::processPosition_MTO_FPD(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
-    Status status = STATUS_OK;
 	XYZ3D xyz(machine.getXYZ3D());
+	if (!xyz.isValid()) {
+		return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+	}
+    Status status = STATUS_OK;
 	const char *axisStr = key + strlen(key) - 1;
     const char *s;
     if (strlen(key) == 3) {
@@ -1400,7 +1403,7 @@ Status JsonController::processPosition_MTO_FPD(JsonCommand &jcmd, JsonObject& jo
         }
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {
-            return STATUS_POSITION_ERROR;
+            return jcmd.setError(STATUS_POSITION_ERROR, key);
         }
         for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
             status = processPosition_MTO_FPD(jcmd, kidObj, it->key);
@@ -1448,6 +1451,9 @@ Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jo
         machine.op.probe.init(machine.getMotorPosition());
     }
 	XYZ3D xyzStart = machine.getXYZ3D();
+	if (!xyzStart.isValid()) {
+		return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+	}
 	XYZ3D xyzEnd = xyzStart;
 	xyzEnd.z = machine.delta.getMinZ();
 	const char *s;
@@ -1516,8 +1522,11 @@ Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jo
     return status == STATUS_OK ? STATUS_BUSY_CALIBRATING : status;
 }
 
-void JsonController::finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+Status JsonController::finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
 	XYZ3D xyz = machine.getXYZ3D();
+	if (!xyz.isValid()) {
+		return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+	}
 	if (strcmp("prbx",key) == 0 || strcmp("x",key) == 0) {
 		jobj[key] = xyz.x;
 	} else if (strcmp("prby",key) == 0 || strcmp("y",key) == 0) {
@@ -1533,6 +1542,7 @@ void JsonController::finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, 
 	} else if (strcmp("4",key) == 0) {
 		jobj[key] = machine.getMotorAxis(3).position;
 	}
+	return STATUS_OK;
 }
 
 Status JsonController::processProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
@@ -1547,11 +1557,11 @@ Status JsonController::processProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj,
         if (status == STATUS_OK) {
 			if (jobj[key].is<JsonObject&>()) {
 				JsonObject &kidObj = jobj[key];
-				for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-					finalizeProbe_MTO_FPD(jcmd, kidObj, it->key);
+				for (JsonObject::iterator it = kidObj.begin(); status == STATUS_OK && it != kidObj.end(); ++it) {
+					status = finalizeProbe_MTO_FPD(jcmd, kidObj, it->key);
 				}
 			} else {
-				finalizeProbe_MTO_FPD(jcmd, jobj, key);
+				status = finalizeProbe_MTO_FPD(jcmd, jobj, key);
 			}
         }
         break;
