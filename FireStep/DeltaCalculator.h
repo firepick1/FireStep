@@ -5,6 +5,7 @@
 
 namespace firestep {
 
+#define NO_SOLUTION ((PH5TYPE)1E20)
 
 typedef class Step3D {
 private:
@@ -14,7 +15,7 @@ public:
     StepCoord p2;
     StepCoord p3;
     Step3D(StepCoord p1, StepCoord p2, StepCoord p3) : valid(true), p1(p1), p2(p2), p3(p3) {}
-    Step3D(bool valid=true): valid(valid), p1(0), p2(0), p3(0) {}
+    Step3D(bool valid=true, PH5TYPE v=0): valid(valid), p1(v), p2(v), p3(v) {}
     inline bool isValid() {
         return valid;
     }
@@ -28,7 +29,7 @@ public:
     PH5TYPE y;
     PH5TYPE z;
     XYZ3D(PH5TYPE x, PH5TYPE y, PH5TYPE z) : valid(true), x(x), y(y), z(z) {}
-    XYZ3D(bool valid=true): valid(valid), x(0), y(0), z(0) {}
+    XYZ3D(bool valid=true,PH5TYPE v=0): valid(valid), x(v), y(v), z(v) {}
 	bool operator==(const XYZ3D& that) {
 		return x == that.x && y == that.y && z == that.z && valid == that.valid;
 	}
@@ -49,7 +50,7 @@ public:
     PH5TYPE theta3;
     Angle3D(PH5TYPE theta1, PH5TYPE theta2, PH5TYPE theta3)
         : valid(true), theta1(theta1), theta2(theta2), theta3(theta3) {}
-    Angle3D(bool valid=true): valid(valid), theta1(0), theta2(0), theta3(0) {}
+    Angle3D(bool valid=true, PH5TYPE v=0): valid(valid), theta1(v), theta2(v), theta3(v) {}
     inline bool isValid() {
         return valid;
     }
@@ -132,7 +133,7 @@ public:
 	inline PH5TYPE getZOffset() { // Z distance from base to effector with arms level (0 degrees)
 		return dz;
 	}
-	PH5TYPE getMinZ();  // lowest possible point
+	PH5TYPE getMinZ(PH5TYPE x=0, PH5TYPE y=0);  // lowest possible point at given XY
 	PH5TYPE getMinDegrees(); // base/effector arms are colinear here (which is usually bad mechanically)
     Step3D getHomePulses();
 	Angle3D getHomeAngles();

@@ -1,25 +1,50 @@
 #ifndef FIREUTILS_HPP
 #define FIREUTILS_HPP
 
-#include <sys/types.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <assert.h>
-#include <iostream>
 #include "FireLog.h"
-#include <string>
-#include <errno.h>
-#include <signal.h>
 
-#ifdef ASSERT_THROW
+////////////////// ASSERTFAIL(msg) implements assertion failure ////////////
+
+#ifdef ASSERTFAIL_THROW
+	// Throw an exception when assertions fail
 	#define ASSERTFAIL(msg) \
 		{LOGERROR3("***ASSERTION FAILED (THROW) *** %s in %s:%d",msg,__FILE__,__LINE__); \
 		throw "***ASSERTION FAILED*** " msg;}
-#else
+#endif
+
+#ifdef TEST
+#define ASSERTFAIL_KILL
+#endif
+#ifdef ASSERTFAIL_KILL
+	// kill the program to get a core dump upon assertion failure
+#include <sys/types.h>
+#include <unistd.h>
+#include <signal.h>
 	#define ASSERTFAIL(msg) \
 		{LOGERROR3("***ASSERTION FAILED (EXIT) *** %s in %s:%d",msg,__FILE__,__LINE__); \
 		kill(getpid(), SIGABRT);}
 #endif
+
+#ifndef ASSERTFAIL
+	#define ASSERTFAIL(msg) \
+		{LOGERROR3("***ASSERTION FAILED (EXIT) *** %s in %s:%d",msg,__FILE__,__LINE__); \
+		}
+#endif
+
+#ifdef ARDUINO
+#define ASSERTFAILBUF(buf) { Serial.println(buf); }
+#endif
+#ifndef ASSERTFAILBUF
+#include <iostream>
+#define ASSERTFAILBUF(buf) { std::cerr << "***ASSERT FAILED*** " << buf << std::endl; }
+#endif
+
+////////////////// ASSERT() macros  ////////////////
+
+#ifndef ASSERT_BUFSIZE
+#define ASSERT_BUFSIZE 255
+#endif
+
 #define ASSERT(e) ASSERTNONZERO(e)
 #define ASSERTMSG(e,msg) ASSERTNONZEROMSG(e,msg)
 #define ASSERTNOERRNO(exp) assertnoerrno((long) (exp), __FILE__,__LINE__)
@@ -30,6 +55,8 @@
 #define ASSERTEQUALP(e,a) assertEqualPtr((e),(a),__FILE__,__LINE__)
 #define ASSERTEQUALT(e,a,t) assertEqual((e),(a),t,__FILE__,__LINE__)
 
+#ifdef ASSERT_ERRNO
+#include <errno.h>
 inline void
 assertnoerrno(long actual, const char* fname, long line) {
     if (actual>=0) {
@@ -38,23 +65,23 @@ assertnoerrno(long actual, const char* fname, long line) {
 
     const char *errstr;
     switch (errno) {
-    case EACCES: errstr = "EACCESS"; break;
-    case EEXIST: errstr = "EEXIST"; break;
-    case EINVAL: errstr = "EINVAL"; break;
-    case ENFILE: errstr = "ENFILE"; break;
-    case ENOENT: errstr = "ENOENT"; break;
-    case ENOMEM: errstr = "ENOMEM"; break;
-    case ENOSPC: errstr = "ENOSPC"; break;
-    case EPERM: errstr = "EPERM"; break;
+    case 13 /* EACCES */: errstr = "EACCESS"; break;
+    case 17 /* EEXIST */: errstr = "EEXIST"; break;
+    case 22 /* EINVAL */: errstr = "EINVAL"; break;
+    case 23 /* ENFILE */: errstr = "ENFILE"; break;
+    case 2 /* ENOENT */: errstr = "ENOENT"; break;
+    case 12 /* ENOMEM */: errstr = "ENOMEM"; break;
+    case 28 /* ENOSPC */: errstr = "ENOSPC"; break;
+    case 1 /* EPERM */: errstr = "EPERM"; break;
     default: errstr = ""; break;
     }
     char buf[255];
     snprintf(buf, sizeof(buf), "%s@%ld return:%ld errno:%s (%d) ", 
 		fname, line, actual, errstr, errno);
-    LOGERROR(buf);
-    std::cerr << "***ASSERT FAILED*** " << buf << std::endl;
+    ASSERTFAILBUF(buf);
     ASSERTFAIL("system errno");
 }
+#endif
 
 inline void
 assertzero(long actual, const char* fname, long line) {
@@ -64,8 +91,7 @@ assertzero(long actual, const char* fname, long line) {
 
     char buf[255];
     snprintf(buf, sizeof(buf), "%s@%ld expected zero", fname, line);
-    LOGERROR(buf);
-    std::cerr << "***ASSERT FAILED*** " << buf << std::endl;
+    ASSERTFAILBUF(buf);
     ASSERTFAIL("expected zero");
 }
 
@@ -77,8 +103,7 @@ assertnonzero(long actual, const char* fname, long line, const char *msg="(no me
 
     char buf[512];
     snprintf(buf, sizeof(buf), "%s@%ld expected non-zero: %s", fname, line, msg);
-    LOGERROR(buf);
-    std::cerr << "***ASSERT FAILED*** " << buf << std::endl;
+    ASSERTFAILBUF(buf);
     ASSERTFAIL("expected nonzero");
 }
 
@@ -92,8 +117,7 @@ assertEqualPtr(void* expected, void* actual, const char* context, long line)
     char buf[255];
 	snprintf(buf, sizeof(buf), "%s expected:%lx actual:%lx line:%ld",
 			 context, (long) (size_t) expected, (long)(size_t) actual, line);
-    LOGERROR(buf);
-    std::cerr << "***ASSERT FAILED*** " << buf << std::endl;
+    ASSERTFAILBUF(buf);
     ASSERTFAIL("expected equal");
 }
 
@@ -113,8 +137,7 @@ assertEqual(double expected, double actual, double tolerance, const char* contex
 		snprintf(buf, sizeof(buf), "%s expected:%g actual:%g tolerance:%g line:%ld",
 				 context, expected, actual, tolerance, line);
 	}
-    LOGERROR(buf);
-    std::cerr << "***ASSERT FAILED*** " << buf << std::endl;
+    ASSERTFAILBUF(buf);
     ASSERTFAIL("expected equal");
 }
 
@@ -130,14 +153,13 @@ assertEqual(const char * expected, const char * actual, const char* context, int
         return;
     }
 
-    char buf[1024];
+    char buf[ASSERT_BUFSIZE];
     if (actual) {
         snprintf(buf, sizeof(buf), "%s@%d expected:\n\"%s\"\nactual:\n\"%s\"\n", context, line, expected, actual);
     } else {
         snprintf(buf, sizeof(buf), "%s@%d expected:\n\"%s\" \nactual:\nNULL\n", context, line, expected);
     }
-    LOGERROR(buf);
-    std::cerr << "***ASSERT FAILED*** " << buf << std::endl;
+    ASSERTFAILBUF(buf);
     ASSERTFAIL("expected equal strings");
 }
 

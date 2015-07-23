@@ -602,7 +602,7 @@ public:
 			destination.value[i] = curPos.value[i];
 		}
         switch (machine.topology) {
-        case MTO_STEPPER:
+        case MTO_RAW:
         default:
 			// no conversion required
             break;
@@ -623,7 +623,7 @@ Status PHMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     Quad<StepCoord> curPos = machine.getMotorPosition();
     Quad<StepCoord> dPos;
 	switch (machine.topology) {
-	case MTO_STEPPER:
+	case MTO_RAW:
 	default:
 		for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
 			dPos.value[i] = destination.value[i] - curPos.value[i];
@@ -897,11 +897,20 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
 		if (value != machine.topology) {
 			machine.topology = value;
 			switch (machine.topology) {
-			case MTO_STEPPER:
+			case MTO_RAW:
 			default:
 				break;
 			case MTO_FPD:
 				machine.delta.setup();
+				if (machine.axis[0].home >= 0 &&
+					machine.axis[1].home >= 0 &&
+					machine.axis[2].home >= 0) {
+					// Delta always has negateve home limit switch
+					Step3D home = machine.delta.getHomePulses();
+					machine.axis[0].home = home.p1;
+					machine.axis[1].home = home.p2;
+					machine.axis[2].home = home.p3;
+				}
 				break;
 			}
 		}
@@ -1045,7 +1054,7 @@ Status JsonController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
 {
     Status status = STATUS_OK;
     if (clear) {
-        machine.op.probe.init(machine.getMotorPosition());
+        machine.op.probe.setup(machine.getMotorPosition());
     }
     if (strcmp("prb", key) == 0) {
         const char *s;
@@ -1296,7 +1305,7 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
             status = processDisplay(jcmd, jobj, it->key);
         } else if (strncmp("mpo", it->key, 3) == 0) {
 			switch (machine.topology) {
-			case MTO_STEPPER:
+			case MTO_RAW:
 			default:
 				status = processPosition(jcmd, jobj, it->key);
 				break;
@@ -1310,7 +1319,7 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
             status = processEEPROM(jcmd, jobj, it->key);
         } else if (strncmp("dim", it->key, 3) == 0) {
 			switch (machine.topology) {
-			case MTO_STEPPER:
+			case MTO_RAW:
 			default:
                 status = jcmd.setError(STATUS_TOPOLOGY_NAME, it->key);
 				break;
@@ -1320,7 +1329,7 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
 			}
         } else if (strncmp("prb", it->key, 3) == 0) {
 			switch (machine.topology) {
-			case MTO_STEPPER:
+			case MTO_RAW:
 			default:
 				status = processProbe(jcmd, jobj, it->key);
 				break;
@@ -1367,8 +1376,8 @@ Status JsonController::process(JsonCommand& jcmd) {
             JsonObject& jobj = jarr[jcmd.cmdIndex];
             jcmd.jResponseRoot["r"] = jobj;
             status = processObj(jcmd, jobj);
-            TESTCOUT3("JsonController::process(", (int) jcmd.cmdIndex+1,
-                      " of ", jarr.size(), ") status:", status);
+            //TESTCOUT3("JsonController::process(", (int) jcmd.cmdIndex+1,
+                      //" of ", jarr.size(), ") status:", status);
             if (status == STATUS_OK) {
                 //status = STATUS_BUSY_OK;
                 status = STATUS_BUSY_PARSED;
@@ -1467,19 +1476,19 @@ Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jo
                                        const char* key, bool clear)
 {
     Status status = STATUS_OK;
+	OpProbe &probe = machine.op.probe;
+
     if (clear) {
-        machine.op.probe.init(machine.getMotorPosition());
+		Quad<StepCoord> curPos = machine.getMotorPosition();
+        probe.setup(curPos);
     }
-	XYZ3D xyzStart = machine.getXYZ3D();
-	if (!xyzStart.isValid()) {
-		return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
-	}
-	XYZ3D xyzEnd = xyzStart;
-	xyzEnd.z = machine.delta.getMinZ();
+	Step3D probeEnd(probe.end.value[0], probe.end.value[1], probe.end.value[2]);
+	XYZ3D xyzEnd = machine.delta.calcXYZ(probeEnd);
 	const char *s;
     if (strcmp("prb", key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
+			xyzEnd.z = machine.delta.getMinZ(xyzEnd.z, xyzEnd.y);
 			node["1"] = "";
 			node["2"] = "";
 			node["3"] = "";
@@ -1514,6 +1523,7 @@ Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jo
     } else if (strcmp("prby", key) == 0 || strcmp("y", key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.y);
     } else if (strcmp("prbz", key) == 0 || strcmp("z", key) == 0) {
+		xyzEnd.z = machine.delta.getMinZ(xyzEnd.x, xyzEnd.y);
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.z);
     } else {
 		MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));
@@ -1533,6 +1543,7 @@ Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jo
 	machine.op.probe.end.value[0] = pEnd.p1;
 	machine.op.probe.end.value[1] = pEnd.p2;
 	machine.op.probe.end.value[2] = pEnd.p3;
+	TESTCOUT3("pEnd:", pEnd.p1, ", ", pEnd.p2, ", ", pEnd.p3);
 	machine.op.probe.maxDelta = 0;
 	for (MotorIndex iMotor=0; iMotor<3; iMotor++) {
 		StepCoord delta = machine.op.probe.end.value[iMotor] - machine.op.probe.start.value[iMotor];

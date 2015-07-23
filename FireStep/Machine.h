@@ -43,8 +43,8 @@ inline void delayMics(int32_t usDelay) {
 }
 
 enum Topology {
-	MTO_STEPPER = 0,
-	MTO_FPD = 1,
+	MTO_RAW = 0, // Raw stepper coordinates in microstep pulses
+	MTO_FPD = 1, // Rotational delta with FirePick Delta dimensions
 };
 
 enum AxisIndexValue {
@@ -162,9 +162,9 @@ public:
     bool		invertProbe; // invert logic sense of probe
 
     OpProbe() : pinProbe(NOPIN), invertProbe(false) {
-        init(Quad<StepCoord>());
+        setup(Quad<StepCoord>());
     }
-    void init(Quad<StepCoord> position) {
+    void setup(Quad<StepCoord> position) {
         start = position;
         end = position;
         maxDelta = 0;

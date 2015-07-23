@@ -6,16 +6,14 @@
 #include "Machine.h"
 #include "AnalogRead.h"
 #include "version.h"
-#ifdef TEST
-#include "../test/FireUtils.hpp"
-#endif
+//#ifdef TEST
+//#include "../test/FireUtils.hpp"
+//#endif
 #include "MCU.h"
 #include "DeltaCalculator.h"
 
 using namespace firestep;
 using namespace ph5;
-
-#define NO_SOLUTION 1E20
 
 PH5TYPE DeltaCalculator::sqrt3 = sqrt(3.0);
 PH5TYPE DeltaCalculator::sin120 = sqrt3 / 2.0;
@@ -43,8 +41,7 @@ DeltaCalculator::DeltaCalculator()
 
 void DeltaCalculator::setup() {
     XYZ3D xyz = calcXYZ(Angle3D());
-	if (!xyz.isValid()) { Serial.println("DC50"); }
-	if (isnan(xyz.z)) { Serial.println("DC51"); }
+	ASSERT(xyz.isValid());
 	
 	TESTCOUT1("xyz:", xyz.isValid());
     dz = -xyz.z; // use effector origin instead of base origin at zero degrees
@@ -98,7 +95,7 @@ PH5TYPE DeltaCalculator::calcAngleYZ(PH5TYPE X, PH5TYPE Y, PH5TYPE Z) {
     // discriminant
     PH5TYPE d = -(a + b * y1) * (a + b * y1) + rf * (b * b * rf + rf);
     if (d < 0) {
-		TESTCOUT3("DeltaCalculator calcAngleYZ X:", X, " Y:", Y, " Z:", Z);
+		//TESTCOUT3("***NO_SOLUTION*** DeltaCalculator calcAngleYZ X:", X, " Y:", Y, " Z:", Z);
 		return NO_SOLUTION;
     }
     PH5TYPE yj = (y1 - a * b - sqrt(d)) / (b * b + 1.0); // choosing outer point
@@ -108,18 +105,23 @@ PH5TYPE DeltaCalculator::calcAngleYZ(PH5TYPE X, PH5TYPE Y, PH5TYPE Z) {
 }
 
 Step3D DeltaCalculator::calcPulses(XYZ3D xyz) {
-    Step3D pulses;
 	Angle3D angles = calcAngles(xyz);
 	if (!angles.isValid()) {
-		return Step3D(false);
-	} PH5TYPE dp = degreePulses();
-	pulses.p1 = roundStep(angles.theta1*dp);
-	pulses.p2 = roundStep(angles.theta2*dp);
-	pulses.p3 = roundStep(angles.theta3*dp);
+		return Step3D(false, NO_SOLUTION);
+	} 
+	PH5TYPE dp = degreePulses();
+    Step3D pulses(
+		roundStep(angles.theta1*dp),
+		roundStep(angles.theta2*dp),
+		roundStep(angles.theta3*dp)
+	);
 	return pulses;
 }
 
 Angle3D DeltaCalculator::calcAngles(XYZ3D xyz) {
+	if (!xyz.isValid()) {
+		return Angle3D(false, NO_SOLUTION);
+	}
 	PH5TYPE x = xyz.x;
 	PH5TYPE y = xyz.y;
 	PH5TYPE z = xyz.z - dz;
@@ -131,7 +133,8 @@ Angle3D DeltaCalculator::calcAngles(XYZ3D xyz) {
 	if (angles.theta1 == NO_SOLUTION ||
 		angles.theta2 == NO_SOLUTION ||
 		angles.theta3 == NO_SOLUTION) {
-		return Angle3D(false);
+		//TESTCOUT1("calcAngles:","NO_SOLUTION");
+		return Angle3D(false, NO_SOLUTION);
 	}
 	angles.theta1 += eTheta.theta1;
 	angles.theta2 += eTheta.theta2;
@@ -141,7 +144,7 @@ Angle3D DeltaCalculator::calcAngles(XYZ3D xyz) {
 
 XYZ3D DeltaCalculator::calcXYZ(Step3D pulses) {
 	if (!pulses.isValid()) {
-		return XYZ3D(false);
+		return XYZ3D(false, NO_SOLUTION);
 	}
 	PH5TYPE dp = degreePulses();
 	Angle3D angles(
@@ -152,8 +155,17 @@ XYZ3D DeltaCalculator::calcXYZ(Step3D pulses) {
 	return calcXYZ(angles);
 }
 
-PH5TYPE DeltaCalculator::getMinZ() { 
+PH5TYPE DeltaCalculator::getMinZ(PH5TYPE x, PH5TYPE y) { 
 	XYZ3D xyz = calcXYZ(Angle3D(90,90,90));
+	xyz.x = x;
+	xyz.y = y;
+	TESTCOUT3("getMinZ xyz:", xyz.x, " y:", xyz.y, " z:", xyz.z);
+	Step3D pulses = calcPulses(xyz);
+	while (!pulses.isValid()) {
+		xyz.z += 1; // TODO: actually calculate instead of flailing around
+		pulses = calcPulses(xyz);
+	}
+	TESTCOUT3("getMinZ pulses:", pulses.p1, ", ", pulses.p2, ", ", pulses.p3);
 	return xyz.z;
 }
 
@@ -190,15 +202,10 @@ XYZ3D DeltaCalculator::calcXYZ(Angle3D angles) {
     if (d < 0) { // point exists
         TESTCOUT3("DeltaCalculator calcXYZ() negative discriminant angles:", angles.theta1, 
 			", ", angles.theta2, ", ", angles.theta3);
-        return XYZ3D(false);
+        return XYZ3D(false, NO_SOLUTION);
     }
     PH5TYPE z = -0.5 * (b + sqrt(d)) / a;
-	if (isnan(z)) Serial.println("znan");
-	if (isnan(a)) Serial.println("anan");
-	if (isnan(b)) Serial.println("bnan");
-	if (isnan(d)) Serial.println("dnan");
-	if (isnan(sqrt(d))) Serial.println("sqrt(d)nan");
-	if (isnan(dz)) Serial.println("dznan");
+	ASSERT(!isnan(dz));
     XYZ3D result(
         (a1 * z + b1) / dnm,
         (a2 * z + b2) / dnm,

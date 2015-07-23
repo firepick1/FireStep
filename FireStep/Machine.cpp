@@ -6,9 +6,7 @@
 #include "Machine.h"
 #include "AnalogRead.h"
 #include "version.h"
-#ifdef TEST
-#include "../test/FireUtils.hpp"
-#endif
+#include "FireUtils.hpp"
 
 using namespace firestep;
 
@@ -30,7 +28,7 @@ Status Axis::enable(bool active) {
 Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
       tvMax(0.7), homingPulses(3), latchBackoff(LATCH_BACKOFF),
-      searchDelay(800), pinStatus(NOPIN), eeUser(2000), topology(MTO_STEPPER)
+      searchDelay(800), pinStatus(NOPIN), eeUser(2000), topology(MTO_RAW)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -550,7 +548,7 @@ void Machine::setMotorPosition(const Quad<StepCoord> &position) {
 
 XYZ3D Machine::getXYZ3D() {
 	switch (topology) {
-	case MTO_STEPPER:
+	case MTO_RAW:
 	default:
 		return XYZ3D(
 			motorAxis[0]->position,

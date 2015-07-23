@@ -1186,8 +1186,8 @@ void test_Move() {
     cout << "TEST	: test_Move() OK " << endl;
 }
 
-void test_Topology() {
-    cout << "TEST	: testTopology() =====" << endl;
+void test_MTO_FPD() {
+    cout << "TEST	: test_MTO_FPD() =====" << endl;
 
     MachineThread mt = test_setup();
     Machine &machine = mt.machine;
@@ -1205,6 +1205,9 @@ void test_Topology() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(-4361, machine.axis[0].home);
+    ASSERTEQUAL(-4361, machine.axis[1].home);
+    ASSERTEQUAL(-4361, machine.axis[2].home);
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
@@ -1330,6 +1333,7 @@ void test_Topology() {
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTQUAD(Quad<StepCoord>(7500, 7500, 7500, 100), mt.machine.op.probe.end);
 	for (int i=0; i<1000; i++) {
 		test_ticks(MS_TICKS(6));	// calibrating
 		ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
@@ -1364,7 +1368,8 @@ void test_Topology() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'dim':{'e':270.000,'f':90.000,'gr':9.375,'ha1':-52.330,'ha2':-52.330,'ha3':-52.330,"
+    ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
+				"{'e':270.000,'f':90.000,'gr':9.375,'ha1':-52.330,'ha2':-52.330,'ha3':-52.330,"
 				"'re':131.636,'rf':190.526,'st':200,'us':16}}"
 				",'t':0.000}\n"),
                  Serial.output().c_str());
@@ -1386,7 +1391,53 @@ void test_Topology() {
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-    cout << "TEST	: testTopology() OK " << endl;
+	// mov/prb 
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+	arduino.setPin(PC2_PROBE_PIN, LOW);
+    Serial.push(JT("[{'mov':{'x':5,'y':5,'z':-50}},{'prbz':''}]\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    ASSERTEQUAL(10419, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(9523, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(10180, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+	xyz = machine.getXYZ3D();
+	ASSERTEQUALT(5, xyz.x, 0.01);
+	ASSERTEQUALT(5, xyz.y, 0.01);
+	ASSERTEQUALT(-50, xyz.z, 0.01);
+	mt.loop();
+	ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+	ASSERTQUAD(Quad<StepCoord>(10419,9523,10180,0), machine.op.probe.start);
+	ASSERTQUAD(Quad<StepCoord>(28931,27623,28577,0), machine.op.probe.end);
+	for (int i=0; i<100; i++) {
+		mt.loop();
+		ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+	}
+	arduino.setPin(PC2_PROBE_PIN, HIGH);
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(100, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(98, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(99, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUALS(JT("{'s':0,'r':{'prbz':-50.491},'t':1.521}\n"),
+                 Serial.output().c_str());
+	xyz = machine.getXYZ3D();
+	ASSERTEQUALT(5, xyz.x, 0.03);
+	ASSERTEQUALT(5, xyz.y, 0.03);
+	ASSERTEQUALT(-50.491, xyz.z, 0.001);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    cout << "TEST	: test_MTO_FPD() OK " << endl;
 }
 
 void test_stroke_endpos() {
@@ -2870,6 +2921,7 @@ void test_DeltaCalculator() {
 	ASSERTEQUALT(16, dc.getMicrosteps(), 0.000001);
 	ASSERTEQUALT(150/16.0, dc.getGearRatio(), 0.000001);
 	ASSERTEQUALT(-111.571, dc.getMinZ(), 0.001);
+	ASSERTEQUALT(-69.571, dc.getMinZ(100,100), 0.001);
 	ASSERTEQUALT(-52.33, dc.getMinDegrees(), 0.001);
 	Angle3D homeAngles = dc.getHomeAngles();
 	ASSERTEQUALT(-52.33, homeAngles.theta1, 0.001);
@@ -2924,7 +2976,8 @@ int main(int argc, char *argv[]) {
     // test first
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
-		test_Topology();
+		//test_DeltaCalculator();
+		test_MTO_FPD();
     } else {
         test_Serial();
         test_Thread();
@@ -2952,7 +3005,7 @@ int main(int argc, char *argv[]) {
         test_eep();
 		test_probe();
 		test_DeltaCalculator();
-		test_Topology();
+		test_MTO_FPD();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;
