@@ -39,13 +39,9 @@ DeltaCalculator::DeltaCalculator()
       gearRatio(150/16.0),
 	  dz(0)
 {
-//#ifdef TEST
-	//// Show base origin offsets
-	//for (PH5TYPE a=-90; a<=90; a+=30) {
-		//XYZ3D xyza = calcXYZ(Angle3D(a,a,a));
-		//TESTCOUT2("angle:", a, " z:", xyza.z);
-	//}
-//#endif
+}
+
+void DeltaCalculator::setup() {
     XYZ3D xyz = calcXYZ(Angle3D());
 	if (!xyz.isValid()) { Serial.println("DC50"); }
 	if (isnan(xyz.z)) { Serial.println("DC51"); }

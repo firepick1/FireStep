@@ -77,6 +77,7 @@ protected:
     static PH5TYPE dtr;
 public:
     DeltaCalculator();
+	void setup();
     inline PH5TYPE getBaseTriangleSide() {
         return f;
     }

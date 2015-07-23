@@ -892,7 +892,19 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp("sd", key) == 0 || strcmp("syssd", key + 1) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else if (strcmp("to", key) == 0 || strcmp("systo", key) == 0) {
-        status = processField<Topology, int32_t>(jobj, key, machine.topology);
+		Topology value = machine.topology;	
+        status = processField<Topology, int32_t>(jobj, key, value);
+		if (value != machine.topology) {
+			machine.topology = value;
+			switch (machine.topology) {
+			case MTO_STEPPER:
+			default:
+				break;
+			case MTO_FPD:
+				machine.delta.setup();
+				break;
+			}
+		}
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
         jobj[key] = threadClock.ticks;
     } else if (strcmp("tv", key) == 0 || strcmp("systv", key) == 0) {

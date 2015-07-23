@@ -2856,6 +2856,7 @@ void test_DeltaCalculator() {
     cout << "TEST	: test_DeltaCalculator() =====" << endl;
 	DeltaCalculator dc;
 
+	dc.setup();
 	Step3D homePulses = dc.getHomePulses();
 	ASSERT(homePulses.isValid());
 	ASSERTEQUAL(-4361, homePulses.p1);
