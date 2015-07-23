@@ -821,76 +821,6 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
     return status;
 }
 
-Status JsonController::processDimension(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-    Status status = STATUS_OK;
-    if (strcmp("dim", key) == 0) {
-        const char *s;
-        if ((s = jobj[key]) && *s == 0) {
-            JsonObject& node = jobj.createNestedObject(key);
-            switch (machine.topology) {
-            case MTO_FPD:
-                node["e"] = "";
-                node["f"] = "";
-                node["gr"] = "";
-                node["et1"] = "";
-                node["et2"] = "";
-                node["et3"] = "";
-                node["re"] = "";
-                node["rf"] = "";
-                node["us"] = "";
-            }
-        }
-        JsonObject& kidObj = jobj[key];
-        if (kidObj.success()) {
-            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-                status = processDimension(jcmd, kidObj, it->key);
-                if (status != STATUS_OK) {
-                    return status;
-                }
-            }
-        }
-    } else if (strcmp("e", key) == 0 || strcmp("dime", key) == 0) {
-        PH5TYPE value = machine.delta.getEffectorLength();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setEffectorLength(value);
-    } else if (strcmp("et1", key) == 0 || strcmp("dimet1", key) == 0) {
-        Angle3D eTheta = machine.delta.getHomingError().theta1;
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, eTheta.theta1);
-        machine.delta.setHomingError(eTheta);
-    } else if (strcmp("et2", key) == 0 || strcmp("dimet2", key) == 0) {
-        Angle3D eTheta = machine.delta.getHomingError().theta2;
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, eTheta.theta1);
-        machine.delta.setHomingError(eTheta);
-    } else if (strcmp("et3", key) == 0 || strcmp("dimet3", key) == 0) {
-        Angle3D eTheta = machine.delta.getHomingError().theta3;
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, eTheta.theta3);
-        machine.delta.setHomingError(eTheta);
-    } else if (strcmp("f", key) == 0 || strcmp("dimf", key) == 0) {
-        PH5TYPE value = machine.delta.getBaseArmLength();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setBaseArmLength(value);
-    } else if (strcmp("gr", key) == 0 || strcmp("dimgr", key) == 0) {
-        PH5TYPE value = machine.delta.getGearRatio();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setGearRatio(value);
-    } else if (strcmp("re", key) == 0 || strcmp("dimre", key) == 0) {
-        PH5TYPE value = machine.delta.getEffectorTriangleSide();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setEffectorTriangleSide(value);
-    } else if (strcmp("rf", key) == 0 || strcmp("dimrf", key) == 0) {
-        PH5TYPE value = machine.delta.getBaseTriangleSide();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setBaseTriangleSide(value);
-    } else if (strcmp("us", key) == 0 || strcmp("dimus", key) == 0) {
-        PH5TYPE value = machine.delta.getMicrosteps();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setMicrosteps(value);
-    } else {
-        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
-    }
-    return status;
-}
-
 Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("sys", key) == 0) {
@@ -1367,7 +1297,15 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
         } else if (strncmp("eep", it->key, 3) == 0) {
             status = processEEPROM(jcmd, jobj, it->key);
         } else if (strncmp("dim", it->key, 3) == 0) {
-            status = processDimension(jcmd, jobj, it->key);
+			switch (machine.topology) {
+			case MTO_STEPPER:
+			default:
+                status = jcmd.setError(STATUS_TOPOLOGY_NAME, it->key);
+				break;
+			case MTO_FPD:
+				status = processDimension_MTO_FPD(jcmd, jobj, it->key);
+				break;
+			}
         } else if (strncmp("prb", it->key, 3) == 0) {
 			switch (machine.topology) {
 			case MTO_STEPPER:
@@ -1615,6 +1553,76 @@ Status JsonController::processProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj,
     default:
         ASSERT(false);
         return jcmd.setError(STATUS_STATE, key);
+    }
+    return status;
+}
+
+Status JsonController::processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = STATUS_OK;
+    if (strcmp("dim", key) == 0) {
+        const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+            switch (machine.topology) {
+            case MTO_FPD:
+                node["e"] = "";
+                node["f"] = "";
+                node["gr"] = "";
+                node["ha1"] = "";
+                node["ha2"] = "";
+                node["ha3"] = "";
+                node["re"] = "";
+                node["rf"] = "";
+                node["us"] = "";
+            }
+        }
+        JsonObject& kidObj = jobj[key];
+        if (kidObj.success()) {
+            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+                status = processDimension_MTO_FPD(jcmd, kidObj, it->key);
+                if (status != STATUS_OK) {
+                    return status;
+                }
+            }
+        }
+    } else if (strcmp("e", key) == 0 || strcmp("dime", key) == 0) {
+        PH5TYPE value = machine.delta.getEffectorLength();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        machine.delta.setEffectorLength(value);
+    } else if (strcmp("ha1", key) == 0 || strcmp("dimha1", key) == 0) {
+		Angle3D homeAngles = machine.delta.getHomeAngles();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngles.theta1);
+        machine.delta.setHomeAngles(homeAngles);
+    } else if (strcmp("ha2", key) == 0 || strcmp("dimha2", key) == 0) {
+		Angle3D homeAngles = machine.delta.getHomeAngles();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngles.theta2);
+        machine.delta.setHomeAngles(homeAngles);
+    } else if (strcmp("ha3", key) == 0 || strcmp("dimha3", key) == 0) {
+		Angle3D homeAngles = machine.delta.getHomeAngles();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngles.theta3);
+        machine.delta.setHomeAngles(homeAngles);
+    } else if (strcmp("f", key) == 0 || strcmp("dimf", key) == 0) {
+        PH5TYPE value = machine.delta.getBaseArmLength();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        machine.delta.setBaseArmLength(value);
+    } else if (strcmp("gr", key) == 0 || strcmp("dimgr", key) == 0) {
+        PH5TYPE value = machine.delta.getGearRatio();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        machine.delta.setGearRatio(value);
+    } else if (strcmp("re", key) == 0 || strcmp("dimre", key) == 0) {
+        PH5TYPE value = machine.delta.getEffectorTriangleSide();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        machine.delta.setEffectorTriangleSide(value);
+    } else if (strcmp("rf", key) == 0 || strcmp("dimrf", key) == 0) {
+        PH5TYPE value = machine.delta.getBaseTriangleSide();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        machine.delta.setBaseTriangleSide(value);
+    } else if (strcmp("us", key) == 0 || strcmp("dimus", key) == 0) {
+        PH5TYPE value = machine.delta.getMicrosteps();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        machine.delta.setMicrosteps(value);
+    } else {
+        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
     return status;
 }

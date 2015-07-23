@@ -60,6 +60,14 @@ PH5TYPE DeltaCalculator::getMinDegrees() {
 	return minDegrees;
 }
 
+void DeltaCalculator::setHomeAngles(Angle3D value) {
+	PH5TYPE minDegrees = getMinDegrees();	
+
+	eTheta.theta1 = value.theta1 - minDegrees;
+	eTheta.theta2 = value.theta2 - minDegrees;
+	eTheta.theta3 = value.theta3 - minDegrees;
+}
+
 Angle3D DeltaCalculator::getHomeAngles() {
 	PH5TYPE minDegrees = getMinDegrees();	
 

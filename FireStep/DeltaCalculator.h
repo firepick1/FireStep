@@ -135,6 +135,7 @@ public:
 	PH5TYPE getMinDegrees(); // base/effector arms are colinear here (which is usually bad mechanically)
     Step3D getHomePulses();
 	Angle3D getHomeAngles();
+	void setHomeAngles(Angle3D value);
     Step3D calcPulses(XYZ3D xyz);
     Angle3D calcAngles(XYZ3D xyz);
     XYZ3D calcXYZ(Step3D pulses);

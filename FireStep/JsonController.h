@@ -24,7 +24,6 @@ protected:
     Status initializeProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
     Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
     Status processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-	Status processDimension(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status processIOPin(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key);
@@ -47,6 +46,7 @@ protected:
     Status processProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status processPosition_MTO_FPD(JsonCommand &jcmd, JsonObject& jobj, const char* key);
 	void finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+	Status processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key);
 
 public:
     JsonController(Machine& machine);

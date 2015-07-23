@@ -77,6 +77,7 @@ enum Status {
     STATUS_JSON_ARRAY_LEN = -420,	// JSON array is too short
     STATUS_OUTPUT_FIELD = -421,		// JSON field is for output only
     STATUS_FIELD_HEX_ERROR = -422,	// Expected JSON field hex string value
+	STATUS_TOPOLOGY_NAME = -423,	// JSON command not valid for current topology
     STATUS_JSON_CMD = -423,			// JSON command must be object or array
     STATUS_JSON_STRING = -424,		// JSON string expected
     STATUS_JSON_EEPROM = -425,		// JSON EEPROM string too long

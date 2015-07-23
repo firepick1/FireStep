@@ -1351,6 +1351,35 @@ void test_Topology() {
 		Serial.output().c_str());
     test_ticks(1);	// tripped
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	
+	// dim get
+    machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
+    Serial.push(JT("{'dim':''}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'dim':{'e':270.000,'f':90.000,'gr':9.375,'ha1':-52.330,'ha2':-52.330,'ha3':-52.330,"
+				"'re':131.636,'rf':190.526,'us':16.000}}"
+				",'t':0.000}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	// dim set
+    machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
+    Serial.push(JT("{'dim':{'e':270.001,'f':90.001,'gr':9.371,'ha1':-52.331,'ha2':-52.332,'ha3':-52.333,"
+				"'re':131.631,'rf':190.521,'us':32.000}}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'dim':{'e':270.001,'f':90.001,'gr':9.371,'ha1':-52.331,'ha2':-52.332,'ha3':-52.333,"
+				"'re':131.631,'rf':190.521,'us':32.000}},"
+				"'t':0.000}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     cout << "TEST	: testTopology() OK " << endl;
 }
@@ -2836,6 +2865,10 @@ void test_DeltaCalculator() {
 	ASSERTEQUALT(150/16.0, dc.getGearRatio(), 0.000001);
 	ASSERTEQUALT(-111.571, dc.getMinZ(), 0.001);
 	ASSERTEQUALT(-52.33, dc.getMinDegrees(), 0.001);
+	Angle3D homeAngles = dc.getHomeAngles();
+	ASSERTEQUALT(-52.33, homeAngles.theta1, 0.001);
+	ASSERTEQUALT(-52.33, homeAngles.theta2, 0.001);
+	ASSERTEQUALT(-52.33, homeAngles.theta3, 0.001);
 
 	XYZ3D xyz = dc.calcXYZ(Angle3D());
 	ASSERT(xyz.isValid());
