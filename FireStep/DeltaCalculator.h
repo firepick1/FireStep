@@ -61,8 +61,8 @@ protected:
     PH5TYPE e;
     PH5TYPE rf;
     PH5TYPE re;
-    PH5TYPE steps360;
-    PH5TYPE microsteps;
+    int16_t steps360;
+    int16_t microsteps;
     PH5TYPE gearRatio;
     PH5TYPE dz;
     Angle3D eTheta;

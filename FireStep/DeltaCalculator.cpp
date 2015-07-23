@@ -47,6 +47,9 @@ DeltaCalculator::DeltaCalculator()
 	//}
 //#endif
     XYZ3D xyz = calcXYZ(Angle3D());
+	if (!xyz.isValid()) { Serial.println("DC50"); }
+	if (isnan(xyz.z)) { Serial.println("DC51"); }
+	
 	TESTCOUT1("xyz:", xyz.isValid());
     dz = -xyz.z; // use effector origin instead of base origin at zero degrees
 	TESTCOUT3("DeltaCalculator.dx:", xyz.x, " dy:", xyz.y, " dz:", dz);

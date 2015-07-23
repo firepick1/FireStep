@@ -1380,10 +1380,6 @@ Status JsonController::process(JsonCommand& jcmd) {
 
 //////////////// MTO_FPD /////////
 Status JsonController::processPosition_MTO_FPD(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
-	XYZ3D xyz(machine.getXYZ3D());
-	if (!xyz.isValid()) {
-		return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
-	}
     Status status = STATUS_OK;
 	const char *axisStr = key + strlen(key) - 1;
     const char *s;
@@ -1420,18 +1416,30 @@ Status JsonController::processPosition_MTO_FPD(JsonCommand &jcmd, JsonObject& jo
 	} else if (strcmp("4", axisStr) == 0) {
 		status = processField<StepCoord, int32_t>(jobj, key, machine.axis[3].position);
 	} else if (strcmp("x", axisStr) == 0) {
+		XYZ3D xyz(machine.getXYZ3D());
+		if (!xyz.isValid()) {
+			return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+		}
 		PH5TYPE value = xyz.x;
 		status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
 		if (value != xyz.x) {
 			status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
 		}
 	} else if (strcmp("y", axisStr) == 0) {
+		XYZ3D xyz(machine.getXYZ3D());
+		if (!xyz.isValid()) {
+			return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+		}
 		PH5TYPE value = xyz.y;
 		status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
 		if (value != xyz.y) {
 			status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
 		}
 	} else if (strcmp("z", axisStr) == 0) {
+		XYZ3D xyz(machine.getXYZ3D());
+		if (!xyz.isValid()) {
+			return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+		}
 		PH5TYPE value = xyz.z;
 		status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
 		if (value != xyz.z) {
