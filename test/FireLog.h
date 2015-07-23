@@ -67,57 +67,57 @@ extern "C" {
     }\
   }
 
-    extern CLASS_DECLSPEC int logLevel;
-    extern CLASS_DECLSPEC FILE *logFile;
+extern CLASS_DECLSPEC int logLevel;
+extern CLASS_DECLSPEC FILE *logFile;
 
-    /**
-     * By default, logging output is sent to cout. You can also call
-     * firelog_init() to send log output to logfile specified by path.
-     * If you do call firelog_init(), you must also call firelog_destroy().
-     * @param path to logfile
-     * @param level logging level
-     * @return 0 for success
-     */
-    CLASS_DECLSPEC int firelog_init(const char *path, int level);
+/**
+ * By default, logging output is sent to cout. You can also call
+ * firelog_init() to send log output to logfile specified by path.
+ * If you do call firelog_init(), you must also call firelog_destroy().
+ * @param path to logfile
+ * @param level logging level
+ * @return 0 for success
+ */
+CLASS_DECLSPEC int firelog_init(const char *path, int level);
 
-    /**
-     * Release resources allocated by firelog_init().
-     */
-    CLASS_DECLSPEC int firelog_destroy();
+/**
+ * Release resources allocated by firelog_init().
+ */
+CLASS_DECLSPEC int firelog_destroy();
 
-    /**
-     * Change logging level.
-     * @param newLevel E.g., FIRELOG_TRACE
-     * @return former logging level
-     */
-    CLASS_DECLSPEC int firelog_level(int newLevel);
+/**
+ * Change logging level.
+ * @param newLevel E.g., FIRELOG_TRACE
+ * @return former logging level
+ */
+CLASS_DECLSPEC int firelog_level(int newLevel);
 
-    /**
-     * Return last message
-     * @param level logging level
-     * @return Last message logged for given level
-     */
-    CLASS_DECLSPEC const char * firelog_lastMessage(int level);
+/**
+ * Return last message
+ * @param level logging level
+ * @return Last message logged for given level
+ */
+CLASS_DECLSPEC const char * firelog_lastMessage(int level);
 
-    /**
-     * Include thread id on each line logged
-     * @param show thread id if true
-     */
-    void firelog_show_thread_id(int show);
+/**
+ * Include thread id on each line logged
+ * @param show thread id if true
+ */
+void firelog_show_thread_id(int show);
 
-    /**
-     * (INTERNAL)
-     * Clear cache of logging messages
-     */
-    void firelog_lastMessageClear();
+/**
+ * (INTERNAL)
+ * Clear cache of logging messages
+ */
+void firelog_lastMessageClear();
 
-    /**
-     * (INTERNAL)
-     * Do not call main logging function directly.
-     * Use logging defines instead.
-     */
-    CLASS_DECLSPEC void firelog(const char *msg, int level);
-	long millis();
+/**
+ * (INTERNAL)
+ * Do not call main logging function directly.
+ * Use logging defines instead.
+ */
+CLASS_DECLSPEC void firelog(const char *msg, int level);
+unsigned long millis();
 
 #ifdef __cplusplus
 }

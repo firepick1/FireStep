@@ -3,10 +3,10 @@
 #include <cmath>
 #endif
 #include "Arduino.h"
+#include "FireUtils.h"
 #include "Machine.h"
 #include "AnalogRead.h"
 #include "version.h"
-#include "FireUtils.hpp"
 
 using namespace firestep;
 

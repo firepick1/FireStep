@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "FireUtils.hpp"
+#include "FireUtils.h"
 #include "Arduino.h"
 #include "Thread.h"
 

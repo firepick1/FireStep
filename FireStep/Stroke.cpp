@@ -307,7 +307,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
             StepCoord vNew = sNew - s;
             stroke.vPeak = max(stroke.vPeak, (int32_t)abs(vNew*SCALE));
             StepCoord dv = vNew - v;
-            TESTCOUT4("iSeg:", iSeg, " sNew:", sNew, " vNew:", vNew, " dv:", dv);
+            //TESTCOUT4("iSeg:", iSeg, " sNew:", sNew, " vNew:", vNew, " dv:", dv);
             if (dv < (StepCoord) - 127 || (StepCoord) 127 < dv) {
                 TESTCOUT3(" STATUS_STROKE_SEGPULSES pulses:", dv, " i:", (int)i, " N:", (int)N);
                 return STATUS_STROKE_SEGPULSES;

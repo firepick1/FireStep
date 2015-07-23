@@ -184,9 +184,9 @@ static struct tm tmLocalNow() {
 
 static struct tm tmStart = tmLocalNow();
 
-long millis() {
+unsigned long millis() {
     struct tm tmNow = tmLocalNow();
-    long result = tmNow.tm_year - tmStart.tm_year;
+    unsigned long result = tmNow.tm_year - tmStart.tm_year;
     result = result * 365 + (tmNow.tm_yday - tmStart.tm_yday);
     result = result * 24 + (tmNow.tm_hour - tmStart.tm_hour);
     result = result * 60 + (tmNow.tm_min - tmStart.tm_min);

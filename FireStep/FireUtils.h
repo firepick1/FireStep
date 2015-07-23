@@ -1,7 +1,11 @@
-#ifndef FIREUTILS_HPP
-#define FIREUTILS_HPP
+#ifndef FIREUTILS_H
+#define FIREUTILS_H
 
-#include "FireLog.h"
+#include <cstdio>
+
+#ifndef FIRELOG_H
+#define LOGERROR3(a,b,c,d)
+#endif
 
 ////////////////// ASSERTFAIL(msg) implements assertion failure ////////////
 

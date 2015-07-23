@@ -64,7 +64,7 @@ typedef uint8_t boolean;
 #define sei() (SREGI=1)
 
 extern "C" {
-    extern long millis();
+    extern unsigned long millis();
 }
 
 typedef class SerialType : public Print {

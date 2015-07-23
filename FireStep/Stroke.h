@@ -1,11 +1,7 @@
 #ifndef STROKE_H
 #define STROKE_H
 
-#ifdef TEST
-#include "FireLog.h"
-#include "FireUtils.hpp"
-#endif
-
+//#include "FireUtils.h"
 #include "Status.h"
 #include "Thread.h"
 #include "Quad.h"
