@@ -1624,6 +1624,7 @@ Status JsonController::processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& j
 			node["ha2"] = "";
 			node["ha3"] = "";
 			node["mi"] = "";
+			node["pd"] = "";
 			node["re"] = "";
 			node["rf"] = "";
 			node["st"] = "";
@@ -1665,6 +1666,16 @@ Status JsonController::processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& j
         int16_t value = machine.delta.getMicrosteps();
         status = processField<int16_t, int16_t>(jobj, key, value);
         machine.delta.setMicrosteps(value);
+    } else if (strcmp("pd", key) == 0 || strcmp("dimpd", key) == 0) {
+        const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+			JsonArray &jarr = jobj.createNestedArray(key);
+			for (int16_t i=0; i<PROBE_DATA; i++) {
+				jarr.add(machine.probeData[i]);
+			}
+		} else {
+			status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
+		}
     } else if (strcmp("re", key) == 0 || strcmp("dimre", key) == 0) {
         PH5TYPE value = machine.delta.getEffectorTriangleSide();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);

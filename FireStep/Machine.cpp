@@ -39,6 +39,17 @@ Machine::Machine()
     for (MotorIndex i = 0; i < MOTOR_COUNT; i++) {
         motor[i] = i;
     }
+
+	for (int16_t i=0; i<PROBE_DATA; i++) {
+		probeData[i] = 0;
+	}
+}
+
+void Machine::addProbeData(PH5TYPE data) {
+	for (int16_t i=PROBE_DATA; --i>0; ) {
+		probeData[i] = probeData[i-1];
+	}
+	probeData[0] = data;
 }
 
 bool Machine::isCorePin(int16_t pin) {
@@ -471,6 +482,12 @@ Status Machine::probe(Status status, DelayMics delay) {
     if (op.probe.probing) {
         status = stepProbe(delay < 0 ? searchDelay : delay);
     } else {
+		TESTCOUT1("probe:", status);
+		for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
+			if (op.probe.start.value[i] != op.probe.end.value[i]) {
+				addProbeData(op.probe.end.value[i]);
+			}
+		}
         status = STATUS_OK;
     }
 

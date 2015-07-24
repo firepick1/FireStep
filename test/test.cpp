@@ -1362,6 +1362,9 @@ void test_MTO_FPD() {
 		ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
 		ASSERT(machine.op.probe.probing);
 	}
+	for (int i=0; i<PROBE_DATA; i++) {
+		machine.probeData[i] = i;
+	}
     ASSERTQUAD(Quad<StepCoord>(1096, 1096, 1096, 100), mt.machine.getMotorPosition());
     ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
     ASSERTEQUAL(996, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
@@ -1393,7 +1396,8 @@ void test_MTO_FPD() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
 				"{'e':270.000,'f':90.000,'gr':9.375,'ha1':-52.330,'ha2':-52.330,'ha3':-52.330,"
-				"'mi':16,'re':131.636,'rf':190.526,'st':200}}"
+				"'mi':16,'pd':[7500.000,7500.000,7500.000,0.000,1.000,2.000],"
+				"'re':131.636,'rf':190.526,'st':200}}"
 				",'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -3034,7 +3038,8 @@ int main(int argc, char *argv[]) {
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
 		//test_DeltaCalculator();
-		test_MTO_FPD();
+		//test_MTO_FPD();
+		test_eep();
     } else {
         test_Serial();
         test_Thread();

@@ -3,8 +3,10 @@ FireStep: change log
 
 v0.2.1
 ------
-* FIX: "syseu" user EEPROM now work on startup
+* FIX: "syseu" user EEPROM now works on startup 
 * NEW: MTO_FPD "hom" now moves to Z0 after hitting the limit switch, since motion is over-constrained at limit switch
+* NEW: "sysom" output mode option shows individual responses from JSON command arrays
+* NEW: "dimpd" stores data returned by "prb"
 
 v0.2.0
 ------

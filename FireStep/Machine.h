@@ -24,6 +24,7 @@ namespace firestep {
 #define PIN_DISABLE HIGH
 #define MICROSTEPS_DEFAULT 16
 #define INDEX_NONE -1
+#define PROBE_DATA 6
 
 typedef int16_t DelayMics; // delay microseconds
 #ifdef TEST
@@ -223,6 +224,7 @@ public:
 	int16_t		eeUser;	// EEPROM user startup commands
 	Topology	topology;
 	OutputMode	outputMode;
+	PH5TYPE		probeData[PROBE_DATA];
     struct {
         OpProbe		probe;
     } op;
@@ -303,6 +305,7 @@ public:
     PinConfig getPinConfig() {
         return pinConfig;
     }
+	void addProbeData(PH5TYPE data);
 	XYZ3D getXYZ3D();
 } Machine;
 

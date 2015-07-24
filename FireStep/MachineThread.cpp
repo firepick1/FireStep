@@ -102,12 +102,17 @@ Status MachineThread::executeEEPROM() {
 	if (len2==0 && len>1) {
 		len--; // remove comma
 	} else {
+		if (buf[len] == '[') {
+			buf[len] = ' ';
+		}
 		len += len2;
 	}
-	buf[len++] = ']';
+	if (buf[len-1] != ']') {
+		buf[len++] = ']';
+	}
 	buf[len] = 0;
 
-	TESTCOUT3("executeEEPROM:", (int)buf[0], " len:", len, " status:", (int) status);
+	TESTCOUT3("executeEEPROM:", buf, " len:", len, " status:", (int) status);
 	status = command.parse(buf, status);
 	TESTCOUT1("executeEEPROM status:", (int) status);
 
