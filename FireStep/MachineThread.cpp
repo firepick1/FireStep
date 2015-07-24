@@ -68,32 +68,50 @@ void MachineThread::displayStatus() {
     machine.pDisplay->show();
 }
 
-void MachineThread::executeEEPROM(uint8_t *eeprom_addr, bool strict) {
+size_t MachineThread::readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen) {
     uint8_t c = eeprom_read_byte(eeprom_addr);
-    if (c == '{' || c == '[') {
-        command.clear();
-        char *buf = command.allocate(MAX_JSON);
-        if (!buf) {
-            status = STATUS_JSON_MEM;
-        } else {
-            int16_t i = 0;
-            for (i=0; i<MAX_JSON-2; i++) {
-                c = eeprom_read_byte(eeprom_addr+i);
-                if (c == 255 || c == 0) {
-                    break;
-                }
-                buf[i] = c;
-            }
-            buf[i++] = 0;
-            status = command.parse(NULL, status);
-            TESTCOUT3("EEPROM:", buf, " addr:", (size_t) eeprom_addr," status:", (int) status);
-        }
-    } else {
-		if (strict) {
-			status = STATUS_JSON_EXEC;
+    if (!dst || (c != '{' && c != '[')) {
+		return 0;
+	}
+
+	size_t len = 0;
+	for (len=0; len<maxLen-2; len++) {
+		c = eeprom_read_byte(eeprom_addr+len);
+		if (c == 255 || c == 0) {
+			break;
 		}
-		TESTCOUT2("EEPROM(no_json) addr:", (size_t) eeprom_addr," status:", (int) status);
-    }
+		dst[len] = c;
+	}
+	dst[len] = 0;
+
+	return len;
+}
+
+Status MachineThread::executeEEPROM() {
+	command.clear();
+	char *buf = command.allocate(MAX_JSON);
+	ASSERT(buf);
+
+	size_t len = 0;
+	buf[len++] = '[';
+	len += readEEPROM((uint8_t*)(size_t) 0, buf+len, MAX_JSON-len);
+	if (len > 1) {
+		buf[len++] = ',';
+	}
+	size_t len2 = readEEPROM((uint8_t*)(size_t) machine.eeUser, buf+len, MAX_JSON-len);
+	if (len2==0 && len>1) {
+		len--; // remove comma
+	} else {
+		len += len2;
+	}
+	buf[len++] = ']';
+	buf[len] = 0;
+
+	TESTCOUT3("executeEEPROM:", (int)buf[0], " len:", len, " status:", (int) status);
+	status = command.parse(buf, status);
+	TESTCOUT1("executeEEPROM status:", (int) status);
+
+	return status;
 }
 
 void MachineThread::loop() {
@@ -143,8 +161,7 @@ void MachineThread::loop() {
         }
         break;
     case STATUS_BUSY_EEPROM:
-        executeEEPROM(0);
-		executeEEPROM((uint8_t *) (size_t) machine.eeUser);
+        status = executeEEPROM();
         break;
     case STATUS_BUSY_SETUP: {
         uint8_t c = eeprom_read_byte((uint8_t*) 0);

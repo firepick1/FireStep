@@ -1,6 +1,9 @@
 #ifndef MACHINE_H
 #define MACHINE_H
 
+#ifdef CMAKE
+#include <cmath>
+#endif
 #include "Stroke.h"
 #include "Display.h"
 #include "DeltaCalculator.h"
@@ -164,10 +167,16 @@ public:
     OpProbe() : pinProbe(NOPIN), invertProbe(false) {
         setup(Quad<StepCoord>());
     }
-    void setup(Quad<StepCoord> position) {
-        start = position;
-        end = position;
+    void setup(Quad<StepCoord> posStart) {
+		setup(posStart, posStart);
+	}
+    void setup(Quad<StepCoord> posStart, Quad<StepCoord> posEnd) {
+        start = posStart;
+        end = posEnd;
         maxDelta = 0;
+		for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
+			maxDelta = max(maxDelta, (StepCoord) abs(end.value[i] - start.value[i]));
+		}
         curDelta = 0;
         probing = true;
     }
@@ -272,6 +281,7 @@ public:
     Quad<StepCoord> getMotorPosition();
     void setMotorPosition(const Quad<StepCoord> &position);
     virtual Status home(Status status);
+    virtual Status finalizeHome();
     virtual Status probe(Status status);
     void idle();
     Status setAxisIndex(MotorIndex iMotor, AxisIndex iAxis);

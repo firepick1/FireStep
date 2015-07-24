@@ -1459,6 +1459,27 @@ void test_MTO_FPD() {
 	ASSERTEQUALT(-50.491, xyz.z, 0.001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	
+    // hom
+    Serial.push(JT("{'hom':''}}\n"));
+    mt.loop();	// parse
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // initializing
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    arduino.setPin(PC2_X_MIN_PIN, HIGH);
+    arduino.setPin(PC2_Y_MIN_PIN, HIGH);
+    arduino.setPin(PC2_Z_MIN_PIN, HIGH);
+    mt.loop(); 
+    ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+    mt.loop(); // calibrating
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':-4361,'2':-4361,'3':-4361,'4':0}},'t':0.000}\n"), 
+		Serial.output().c_str());
+	ASSERTQUAD(Quad<StepCoord>(), machine.getMotorPosition());
+	xyz = machine.getXYZ3D();
+	ASSERTEQUALT(0, xyz.x, 0.01);
+	ASSERTEQUALT(0, xyz.y, 0.01);
+	ASSERTEQUALT(0, xyz.z, 0.01);
 
     cout << "TEST	: test_MTO_FPD() OK " << endl;
 }
@@ -1825,9 +1846,12 @@ void test_eep() {
     eeprom_write_byte(eeaddr++, '}');
     MachineThread mt = test_setup(false);
     Machine &machine = mt.machine;
-    test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_EEPROM, mt.status);
+    mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    test_ticks(1);
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'sysfr':1000},'t':0.000}\n"), Serial.output().c_str());
     test_ticks(1);
@@ -1913,6 +1937,8 @@ void test_eep() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 	ASSERTEQUALT(0.5, machine.tvMax, 0.0001);
 	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
     ASSERTEQUAL(STATUS_OK, mt.status);
 	ASSERTEQUALT(0.7, machine.tvMax, 0.0001);
 	test_ticks(1);
@@ -1936,6 +1962,10 @@ void test_eep() {
 	test_ticks(1);
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 	ASSERTEQUALT(0.5, machine.tvMax, 0.0001);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 	test_ticks(1);
     ASSERTEQUAL(STATUS_OK, mt.status);
 	ASSERTEQUALT(0.6, machine.tvMax, 0.0001);

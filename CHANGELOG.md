@@ -1,6 +1,11 @@
 FireStep: change log
 ====================
 
+v0.2.1
+------
+* FIX: "syseu" user EEPROM now work on startup
+* NEW: MTO_FPD "hom" now moves to Z0 after hitting the limit switch, since motion is over-constrained at limit switch
+
 v0.2.0
 ------
 * NEW: "mov" scaled by 2 for memory savings

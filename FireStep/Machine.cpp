@@ -378,6 +378,38 @@ Status Machine::pulse(Quad<StepCoord> &pulses) {
     return STATUS_OK;
 }
 
+Status Machine::finalizeHome() {
+	Status status = STATUS_OK;
+    switch (topology) {
+    case MTO_RAW:
+    default:
+        break;
+    case MTO_FPD: {
+        Quad<StepCoord> limit = getMotorPosition();
+        Step3D pulses = delta.calcPulses(XYZ3D());
+        op.probe.setup(limit, Quad<StepCoord>(
+			pulses.p1,
+			pulses.p2,
+			pulses.p3,
+			limit.value[3]
+		));
+        do {
+            // fast probe because we don't expect to hit anything
+            status = stepProbe(searchDelay/5);
+        } while (status == STATUS_BUSY_CALIBRATING);
+        if (status == STATUS_PROBE_FAILED) {
+			// we didn't something and that good
+            status = STATUS_OK;
+        } else if (status == STATUS_OK) {
+			// we hit something and that's not good
+            status = STATUS_TRAVEL_MAX;
+        }
+    } // case MTO_FPD
+    break;
+    }
+	return status;
+}
+
 Status Machine::home(Status status) {
     for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         Axis &a(*motorAxis[i]);
@@ -391,10 +423,10 @@ Status Machine::home(Status status) {
     switch (status) {
     default:
         if (stepHome(homingPulses, searchDelay/5) > 0) {
-            TESTCOUT1("home.A homingPulses:", homingPulses);
+            //TESTCOUT1("home.A homingPulses:", homingPulses);
             status = STATUS_BUSY_MOVING;
         } else {
-            TESTCOUT1("home.B homingPulses:", homingPulses);
+            //TESTCOUT1("home.B homingPulses:", homingPulses);
             backoffHome(searchDelay);
             status = STATUS_BUSY_CALIBRATING;
         }
@@ -410,7 +442,7 @@ Status Machine::home(Status status) {
                 a.homing = false;
             }
         }
-        status = STATUS_OK;
+        status = finalizeHome();
         break;
     }
 
@@ -496,7 +528,7 @@ StepCoord Machine::stepHome(StepCoord pulsesPerAxis, int16_t delay) {
             Axis &a(*motorAxis[i]);
             if (a.homing) {
                 a.readAtMin(invertLim);
-                TESTCOUT2("stepHome a:", (int) i, " atMin:", (int) a.atMin );
+                //TESTCOUT2("stepHome a:", (int) i, " atMin:", (int) a.atMin );
                 a.setAdvancing(false);
             }
         }
@@ -547,19 +579,19 @@ void Machine::setMotorPosition(const Quad<StepCoord> &position) {
 }
 
 XYZ3D Machine::getXYZ3D() {
-	switch (topology) {
-	case MTO_RAW:
-	default:
-		return XYZ3D(
-			motorAxis[0]->position,
-			motorAxis[1]->position,
-			motorAxis[2]->position
-		);
-	case MTO_FPD:
-		return delta.calcXYZ(Step3D(
-			motorAxis[0]->position,
-			motorAxis[1]->position,
-			motorAxis[2]->position
-		));
-	}
+    switch (topology) {
+    case MTO_RAW:
+    default:
+        return XYZ3D(
+                   motorAxis[0]->position,
+                   motorAxis[1]->position,
+                   motorAxis[2]->position
+               );
+    case MTO_FPD:
+        return delta.calcXYZ(Step3D(
+                                 motorAxis[0]->position,
+                                 motorAxis[1]->position,
+                                 motorAxis[2]->position
+                             ));
+    }
 }
