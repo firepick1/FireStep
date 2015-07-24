@@ -30,6 +30,11 @@ typedef int16_t DelayMics; // delay microseconds
 extern int32_t delayMicsTotal;
 #endif
 
+enum OutputMode {
+	OUTPUT_ARRAY1=0, //  JSON command arrays only return last command response
+	OUTPUT_ARRAYN=1, // JSON command arrays return all command responses
+};
+
 /**
  * inline replacement for Arduino delayMicroseconds()
  */
@@ -217,6 +222,7 @@ public:
     PinType		pinStatus;
 	int16_t		eeUser;	// EEPROM user startup commands
 	Topology	topology;
+	OutputMode	outputMode;
     struct {
         OpProbe		probe;
     } op;
@@ -282,7 +288,7 @@ public:
     void setMotorPosition(const Quad<StepCoord> &position);
     virtual Status home(Status status);
     virtual Status finalizeHome();
-    virtual Status probe(Status status);
+    virtual Status probe(Status status, DelayMics delay=-1);
     void idle();
     Status setAxisIndex(MotorIndex iMotor, AxisIndex iAxis);
     AxisIndex getAxisIndex(MotorIndex iMotor) {

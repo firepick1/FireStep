@@ -833,6 +833,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             node["lh"] = "";
             node["lp"] = "";
             node["mv"] = "";
+            node["om"] = "";
             node["pc"] = "";
             node["pi"] = "";
             node["sd"] = "";
@@ -871,6 +872,8 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         status = processField<int32_t, int32_t>(jobj, key, nLoops);
     } else if (strcmp("mv", key) == 0 || strcmp("sysmv", key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, machine.vMax);
+    } else if (strcmp("om", key) == 0 || strcmp("sysom", key) == 0) {
+        status = processField<OutputMode, int32_t>(jobj, key, machine.outputMode);
     } else if (strcmp("pc", key) == 0 || strcmp("syspc", key) == 0) {
         PinConfig pc = machine.getPinConfig();
         status = processField<PinConfig, int32_t>(jobj, key, pc);
@@ -1380,8 +1383,11 @@ Status JsonController::process(JsonCommand& jcmd) {
             status = processObj(jcmd, jobj);
             //TESTCOUT3("JsonController::process(", (int) jcmd.cmdIndex+1,
                       //" of ", jarr.size(), ") status:", status);
+			bool isLast = jcmd.cmdIndex >= jarr.size()-1;
+			if (!isLast && OUTPUT_ARRAYN==(machine.outputMode&OUTPUT_ARRAYN)) {
+				sendResponse(jcmd);
+			}
             if (status == STATUS_OK) {
-                //status = STATUS_BUSY_OK;
                 status = STATUS_BUSY_PARSED;
                 jcmd.cmdIndex++;
             }

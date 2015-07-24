@@ -699,7 +699,8 @@ void test_JsonController() {
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
                       "{'eu':2000,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
-					  "'lp':0,'mv':12800,'pc':2,'pi':11,'sd':800,'tc':12345,'to':0,'tv':0.700,'v':%.3f}"\
+					  "'lp':0,'mv':12800,'om':0,'pc':2,'pi':11,'sd':800,'tc':12345,"\
+					  "'to':0,'tv':0.700,'v':%.3f}"\
                       "},'t':0.000}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
              STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
@@ -1461,6 +1462,7 @@ void test_MTO_FPD() {
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 	
     // hom
+	arduino.setPin(PC2_PROBE_PIN, LOW);
     Serial.push(JT("{'hom':''}}\n"));
     mt.loop();	// parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -1947,12 +1949,14 @@ void test_eep() {
 
 	// test eeUser
 	Serial.clear();
-    Serial.push(JT("{'eep':{'2000':{'systv':0.6}}}\n"));
+    Serial.push(JT("{'sysom':1,'eep':{'2000':{'systv':0.6}}}\n"));
     test_ticks(1);
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1);
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'2000':{'systv':0.6}}},'t':0.000}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'sysom':1,'eep':"\
+				"{'2000':{'systv':0.6}}},'t':0.000}\n"), 
+				Serial.output().c_str());
     test_ticks(1);
 	mt.status = STATUS_BUSY_SETUP;
 	machine.tvMax = 0.5;

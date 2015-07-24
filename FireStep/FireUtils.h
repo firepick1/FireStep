@@ -47,6 +47,9 @@
 
 ////////////////// ASSERT() macros  ////////////////
 
+#ifdef TEST
+#define ASSERT_BUFSIZE 2000
+#endif
 #ifndef ASSERT_BUFSIZE
 #define ASSERT_BUFSIZE 255
 #endif

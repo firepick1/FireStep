@@ -28,7 +28,8 @@ Status Axis::enable(bool active) {
 Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
       tvMax(0.7), homingPulses(3), latchBackoff(LATCH_BACKOFF),
-      searchDelay(800), pinStatus(NOPIN), eeUser(2000), topology(MTO_RAW)
+      searchDelay(800), pinStatus(NOPIN), eeUser(2000), topology(MTO_RAW),
+	  outputMode(OUTPUT_ARRAY1)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -393,12 +394,14 @@ Status Machine::finalizeHome() {
 			pulses.p3,
 			limit.value[3]
 		));
+		status = STATUS_BUSY_CALIBRATING;
         do {
             // fast probe because we don't expect to hit anything
-            status = stepProbe(searchDelay/5);
+            status = probe(status, 0);
+			//TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
         } while (status == STATUS_BUSY_CALIBRATING);
         if (status == STATUS_PROBE_FAILED) {
-			// we didn't something and that good
+			// we didn't hit anything and that is good
             status = STATUS_OK;
         } else if (status == STATUS_OK) {
 			// we hit something and that's not good
@@ -449,7 +452,7 @@ Status Machine::home(Status status) {
     return status;
 }
 
-Status Machine::probe(Status status) {
+Status Machine::probe(Status status, DelayMics delay) {
     if (op.probe.pinProbe == NOPIN) {
         return STATUS_PROBE_PIN;
     }
@@ -466,7 +469,7 @@ Status Machine::probe(Status status) {
         op.probe.probing = !op.probe.probing;
     }
     if (op.probe.probing) {
-        status = stepProbe(searchDelay);
+        status = stepProbe(delay < 0 ? searchDelay : delay);
     } else {
         status = STATUS_OK;
     }
