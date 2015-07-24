@@ -482,12 +482,6 @@ Status Machine::probe(Status status, DelayMics delay) {
     if (op.probe.probing) {
         status = stepProbe(delay < 0 ? searchDelay : delay);
     } else {
-		TESTCOUT1("probe:", status);
-		for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
-			if (op.probe.start.value[i] != op.probe.end.value[i]) {
-				addProbeData(op.probe.end.value[i]);
-			}
-		}
         status = STATUS_OK;
     }
 

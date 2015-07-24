@@ -1383,11 +1383,11 @@ Status JsonController::process(JsonCommand& jcmd) {
             status = processObj(jcmd, jobj);
             //TESTCOUT3("JsonController::process(", (int) jcmd.cmdIndex+1,
                       //" of ", jarr.size(), ") status:", status);
-			bool isLast = jcmd.cmdIndex >= jarr.size()-1;
-			if (!isLast && OUTPUT_ARRAYN==(machine.outputMode&OUTPUT_ARRAYN)) {
-				sendResponse(jcmd);
-			}
             if (status == STATUS_OK) {
+				bool isLast = jcmd.cmdIndex >= jarr.size()-1;
+				if (!isLast && OUTPUT_ARRAYN==(machine.outputMode&OUTPUT_ARRAYN)) {
+					sendResponse(jcmd);
+				}
                 status = STATUS_BUSY_PARSED;
                 jcmd.cmdIndex++;
             }

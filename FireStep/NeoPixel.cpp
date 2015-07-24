@@ -73,7 +73,8 @@ void NeoPixel::show() {
                       cameraB ? cameraB : intensity);
         break;
     case DISPLAY_BUSY:
-        fg = bg = strip.Color(intensity, intensity, 0); // yellow
+        bg = strip.Color(intensity, intensity, 0); // yellow
+        fg = strip.Color(255, 255, 255); // yellow
         break;
     case DISPLAY_BUSY_CALIBRATING:
         bg = strip.Color(intensity / 2, intensity / 2, intensity / 2);
