@@ -424,8 +424,6 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
         status = processPin(jobj, key, axis.pinStep, OUTPUT);
     } else if (strcmp("sa", key) == 0 || strcmp("sa", key + 1) == 0) {
         status = processField<float, double>(jobj, key, axis.stepAngle);
-    } else if (strcmp("sd", key) == 0 || strcmp("sd", key + 1) == 0) {
-        status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else if (strcmp("tm", key) == 0 || strcmp("tm", key + 1) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, axis.travelMax);
     } else if (strcmp("tn", key) == 0 || strcmp("tn", key + 1) == 0) {
@@ -889,7 +887,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             machine.pinStatus = pinStatus;
             machine.pDisplay->setup(pinStatus);
         }
-    } else if (strcmp("sd", key) == 0 || strcmp("syssd", key + 1) == 0) {
+    } else if (strcmp("sd", key) == 0 || strcmp("syssd", key) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else if (strcmp("to", key) == 0 || strcmp("systo", key) == 0) {
 		Topology value = machine.topology;	
@@ -907,6 +905,9 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
 					machine.axis[2].home >= 0) {
 					// Delta always has negateve home limit switch
 					Step3D home = machine.delta.getHomePulses();
+					machine.axis[0].position += home.p1-machine.axis[0].home;
+					machine.axis[1].position += home.p2-machine.axis[1].home;
+					machine.axis[2].position += home.p3-machine.axis[2].home;
 					machine.axis[0].home = home.p1;
 					machine.axis[1].home = home.p2;
 					machine.axis[2].home = home.p3;
@@ -1095,6 +1096,7 @@ Status JsonController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
     }
     return status == STATUS_OK ? STATUS_BUSY_CALIBRATING : status;
 }
+
 Status JsonController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = jcmd.getStatus();
     switch (status) {
@@ -1615,10 +1617,10 @@ Status JsonController::processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& j
 			node["ha1"] = "";
 			node["ha2"] = "";
 			node["ha3"] = "";
+			node["mi"] = "";
 			node["re"] = "";
 			node["rf"] = "";
 			node["st"] = "";
-			node["us"] = "";
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -1653,6 +1655,10 @@ Status JsonController::processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& j
 		Angle3D homeAngles = machine.delta.getHomeAngles();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngles.theta3);
         machine.delta.setHomeAngles(homeAngles);
+    } else if (strcmp("mi", key) == 0 || strcmp("dimmi", key) == 0) {
+        int16_t value = machine.delta.getMicrosteps();
+        status = processField<int16_t, int16_t>(jobj, key, value);
+        machine.delta.setMicrosteps(value);
     } else if (strcmp("re", key) == 0 || strcmp("dimre", key) == 0) {
         PH5TYPE value = machine.delta.getEffectorTriangleSide();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
@@ -1665,10 +1671,6 @@ Status JsonController::processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& j
         int16_t value = machine.delta.getSteps360();
         status = processField<int16_t, int16_t>(jobj, key, value);
         machine.delta.setSteps360(value);
-    } else if (strcmp("us", key) == 0 || strcmp("dimus", key) == 0) {
-        int16_t value = machine.delta.getMicrosteps();
-        status = processField<int16_t, int16_t>(jobj, key, value);
-        machine.delta.setMicrosteps(value);
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }

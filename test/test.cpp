@@ -1186,6 +1186,28 @@ void test_Move() {
     cout << "TEST	: test_Move() OK " << endl;
 }
 
+void test_sys() {
+    cout << "TEST	: test_sys() =====" << endl;
+
+    MachineThread mt = test_setup();
+    Machine &machine = mt.machine;
+	ASSERTEQUAL(800, machine.searchDelay);
+	ASSERTEQUAL(MTO_RAW, machine.topology);
+    Serial.push(JT("{'systo':1,'syssd':400}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUAL(400, machine.searchDelay);
+	ASSERTEQUAL(MTO_FPD, machine.topology);
+    ASSERTEQUALS(JT("{'s':0,'r':{'systo':1,'syssd':400},'t':0.000}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    cout << "TEST	: test_sys() OK " << endl;
+}
+
 void test_MTO_FPD() {
     cout << "TEST	: test_MTO_FPD() =====" << endl;
 
@@ -1211,11 +1233,11 @@ void test_MTO_FPD() {
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
-    ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.getMotorPosition());
+    ASSERTQUAD(Quad<StepCoord>(-4361,-4361,-4361,0), machine.getMotorPosition());
 	XYZ3D xyz = machine.getXYZ3D();
-	ASSERTEQUALT(0, xyz.x, 0.0001);
-	ASSERTEQUALT(0, xyz.y, 0.0001);
-	ASSERTEQUALT(0, xyz.z, 0.0001);
+	ASSERTEQUALT(0, xyz.x, 0.01);
+	ASSERTEQUALT(0, xyz.y, 0.01);
+	ASSERTEQUALT(58.91, xyz.z, 0.01);
     ASSERTEQUALS(JT("{'s':0,'r':{'systo':1},'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1370,7 +1392,7 @@ void test_MTO_FPD() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
 				"{'e':270.000,'f':90.000,'gr':9.375,'ha1':-52.330,'ha2':-52.330,'ha3':-52.330,"
-				"'re':131.636,'rf':190.526,'st':200,'us':16}}"
+				"'mi':16,'re':131.636,'rf':190.526,'st':200}}"
 				",'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1379,13 +1401,14 @@ void test_MTO_FPD() {
 	// dim set
     machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
     Serial.push(JT("{'dim':{'e':270.001,'f':90.001,'gr':9.371,'ha1':-52.331,'ha2':-52.332,'ha3':-52.333,"
-				"'re':131.631,'rf':190.521,'st':400,'us':32}}\n"));
+				"'mi':32,'re':131.631,'rf':190.521,'st':400}}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'dim':{'e':270.001,'f':90.001,'gr':9.371,'ha1':-52.331,'ha2':-52.332,'ha3':-52.333,"
-				"'re':131.631,'rf':190.521,'st':400,'us':32}},"
+    ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
+				"{'e':270.001,'f':90.001,'gr':9.371,'ha1':-52.331,'ha2':-52.332,'ha3':-52.333,"
+				"'mi':32,'re':131.631,'rf':190.521,'st':400}},"
 				"'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -2996,6 +3019,7 @@ int main(int argc, char *argv[]) {
         test_Move();
         test_PinConfig();
         test_dvs();
+		test_sys();
         test_errors();
         test_ph5();
         test_stroke_endpos();

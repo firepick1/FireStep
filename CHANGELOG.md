@@ -6,6 +6,11 @@ v0.2.0
 * NEW: "mov" scaled by 2 for memory savings
 * NEW: "eep!" executes value as JSON command before saving it to EEPROM (great way to save config)
 * NEW: DeltaCalculator support
+* NEW: "systo" changes machine topology (0:MTO_RAW, 1:MTO_FPD)
+* NEW: MTO_FPD "mov" interprets x,y,z attributes as cartesian coordinates
+* NEW: MTO_FPD "mov" interprets x,y,z attributes as cartesian coordinates
+* NEW: MTO_FPD "mpo" interprets x,y,z attributes as cartesian coordinates
+* FIX: NeoPixel uses millis() instead of ticks and no longer freezes
 
 v0.1.15
 -------
