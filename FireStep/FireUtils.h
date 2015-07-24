@@ -1,7 +1,7 @@
 #ifndef FIREUTILS_H
 #define FIREUTILS_H
 
-#ifndef Arduino
+#ifndef ARDUINO
 #include <cstdio>
 #endif
 
