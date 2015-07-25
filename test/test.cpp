@@ -1488,6 +1488,27 @@ void test_MTO_FPD() {
     ASSERTEQUALT(0, xyz.x, 0.01);
     ASSERTEQUALT(0, xyz.y, 0.01);
     ASSERTEQUALT(0, xyz.z, 0.01);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	
+    // movrz 
+    machine.setMotorPosition(Quad<StepCoord>());
+    Serial.push(JT("{'movrz':-1}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	arduino.timer1(MS_TICKS(1000));
+	mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'movrz':-1.000},'t':1.215}\n"),
+                 Serial.output().c_str());
+    ASSERTQUAD(Quad<StepCoord>(212,212,212,0), machine.getMotorPosition());
+	xyz = machine.getXYZ3D();
+	ASSERTEQUALT(0, xyz.x, 0.01);
+    ASSERTEQUALT(0, xyz.y, 0.01);
+    ASSERTEQUALT(-1, xyz.z, 0.01);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
 
     cout << "TEST	: test_MTO_FPD() OK " << endl;
 }

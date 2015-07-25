@@ -91,10 +91,10 @@ Status JsonController::processPosition(JsonCommand &jcmd, JsonObject& jobj, cons
     if (strlen(key) == 3) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-			node["1"] = "";
-			node["2"] = "";
-			node["3"] = "";
-			node["4"] = "";
+            node["1"] = "";
+            node["2"] = "";
+            node["3"] = "";
+            node["4"] = "";
             if (!node.at("4").success()) {
                 return jcmd.setError(STATUS_JSON_KEY, "4");
             }
@@ -110,11 +110,11 @@ Status JsonController::processPosition(JsonCommand &jcmd, JsonObject& jobj, cons
             }
         }
     } else {
-		const char* axisStr = key;
+        const char* axisStr = key;
         AxisIndex iAxis = machine.axisOfName(axisStr);
         if (iAxis == INDEX_NONE) {
             if (strlen(key) > 3) {
-				axisStr += 3;
+                axisStr += 3;
                 iAxis = machine.axisOfName(axisStr);
                 if (iAxis == INDEX_NONE) {
                     return jcmd.setError(STATUS_NO_MOTOR, key);
@@ -123,7 +123,7 @@ Status JsonController::processPosition(JsonCommand &jcmd, JsonObject& jobj, cons
                 return jcmd.setError(STATUS_NO_MOTOR, key);
             }
         }
-		status = processField<StepCoord, int32_t>(jobj, key, machine.axis[iAxis].position);
+        status = processField<StepCoord, int32_t>(jobj, key, machine.axis[iAxis].position);
     }
     return status;
 }
@@ -595,20 +595,20 @@ private:
 public:
     PHMoveTo(Machine& machine)
         : nLoops(0), nSegs(0), machine(machine) {
-		Quad<StepCoord> curPos = machine.getMotorPosition();
-		for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
-			destination.value[i] = curPos.value[i];
-		}
+        Quad<StepCoord> curPos = machine.getMotorPosition();
+        for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
+            destination.value[i] = curPos.value[i];
+        }
         switch (machine.topology) {
         case MTO_RAW:
         default:
-			// no conversion required
+            // no conversion required
             break;
         case MTO_FPD:
-			XYZ3D xyz(machine.getXYZ3D());
-			destination.value[0] = xyz.x;
-			destination.value[1] = xyz.y;
-			destination.value[2] = xyz.z;
+            XYZ3D xyz(machine.getXYZ3D());
+            destination.value[0] = xyz.x;
+            destination.value[1] = xyz.y;
+            destination.value[2] = xyz.z;
             break;
         }
     }
@@ -620,22 +620,22 @@ Status PHMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     StrokeBuilder sb(machine.vMax, machine.tvMax);
     Quad<StepCoord> curPos = machine.getMotorPosition();
     Quad<StepCoord> dPos;
-	switch (machine.topology) {
-	case MTO_RAW:
-	default:
-		for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
-			dPos.value[i] = destination.value[i] - curPos.value[i];
-		}
-		break;
-	case MTO_FPD:
-		XYZ3D xyz(destination.value[0], destination.value[1], destination.value[2]);
-		Step3D pulses(machine.delta.calcPulses(xyz));
-		dPos.value[0] = pulses.p1 - curPos.value[0];
-		dPos.value[1] = pulses.p2 - curPos.value[1];
-		dPos.value[2] = pulses.p3 - curPos.value[2];
-		dPos.value[3] = destination.value[3] - curPos.value[3];
-		break;
-	}
+    switch (machine.topology) {
+    case MTO_RAW:
+    default:
+        for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
+            dPos.value[i] = destination.value[i] - curPos.value[i];
+        }
+        break;
+    case MTO_FPD:
+        XYZ3D xyz(destination.value[0], destination.value[1], destination.value[2]);
+        Step3D pulses(machine.delta.calcPulses(xyz));
+        dPos.value[0] = pulses.p1 - curPos.value[0];
+        dPos.value[1] = pulses.p2 - curPos.value[1];
+        dPos.value[2] = pulses.p3 - curPos.value[2];
+        dPos.value[3] = destination.value[3] - curPos.value[3];
+        break;
+    }
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         if (!machine.getMotorAxis(i).isEnabled()) {
             dPos.value[i] = 0;
@@ -720,7 +720,24 @@ Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
             }
         }
         status = execute(jcmd, &kidObj);
+	} else if (strcmp("movrz",key) == 0 || strcmp("rz",key) == 0) {
+		// TODO: clean up mov implementation
+		switch (machine.topology) {
+		case MTO_FPD: {
+			XYZ3D xyz = machine.getXYZ3D();
+			PH5TYPE z = 0;
+			status = processField<PH5TYPE, PH5TYPE>(jobj, key, z);
+			if (status == STATUS_OK) {
+				destination.value[2] = xyz.z + z;
+				status = execute(jcmd, NULL);
+			}
+			break;
+		}
+		default:
+			return jcmd.setError(STATUS_MTO_FIELD, key);
+		}
     } else if (strncmp("mov", key, 3) == 0) { // short form
+		// TODO: clean up mov implementation
         MotorIndex iMotor = machine.motorOfName(key + strlen(key) - 1);
         if (iMotor == INDEX_NONE) {
             TESTCOUT1("STATUS_NO_MOTOR: ", key);
@@ -893,31 +910,31 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp("sd", key) == 0 || strcmp("syssd", key) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else if (strcmp("to", key) == 0 || strcmp("systo", key) == 0) {
-		Topology value = machine.topology;	
+        Topology value = machine.topology;
         status = processField<Topology, int32_t>(jobj, key, value);
-		if (value != machine.topology) {
-			machine.topology = value;
-			switch (machine.topology) {
-			case MTO_RAW:
-			default:
-				break;
-			case MTO_FPD:
-				machine.delta.setup();
-				if (machine.axis[0].home >= 0 &&
-					machine.axis[1].home >= 0 &&
-					machine.axis[2].home >= 0) {
-					// Delta always has negateve home limit switch
-					Step3D home = machine.delta.getHomePulses();
-					machine.axis[0].position += home.p1-machine.axis[0].home;
-					machine.axis[1].position += home.p2-machine.axis[1].home;
-					machine.axis[2].position += home.p3-machine.axis[2].home;
-					machine.axis[0].home = home.p1;
-					machine.axis[1].home = home.p2;
-					machine.axis[2].home = home.p3;
-				}
-				break;
-			}
-		}
+        if (value != machine.topology) {
+            machine.topology = value;
+            switch (machine.topology) {
+            case MTO_RAW:
+            default:
+                break;
+            case MTO_FPD:
+                machine.delta.setup();
+                if (machine.axis[0].home >= 0 &&
+                        machine.axis[1].home >= 0 &&
+                        machine.axis[2].home >= 0) {
+                    // Delta always has negateve home limit switch
+                    Step3D home = machine.delta.getHomePulses();
+                    machine.axis[0].position += home.p1-machine.axis[0].home;
+                    machine.axis[1].position += home.p2-machine.axis[1].home;
+                    machine.axis[2].position += home.p3-machine.axis[2].home;
+                    machine.axis[0].home = home.p1;
+                    machine.axis[1].home = home.p2;
+                    machine.axis[2].home = home.p3;
+                }
+                break;
+            }
+        }
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
         jobj[key] = threadClock.ticks;
     } else if (strcmp("tv", key) == 0 || strcmp("systv", key) == 0) {
@@ -1309,39 +1326,39 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
         } else if (strncmp("dpy", it->key, 3) == 0) {
             status = processDisplay(jcmd, jobj, it->key);
         } else if (strncmp("mpo", it->key, 3) == 0) {
-			switch (machine.topology) {
-			case MTO_RAW:
-			default:
-				status = processPosition(jcmd, jobj, it->key);
-				break;
-			case MTO_FPD:
-				status = processPosition_MTO_FPD(jcmd, jobj, it->key);
-				break;
-			}
+            switch (machine.topology) {
+            case MTO_RAW:
+            default:
+                status = processPosition(jcmd, jobj, it->key);
+                break;
+            case MTO_FPD:
+                status = processPosition_MTO_FPD(jcmd, jobj, it->key);
+                break;
+            }
         } else if (strncmp("io", it->key, 2) == 0) {
             status = processIO(jcmd, jobj, it->key);
         } else if (strncmp("eep", it->key, 3) == 0) {
             status = processEEPROM(jcmd, jobj, it->key);
         } else if (strncmp("dim", it->key, 3) == 0) {
-			switch (machine.topology) {
-			case MTO_RAW:
-			default:
+            switch (machine.topology) {
+            case MTO_RAW:
+            default:
                 status = jcmd.setError(STATUS_TOPOLOGY_NAME, it->key);
-				break;
-			case MTO_FPD:
-				status = processDimension_MTO_FPD(jcmd, jobj, it->key);
-				break;
-			}
+                break;
+            case MTO_FPD:
+                status = processDimension_MTO_FPD(jcmd, jobj, it->key);
+                break;
+            }
         } else if (strncmp("prb", it->key, 3) == 0) {
-			switch (machine.topology) {
-			case MTO_RAW:
-			default:
-				status = processProbe(jcmd, jobj, it->key);
-				break;
-			case MTO_FPD:
-				status = processProbe_MTO_FPD(jcmd, jobj, it->key);
-				break;
-			}
+            switch (machine.topology) {
+            case MTO_RAW:
+            default:
+                status = processProbe(jcmd, jobj, it->key);
+                break;
+            case MTO_FPD:
+                status = processProbe_MTO_FPD(jcmd, jobj, it->key);
+                break;
+            }
         } else {
             switch (it->key[0]) {
             case '1':
@@ -1382,12 +1399,12 @@ Status JsonController::process(JsonCommand& jcmd) {
             jcmd.jResponseRoot["r"] = jobj;
             status = processObj(jcmd, jobj);
             //TESTCOUT3("JsonController::process(", (int) jcmd.cmdIndex+1,
-                      //" of ", jarr.size(), ") status:", status);
+            //" of ", jarr.size(), ") status:", status);
             if (status == STATUS_OK) {
-				bool isLast = jcmd.cmdIndex >= jarr.size()-1;
-				if (!isLast && OUTPUT_ARRAYN==(machine.outputMode&OUTPUT_ARRAYN)) {
-					sendResponse(jcmd);
-				}
+                bool isLast = jcmd.cmdIndex >= jarr.size()-1;
+                if (!isLast && OUTPUT_ARRAYN==(machine.outputMode&OUTPUT_ARRAYN)) {
+                    sendResponse(jcmd);
+                }
                 status = STATUS_BUSY_PARSED;
                 jcmd.cmdIndex++;
             }
@@ -1410,18 +1427,18 @@ Status JsonController::process(JsonCommand& jcmd) {
 //////////////// MTO_FPD /////////
 Status JsonController::processPosition_MTO_FPD(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
-	const char *axisStr = key + strlen(key) - 1;
+    const char *axisStr = key + strlen(key) - 1;
     const char *s;
     if (strlen(key) == 3) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-			node["1"] = "";
-			node["2"] = "";
-			node["3"] = "";
-			node["4"] = "";
-			node["x"] = "";
-			node["y"] = "";
-			node["z"] = "";
+            node["1"] = "";
+            node["2"] = "";
+            node["3"] = "";
+            node["4"] = "";
+            node["x"] = "";
+            node["y"] = "";
+            node["z"] = "";
             if (!node.at("4").success()) {
                 return jcmd.setError(STATUS_JSON_KEY, "4");
             }
@@ -1436,73 +1453,73 @@ Status JsonController::processPosition_MTO_FPD(JsonCommand &jcmd, JsonObject& jo
                 return status;
             }
         }
-	} else if (strcmp("1", axisStr) == 0) {
-		status = processField<StepCoord, int32_t>(jobj, key, machine.axis[0].position);
-	} else if (strcmp("2", axisStr) == 0) {
-		status = processField<StepCoord, int32_t>(jobj, key, machine.axis[1].position);
-	} else if (strcmp("3", axisStr) == 0) {
-		status = processField<StepCoord, int32_t>(jobj, key, machine.axis[2].position);
-	} else if (strcmp("4", axisStr) == 0) {
-		status = processField<StepCoord, int32_t>(jobj, key, machine.axis[3].position);
-	} else if (strcmp("x", axisStr) == 0) {
-		XYZ3D xyz(machine.getXYZ3D());
-		if (!xyz.isValid()) {
-			return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
-		}
-		PH5TYPE value = xyz.x;
-		status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-		if (value != xyz.x) {
-			status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
-		}
-	} else if (strcmp("y", axisStr) == 0) {
-		XYZ3D xyz(machine.getXYZ3D());
-		if (!xyz.isValid()) {
-			return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
-		}
-		PH5TYPE value = xyz.y;
-		status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-		if (value != xyz.y) {
-			status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
-		}
-	} else if (strcmp("z", axisStr) == 0) {
-		XYZ3D xyz(machine.getXYZ3D());
-		if (!xyz.isValid()) {
-			return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
-		}
-		PH5TYPE value = xyz.z;
-		status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-		if (value != xyz.z) {
-			status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
-		}
+    } else if (strcmp("1", axisStr) == 0) {
+        status = processField<StepCoord, int32_t>(jobj, key, machine.axis[0].position);
+    } else if (strcmp("2", axisStr) == 0) {
+        status = processField<StepCoord, int32_t>(jobj, key, machine.axis[1].position);
+    } else if (strcmp("3", axisStr) == 0) {
+        status = processField<StepCoord, int32_t>(jobj, key, machine.axis[2].position);
+    } else if (strcmp("4", axisStr) == 0) {
+        status = processField<StepCoord, int32_t>(jobj, key, machine.axis[3].position);
+    } else if (strcmp("x", axisStr) == 0) {
+        XYZ3D xyz(machine.getXYZ3D());
+        if (!xyz.isValid()) {
+            return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+        }
+        PH5TYPE value = xyz.x;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        if (value != xyz.x) {
+            status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        }
+    } else if (strcmp("y", axisStr) == 0) {
+        XYZ3D xyz(machine.getXYZ3D());
+        if (!xyz.isValid()) {
+            return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+        }
+        PH5TYPE value = xyz.y;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        if (value != xyz.y) {
+            status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        }
+    } else if (strcmp("z", axisStr) == 0) {
+        XYZ3D xyz(machine.getXYZ3D());
+        if (!xyz.isValid()) {
+            return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+        }
+        PH5TYPE value = xyz.z;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        if (value != xyz.z) {
+            status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        }
     } else {
-		return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
     return status;
 }
 
 Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj,
-                                       const char* key, bool clear)
+        const char* key, bool clear)
 {
     Status status = STATUS_OK;
-	OpProbe &probe = machine.op.probe;
+    OpProbe &probe = machine.op.probe;
 
     if (clear) {
-		Quad<StepCoord> curPos = machine.getMotorPosition();
+        Quad<StepCoord> curPos = machine.getMotorPosition();
         probe.setup(curPos);
     }
-	Step3D probeEnd(probe.end.value[0], probe.end.value[1], probe.end.value[2]);
-	XYZ3D xyzEnd = machine.delta.calcXYZ(probeEnd);
-	const char *s;
+    Step3D probeEnd(probe.end.value[0], probe.end.value[1], probe.end.value[2]);
+    XYZ3D xyzEnd = machine.delta.calcXYZ(probeEnd);
+    const char *s;
     if (strcmp("prb", key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-			xyzEnd.z = machine.delta.getMinZ(xyzEnd.z, xyzEnd.y);
-		node["1"] = "";
-			node["2"] = "";
-			node["3"] = "";
-			node["4"] = "";
+            xyzEnd.z = machine.delta.getMinZ(xyzEnd.z, xyzEnd.y);
+            node["1"] = "";
+            node["2"] = "";
+            node["3"] = "";
+            node["4"] = "";
             node["ip"] = "";
-			node["pd"] = "";
+            node["pd"] = "";
             node["pn"] = machine.op.probe.pinProbe;
             node["sd"] = "";
             node["x"] = xyzEnd.x;
@@ -1526,10 +1543,10 @@ Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jo
     } else if (strcmp("prbpd", key) == 0 || strcmp("pd", key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
-			// handled in finalizeProbe_MTO_FPD
-		} else {
-			status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
-		}
+            // handled in finalizeProbe_MTO_FPD
+        } else {
+            status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        }
     } else if (strcmp("prbpn", key) == 0 || strcmp("pn", key) == 0) {
         status = processField<PinType, int32_t>(jobj, key, machine.op.probe.pinProbe);
     } else if (strcmp("prbsd", key) == 0 || strcmp("sd", key) == 0) {
@@ -1539,63 +1556,63 @@ Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jo
     } else if (strcmp("prby", key) == 0 || strcmp("y", key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.y);
     } else if (strcmp("prbz", key) == 0 || strcmp("z", key) == 0) {
-		machine.op.probe.dataSource = PDS_Z;
-		xyzEnd.z = machine.delta.getMinZ(xyzEnd.x, xyzEnd.y);
+        machine.op.probe.dataSource = PDS_Z;
+        xyzEnd.z = machine.delta.getMinZ(xyzEnd.x, xyzEnd.y);
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.z);
     } else {
-		MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));
-		if (iMotor != INDEX_NONE) {
-			if ((s = jobj[key]) && *s == 0) { 
-				// query is fine
-			} else {
-				return jcmd.setError(STATUS_OUTPUT_FIELD, key);
-			}
-		} else {
-			return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
-		}
+        MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));
+        if (iMotor != INDEX_NONE) {
+            if ((s = jobj[key]) && *s == 0) {
+                // query is fine
+            } else {
+                return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+            }
+        } else {
+            return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+        }
     }
 
-	// This code only works for probes along a single cartesian axis
-	Step3D pEnd = machine.delta.calcPulses(xyzEnd);
-	machine.op.probe.end.value[0] = pEnd.p1;
-	machine.op.probe.end.value[1] = pEnd.p2;
-	machine.op.probe.end.value[2] = pEnd.p3;
-	TESTCOUT3("pEnd:", pEnd.p1, ", ", pEnd.p2, ", ", pEnd.p3);
-	machine.op.probe.maxDelta = 0;
-	for (MotorIndex iMotor=0; iMotor<3; iMotor++) {
-		StepCoord delta = machine.op.probe.end.value[iMotor] - machine.op.probe.start.value[iMotor];
-		machine.op.probe.maxDelta = max((StepCoord)abs(machine.op.probe.maxDelta), delta);
-	}
+    // This code only works for probes along a single cartesian axis
+    Step3D pEnd = machine.delta.calcPulses(xyzEnd);
+    machine.op.probe.end.value[0] = pEnd.p1;
+    machine.op.probe.end.value[1] = pEnd.p2;
+    machine.op.probe.end.value[2] = pEnd.p3;
+    TESTCOUT3("pEnd:", pEnd.p1, ", ", pEnd.p2, ", ", pEnd.p3);
+    machine.op.probe.maxDelta = 0;
+    for (MotorIndex iMotor=0; iMotor<3; iMotor++) {
+        StepCoord delta = machine.op.probe.end.value[iMotor] - machine.op.probe.start.value[iMotor];
+        machine.op.probe.maxDelta = max((StepCoord)abs(machine.op.probe.maxDelta), delta);
+    }
 
     return status == STATUS_OK ? STATUS_BUSY_CALIBRATING : status;
 }
 
 Status JsonController::finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-	XYZ3D xyz = machine.getXYZ3D();
-	if (!xyz.isValid()) {
-		return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
-	}
-	if (strcmp("prbx",key) == 0 || strcmp("x",key) == 0) {
-		jobj[key] = xyz.x;
-	} else if (strcmp("prby",key) == 0 || strcmp("y",key) == 0) {
-		jobj[key] = xyz.y;
-	} else if (strcmp("prbz",key) == 0 || strcmp("z",key) == 0) {
-		jobj[key] = xyz.z;
+    XYZ3D xyz = machine.getXYZ3D();
+    if (!xyz.isValid()) {
+        return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+    }
+    if (strcmp("prbx",key) == 0 || strcmp("x",key) == 0) {
+        jobj[key] = xyz.x;
+    } else if (strcmp("prby",key) == 0 || strcmp("y",key) == 0) {
+        jobj[key] = xyz.y;
+    } else if (strcmp("prbz",key) == 0 || strcmp("z",key) == 0) {
+        jobj[key] = xyz.z;
     } else if (strcmp("pd", key) == 0 || strcmp("prbpd", key) == 0) {
-		JsonArray &jarr = jobj.createNestedArray(key);
-		for (int16_t i=0; i<PROBE_DATA; i++) {
-			jarr.add(machine.op.probe.probeData[i]);
-		}
-	} else if (strcmp("1",key) == 0) {
-		jobj[key] = machine.getMotorAxis(0).position;
-	} else if (strcmp("2",key) == 0) {
-		jobj[key] = machine.getMotorAxis(1).position;
-	} else if (strcmp("3",key) == 0) {
-		jobj[key] = machine.getMotorAxis(2).position;
-	} else if (strcmp("4",key) == 0) {
-		jobj[key] = machine.getMotorAxis(3).position;
-	}
-	return STATUS_OK;
+        JsonArray &jarr = jobj.createNestedArray(key);
+        for (int16_t i=0; i<PROBE_DATA; i++) {
+            jarr.add(machine.op.probe.probeData[i]);
+        }
+    } else if (strcmp("1",key) == 0) {
+        jobj[key] = machine.getMotorAxis(0).position;
+    } else if (strcmp("2",key) == 0) {
+        jobj[key] = machine.getMotorAxis(1).position;
+    } else if (strcmp("3",key) == 0) {
+        jobj[key] = machine.getMotorAxis(2).position;
+    } else if (strcmp("4",key) == 0) {
+        jobj[key] = machine.getMotorAxis(3).position;
+    }
+    return STATUS_OK;
 }
 
 Status JsonController::processProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
@@ -1608,14 +1625,14 @@ Status JsonController::processProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj,
     case STATUS_BUSY_CALIBRATING:
         status = machine.probe(status);
         if (status == STATUS_OK) {
-			if (jobj[key].is<JsonObject&>()) {
-				JsonObject &kidObj = jobj[key];
-				for (JsonObject::iterator it = kidObj.begin(); status == STATUS_OK && it != kidObj.end(); ++it) {
-					status = finalizeProbe_MTO_FPD(jcmd, kidObj, it->key);
-				}
-			} else {
-				status = finalizeProbe_MTO_FPD(jcmd, jobj, key);
-			}
+            if (jobj[key].is<JsonObject&>()) {
+                JsonObject &kidObj = jobj[key];
+                for (JsonObject::iterator it = kidObj.begin(); status == STATUS_OK && it != kidObj.end(); ++it) {
+                    status = finalizeProbe_MTO_FPD(jcmd, kidObj, it->key);
+                }
+            } else {
+                status = finalizeProbe_MTO_FPD(jcmd, jobj, key);
+            }
         }
         break;
     default:
@@ -1631,16 +1648,16 @@ Status JsonController::processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& j
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-			node["e"] = "";
-			node["f"] = "";
-			node["gr"] = "";
-			node["ha1"] = "";
-			node["ha2"] = "";
-			node["ha3"] = "";
-			node["mi"] = "";
-			node["re"] = "";
-			node["rf"] = "";
-			node["st"] = "";
+            node["e"] = "";
+            node["f"] = "";
+            node["gr"] = "";
+            node["ha1"] = "";
+            node["ha2"] = "";
+            node["ha3"] = "";
+            node["mi"] = "";
+            node["re"] = "";
+            node["rf"] = "";
+            node["st"] = "";
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -1664,15 +1681,15 @@ Status JsonController::processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& j
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.delta.setGearRatio(value);
     } else if (strcmp("ha1", key) == 0 || strcmp("dimha1", key) == 0) {
-		Angle3D homeAngles = machine.delta.getHomeAngles();
+        Angle3D homeAngles = machine.delta.getHomeAngles();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngles.theta1);
         machine.delta.setHomeAngles(homeAngles);
     } else if (strcmp("ha2", key) == 0 || strcmp("dimha2", key) == 0) {
-		Angle3D homeAngles = machine.delta.getHomeAngles();
+        Angle3D homeAngles = machine.delta.getHomeAngles();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngles.theta2);
         machine.delta.setHomeAngles(homeAngles);
     } else if (strcmp("ha3", key) == 0 || strcmp("dimha3", key) == 0) {
-		Angle3D homeAngles = machine.delta.getHomeAngles();
+        Angle3D homeAngles = machine.delta.getHomeAngles();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngles.theta3);
         machine.delta.setHomeAngles(homeAngles);
     } else if (strcmp("mi", key) == 0 || strcmp("dimmi", key) == 0) {

@@ -86,6 +86,7 @@ enum Status {
     STATUS_JSON_BOOL = -427,		// Expected JSON true or false
     STATUS_JSON_255 = -428,			// Expected JSON value between 0 and 255
     STATUS_JSON_DIGIT = -429,		// Expected numeric suffix for attribute
+	STATUS_MTO_FIELD = -430,		// JSON field is not allowed in current machine topology
 
     // events
     STATUS_ESTOP = -900,			// Emergency hardware stop
