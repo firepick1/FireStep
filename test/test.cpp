@@ -1318,6 +1318,7 @@ void test_MTO_FPD() {
 		ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
 		ASSERT(machine.op.probe.probing);
 	}
+	ASSERTEQUAL(PDS_Z, machine.op.probe.dataSource);
     ASSERTQUAD(Quad<StepCoord>(1096, 1096, 1096, 100), mt.machine.getMotorPosition());
     ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
     ASSERTEQUAL(996, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
@@ -1396,7 +1397,7 @@ void test_MTO_FPD() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
 				"{'e':270.000,'f':90.000,'gr':9.375,'ha1':-52.330,'ha2':-52.330,'ha3':-52.330,"
-				"'mi':16,'pd':[5.000,4.000,3.000,2.000,1.000,0.000],"
+				"'mi':16,'pd':[-21.484,5.000,4.000,3.000,2.000,1.000],"
 				"'re':131.636,'rf':190.526,'st':200}}"
 				",'t':0.000}\n"),
                  Serial.output().c_str());

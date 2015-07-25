@@ -160,15 +160,21 @@ public:
 typedef int8_t AxisIndex;
 typedef int8_t MotorIndex;
 
+enum ProbeDataSource {
+	PDS_NONE = 0, //  no data source
+	PDS_Z = 1, // Cartesian Z-coordinate
+};
+
 typedef class OpProbe {
 public:
     Quad<StepCoord> start; // probe starting point
     Quad<StepCoord> end; // probe goal
-    StepCoord	maxDelta; // absolute value of maximum stepper displacement
-    StepCoord	curDelta; // absolute value of current stepper displacement
-    PinType 	pinProbe; // pin used for probe limit
-    bool		probing;
-    bool		invertProbe; // invert logic sense of probe
+    StepCoord		maxDelta; // absolute value of maximum stepper displacement
+    StepCoord		curDelta; // absolute value of current stepper displacement
+    PinType 		pinProbe; // pin used for probe limit
+	ProbeDataSource	dataSource;
+    bool			probing;
+    bool			invertProbe; // invert logic sense of probe
 
     OpProbe() : pinProbe(NOPIN), invertProbe(false) {
         setup(Quad<StepCoord>());
@@ -185,6 +191,7 @@ public:
 		}
         curDelta = 0;
         probing = true;
+		dataSource = PDS_NONE;
     }
     StepCoord interpolate(MotorIndex iMotor) {
         float t = maxDelta ? (float)curDelta/(float)maxDelta : 0;

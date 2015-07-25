@@ -482,6 +482,10 @@ Status Machine::probe(Status status, DelayMics delay) {
     if (op.probe.probing) {
         status = stepProbe(delay < 0 ? searchDelay : delay);
     } else {
+		if (topology == MTO_FPD && op.probe.dataSource == PDS_Z) {
+			XYZ3D xyz = getXYZ3D();
+			addProbeData(xyz.z);
+		}
         status = STATUS_OK;
     }
 

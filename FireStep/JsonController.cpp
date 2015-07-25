@@ -1497,7 +1497,7 @@ Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jo
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
 			xyzEnd.z = machine.delta.getMinZ(xyzEnd.z, xyzEnd.y);
-			node["1"] = "";
+		node["1"] = "";
 			node["2"] = "";
 			node["3"] = "";
 			node["4"] = "";
@@ -1531,6 +1531,7 @@ Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jo
     } else if (strcmp("prby", key) == 0 || strcmp("y", key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.y);
     } else if (strcmp("prbz", key) == 0 || strcmp("z", key) == 0) {
+		machine.op.probe.dataSource = PDS_Z;
 		xyzEnd.z = machine.delta.getMinZ(xyzEnd.x, xyzEnd.y);
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.z);
     } else {
