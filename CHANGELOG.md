@@ -7,6 +7,7 @@ v0.2.1
 * NEW: MTO_FPD "hom" now moves to Z0 after hitting the limit switch, since motion is over-constrained at limit switch
 * NEW: "sysom" output mode option shows individual responses from JSON command arrays
 * NEW: "prbpd" stores up to 9 Z-probe data archived by "prb"
+* NEW: "movrz" moves Z-relative (vs. absolute)
 
 v0.2.0
 ------
