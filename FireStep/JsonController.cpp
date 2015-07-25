@@ -1502,6 +1502,7 @@ Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jo
 			node["3"] = "";
 			node["4"] = "";
             node["ip"] = "";
+			node["pd"] = "";
             node["pn"] = machine.op.probe.pinProbe;
             node["sd"] = "";
             node["x"] = xyzEnd.x;
@@ -1522,6 +1523,13 @@ Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jo
         }
     } else if (strcmp("prbip", key) == 0 || strcmp("ip", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.op.probe.invertProbe);
+    } else if (strcmp("prbpd", key) == 0 || strcmp("pd", key) == 0) {
+        const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+			// handled in finalizeProbe_MTO_FPD
+		} else {
+			status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
+		}
     } else if (strcmp("prbpn", key) == 0 || strcmp("pn", key) == 0) {
         status = processField<PinType, int32_t>(jobj, key, machine.op.probe.pinProbe);
     } else if (strcmp("prbsd", key) == 0 || strcmp("sd", key) == 0) {
@@ -1573,6 +1581,11 @@ Status JsonController::finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj
 		jobj[key] = xyz.y;
 	} else if (strcmp("prbz",key) == 0 || strcmp("z",key) == 0) {
 		jobj[key] = xyz.z;
+    } else if (strcmp("pd", key) == 0 || strcmp("prbpd", key) == 0) {
+		JsonArray &jarr = jobj.createNestedArray(key);
+		for (int16_t i=0; i<PROBE_DATA; i++) {
+			jarr.add(machine.op.probe.probeData[i]);
+		}
 	} else if (strcmp("1",key) == 0) {
 		jobj[key] = machine.getMotorAxis(0).position;
 	} else if (strcmp("2",key) == 0) {
@@ -1625,7 +1638,6 @@ Status JsonController::processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& j
 			node["ha2"] = "";
 			node["ha3"] = "";
 			node["mi"] = "";
-			node["pd"] = "";
 			node["re"] = "";
 			node["rf"] = "";
 			node["st"] = "";
@@ -1667,16 +1679,6 @@ Status JsonController::processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& j
         int16_t value = machine.delta.getMicrosteps();
         status = processField<int16_t, int16_t>(jobj, key, value);
         machine.delta.setMicrosteps(value);
-    } else if (strcmp("pd", key) == 0 || strcmp("dimpd", key) == 0) {
-        const char *s;
-        if ((s = jobj[key]) && *s == 0) {
-			JsonArray &jarr = jobj.createNestedArray(key);
-			for (int16_t i=0; i<PROBE_DATA; i++) {
-				jarr.add(machine.probeData[i]);
-			}
-		} else {
-			status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
-		}
     } else if (strcmp("re", key) == 0 || strcmp("dimre", key) == 0) {
         PH5TYPE value = machine.delta.getEffectorTriangleSide();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);

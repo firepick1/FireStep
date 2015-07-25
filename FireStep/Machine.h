@@ -24,7 +24,7 @@ namespace firestep {
 #define PIN_DISABLE HIGH
 #define MICROSTEPS_DEFAULT 16
 #define INDEX_NONE -1
-#define PROBE_DATA 6
+#define PROBE_DATA 9
 
 typedef int16_t DelayMics; // delay microseconds
 #ifdef TEST
@@ -175,6 +175,7 @@ public:
 	ProbeDataSource	dataSource;
     bool			probing;
     bool			invertProbe; // invert logic sense of probe
+	PH5TYPE			probeData[PROBE_DATA];
 
     OpProbe() : pinProbe(NOPIN), invertProbe(false) {
         setup(Quad<StepCoord>());
@@ -197,6 +198,12 @@ public:
         float t = maxDelta ? (float)curDelta/(float)maxDelta : 0;
         return (StepCoord)(start.value[iMotor]*(1-t) + end.value[iMotor]*t + 0.5);
     }
+	void archiveData(PH5TYPE data) {
+		for (int16_t i=PROBE_DATA; --i>0; ) {
+			probeData[i] = probeData[i-1];
+		}
+		probeData[0] = data;
+	}
 } OpProbe;
 
 typedef class Machine : public QuadStepper {
@@ -231,7 +238,6 @@ public:
 	int16_t		eeUser;	// EEPROM user startup commands
 	Topology	topology;
 	OutputMode	outputMode;
-	PH5TYPE		probeData[PROBE_DATA];
     struct {
         OpProbe		probe;
     } op;
@@ -312,7 +318,6 @@ public:
     PinConfig getPinConfig() {
         return pinConfig;
     }
-	void addProbeData(PH5TYPE data);
 	XYZ3D getXYZ3D();
 } Machine;
 

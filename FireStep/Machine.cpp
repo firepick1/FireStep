@@ -41,15 +41,8 @@ Machine::Machine()
     }
 
 	for (int16_t i=0; i<PROBE_DATA; i++) {
-		probeData[i] = 0;
+		op.probe.probeData[i] = 0;
 	}
-}
-
-void Machine::addProbeData(PH5TYPE data) {
-	for (int16_t i=PROBE_DATA; --i>0; ) {
-		probeData[i] = probeData[i-1];
-	}
-	probeData[0] = data;
 }
 
 bool Machine::isCorePin(int16_t pin) {
@@ -484,7 +477,7 @@ Status Machine::probe(Status status, DelayMics delay) {
     } else {
 		if (topology == MTO_FPD && op.probe.dataSource == PDS_Z) {
 			XYZ3D xyz = getXYZ3D();
-			addProbeData(xyz.z);
+			op.probe.archiveData(xyz.z);
 		}
         status = STATUS_OK;
     }
