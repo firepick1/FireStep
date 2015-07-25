@@ -4,10 +4,10 @@ FireStep: change log
 v0.2.1
 ------
 * FIX: "syseu" user EEPROM now works on startup 
-* NEW: MTO_FPD "hom" now moves to Z0 after hitting the limit switch, since motion is over-constrained at limit switch
+* NEW: MTO_FPD "hom" now moves to Z0 after hitting the limit switch. Motion is over-constrained at limit switch, making it rather useless as a starting position. However, at Z0, motion constraints are much more relaxed, which makes X0Y0Z0 a great "at rest" position. If you really want to park the effector "up there", just "mov" to X0Y0Z0, then "movz" up to the limit switch position.
+* NEW: MTO_FPD "prbpd" stores up to 9 Z-probe data archived by "prb"
+* NEW: MTO_FPD "movrz" moves Z-relative (vs. absolute)
 * NEW: "sysom" output mode option shows individual responses from JSON command arrays
-* NEW: "prbpd" stores up to 9 Z-probe data archived by "prb"
-* NEW: "movrz" moves Z-relative (vs. absolute)
 
 v0.2.0
 ------
@@ -18,7 +18,7 @@ v0.2.0
 * NEW: MTO_FPD "mov" interprets x,y,z attributes as cartesian coordinates
 * NEW: MTO_FPD "mov" interprets x,y,z attributes as cartesian coordinates
 * NEW: MTO_FPD "mpo" interprets x,y,z attributes as cartesian coordinates
-* FIX: NeoPixel uses millis() instead of ticks and no longer freezes
+* FIX: NeoPixel displays uses millis() instead of ticks and no longer freezes with extended use
 
 v0.1.15
 -------
