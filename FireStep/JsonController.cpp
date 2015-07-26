@@ -886,6 +886,8 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
                 }
             }
         }
+    } else if (strcmp("db", key) == 0 || strcmp("sysdb", key) == 0) {
+        status = processField<uint8_t, long>(jobj, key, machine.debounce);
     } else if (strcmp("eu", key) == 0 || strcmp("syseu", key) == 0) {
         int16_t eu = machine.eeUser;
         status = processField<int16_t, long>(jobj, key, eu);
@@ -1327,7 +1329,7 @@ void JsonController::sendResponse(JsonCommand &jcmd, Status status) {
     } else {
         jcmd.response().printTo(Serial);
     }
-	//jcmd.responseClear();
+	jcmd.responseClear();
     Serial.println();
 }
 

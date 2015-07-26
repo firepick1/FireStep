@@ -238,6 +238,7 @@ public:
 	int16_t		eeUser;	// EEPROM user startup commands
 	Topology	topology;
 	OutputMode	outputMode;
+	uint8_t	debounce;
     struct {
         OpProbe		probe;
     } op;
@@ -247,8 +248,11 @@ public:
     virtual	Status step(const Quad<StepDV> &pulse);
     bool isCorePin(int16_t pin);
     inline bool isAtLimit(PinType pin) {
-        bool pinValue = digitalRead(pin);
-        return (invertLim == !pinValue);
+		uint8_t highCount = digitalRead(pin) ? 1 : 0;
+		for (uint8_t i=0; i<debounce; i++) {
+			highCount += digitalRead(pin) ? 1 : 0;
+		}
+        return (invertLim == !(highCount > debounce/2));
     }
     inline int8_t pulsePin(int16_t pinStep, int8_t n) {
         switch (n) {

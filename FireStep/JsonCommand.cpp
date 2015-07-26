@@ -25,7 +25,10 @@ size_t JsonCommand::responseAvailable() {
 }
 
 void JsonCommand::responseClear() {
-   jbResponse.clear();
+    jbResponse.clear();
+    jResponseRoot = jbResponse.createObject();
+    jResponseRoot["s"] = STATUS_EMPTY;
+    jResponseRoot.asObject().createNestedObject("r");
 }
 
 size_t JsonCommand::requestAvailable() {
@@ -40,9 +43,6 @@ void JsonCommand::clear() {
     pJsonFree = json;
     jbRequest.clear();
     responseClear();
-    jResponseRoot = jbResponse.createObject();
-    jResponseRoot["s"] = STATUS_EMPTY;
-    jResponseRoot.asObject().createNestedObject("r");
 }
 
 const char * JsonCommand::getError() {
@@ -100,13 +100,13 @@ char * JsonCommand::allocate(size_t length) {
 }
 
 Status JsonCommand::parseInput(const char *jsonIn, Status status) {
-	//TESTCOUT2("parseInput:", (int) (jsonIn ? jsonIn[0] : 911), " parsed:", parsed);
+    //TESTCOUT2("parseInput:", (int) (jsonIn ? jsonIn[0] : 911), " parsed:", parsed);
     if (parsed) {
         return STATUS_BUSY_PARSED;
     }
     if (jsonIn && (jsonIn < json || json+MAX_JSON < jsonIn)) {
         snprintf(json, sizeof(json), "%s", jsonIn);
-		//TESTCOUT1("parseInput:", (int) jsonIn[0]);
+        //TESTCOUT1("parseInput:", (int) jsonIn[0]);
         if (strcmp(jsonIn, json) != 0) {
             parsed = true;
             return STATUS_JSON_TOO_LONG;
@@ -137,9 +137,9 @@ Status JsonCommand::parseInput(const char *jsonIn, Status status) {
  * Check isValid() and getStatus() for parsing status.
  */
 Status JsonCommand::parse(const char *jsonIn, Status statusIn) {
-	//TESTCOUT1("parse:", (int) (jsonIn ? jsonIn[0] : 911));
+    //TESTCOUT1("parse:", (int) (jsonIn ? jsonIn[0] : 911));
     tStart = ticks();
-	//TESTCOUT1("parse:", (int) (jsonIn ? jsonIn[0] : 911));
+    //TESTCOUT1("parse:", (int) (jsonIn ? jsonIn[0] : 911));
     Status status = parseInput(jsonIn, statusIn);
 
     if (status < 0) {
