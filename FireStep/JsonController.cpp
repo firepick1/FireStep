@@ -1311,17 +1311,23 @@ Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const
 }
 
 Status JsonController::cancel(JsonCommand& jcmd, Status cause) {
-    jcmd.setStatus(cause);
-    sendResponse(jcmd);
+    sendResponse(jcmd, cause);
     return STATUS_WAIT_CANCELLED;
 }
 
-void JsonController::sendResponse(JsonCommand &jcmd) {
+void JsonController::sendResponse(JsonCommand &jcmd, Status status) {
+	if (status >= 0 && jcmd.responseAvailable() < 1) {
+		TESTCOUT2("response available:", jcmd.responseAvailable(), " capacity:", jcmd.responseCapacity());
+		jcmd.setStatus(STATUS_JSON_MEM);
+	} else {
+		jcmd.setStatus(status);
+	}
     if (machine.jsonPrettyPrint) {
         jcmd.response().prettyPrintTo(Serial);
     } else {
         jcmd.response().printTo(Serial);
     }
+	//jcmd.responseClear();
     Serial.println();
 }
 
@@ -1421,7 +1427,7 @@ Status JsonController::process(JsonCommand& jcmd) {
             if (status == STATUS_OK) {
                 bool isLast = jcmd.cmdIndex >= jarr.size()-1;
                 if (!isLast && OUTPUT_ARRAYN==(machine.outputMode&OUTPUT_ARRAYN)) {
-                    sendResponse(jcmd);
+                    sendResponse(jcmd, status);
                 }
                 status = STATUS_BUSY_PARSED;
                 jcmd.cmdIndex++;
@@ -1433,10 +1439,11 @@ Status JsonController::process(JsonCommand& jcmd) {
         status = STATUS_JSON_CMD;
     }
 
+	jcmd.setTicks();
     jcmd.setStatus(status);
 
     if (!isProcessing(status)) {
-        sendResponse(jcmd);
+        sendResponse(jcmd,status);
     }
 
     return status;

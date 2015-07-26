@@ -12,8 +12,20 @@ JsonCommand::JsonCommand() {
     clear();
 }
 
+size_t JsonCommand::responseCapacity() {
+    return jbResponse.capacity();
+}
+
+size_t JsonCommand::requestCapacity() {
+    return jbRequest.capacity();
+}
+
 size_t JsonCommand::responseAvailable() {
     return jbResponse.capacity() - jbResponse.size();
+}
+
+void JsonCommand::responseClear() {
+   jbResponse.clear();
 }
 
 size_t JsonCommand::requestAvailable() {
@@ -27,7 +39,7 @@ void JsonCommand::clear() {
     memset(error, 0, sizeof(error));
     pJsonFree = json;
     jbRequest.clear();
-    jbResponse.clear();
+    responseClear();
     jResponseRoot = jbResponse.createObject();
     jResponseRoot["s"] = STATUS_EMPTY;
     jResponseRoot.asObject().createNestedObject("r");

@@ -55,14 +55,19 @@ public:
     inline Status getStatus() {
         return (Status) (int32_t) jResponseRoot["s"];
     }
-    inline void setStatus(Status status) {
+    inline void setTicks() {
         jResponseRoot["t"] = (ticks() - tStart) / (float) TICKS_PER_SECOND;
+    }
+    inline void setStatus(Status status) {
         jResponseRoot["s"] = status;
     }
     const char *getError();
     Status setError(Status status, const char *err);
     size_t requestAvailable();
     size_t responseAvailable();
+    size_t requestCapacity();
+    size_t responseCapacity();
+    void responseClear();
     char * allocate(size_t length);
 } JsonCommand;
 

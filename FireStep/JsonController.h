@@ -16,9 +16,9 @@ private:
     Status initializeStrokeArray(JsonCommand &jcmd, JsonObject& stroke,
                                  const char *key, MotorIndex iMotor, int16_t &slen);
     Status processRawSteps(Quad<StepCoord> &steps);
-    void sendResponse(JsonCommand& jcmd);
 protected:
     Machine &machine;
+    void sendResponse(JsonCommand& jcmd, Status status);
     Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);
     Status initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
     Status initializeProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
