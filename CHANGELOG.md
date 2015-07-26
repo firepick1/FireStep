@@ -7,6 +7,7 @@ v0.2.1
 * NEW: MTO_FPD "hom" now moves to Z0 after hitting the limit switch. Motion is over-constrained at limit switch, making it rather useless as a starting position. However, at Z0, motion constraints are much more relaxed, which makes X0Y0Z0 a great "at rest" position. If you really want to park the effector "up there", just "mov" to X0Y0Z0, then "movz" up to the limit switch position.
 * NEW: MTO_FPD "prbpd" stores up to 9 Z-probe data archived by "prb"
 * NEW: MTO_FPD "movrz" moves Z-relative (vs. absolute)
+* NEW: MTO_FPD "mov:{a,d}" move in XY plane to polar coordinate `d` millimeters from X0Y0 at `a` degrees CCW from x-axis.
 * NEW: "sysom" output mode option shows individual responses from JSON command arrays
 
 v0.2.0

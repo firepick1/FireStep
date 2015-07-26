@@ -747,6 +747,24 @@ Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
         if (status == STATUS_OK) {
             status = execute(jcmd, NULL);
         }
+    } else if (strcmp("d", key) == 0) { 
+		if (!jobj.at("a").success()) {
+			return jcmd.setError(STATUS_FIELD_REQUIRED,"a");
+		}
+    } else if (strcmp("a", key) == 0) { 
+		// polar CCW from X-axis around X0Y0
+		if (!jobj.at("d").success()) {
+			return jcmd.setError(STATUS_FIELD_REQUIRED,"d");
+		}
+		PH5TYPE d = jobj["d"];
+		PH5TYPE a = jobj["a"];
+		PH5TYPE pi = 3.14159265359;
+		PH5TYPE radians = a * pi / 180.0;
+		PH5TYPE y = d * sin(radians);
+		PH5TYPE x = d * cos(radians);
+		TESTCOUT2("x:", x, " y:", y);
+		destination.value[0] = x;
+		destination.value[1] = y;
     } else if (strcmp("lp", key) == 0) {
         // output variable
     } else if (strcmp("mv", key) == 0) {

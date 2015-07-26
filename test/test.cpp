@@ -1509,6 +1509,27 @@ void test_MTO_FPD() {
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
+    // mov:{a,r}
+    arduino.setPin(PC2_X_MIN_PIN, LOW);
+    arduino.setPin(PC2_Y_MIN_PIN, LOW);
+    arduino.setPin(PC2_Z_MIN_PIN, LOW);
+    machine.setMotorPosition(Quad<StepCoord>());
+    Serial.push(JT("{'mov':{'a':30,'d':10,'rz':-1}}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	arduino.timer1(MS_TICKS(1000));
+	mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'a':30,'d':10,'rz':-1.000,'lp':6157,'pp':0.0,'sg':0,'tp':0.000,'ts':0.000}},'t':1.394}\n"),
+                 Serial.output().c_str());
+    ASSERTQUAD(Quad<StepCoord>(710,-658,709), machine.getMotorPosition());
+	xyz = machine.getXYZ3D();
+	ASSERTEQUALT(8.667, xyz.x, 0.01);
+    ASSERTEQUALT(5, xyz.y, 0.01);
+    ASSERTEQUALT(-1, xyz.z, 0.01);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
 
     cout << "TEST	: test_MTO_FPD() OK " << endl;
 }
