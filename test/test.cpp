@@ -1085,7 +1085,7 @@ void test_Move() {
     ASSERTEQUAL(1, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTQUAD(Quad<StepCoord>(1, 10, 100, 0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':"\
-                    "{'mov':{'1':1.000,'2':10.000,'3':100.000,'lp':2310,'pp':1298.1,'sg':16,'tp':0.148,'ts':0.148}},"\
+                    "{'mov':{'1':1.000,'2':10.000,'3':100.000}},"\
                     "'t':0.148}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1102,7 +1102,7 @@ void test_Move() {
     ASSERTEQUAL(zpulses + 100, arduino.pulses(PC2_Z_STEP_PIN));
     ASSERTQUAD(Quad<StepCoord>(1, 10, 100, 0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':"\
-                    "{'mov':{'1':1.000,'2':10.000,'3':100.000,'lp':0,'pp':0.0,'sg':0,'tp':0.000,'ts':0.000}},"\
+                    "{'mov':{'1':1.000,'2':10.000,'3':100.000}},"\
                     "'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1137,7 +1137,7 @@ void test_Move() {
     ASSERTEQUAL(300, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTQUAD(Quad<StepCoord>(50, 10, 300, 0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':"\
-                    "{'mov':{'x':50.000,'z':300.000,'lp':3268,'pp':1835.4,'sg':16,'tp':0.209,'ts':0.209}},"\
+                    "{'mov':{'x':50.000,'z':300.000}},"\
                     "'t':0.209}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1158,8 +1158,7 @@ void test_Move() {
     ASSERTEQUAL(9000, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTQUAD(Quad<StepCoord>(10000,5000,9000,0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':"\
-                    "{'mov':{'x':10000.000,'y':5000.000,'z':9000.000,'mv':16000,"\
-                    "'lp':20669,'pp':15118.5,'sg':50,'tp':1.323,'ts':1.323}},"\
+                    "{'mov':{'x':10000.000,'y':5000.000,'z':9000.000,'mv':16000}},"\
                     "'t':1.323}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1258,7 +1257,7 @@ void test_MTO_FPD() {
     ASSERTEQUAL(53, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(53, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTQUAD(Quad<StepCoord>(-53,-53,-53,0), machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'z':1.000,'lp':1682,'pp':1188.4,'sg':16,'tp':0.108,'ts':0.108}},'t':0.108}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'z':1.000}},'t':0.108}\n"),
                  Serial.output().c_str());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -1520,7 +1519,7 @@ void test_MTO_FPD() {
 	arduino.timer1(MS_TICKS(1000));
 	mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'a':30,'d':10,'rz':-1.000,'lp':6157,'pp':0.0,'sg':0,'tp':0.000,'ts':0.000}},'t':1.394}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'a':30,'d':10,'rz':-1.000}},'t':1.394}\n"),
                  Serial.output().c_str());
     ASSERTQUAD(Quad<StepCoord>(710,-658,709), machine.getMotorPosition());
 	xyz = machine.getXYZ3D();

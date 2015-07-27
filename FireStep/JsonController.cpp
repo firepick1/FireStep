@@ -672,11 +672,11 @@ Status PHMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     }
 
     if (pjobj) {
-        (*pjobj)["lp"] = nLoops;
-        (*pjobj)["pp"].set(pp, 1);
-        (*pjobj)["sg"] = sg;
-        (*pjobj)["tp"].set(tp, 3);
-        (*pjobj)["ts"].set(ts, 3);
+		if (pjobj->at("lp").success()) { (*pjobj)["lp"] = nLoops; }
+        if (pjobj->at("pp").success()) { (*pjobj)["pp"].set(pp, 1); }
+        if (pjobj->at("sg").success()) { (*pjobj)["sg"] = sg; }
+        if (pjobj->at("tp").success()) { (*pjobj)["tp"].set(tp, 3); }
+        if (pjobj->at("ts").success()) { (*pjobj)["ts"].set(ts, 3); }
     }
 
     return status;
