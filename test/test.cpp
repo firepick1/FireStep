@@ -1382,7 +1382,6 @@ void test_MTO_FPD() {
     ASSERTQUAD(Quad<StepCoord>(1096, 1096, 1096, 100), mt.machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'prb':"
                     "{'1':1096,'2':1096,'3':1096,'4':100,'ip':false,"
-                    "'pd':[-21.484,8.000,7.000,6.000,5.000,4.000,3.000,2.000,1.000],"
                     "'pn':2,'sd':800,'x':0.000,'y':-0.000,'z':-21.484}},'t':6.016}\n"),
                  Serial.output().c_str());
     test_ticks(1);	// tripped
@@ -1397,7 +1396,9 @@ void test_MTO_FPD() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
                     "{'e':270.000,'f':90.000,'gr':9.375,'ha1':-52.330,'ha2':-52.330,'ha3':-52.330,"
-                    "'mi':16,'re':131.636,'rf':190.526,'st':200}}"
+                    "'mi':16,"
+                    "'pd':[-21.484,8.000,7.000,6.000,5.000,4.000,3.000,2.000,1.000],"
+                    "'re':131.636,'rf':190.526,'st':200}}"
                     ",'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1528,6 +1529,18 @@ void test_MTO_FPD() {
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
+	// dimpd
+    Serial.push(JT("{'dimpd':''}}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{"
+                    "'dimpd':[-50.491,-21.484,8.000,7.000,6.000,5.000,4.000,3.000,2.000]},"
+                    "'t':0.000}\n"),
+                 Serial.output().c_str());
+    test_ticks(1);	// tripped
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     cout << "TEST	: test_MTO_FPD() OK " << endl;
 }
