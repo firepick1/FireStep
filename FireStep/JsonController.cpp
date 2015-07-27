@@ -1061,7 +1061,7 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
         if (c && c != 255) {
             char *buf = jcmd.allocate(EEPROM_BYTES);
             if (!buf) {
-                return jcmd.setError(STATUS_JSON_MEM, key);
+                return jcmd.setError(STATUS_JSON_MEM3, key);
             }
             for (int16_t i=0; i<EEPROM_BYTES; i++) {
                 c = eeprom_read_byte((uint8_t*) addrLong+i);
@@ -1318,11 +1318,15 @@ Status JsonController::cancel(JsonCommand& jcmd, Status cause) {
 }
 
 void JsonController::sendResponse(JsonCommand &jcmd, Status status) {
-	if (status >= 0 && jcmd.responseAvailable() < 1) {
-		TESTCOUT2("response available:", jcmd.responseAvailable(), " capacity:", jcmd.responseCapacity());
-		jcmd.setStatus(STATUS_JSON_MEM);
-	} else {
-		jcmd.setStatus(status);
+	jcmd.setStatus(status);
+	if (status >= 0) {
+		if (jcmd.responseAvailable() < 1) {
+			TESTCOUT2("response available:", jcmd.responseAvailable(), " capacity:", jcmd.responseCapacity());
+			jcmd.setStatus(STATUS_JSON_MEM1);
+		} else if (jcmd.requestAvailable() < 1) {
+			TESTCOUT2("request available:", jcmd.requestAvailable(), " capacity:", jcmd.requestCapacity());
+			jcmd.setStatus(STATUS_JSON_MEM2);
+		}
 	}
     if (machine.jsonPrettyPrint) {
         jcmd.response().prettyPrintTo(Serial);

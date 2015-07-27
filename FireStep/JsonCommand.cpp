@@ -72,7 +72,7 @@ Status JsonCommand::parseCore() {
             kids++;
         }
         if (kids < 1) {
-            return STATUS_JSON_MEM;
+            return STATUS_JSON_MEM4;
         }
         jRequestRoot = jobj;
         jResponseRoot["r"] = jRequestRoot;

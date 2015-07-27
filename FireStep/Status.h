@@ -31,7 +31,10 @@ enum Status {
     STATUS_S4_ERROR = -106,			// Internal error: could not process segment
     STATUS_MOTOR_INDEX = -112,		// Internal error: motor index out of range
     STATUS_STEP_RANGE_ERROR = -113,	// Internal error: pulse step out of range [-1,0,1]
-    STATUS_JSON_MEM = -118,			// Internal error: no more JSON memory
+    STATUS_JSON_MEM1 = -115,		// Internal error: no more JSON memory (request)
+    STATUS_JSON_MEM2 = -116,		// Internal error: no more JSON memory (response)
+    STATUS_JSON_MEM3 = -117,		// Internal error: no more JSON memory (eeprom)
+    STATUS_JSON_MEM4 = -118,		// Internal error: no more JSON memory (eeprom)
     STATUS_WAIT_ERROR = -119,		// Display error indicator
     STATUS_AXIS_DISABLED = -120,	// Motion requested for disabled axis
     STATUS_NOPIN = -121,			// Attempt to change NOPIN
