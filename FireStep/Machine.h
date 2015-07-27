@@ -191,8 +191,13 @@ public:
 			maxDelta = max(maxDelta, (StepCoord) abs(end.value[i] - start.value[i]));
 		}
         curDelta = 0;
-        probing = true;
 		dataSource = PDS_NONE;
+		if (pinProbe == NOPIN) {
+			probing = false;
+		} else {
+			pinMode(pinProbe, INPUT);
+			probing = true;
+		}
     }
     StepCoord interpolate(MotorIndex iMotor) {
         float t = maxDelta ? (float)curDelta/(float)maxDelta : 0;

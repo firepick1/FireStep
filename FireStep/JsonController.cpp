@@ -729,7 +729,9 @@ Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
 			status = processField<PH5TYPE, PH5TYPE>(jobj, key, z);
 			if (status == STATUS_OK) {
 				destination.value[2] = xyz.z + z;
-				status = execute(jcmd, NULL);
+				if (strcmp("movrz",key) == 0) {
+					status = execute(jcmd, NULL);
+				}
 			}
 			break;
 		}

@@ -1308,7 +1308,6 @@ void test_MTO_FPD() {
     test_ticks(1);	// parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTQUAD(Quad<StepCoord>(100, 100, 100, 100), mt.machine.getMotorPosition());
-    ASSERT(machine.op.probe.probing);
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
@@ -2129,7 +2128,6 @@ void test_probe() {
     test_ticks(1);	// parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTQUAD(Quad<StepCoord>(100, 100, 100, 100), mt.machine.getMotorPosition());
-    ASSERT(machine.op.probe.probing);
 
     test_ticks(1);	// initialize
     ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);

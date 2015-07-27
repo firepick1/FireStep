@@ -467,7 +467,6 @@ Status Machine::probe(Status status, DelayMics delay) {
         }
     }
 
-    pinMode(op.probe.pinProbe, INPUT);
     op.probe.probing = !isAtLimit(op.probe.pinProbe);
     if (op.probe.invertProbe) {
         op.probe.probing = !op.probe.probing;
