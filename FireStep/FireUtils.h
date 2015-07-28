@@ -12,8 +12,8 @@
 ////////////////// ASSERTFAIL(msg) implements assertion failure ////////////
 
 #ifdef ASSERTFAIL_THROW
-	// Throw an exception when assertions fail
-	#define ASSERTFAIL(msg) \
+// Throw an exception when assertions fail
+#define ASSERTFAIL(msg) \
 		{LOGERROR3("***ASSERTION FAILED (THROW) *** %s in %s:%d",msg,__FILE__,__LINE__); \
 		throw "***ASSERTION FAILED*** " msg;}
 #endif
@@ -22,17 +22,17 @@
 #define ASSERTFAIL_KILL
 #endif
 #ifdef ASSERTFAIL_KILL
-	// kill the program to get a core dump upon assertion failure
+// kill the program to get a core dump upon assertion failure
 #include <sys/types.h>
 #include <unistd.h>
 #include <signal.h>
-	#define ASSERTFAIL(msg) \
+#define ASSERTFAIL(msg) \
 		{LOGERROR3("***ASSERTION FAILED (EXIT) *** %s in %s:%d",msg,__FILE__,__LINE__); \
 		kill(getpid(), SIGABRT);}
 #endif
 
 #ifndef ASSERTFAIL
-	#define ASSERTFAIL(msg) \
+#define ASSERTFAIL(msg) \
 		{LOGERROR3("***ASSERTION FAILED (EXIT) *** %s in %s:%d",msg,__FILE__,__LINE__); \
 		}
 #endif
@@ -74,19 +74,37 @@ assertnoerrno(long actual, const char* fname, long line) {
 
     const char *errstr;
     switch (errno) {
-    case 13 /* EACCES */: errstr = "EACCESS"; break;
-    case 17 /* EEXIST */: errstr = "EEXIST"; break;
-    case 22 /* EINVAL */: errstr = "EINVAL"; break;
-    case 23 /* ENFILE */: errstr = "ENFILE"; break;
-    case 2 /* ENOENT */: errstr = "ENOENT"; break;
-    case 12 /* ENOMEM */: errstr = "ENOMEM"; break;
-    case 28 /* ENOSPC */: errstr = "ENOSPC"; break;
-    case 1 /* EPERM */: errstr = "EPERM"; break;
-    default: errstr = ""; break;
+    case 13 /* EACCES */:
+        errstr = "EACCESS";
+        break;
+    case 17 /* EEXIST */:
+        errstr = "EEXIST";
+        break;
+    case 22 /* EINVAL */:
+        errstr = "EINVAL";
+        break;
+    case 23 /* ENFILE */:
+        errstr = "ENFILE";
+        break;
+    case 2 /* ENOENT */:
+        errstr = "ENOENT";
+        break;
+    case 12 /* ENOMEM */:
+        errstr = "ENOMEM";
+        break;
+    case 28 /* ENOSPC */:
+        errstr = "ENOSPC";
+        break;
+    case 1 /* EPERM */:
+        errstr = "EPERM";
+        break;
+    default:
+        errstr = "";
+        break;
     }
     char buf[255];
-    snprintf(buf, sizeof(buf), "%s@%ld return:%ld errno:%s (%d) ", 
-		fname, line, actual, errstr, errno);
+    snprintf(buf, sizeof(buf), "%s@%ld return:%ld errno:%s (%d) ",
+             fname, line, actual, errstr, errno);
     ASSERTFAILBUF(buf);
     ASSERTFAIL("system errno");
 }
@@ -119,13 +137,13 @@ assertnonzero(long actual, const char* fname, long line, const char *msg="(no me
 inline void
 assertEqualPtr(void* expected, void* actual, const char* context, long line)
 {
-	if (expected == actual) {
+    if (expected == actual) {
         return;
     }
 
     char buf[255];
-	snprintf(buf, sizeof(buf), "%s expected:%lx actual:%lx line:%ld",
-			 context, (long) (size_t) expected, (long)(size_t) actual, line);
+    snprintf(buf, sizeof(buf), "%s expected:%lx actual:%lx line:%ld",
+             context, (long) (size_t) expected, (long)(size_t) actual, line);
     ASSERTFAILBUF(buf);
     ASSERTFAIL("expected equal");
 }
@@ -139,13 +157,13 @@ assertEqual(double expected, double actual, double tolerance, const char* contex
     }
 
     char buf[255];
-	if (tolerance == 0) {
-		snprintf(buf, sizeof(buf), "%s expected:%ld actual:%ld line:%ld",
-				 context, (long) expected, (long) actual, line);
-	} else {
-		snprintf(buf, sizeof(buf), "%s expected:%g actual:%g tolerance:%g line:%ld",
-				 context, expected, actual, tolerance, line);
-	}
+    if (tolerance == 0) {
+        snprintf(buf, sizeof(buf), "%s expected:%ld actual:%ld line:%ld",
+                 context, (long) expected, (long) actual, line);
+    } else {
+        snprintf(buf, sizeof(buf), "%s expected:%g actual:%g tolerance:%g line:%ld",
+                 context, expected, actual, tolerance, line);
+    }
     ASSERTFAILBUF(buf);
     ASSERTFAIL("expected equal");
 }
@@ -154,11 +172,11 @@ assertEqual(double expected, double actual, double tolerance, const char* contex
 #define ASSERTNOERRSTR(a) assertEqual("",a,__FILE__,__LINE__)
 inline void
 assertEqual(const char * expected, const char * actual, const char* context, int line) {
-	if (actual == NULL) {
-		if (expected == NULL || *expected == '\0') {
-			return;
-		}
-	} else if (strcmp(expected, actual)==0) {
+    if (actual == NULL) {
+        if (expected == NULL || *expected == '\0') {
+            return;
+        }
+    } else if (strcmp(expected, actual)==0) {
         return;
     }
 

@@ -44,7 +44,7 @@ protected:
     uint8_t curLevel;
     uint8_t curStatus;
     uint8_t fgIndex;
-	uint32_t fgMillis;
+    uint32_t fgMillis;
     uint32_t fg; // foreground color
     uint32_t bg; // background color
 public:

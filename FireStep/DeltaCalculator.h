@@ -30,12 +30,12 @@ public:
     PH5TYPE z;
     XYZ3D(PH5TYPE x, PH5TYPE y, PH5TYPE z) : valid(true), x(x), y(y), z(z) {}
     XYZ3D(bool valid=true,PH5TYPE v=0): valid(valid), x(v), y(v), z(v) {}
-	bool operator==(const XYZ3D& that) {
-		return x == that.x && y == that.y && z == that.z && valid == that.valid;
-	}
-	bool operator!=(const XYZ3D& that) {
-		return x != that.x || y != that.y || z != that.z || valid != that.valid;
-	}
+    bool operator==(const XYZ3D& that) {
+        return x == that.x && y == that.y && z == that.z && valid == that.valid;
+    }
+    bool operator!=(const XYZ3D& that) {
+        return x != that.x || y != that.y || z != that.z || valid != that.valid;
+    }
     inline bool isValid() {
         return valid;
     }
@@ -78,7 +78,7 @@ protected:
     static PH5TYPE dtr;
 public:
     DeltaCalculator();
-	void setup();
+    void setup();
     inline PH5TYPE getBaseTriangleSide() {
         return f;
     }
@@ -130,14 +130,14 @@ public:
     inline PH5TYPE degreePulses() {
         return steps360 * microsteps * gearRatio / 360.0;
     }
-	inline PH5TYPE getZOffset() { // Z distance from base to effector with arms level (0 degrees)
-		return dz;
-	}
-	PH5TYPE getMinZ(PH5TYPE x=0, PH5TYPE y=0);  // lowest possible point at given XY
-	PH5TYPE getMinDegrees(); // base/effector arms are colinear here (which is usually bad mechanically)
+    inline PH5TYPE getZOffset() { // Z distance from base to effector with arms level (0 degrees)
+        return dz;
+    }
+    PH5TYPE getMinZ(PH5TYPE x=0, PH5TYPE y=0);  // lowest possible point at given XY
+    PH5TYPE getMinDegrees(); // base/effector arms are colinear here (which is usually bad mechanically)
     Step3D getHomePulses();
-	Angle3D getHomeAngles();
-	void setHomeAngles(Angle3D value);
+    Angle3D getHomeAngles();
+    void setHomeAngles(Angle3D value);
     Step3D calcPulses(XYZ3D xyz);
     Angle3D calcAngles(XYZ3D xyz);
     XYZ3D calcXYZ(Step3D pulses);

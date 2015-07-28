@@ -672,11 +672,21 @@ Status PHMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     }
 
     if (pjobj) {
-		if (pjobj->at("lp").success()) { (*pjobj)["lp"] = nLoops; }
-        if (pjobj->at("pp").success()) { (*pjobj)["pp"].set(pp, 1); }
-        if (pjobj->at("sg").success()) { (*pjobj)["sg"] = sg; }
-        if (pjobj->at("tp").success()) { (*pjobj)["tp"].set(tp, 3); }
-        if (pjobj->at("ts").success()) { (*pjobj)["ts"].set(ts, 3); }
+        if (pjobj->at("lp").success()) {
+            (*pjobj)["lp"] = nLoops;
+        }
+        if (pjobj->at("pp").success()) {
+            (*pjobj)["pp"].set(pp, 1);
+        }
+        if (pjobj->at("sg").success()) {
+            (*pjobj)["sg"] = sg;
+        }
+        if (pjobj->at("tp").success()) {
+            (*pjobj)["tp"].set(tp, 3);
+        }
+        if (pjobj->at("ts").success()) {
+            (*pjobj)["ts"].set(ts, 3);
+        }
     }
 
     return status;
@@ -720,26 +730,26 @@ Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
             }
         }
         status = execute(jcmd, &kidObj);
-	} else if (strcmp("movrz",key) == 0 || strcmp("rz",key) == 0) {
-		// TODO: clean up mov implementation
-		switch (machine.topology) {
-		case MTO_FPD: {
-			XYZ3D xyz = machine.getXYZ3D();
-			PH5TYPE z = 0;
-			status = processField<PH5TYPE, PH5TYPE>(jobj, key, z);
-			if (status == STATUS_OK) {
-				destination.value[2] = xyz.z + z;
-				if (strcmp("movrz",key) == 0) {
-					status = execute(jcmd, NULL);
-				}
-			}
-			break;
-		}
-		default:
-			return jcmd.setError(STATUS_MTO_FIELD, key);
-		}
+    } else if (strcmp("movrz",key) == 0 || strcmp("rz",key) == 0) {
+        // TODO: clean up mov implementation
+        switch (machine.topology) {
+        case MTO_FPD: {
+            XYZ3D xyz = machine.getXYZ3D();
+            PH5TYPE z = 0;
+            status = processField<PH5TYPE, PH5TYPE>(jobj, key, z);
+            if (status == STATUS_OK) {
+                destination.value[2] = xyz.z + z;
+                if (strcmp("movrz",key) == 0) {
+                    status = execute(jcmd, NULL);
+                }
+            }
+            break;
+        }
+        default:
+            return jcmd.setError(STATUS_MTO_FIELD, key);
+        }
     } else if (strncmp("mov", key, 3) == 0) { // short form
-		// TODO: clean up mov implementation
+        // TODO: clean up mov implementation
         MotorIndex iMotor = machine.motorOfName(key + strlen(key) - 1);
         if (iMotor == INDEX_NONE) {
             TESTCOUT1("STATUS_NO_MOTOR: ", key);
@@ -749,24 +759,24 @@ Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
         if (status == STATUS_OK) {
             status = execute(jcmd, NULL);
         }
-    } else if (strcmp("d", key) == 0) { 
-		if (!jobj.at("a").success()) {
-			return jcmd.setError(STATUS_FIELD_REQUIRED,"a");
-		}
-    } else if (strcmp("a", key) == 0) { 
-		// polar CCW from X-axis around X0Y0
-		if (!jobj.at("d").success()) {
-			return jcmd.setError(STATUS_FIELD_REQUIRED,"d");
-		}
-		PH5TYPE d = jobj["d"];
-		PH5TYPE a = jobj["a"];
-		PH5TYPE pi = 3.14159265359;
-		PH5TYPE radians = a * pi / 180.0;
-		PH5TYPE y = d * sin(radians);
-		PH5TYPE x = d * cos(radians);
-		TESTCOUT2("x:", x, " y:", y);
-		destination.value[0] = x;
-		destination.value[1] = y;
+    } else if (strcmp("d", key) == 0) {
+        if (!jobj.at("a").success()) {
+            return jcmd.setError(STATUS_FIELD_REQUIRED,"a");
+        }
+    } else if (strcmp("a", key) == 0) {
+        // polar CCW from X-axis around X0Y0
+        if (!jobj.at("d").success()) {
+            return jcmd.setError(STATUS_FIELD_REQUIRED,"d");
+        }
+        PH5TYPE d = jobj["d"];
+        PH5TYPE a = jobj["a"];
+        PH5TYPE pi = 3.14159265359;
+        PH5TYPE radians = a * pi / 180.0;
+        PH5TYPE y = d * sin(radians);
+        PH5TYPE x = d * cos(radians);
+        TESTCOUT2("x:", x, " y:", y);
+        destination.value[0] = x;
+        destination.value[1] = y;
     } else if (strcmp("lp", key) == 0) {
         // output variable
     } else if (strcmp("mv", key) == 0) {
@@ -1323,22 +1333,22 @@ Status JsonController::cancel(JsonCommand& jcmd, Status cause) {
 }
 
 void JsonController::sendResponse(JsonCommand &jcmd, Status status) {
-	jcmd.setStatus(status);
-	if (status >= 0) {
-		if (jcmd.responseAvailable() < 1) {
-			TESTCOUT2("response available:", jcmd.responseAvailable(), " capacity:", jcmd.responseCapacity());
-			jcmd.setStatus(STATUS_JSON_MEM1);
-		} else if (jcmd.requestAvailable() < 1) {
-			TESTCOUT2("request available:", jcmd.requestAvailable(), " capacity:", jcmd.requestCapacity());
-			jcmd.setStatus(STATUS_JSON_MEM2);
-		}
-	}
+    jcmd.setStatus(status);
+    if (status >= 0) {
+        if (jcmd.responseAvailable() < 1) {
+            TESTCOUT2("response available:", jcmd.responseAvailable(), " capacity:", jcmd.responseCapacity());
+            jcmd.setStatus(STATUS_JSON_MEM1);
+        } else if (jcmd.requestAvailable() < 1) {
+            TESTCOUT2("request available:", jcmd.requestAvailable(), " capacity:", jcmd.requestCapacity());
+            jcmd.setStatus(STATUS_JSON_MEM2);
+        }
+    }
     if (machine.jsonPrettyPrint) {
         jcmd.response().prettyPrintTo(Serial);
     } else {
         jcmd.response().printTo(Serial);
     }
-	jcmd.responseClear();
+    jcmd.responseClear();
     Serial.println();
 }
 
@@ -1450,7 +1460,7 @@ Status JsonController::process(JsonCommand& jcmd) {
         status = STATUS_JSON_CMD;
     }
 
-	jcmd.setTicks();
+    jcmd.setTicks();
     jcmd.setStatus(status);
 
     if (!isProcessing(status)) {
@@ -1678,7 +1688,7 @@ Status JsonController::processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& j
             node["ha2"] = "";
             node["ha3"] = "";
             node["mi"] = "";
-			node["pd"] = "";
+            node["pd"] = "";
             node["re"] = "";
             node["rf"] = "";
             node["st"] = "";
@@ -1723,10 +1733,10 @@ Status JsonController::processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& j
     } else if (strcmp("pd", key) == 0 || strcmp("dimpd", key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
-			JsonArray &jarr = jobj.createNestedArray(key);
-			for (int16_t i=0; i<PROBE_DATA; i++) {
-				jarr.add(machine.op.probe.probeData[i]);
-			}
+            JsonArray &jarr = jobj.createNestedArray(key);
+            for (int16_t i=0; i<PROBE_DATA; i++) {
+                jarr.add(machine.op.probe.probeData[i]);
+            }
         } else {
             status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }

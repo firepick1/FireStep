@@ -21,7 +21,7 @@ void NeoPixel::setup(int pin) {
         strip.show();
     }
     fgIndex = 0;
-	fgMillis = 0;
+    fgMillis = 0;
     cameraR = 0;
     cameraG = 0;
     cameraB = 0;
@@ -32,11 +32,11 @@ void NeoPixel::setup(int pin) {
 
 void NeoPixel::show() {
     bool updateDisplay = curLevel != level || curStatus != status;
-	if (fgMillis < millis() && strip.numPixels()) {
+    if (fgMillis < millis() && strip.numPixels()) {
         fgIndex = (fgIndex + 1) % strip.numPixels();
-		fgMillis = millis() + 3000/16;
+        fgMillis = millis() + 3000/16;
         updateDisplay = true;
-	}
+    }
     if (!updateDisplay) {
         return;
     }

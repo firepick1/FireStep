@@ -1851,15 +1851,16 @@ void test_dvs() {
 }
 
 void test_error(MachineThread &mt, const char * cmd, Status status, const char *output = NULL) {
+	TESTCOUT1("test_error: ", cmd);
     Serial.push(JT(cmd));
     test_ticks(1); // parse
     if (mt.status == STATUS_BUSY_PARSED) {
         test_ticks(1); // initialize
     }
+    ASSERTEQUAL(status, mt.status);
     if (output) {
         ASSERTEQUALS(JT(output), Serial.output().c_str());
     }
-    ASSERTEQUAL(status, mt.status);
 }
 
 void test_errors() {
@@ -1916,6 +1917,46 @@ void test_PrettyPrint() {
                  Serial.output().c_str());
 
     cout << "TEST	: test_PrettyPrint() OK " << endl;
+}
+
+void test_autoSync() {
+    cout << "TEST	: test_autoSync() =====" << endl;
+
+	ASSERTEQUAL(1000, MAX_JSON);
+    uint8_t *eeaddr = 0;
+    MachineThread mt = test_setup();
+    Machine &machine = mt.machine;
+	ASSERTEQUAL(0, machine.syncHash);
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	ASSERT(machine.syncHash);
+	uint32_t hash1 = machine.syncHash;
+	machine.autoSync = true;
+	machine.topology = MTO_FPD;
+	ASSERTEQUAL(hash1, machine.syncHash);
+    mt.loop();
+	ASSERT(hash1 != machine.syncHash);
+	uint32_t hash2 = machine.syncHash;
+    ASSERTEQUAL(STATUS_BUSY_SYNC, mt.status);
+    mt.loop();
+	ASSERTEQUAL(hash2, machine.syncHash);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	// changed configuration should be reset
+	machine.axis[0].home = 123;
+	machine.topology = MTO_RAW;
+	ASSERTEQUAL(MTO_RAW, machine.topology);
+	ASSERTEQUAL(123, machine.axis[0].home);
+    mt.loop();
+	ASSERTEQUAL(MTO_FPD, machine.topology);
+	ASSERTEQUAL(0, machine.axis[0].home);
+	ASSERTEQUAL(hash2, machine.syncHash);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    mt.loop();
+	ASSERTEQUAL(hash2, machine.syncHash);
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    cout << "TEST	: test_autoSync() OK " << endl;
 }
 
 void test_eep() {
@@ -3123,7 +3164,8 @@ int main(int argc, char *argv[]) {
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
         //test_DeltaCalculator();
         //test_MTO_FPD();
-        test_eep();
+        //test_eep();
+        test_autoSync();
     } else {
         test_Serial();
         test_Thread();
@@ -3153,6 +3195,7 @@ int main(int argc, char *argv[]) {
         test_probe();
         test_DeltaCalculator();
         test_MTO_FPD();
+        test_autoSync();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;

@@ -28,40 +28,43 @@ Status Axis::enable(bool active) {
 }
 
 uint32_t Axis::hash() {
-	uint32_t result = 0;
-	uint8_t * pStart = (uint8_t *)(void*)&AXIS_CONFIG_START;
-	uint8_t * pEnd = (uint8_t *)(void*)&AXIS_CONFIG_END;
-	size_t bytes = pEnd - pStart;
-	for (size_t i=0; i<bytes; i++) {
-		result ^= (*pStart++ << (i%24));
-	}
-	TESTCOUT2("axis hash bytes:", bytes, " result:", result);
+    uint32_t result = 0;
+    uint8_t * pStart = (uint8_t *)(void*)&AXIS_CONFIG_START;
+    uint8_t * pEnd = (uint8_t *)(void*)&AXIS_CONFIG_END;
+    size_t bytes = pEnd - pStart;
+    for (size_t i=0; i<bytes; i++) {
+        result ^= (*pStart++ << (i%24));
+    }
 
-	return result;
+    return result;
 }
 
 char * Axis::saveConfig(char *out, size_t maxLen) {
-	snprintf(out, maxLen, "{"
-		"\"dh\":%s,"
-		"\"en\":%s,"
-		"\"ho\":%d,"
-		"\"is\":%d,"
-		"\"mi\":%d,"
-		"\"sa\":%.1f,"
-		"\"tm\":%d,"
-		"\"tn\":%d,"
-		"\"ud\":%d}",
-		dirHIGH ? "true":"false",
-		enabled ? "true":"false",
-		home,
-		idleSnooze,
-		microsteps,
-		stepAngle,
-		travelMax,
-		travelMin,
-		usDelay,
-		NULL);
-	return out + strlen(out);
+    if (enabled) {
+        snprintf(out, maxLen, "{"
+                 "\"dh\":%s,"
+                 "\"en\":%s,"
+                 "\"ho\":%d,"
+                 "\"is\":%d,"
+                 "\"mi\":%d,"
+                 "\"sa\":%.1f,"
+                 "\"tm\":%d,"
+                 "\"tn\":%d,"
+                 "\"ud\":%d}",
+                 dirHIGH ? "true":"false",
+                 enabled ? "true":"false",
+                 home,
+                 idleSnooze,
+                 microsteps,
+                 stepAngle,
+                 travelMax,
+                 travelMin,
+                 usDelay,
+                 NULL);
+    } else {
+        snprintf(out, maxLen, "{\"en\":false}");
+    }
+    return out + strlen(out);
 }
 
 ////////////////////// Machine /////////////////////////
@@ -70,7 +73,7 @@ Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
       tvMax(0.7), homingPulses(3), latchBackoff(LATCH_BACKOFF),
       searchDelay(800), pinStatus(NOPIN), eeUser(2000), topology(MTO_RAW),
-	  outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false)
+      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -81,25 +84,24 @@ Machine::Machine()
         motor[i] = i;
     }
 
-	for (int16_t i=0; i<PROBE_DATA; i++) {
-		op.probe.probeData[i] = 0;
-	}
+    for (int16_t i=0; i<PROBE_DATA; i++) {
+        op.probe.probeData[i] = 0;
+    }
 }
 
 uint32_t Machine::hash() {
-	uint32_t result = 0;
-	uint8_t *pStart = (uint8_t*)(void*) &MACHINE_CONFIG_START;
-	uint8_t *pEnd = (uint8_t*)(void*) &MACHINE_CONFIG_END;
-	size_t bytes = pEnd - pStart;
-	for (size_t i=0; i<bytes; i++) {
-		result ^= (*pStart++ << (i%24));
-	}
-	for (AxisIndex i=0; i<AXIS_COUNT; i++) {
-		result ^= axis[i].hash();
-	}
-	TESTCOUT2("machine hash bytes:", bytes, " result:", result);
+    uint32_t result = 0;
+    uint8_t *pStart = (uint8_t*)(void*) &MACHINE_CONFIG_START;
+    uint8_t *pEnd = (uint8_t*)(void*) &MACHINE_CONFIG_END;
+    size_t bytes = pEnd - pStart;
+    for (size_t i=0; i<bytes; i++) {
+        result ^= (*pStart++ << (i%24));
+    }
+    for (AxisIndex i=0; i<AXIS_COUNT; i++) {
+        result ^= axis[i].hash();
+    }
 
-	return result;
+    return result;
 }
 
 bool Machine::isCorePin(int16_t pin) {
@@ -119,7 +121,7 @@ Status Machine::setPinConfig_EMC02() {
     Status status = STATUS_OK;
 
     pinStatus = PC1_STATUS_PIN;
-	op.probe.pinProbe = PC1_PROBE_PIN;
+    op.probe.pinProbe = PC1_PROBE_PIN;
     setPin(axis[0].pinStep, PC1_X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, PC1_X_DIR_PIN, OUTPUT);
     setPin(axis[0].pinMin, PC1_X_MIN_PIN, INPUT);
@@ -179,7 +181,7 @@ Status Machine::setPinConfig_EMC02() {
 Status Machine::setPinConfig_RAMPS1_4() {
     Status status = STATUS_OK;
     pinStatus = PC2_STATUS_PIN;
-	op.probe.pinProbe = PC2_PROBE_PIN;
+    op.probe.pinProbe = PC2_PROBE_PIN;
     setPin(axis[0].pinStep, PC2_X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, PC2_X_DIR_PIN, OUTPUT);
     setPin(axis[0].pinMin, PC2_X_MIN_PIN, INPUT);
@@ -441,7 +443,7 @@ Status Machine::pulse(Quad<StepCoord> &pulses) {
 }
 
 Status Machine::finalizeHome() {
-	Status status = STATUS_OK;
+    Status status = STATUS_OK;
     switch (topology) {
     case MTO_RAW:
     default:
@@ -450,28 +452,28 @@ Status Machine::finalizeHome() {
         Quad<StepCoord> limit = getMotorPosition();
         Step3D pulses = delta.calcPulses(XYZ3D());
         op.probe.setup(limit, Quad<StepCoord>(
-			pulses.p1,
-			pulses.p2,
-			pulses.p3,
-			limit.value[3]
-		));
-		status = STATUS_BUSY_CALIBRATING;
+                           pulses.p1,
+                           pulses.p2,
+                           pulses.p3,
+                           limit.value[3]
+                       ));
+        status = STATUS_BUSY_CALIBRATING;
         do {
             // fast probe because we don't expect to hit anything
             status = probe(status, 0);
-			//TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
+            //TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
         } while (status == STATUS_BUSY_CALIBRATING);
         if (status == STATUS_PROBE_FAILED) {
-			// we didn't hit anything and that is good
+            // we didn't hit anything and that is good
             status = STATUS_OK;
         } else if (status == STATUS_OK) {
-			// we hit something and that's not good
+            // we hit something and that's not good
             status = STATUS_TRAVEL_MAX;
         }
     } // case MTO_FPD
     break;
     }
-	return status;
+    return status;
 }
 
 Status Machine::home(Status status) {
@@ -531,10 +533,10 @@ Status Machine::probe(Status status, DelayMics delay) {
     if (op.probe.probing) {
         status = stepProbe(delay < 0 ? searchDelay : delay);
     } else {
-		if (topology == MTO_FPD && op.probe.dataSource == PDS_Z) {
-			XYZ3D xyz = getXYZ3D();
-			op.probe.archiveData(xyz.z);
-		}
+        if (topology == MTO_FPD && op.probe.dataSource == PDS_Z) {
+            XYZ3D xyz = getXYZ3D();
+            op.probe.archiveData(xyz.z);
+        }
         status = STATUS_OK;
     }
 
@@ -626,7 +628,7 @@ Quad<StepCoord> Machine::getMotorPosition() {
            );
 }
 
-void Machine::idle() {
+Status Machine::idle(Status status) {
     for (MotorIndex i = 0; i < MOTOR_COUNT; i++) {
         if (motorAxis[i]->enabled && motorAxis[i]->idleSnooze) {
             motorAxis[i]->enable(false);
@@ -634,6 +636,7 @@ void Machine::idle() {
             motorAxis[i]->enable(true);
         }
     }
+    return sync(status);
 }
 
 /**
@@ -664,61 +667,77 @@ XYZ3D Machine::getXYZ3D() {
 }
 
 char * Machine::saveSysConfig(char *out, size_t maxLen) {
-	snprintf(out, maxLen, "{"
-		"\"as\":%s,"
-		"\"db\":%d,"
-		"\"eu\":%d,"
-		"\"hp\":%d,"
-		"\"jp\":%s,"
-		"\"lb\":%d,"
-		"\"lh\":%s,"
-		"\"mv\":%ld,"
-		"\"om\":%d,"
-		"\"pc\":%d,"
-		"\"pi\":%d,"
-		"\"to\":%d,"
-		"\"tv\":%.2f}",
-		autoSync ? "true":"false",
-		debounce,
-		eeUser,
-		homingPulses,
-		jsonPrettyPrint ? "true":"false",
-		latchBackoff,
-		invertLim ? "true":"false",
-		(long) vMax,
-		outputMode,
-		pinConfig,
-		pinStatus,
-		topology,
-		tvMax,
-		NULL);
-	return out + strlen(out);
+    snprintf(out, maxLen, "{"
+             "\"as\":%s,"
+             "\"db\":%d,"
+             "\"eu\":%d,"
+             "\"hp\":%d,"
+             "\"jp\":%s,"
+             "\"lb\":%d,"
+             "\"lh\":%s,"
+             "\"mv\":%ld,"
+             "\"om\":%d,"
+             "\"pc\":%d,"
+             "\"pi\":%d,"
+             "\"to\":%d,"
+             "\"tv\":%.2f}",
+             autoSync ? "true":"false",
+             debounce,
+             eeUser,
+             homingPulses,
+             jsonPrettyPrint ? "true":"false",
+             latchBackoff,
+             invertLim ? "true":"false",
+             (long) vMax,
+             outputMode,
+             pinConfig,
+             pinStatus,
+             topology,
+             tvMax,
+             NULL);
+    return out + strlen(out);
 }
 
 char * Machine::saveDimConfig(char *out, size_t maxLen) {
-	Angle3D ha = delta.getHomeAngles();
-	snprintf(out, maxLen, "{"
-		"\"e\":%.2f,"
-		"\"f\":%.2f,"
-		"\"gr\":%.4f,"
-		"\"ha1\":%.2f,"
-		"\"ha2\":%.2f,"
-		"\"ha3\":%.2f,"
-		"\"mi\":%d,"
-		"\"re\":%.2f,"
-		"\"rf\":%.2f,"
-		"\"st\":%d}",
-		delta.getEffectorLength(),
-		delta.getBaseArmLength(),
-		delta.getGearRatio(),
-		ha.theta1,
-		ha.theta2,
-		ha.theta3,
-		delta.getMicrosteps(),
-		delta.getEffectorTriangleSide(),
-		delta.getBaseTriangleSide(),
-		delta.getSteps360(),
-		NULL);
-	return out + strlen(out);
+    Angle3D ha = delta.getHomeAngles();
+    snprintf(out, maxLen, "{"
+             "\"e\":%.2f,"
+             "\"f\":%.2f,"
+             "\"gr\":%.4f,"
+             "\"ha1\":%.2f,"
+             "\"ha2\":%.2f,"
+             "\"ha3\":%.2f,"
+             "\"mi\":%d,"
+             "\"re\":%.2f,"
+             "\"rf\":%.2f,"
+             "\"st\":%d}",
+             delta.getEffectorLength(),
+             delta.getBaseArmLength(),
+             delta.getGearRatio(),
+             ha.theta1,
+             ha.theta2,
+             ha.theta3,
+             delta.getMicrosteps(),
+             delta.getEffectorTriangleSide(),
+             delta.getBaseTriangleSide(),
+             delta.getSteps360(),
+             NULL);
+    return out + strlen(out);
 }
 
+Status Machine::sync(Status status) {
+    if (syncHash == 0) {
+        syncHash = hash();
+        return status;
+    }
+    if (!autoSync || status!=STATUS_WAIT_IDLE) {
+        return status;
+    }
+    uint32_t newHash = hash();
+    if (syncHash == newHash) {
+        return status;
+    }
+
+    syncHash = newHash;
+    return STATUS_BUSY_SYNC;
+}

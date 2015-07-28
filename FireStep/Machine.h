@@ -32,8 +32,8 @@ extern int32_t delayMicsTotal;
 #endif
 
 enum OutputMode {
-	OUTPUT_ARRAY1=0, //  JSON command arrays only return last command response
-	OUTPUT_ARRAYN=1, // JSON command arrays return all command responses
+    OUTPUT_ARRAY1=0, //  JSON command arrays only return last command response
+    OUTPUT_ARRAYN=1, // JSON command arrays return all command responses
 };
 
 /**
@@ -52,8 +52,8 @@ inline void delayMics(int32_t usDelay) {
 }
 
 enum Topology {
-	MTO_RAW = 0, // Raw stepper coordinates in microstep pulses
-	MTO_FPD = 1, // Rotational delta with FirePick Delta dimensions
+    MTO_RAW = 0, // Raw stepper coordinates in microstep pulses
+    MTO_FPD = 1, // Rotational delta with FirePick Delta dimensions
 };
 
 enum AxisIndexValue {
@@ -119,9 +119,9 @@ public:
         homing(false)
     {};
 
-	uint32_t hash();
+    uint32_t hash();
     Status enable(bool active);
-	char * saveConfig(char *out, size_t maxLen);
+    char * saveConfig(char *out, size_t maxLen);
     bool isEnabled() {
         return enabled;
     }
@@ -170,8 +170,8 @@ typedef int8_t AxisIndex;
 typedef int8_t MotorIndex;
 
 enum ProbeDataSource {
-	PDS_NONE = 0, //  no data source
-	PDS_Z = 1, // Cartesian Z-coordinate
+    PDS_NONE = 0, //  no data source
+    PDS_Z = 1, // Cartesian Z-coordinate
 };
 
 typedef class OpProbe {
@@ -181,44 +181,44 @@ public:
     StepCoord		maxDelta; // absolute value of maximum stepper displacement
     StepCoord		curDelta; // absolute value of current stepper displacement
     PinType 		pinProbe; // pin used for probe limit
-	ProbeDataSource	dataSource;
+    ProbeDataSource	dataSource;
     bool			probing;
     bool			invertProbe; // invert logic sense of probe
-	PH5TYPE			probeData[PROBE_DATA];
+    PH5TYPE			probeData[PROBE_DATA];
 
     OpProbe() : pinProbe(NOPIN), invertProbe(false) {
         setup(Quad<StepCoord>());
-		memset(probeData, 0, sizeof(probeData));
+        memset(probeData, 0, sizeof(probeData));
     }
     void setup(Quad<StepCoord> posStart) {
-		setup(posStart, posStart);
-	}
+        setup(posStart, posStart);
+    }
     void setup(Quad<StepCoord> posStart, Quad<StepCoord> posEnd) {
         start = posStart;
         end = posEnd;
         maxDelta = 0;
-		for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
-			maxDelta = max(maxDelta, (StepCoord) abs(end.value[i] - start.value[i]));
-		}
+        for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
+            maxDelta = max(maxDelta, (StepCoord) abs(end.value[i] - start.value[i]));
+        }
         curDelta = 0;
-		dataSource = PDS_NONE;
-		if (pinProbe == NOPIN) {
-			probing = false;
-		} else {
-			pinMode(pinProbe, INPUT);
-			probing = true;
-		}
+        dataSource = PDS_NONE;
+        if (pinProbe == NOPIN) {
+            probing = false;
+        } else {
+            pinMode(pinProbe, INPUT);
+            probing = true;
+        }
     }
     StepCoord interpolate(MotorIndex iMotor) {
         float t = maxDelta ? (float)curDelta/(float)maxDelta : 0;
         return (StepCoord)(start.value[iMotor]*(1-t) + end.value[iMotor]*t + 0.5);
     }
-	void archiveData(PH5TYPE data) {
-		for (int16_t i=PROBE_DATA; --i>0; ) {
-			probeData[i] = probeData[i-1];
-		}
-		probeData[0] = data;
-	}
+    void archiveData(PH5TYPE data) {
+        for (int16_t i=PROBE_DATA; --i>0; ) {
+            probeData[i] = probeData[i-1];
+        }
+        probeData[0] = data;
+    }
 } OpProbe;
 
 typedef class Machine : public QuadStepper {
@@ -230,26 +230,27 @@ public:
     bool	 	pinEnableHigh;
     bool		invertLim;
     bool		jsonPrettyPrint;
-	bool		autoSync; // auto-save configuration to EEPROM 
-	uint8_t		debounce;
+    bool		autoSync; // auto-save configuration to EEPROM
+    uint8_t		debounce;
     AxisIndex	motor[MOTOR_COUNT];
     Display 	nullDisplay;
-	DeltaCalculator delta;
+    DeltaCalculator delta;
     int32_t 	vMax; // maximum stroke velocity (pulses/second)
     PH5TYPE 	tvMax; // time to reach maximum velocity
     int16_t		homingPulses;
     StepCoord	latchBackoff;
     DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
     PinType		pinStatus;
-	int16_t		eeUser;	// EEPROM user startup commands
-	Topology	topology;
-	OutputMode	outputMode;
+    int16_t		eeUser;	// EEPROM user startup commands
+    Topology	topology;
+    OutputMode	outputMode;
     struct {
         OpProbe		probe;
     } op;
 
 public:
-#define MACHINE_CONFIG_END axis
+#define MACHINE_CONFIG_END syncHash;
+    uint32_t	syncHash;
     Axis 		axis[AXIS_COUNT];
     Display*	pDisplay;
     Axis *		motorAxis[MOTOR_COUNT];
@@ -264,14 +265,14 @@ protected:
 
 public:
     Machine();
-	uint32_t hash();
+    uint32_t hash();
     virtual	Status step(const Quad<StepDV> &pulse);
     bool isCorePin(int16_t pin);
     inline bool isAtLimit(PinType pin) {
-		uint8_t highCount = digitalRead(pin) ? 1 : 0;
-		for (uint8_t i=0; i<debounce; i++) {
-			highCount += digitalRead(pin) ? 1 : 0;
-		}
+        uint8_t highCount = digitalRead(pin) ? 1 : 0;
+        for (uint8_t i=0; i<debounce; i++) {
+            highCount += digitalRead(pin) ? 1 : 0;
+        }
         return (invertLim == !(highCount > debounce/2));
     }
     inline int8_t pulsePin(int16_t pinStep, int8_t n) {
@@ -328,7 +329,6 @@ public:
     virtual Status home(Status status);
     virtual Status finalizeHome();
     virtual Status probe(Status status, DelayMics delay=-1);
-    void idle();
     Status setAxisIndex(MotorIndex iMotor, AxisIndex iAxis);
     AxisIndex getAxisIndex(MotorIndex iMotor) {
         return motor[iMotor];
@@ -342,10 +342,11 @@ public:
     PinConfig getPinConfig() {
         return pinConfig;
     }
-	XYZ3D getXYZ3D();
-	char * saveSysConfig(char *out, size_t maxLen);
-	char * saveDimConfig(char *out, size_t maxLen);
-	void sync();
+    XYZ3D getXYZ3D();
+    char * saveSysConfig(char *out, size_t maxLen);
+    char * saveDimConfig(char *out, size_t maxLen);
+    Status idle(Status status);
+    Status sync(Status status);
 } Machine;
 
 #ifdef TEST

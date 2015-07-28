@@ -15,11 +15,11 @@
 namespace firestep {
 
 #define MAX_JSON (STROKE_SEGMENTS*2*4 + 200)
-#if defined(TEST)
-#define JSON_REQUEST_BUFFER JSON_OBJECT_SIZE(25)
-#else
+//#if defined(TEST)
+//#define JSON_REQUEST_BUFFER JSON_OBJECT_SIZE(25)
+//#else
 #define JSON_REQUEST_BUFFER JSON_OBJECT_SIZE(150)
-#endif
+//#endif
 #define JSON_RESPONSE_BUFFER 200
 
 typedef class JsonCommand {

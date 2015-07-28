@@ -12,6 +12,7 @@ enum Status {
     STATUS_BUSY_OK = 14,			// sub-command completed successfully
     STATUS_BUSY_EEPROM = 15,		// EEPROM command queued for processing
     STATUS_BUSY_CALIBRATING = 16,	// Processing calibration command
+    STATUS_BUSY_SYNC = 17,			// Saving configuration to EEPROM
     STATUS_WAIT_IDLE = 20,			// Awaiting input: inactive
     STATUS_WAIT_EOL = 21,			// Awaiting input: remainder of EOL-terminated command
     STATUS_WAIT_CAMERA = 22,		// Awaiting input: camera ready display
@@ -49,7 +50,7 @@ enum Status {
     STATUS_EEPROM_ADDR = -137,		// EEPROM address out of range
     STATUS_EEPROM_JSON = -138,		// No JSON to execute at EEPROM address
     STATUS_PROBE_PIN = -139,		// No probe pin specified
-	STATUS_KINEMATIC_XYZ = -140,	// Could not solve XYZ cartesian kinematics
+    STATUS_KINEMATIC_XYZ = -140,	// Could not solve XYZ cartesian kinematics
 
     // stroke
     STATUS_STROKE_SEGPULSES = -200,	// Stroke has too many pulses per segment [-127,127]
@@ -81,7 +82,7 @@ enum Status {
     STATUS_JSON_ARRAY_LEN = -420,	// JSON array is too short
     STATUS_OUTPUT_FIELD = -421,		// JSON field is for output only
     STATUS_FIELD_HEX_ERROR = -422,	// Expected JSON field hex string value
-	STATUS_TOPOLOGY_NAME = -423,	// JSON command not valid for current topology
+    STATUS_TOPOLOGY_NAME = -423,	// JSON command not valid for current topology
     STATUS_JSON_CMD = -423,			// JSON command must be object or array
     STATUS_JSON_STRING = -424,		// JSON string expected
     STATUS_JSON_EEPROM = -425,		// JSON EEPROM string too long
@@ -89,7 +90,7 @@ enum Status {
     STATUS_JSON_BOOL = -427,		// Expected JSON true or false
     STATUS_JSON_255 = -428,			// Expected JSON value between 0 and 255
     STATUS_JSON_DIGIT = -429,		// Expected numeric suffix for attribute
-	STATUS_MTO_FIELD = -430,		// JSON field is not allowed in current machine topology
+    STATUS_MTO_FIELD = -430,		// JSON field is not allowed in current machine topology
 
     // events
     STATUS_ESTOP = -900,			// Emergency hardware stop

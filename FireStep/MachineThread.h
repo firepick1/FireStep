@@ -13,7 +13,7 @@ typedef class MachineThread : Thread {
 protected:
     void displayStatus();
     Status executeEEPROM();
-	size_t readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen);
+    size_t readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen);
 
 public:
     Status status;
@@ -25,6 +25,7 @@ public:
     MachineThread();
     void setup(PinConfig pc);
     void loop();
+    void sync();
 } MachineThread;
 
 } // namespace firestep

@@ -285,7 +285,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     stroke.setTimePlanned(tS);
     stroke.length = N;
 #define SCALE 2
-	stroke.scale = SCALE;
+    stroke.scale = SCALE;
     PH5TYPE E[STROKE_SEGMENTS + 1];
     E[0] = phfMax.Ekt(0, 0);
     for (int16_t iSeg = 1; iSeg <= N; iSeg++) {
@@ -298,11 +298,11 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         StepCoord v = 0;
         for (int16_t iSeg = 1; iSeg <= N; iSeg++) {
             PH5TYPE pos = ph.r(E[iSeg]).Re();
-			if (iSeg == N) {
-				stroke.dEndPos.value[i] = pos < 0 ? pos - 0.5 : pos + 0.5;
-				TESTCOUT2("dEndPos.value[", (int) i, "] ", stroke.dEndPos.value[i]);
-			}
-			pos /= SCALE;
+            if (iSeg == N) {
+                stroke.dEndPos.value[i] = pos < 0 ? pos - 0.5 : pos + 0.5;
+                TESTCOUT2("dEndPos.value[", (int) i, "] ", stroke.dEndPos.value[i]);
+            }
+            pos /= SCALE;
             StepCoord sNew = pos < 0 ? pos - 0.5 : pos + 0.5;
             StepCoord vNew = sNew - s;
             stroke.vPeak = max(stroke.vPeak, (int32_t)abs(vNew*SCALE));

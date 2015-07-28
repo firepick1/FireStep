@@ -22,7 +22,9 @@ PH5TYPE DeltaCalculator::tan30_half = tan30 / 2.0;
 PH5TYPE DeltaCalculator::pi = 3.14159265359;
 PH5TYPE DeltaCalculator::dtr = pi / 180.0;
 
-StepCoord roundStep(PH5TYPE value) { return (StepCoord)(value + (value < 0 ? -0.5 : +0.5)); }
+StepCoord roundStep(PH5TYPE value) {
+    return (StepCoord)(value + (value < 0 ? -0.5 : +0.5));
+}
 
 DeltaCalculator::DeltaCalculator()
     : e(131.636), // effector equilateral triangle side
@@ -32,55 +34,55 @@ DeltaCalculator::DeltaCalculator()
       steps360(200),
       microsteps(16),
       gearRatio(150/16.0),
-	  dz(0)
+      dz(0)
 {
 }
 
 void DeltaCalculator::setup() {
     XYZ3D xyz = calcXYZ(Angle3D());
-	ASSERT(xyz.isValid());
-	
-	TESTCOUT1("xyz:", xyz.isValid());
+    ASSERT(xyz.isValid());
+
+    TESTCOUT1("xyz:", xyz.isValid());
     dz = -xyz.z; // use effector origin instead of base origin at zero degrees
-	TESTCOUT3("DeltaCalculator.dx:", xyz.x, " dy:", xyz.y, " dz:", dz);
-	TESTCOUT2("DeltaCalculator.degreePulses:", degreePulses(), " minZ:", getMinZ());
+    TESTCOUT3("DeltaCalculator.dx:", xyz.x, " dy:", xyz.y, " dz:", dz);
+    TESTCOUT2("DeltaCalculator.degreePulses:", degreePulses(), " minZ:", getMinZ());
 }
 
 PH5TYPE DeltaCalculator::getMinDegrees() {
-	PH5TYPE crf = f / sqrt3; // base circumcircle radius
-	PH5TYPE minDegrees = 180*asin(crf/(re-rf))/pi - 90;
-	TESTCOUT3("minDegrees:", minDegrees, " crf:", crf, " re-rf:", re-rf);
-	return minDegrees;
+    PH5TYPE crf = f / sqrt3; // base circumcircle radius
+    PH5TYPE minDegrees = 180*asin(crf/(re-rf))/pi - 90;
+    TESTCOUT3("minDegrees:", minDegrees, " crf:", crf, " re-rf:", re-rf);
+    return minDegrees;
 }
 
 void DeltaCalculator::setHomeAngles(Angle3D value) {
-	PH5TYPE minDegrees = getMinDegrees();	
+    PH5TYPE minDegrees = getMinDegrees();
 
-	eTheta.theta1 = value.theta1 - minDegrees;
-	eTheta.theta2 = value.theta2 - minDegrees;
-	eTheta.theta3 = value.theta3 - minDegrees;
+    eTheta.theta1 = value.theta1 - minDegrees;
+    eTheta.theta2 = value.theta2 - minDegrees;
+    eTheta.theta3 = value.theta3 - minDegrees;
 }
 
 Angle3D DeltaCalculator::getHomeAngles() {
-	PH5TYPE minDegrees = getMinDegrees();	
+    PH5TYPE minDegrees = getMinDegrees();
 
-	return Angle3D(
-		minDegrees+eTheta.theta1,
-		minDegrees+eTheta.theta2,
-		minDegrees+eTheta.theta3
-	);
+    return Angle3D(
+               minDegrees+eTheta.theta1,
+               minDegrees+eTheta.theta2,
+               minDegrees+eTheta.theta3
+           );
 }
 
 Step3D DeltaCalculator::getHomePulses() {
-	Angle3D angles(getHomeAngles());
-	PH5TYPE dp = degreePulses();
-	Step3D pulses(
-		roundStep(angles.theta1*dp),
-		roundStep(angles.theta2*dp),
-		roundStep(angles.theta3*dp)
-	);
-	TESTCOUT3("DeltaCalculator.homeAngle:", angles.theta1, " valid:", angles.isValid(), " pulses:", pulses.p1);
-	return pulses;
+    Angle3D angles(getHomeAngles());
+    PH5TYPE dp = degreePulses();
+    Step3D pulses(
+        roundStep(angles.theta1*dp),
+        roundStep(angles.theta2*dp),
+        roundStep(angles.theta3*dp)
+    );
+    TESTCOUT3("DeltaCalculator.homeAngle:", angles.theta1, " valid:", angles.isValid(), " pulses:", pulses.p1);
+    return pulses;
 }
 
 PH5TYPE DeltaCalculator::calcAngleYZ(PH5TYPE X, PH5TYPE Y, PH5TYPE Z) {
@@ -92,8 +94,8 @@ PH5TYPE DeltaCalculator::calcAngleYZ(PH5TYPE X, PH5TYPE Y, PH5TYPE Z) {
     // discriminant
     PH5TYPE d = -(a + b * y1) * (a + b * y1) + rf * (b * b * rf + rf);
     if (d < 0) {
-		//TESTCOUT3("***NO_SOLUTION*** DeltaCalculator calcAngleYZ X:", X, " Y:", Y, " Z:", Z);
-		return NO_SOLUTION;
+        //TESTCOUT3("***NO_SOLUTION*** DeltaCalculator calcAngleYZ X:", X, " Y:", Y, " Z:", Z);
+        return NO_SOLUTION;
     }
     PH5TYPE yj = (y1 - a * b - sqrt(d)) / (b * b + 1.0); // choosing outer point
     PH5TYPE zj = a + b * yj;
@@ -102,68 +104,68 @@ PH5TYPE DeltaCalculator::calcAngleYZ(PH5TYPE X, PH5TYPE Y, PH5TYPE Z) {
 }
 
 Step3D DeltaCalculator::calcPulses(XYZ3D xyz) {
-	Angle3D angles = calcAngles(xyz);
-	if (!angles.isValid()) {
-		return Step3D(false, NO_SOLUTION);
-	} 
-	PH5TYPE dp = degreePulses();
+    Angle3D angles = calcAngles(xyz);
+    if (!angles.isValid()) {
+        return Step3D(false, NO_SOLUTION);
+    }
+    PH5TYPE dp = degreePulses();
     Step3D pulses(
-		roundStep(angles.theta1*dp),
-		roundStep(angles.theta2*dp),
-		roundStep(angles.theta3*dp)
-	);
-	return pulses;
+        roundStep(angles.theta1*dp),
+        roundStep(angles.theta2*dp),
+        roundStep(angles.theta3*dp)
+    );
+    return pulses;
 }
 
 Angle3D DeltaCalculator::calcAngles(XYZ3D xyz) {
-	if (!xyz.isValid()) {
-		return Angle3D(false, NO_SOLUTION);
-	}
-	PH5TYPE x = xyz.x;
-	PH5TYPE y = xyz.y;
-	PH5TYPE z = xyz.z - dz;
-	Angle3D angles(
-		calcAngleYZ(x, y, z),
-		calcAngleYZ(x * cos120 + y * sin120, y * cos120 - x * sin120, z),
-		calcAngleYZ(x * cos120 - y * sin120, y * cos120 + x * sin120, z)
-	);
-	if (angles.theta1 == NO_SOLUTION ||
-		angles.theta2 == NO_SOLUTION ||
-		angles.theta3 == NO_SOLUTION) {
-		//TESTCOUT1("calcAngles:","NO_SOLUTION");
-		return Angle3D(false, NO_SOLUTION);
-	}
-	angles.theta1 += eTheta.theta1;
-	angles.theta2 += eTheta.theta2;
-	angles.theta3 += eTheta.theta3;
-	return angles;
+    if (!xyz.isValid()) {
+        return Angle3D(false, NO_SOLUTION);
+    }
+    PH5TYPE x = xyz.x;
+    PH5TYPE y = xyz.y;
+    PH5TYPE z = xyz.z - dz;
+    Angle3D angles(
+        calcAngleYZ(x, y, z),
+        calcAngleYZ(x * cos120 + y * sin120, y * cos120 - x * sin120, z),
+        calcAngleYZ(x * cos120 - y * sin120, y * cos120 + x * sin120, z)
+    );
+    if (angles.theta1 == NO_SOLUTION ||
+            angles.theta2 == NO_SOLUTION ||
+            angles.theta3 == NO_SOLUTION) {
+        //TESTCOUT1("calcAngles:","NO_SOLUTION");
+        return Angle3D(false, NO_SOLUTION);
+    }
+    angles.theta1 += eTheta.theta1;
+    angles.theta2 += eTheta.theta2;
+    angles.theta3 += eTheta.theta3;
+    return angles;
 }
 
 XYZ3D DeltaCalculator::calcXYZ(Step3D pulses) {
-	if (!pulses.isValid()) {
-		return XYZ3D(false, NO_SOLUTION);
-	}
-	PH5TYPE dp = degreePulses();
-	Angle3D angles(
-		pulses.p1/dp,
-		pulses.p2/dp,
-		pulses.p3/dp
-	);
-	return calcXYZ(angles);
+    if (!pulses.isValid()) {
+        return XYZ3D(false, NO_SOLUTION);
+    }
+    PH5TYPE dp = degreePulses();
+    Angle3D angles(
+        pulses.p1/dp,
+        pulses.p2/dp,
+        pulses.p3/dp
+    );
+    return calcXYZ(angles);
 }
 
-PH5TYPE DeltaCalculator::getMinZ(PH5TYPE x, PH5TYPE y) { 
-	XYZ3D xyz = calcXYZ(Angle3D(90,90,90));
-	xyz.x = x;
-	xyz.y = y;
-	TESTCOUT3("getMinZ xyz:", xyz.x, " y:", xyz.y, " z:", xyz.z);
-	Step3D pulses = calcPulses(xyz);
-	while (!pulses.isValid()) {
-		xyz.z += 1; // TODO: actually calculate instead of flailing around
-		pulses = calcPulses(xyz);
-	}
-	TESTCOUT3("getMinZ pulses:", pulses.p1, ", ", pulses.p2, ", ", pulses.p3);
-	return xyz.z;
+PH5TYPE DeltaCalculator::getMinZ(PH5TYPE x, PH5TYPE y) {
+    XYZ3D xyz = calcXYZ(Angle3D(90,90,90));
+    xyz.x = x;
+    xyz.y = y;
+    TESTCOUT3("getMinZ xyz:", xyz.x, " y:", xyz.y, " z:", xyz.z);
+    Step3D pulses = calcPulses(xyz);
+    while (!pulses.isValid()) {
+        xyz.z += 1; // TODO: actually calculate instead of flailing around
+        pulses = calcPulses(xyz);
+    }
+    TESTCOUT3("getMinZ pulses:", pulses.p1, ", ", pulses.p2, ", ", pulses.p3);
+    return xyz.z;
 }
 
 XYZ3D DeltaCalculator::calcXYZ(Angle3D angles) {
@@ -197,18 +199,18 @@ XYZ3D DeltaCalculator::calcXYZ(Angle3D angles) {
     // discriminant
     PH5TYPE d = b * b - 4.0 * a * c;
     if (d < 0) { // point exists
-        TESTCOUT3("DeltaCalculator calcXYZ() negative discriminant angles:", angles.theta1, 
-			", ", angles.theta2, ", ", angles.theta3);
+        TESTCOUT3("DeltaCalculator calcXYZ() negative discriminant angles:", angles.theta1,
+                  ", ", angles.theta2, ", ", angles.theta3);
         return XYZ3D(false, NO_SOLUTION);
     }
     PH5TYPE z = -0.5 * (b + sqrt(d)) / a;
-	ASSERT(!isnan(dz));
+    ASSERT(!isnan(dz));
     XYZ3D result(
         (a1 * z + b1) / dnm,
         (a2 * z + b2) / dnm,
         z + dz
     );
 
-	return result;
+    return result;
 }
 

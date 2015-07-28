@@ -80,6 +80,10 @@ Status JsonCommand::parseCore() {
         JsonArray &jarr = jbRequest.parseArray(json);
         if (!jarr.success()) {
             jResponseRoot["r"] = "?";
+            if (requestAvailable() < 10) {
+                //TESTCOUT1("requestAvailable:", requestAvailable());
+                return STATUS_JSON_MEM1;
+            }
             return STATUS_JSON_PARSE_ERROR;
         }
         jRequestRoot = jarr;
