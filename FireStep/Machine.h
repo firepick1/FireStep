@@ -230,6 +230,7 @@ public:
     bool	 	pinEnableHigh;
     bool		invertLim;
     bool		jsonPrettyPrint;
+	bool		autoSync; // auto-save configuration to EEPROM 
 	uint8_t		debounce;
     AxisIndex	motor[MOTOR_COUNT];
     Display 	nullDisplay;
@@ -246,9 +247,9 @@ public:
     struct {
         OpProbe		probe;
     } op;
-	uint8_t		MACHINE_CONFIG_END;
 
 public:
+#define MACHINE_CONFIG_END axis
     Axis 		axis[AXIS_COUNT];
     Display*	pDisplay;
     Axis *		motorAxis[MOTOR_COUNT];
@@ -344,6 +345,7 @@ public:
 	XYZ3D getXYZ3D();
 	char * saveSysConfig(char *out, size_t maxLen);
 	char * saveDimConfig(char *out, size_t maxLen);
+	void sync();
 } Machine;
 
 #ifdef TEST

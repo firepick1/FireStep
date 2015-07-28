@@ -142,10 +142,10 @@ void test_Machine() {
     arduino.setPin(PC2_Y_MIN_PIN, 0);
     arduino.setPin(PC2_Z_MIN_PIN, 0);
     Machine machine;
-	uint32_t hash1 = 250097196;
+	uint32_t hash1 = 247994412;
 	ASSERTEQUAL(hash1, machine.hash());
     machine.setPinConfig(PC2_RAMPS_1_4);
-	uint32_t hash2 = 221785853;
+	uint32_t hash2 = 219683069;
 	ASSERTEQUAL(hash2, machine.hash());
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_X_STEP_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_STEP_PIN));
@@ -220,7 +220,7 @@ void test_Machine() {
 
 	ASSERTEQUAL(hash2, machine.hash());
 	machine.axis[5].pinStep = 3;
-	uint32_t hash3 = 221785601;
+	uint32_t hash3 = 219682817;
 	ASSERTEQUAL(hash3, machine.hash());
 
 	// Configuration save
@@ -229,7 +229,7 @@ void test_Machine() {
 	ASSERTEQUALS(JT("{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveSysConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'db':0,'eu':2000,'hp':3,'jp':false,'lb':200,'lh':false,"
+	ASSERTEQUALS(JT("{'as':false,'db':0,'eu':2000,'hp':3,'jp':false,'lb':200,'lh':false,"
 				 "'mv':12800,'om':0,'pc':2,'pi':11,'to':0,'tv':0.70}"), 
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
@@ -728,7 +728,7 @@ void test_JsonController() {
     jc.process(jcmd);
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
-                      "{'eu':2000,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
+                      "{'as':false,'eu':2000,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
                       "'lp':0,'mv':12800,'om':0,'pc':2,'pi':11,'sd':800,'tc':12345,"\
                       "'to':0,'tv':0.700,'v':%.3f}"\
                       "},'t':0.000}\n";

@@ -70,7 +70,7 @@ Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
       tvMax(0.7), homingPulses(3), latchBackoff(LATCH_BACKOFF),
       searchDelay(800), pinStatus(NOPIN), eeUser(2000), topology(MTO_RAW),
-	  outputMode(OUTPUT_ARRAY1), debounce(0)
+	  outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -665,6 +665,7 @@ XYZ3D Machine::getXYZ3D() {
 
 char * Machine::saveSysConfig(char *out, size_t maxLen) {
 	snprintf(out, maxLen, "{"
+		"\"as\":%s,"
 		"\"db\":%d,"
 		"\"eu\":%d,"
 		"\"hp\":%d,"
@@ -677,6 +678,7 @@ char * Machine::saveSysConfig(char *out, size_t maxLen) {
 		"\"pi\":%d,"
 		"\"to\":%d,"
 		"\"tv\":%.2f}",
+		autoSync ? "true":"false",
 		debounce,
 		eeUser,
 		homingPulses,
