@@ -69,29 +69,36 @@ enum AxisIndexValue {
 typedef class Axis {
     friend void ::test_Home();
     friend class Machine;
+
 private:
     bool		enabled; // true: stepper drivers are enabled and powered
-public:
-    PinType 	pinStep; // step pin
-    PinType 	pinDir;	// step direction pin
-    PinType 	pinMin; // homing minimum limit switch
-    PinType 	pinMax;	// maximum limit switch (optional)
-    PinType 	pinEnable; // stepper driver enable pin (nENBL)
+
+public: // configuration
+#define AXIS_CONFIG_START pinStep
     StepCoord	home; // home position
     StepCoord 	travelMin; // soft minimum travel limit
     StepCoord 	travelMax; // soft maximum travel limit
-    StepCoord 	position; // current position (pulses)
     DelayMics	usDelay; // minimum time between stepper pulses
     DelayMics	idleSnooze; // idle enable-off snooze delay (microseconds)
     float		stepAngle; // 1.8:200 steps/rev; 0.9:400 steps/rev
     uint8_t		microsteps;	// normally 1,2,4,8,16 or 32
     bool		dirHIGH; // advance on HIGH
-    bool        advancing; // current direction
+
+public:
+#define AXIS_CONFIG_END advancing
+    PinType 	pinStep; // step pin
+    PinType 	pinDir;	// step direction pin
+    PinType 	pinMin; // homing minimum limit switch
+    PinType 	pinMax;	// maximum limit switch (optional)
+    PinType 	pinEnable; // stepper driver enable pin (nENBL)
     bool		atMin; // minimum limit switch (last value read)
     bool		atMax; // maximum limit switch (last value read)
+    bool        advancing; // current direction
     bool		homing; // true:axis is active for homing
+    StepCoord 	position; // current position (pulses)
 
     Axis() :
+        enabled(false),
         pinStep(NOPIN),
         pinDir(NOPIN),
         pinMin(NOPIN),
@@ -109,10 +116,12 @@ public:
         advancing(false),
         atMin(false),
         atMax(false),
-        enabled(false),
         homing(false)
     {};
+
+	uint32_t hash();
     Status enable(bool active);
+	char * saveConfig(char *out, size_t maxLen);
     bool isEnabled() {
         return enabled;
     }
@@ -179,6 +188,7 @@ public:
 
     OpProbe() : pinProbe(NOPIN), invertProbe(false) {
         setup(Quad<StepCoord>());
+		memset(probeData, 0, sizeof(probeData));
     }
     void setup(Quad<StepCoord> posStart) {
 		setup(posStart, posStart);
@@ -213,29 +223,19 @@ public:
 
 typedef class Machine : public QuadStepper {
     friend void ::test_Home();
-private:
-    bool	 	pinEnableHigh;
-    Display 	nullDisplay;
-    StepCoord 	stepHome(StepCoord pulsesPerAxis, int16_t delay);
-    Status	 	stepProbe(int16_t delay);
-    Axis *		motorAxis[MOTOR_COUNT];
-    AxisIndex	motor[MOTOR_COUNT];
-    PinConfig	pinConfig;
-
-protected:
-    Status		setPinConfig_EMC02();
-    Status 		setPinConfig_RAMPS1_4();
-    void 		backoffHome(int16_t delay);
 
 public:
-	DeltaCalculator delta;
+#define MACHINE_CONFIG_START pinConfig
+    PinConfig	pinConfig;
+    bool	 	pinEnableHigh;
     bool		invertLim;
     bool		jsonPrettyPrint;
+	uint8_t		debounce;
+    AxisIndex	motor[MOTOR_COUNT];
+    Display 	nullDisplay;
+	DeltaCalculator delta;
     int32_t 	vMax; // maximum stroke velocity (pulses/second)
     PH5TYPE 	tvMax; // time to reach maximum velocity
-    Display*	pDisplay;
-    Axis 		axis[AXIS_COUNT];
-    Stroke		stroke;
     int16_t		homingPulses;
     StepCoord	latchBackoff;
     DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
@@ -243,13 +243,27 @@ public:
 	int16_t		eeUser;	// EEPROM user startup commands
 	Topology	topology;
 	OutputMode	outputMode;
-	uint8_t	debounce;
     struct {
         OpProbe		probe;
     } op;
+	uint8_t		MACHINE_CONFIG_END;
+
+public:
+    Axis 		axis[AXIS_COUNT];
+    Display*	pDisplay;
+    Axis *		motorAxis[MOTOR_COUNT];
+    Stroke		stroke;
+
+protected:
+    Status	 	stepProbe(int16_t delay);
+    Status		setPinConfig_EMC02();
+    Status 		setPinConfig_RAMPS1_4();
+    void 		backoffHome(int16_t delay);
+    StepCoord 	stepHome(StepCoord pulsesPerAxis, int16_t delay);
 
 public:
     Machine();
+	uint32_t hash();
     virtual	Status step(const Quad<StepDV> &pulse);
     bool isCorePin(int16_t pin);
     inline bool isAtLimit(PinType pin) {
@@ -328,6 +342,8 @@ public:
         return pinConfig;
     }
 	XYZ3D getXYZ3D();
+	char * saveSysConfig(char *out, size_t maxLen);
+	char * saveDimConfig(char *out, size_t maxLen);
 } Machine;
 
 #ifdef TEST

@@ -142,7 +142,11 @@ void test_Machine() {
     arduino.setPin(PC2_Y_MIN_PIN, 0);
     arduino.setPin(PC2_Z_MIN_PIN, 0);
     Machine machine;
+	uint32_t hash1 = 250097196;
+	ASSERTEQUAL(hash1, machine.hash());
     machine.setPinConfig(PC2_RAMPS_1_4);
+	uint32_t hash2 = 221785853;
+	ASSERTEQUAL(hash2, machine.hash());
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_X_STEP_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_STEP_PIN));
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_X_DIR_PIN));
@@ -177,19 +181,24 @@ void test_Machine() {
     ASSERT(machine.axis[1].isEnabled());
     ASSERT(machine.axis[2].isEnabled());
     ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(1, 1, 1, 0)));
+	ASSERTEQUAL(hash2, machine.hash());
     ASSERTEQUAL(2, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTEQUAL(2, arduino.pulses(PC2_Y_STEP_PIN));
     ASSERTEQUAL(2, arduino.pulses(PC2_Z_STEP_PIN));
 
+	ASSERTEQUAL(hash2, machine.hash());
     ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(-1, -1, -1, 0)));
+	ASSERTEQUAL(hash2, machine.hash());
     ASSERTEQUAL(3, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTEQUAL(3, arduino.pulses(PC2_Y_STEP_PIN));
     ASSERTEQUAL(3, arduino.pulses(PC2_Z_STEP_PIN));
 
-
     MachineThread machThread;
+	ASSERTEQUAL(hash2, machine.hash());
     machThread.setup(PC2_RAMPS_1_4);
+	ASSERTEQUAL(hash2, machine.hash());
     threadRunner.setup();
+	ASSERTEQUAL(hash2, machine.hash());
     monitor.verbose = false;
 
     arduino.dump();
@@ -208,6 +217,27 @@ void test_Machine() {
     ASSERTEQUAL(0,
                 ADCSRA & ((1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0)));	// ADC 1MHz prescale
 #endif
+
+	ASSERTEQUAL(hash2, machine.hash());
+	machine.axis[5].pinStep = 3;
+	uint32_t hash3 = 221785601;
+	ASSERTEQUAL(hash3, machine.hash());
+
+	// Configuration save
+	char buf[255];
+	char *out = machine.axis[0].saveConfig(buf, sizeof(buf));
+	ASSERTEQUALS(JT("{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
+	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
+	out = machine.saveSysConfig(buf, sizeof(buf));
+	ASSERTEQUALS(JT("{'db':0,'eu':2000,'hp':3,'jp':false,'lb':200,'lh':false,"
+				 "'mv':12800,'om':0,'pc':2,'pi':11,'to':0,'tv':0.70}"), 
+				 buf);
+	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
+	out = machine.saveDimConfig(buf, sizeof(buf));
+	ASSERTEQUALS(JT("{'e':270.00,'f':90.00,'gr':9.3750,'ha1':-52.33,'ha2':-52.33,'ha3':-52.33,'mi':16,'re':131.64,"
+				 "'rf':190.53,'st':200}"), 
+				 buf);
+	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 
     // ticks should increase with TCNT1
     Ticks lastClock = ticks();

@@ -29,7 +29,7 @@ protected:
     uint8_t cameraG; // camera green intensity [0,255]
     uint8_t cameraB; // camera blue intensity [0,255]
 public:
-    Display() : status(DISPLAY_BUSY), level(127) {}
+    Display() : status(DISPLAY_BUSY), level(127), cameraR(127), cameraG(127), cameraB(127) {}
     virtual void setup(int pin) {
         show();
     }

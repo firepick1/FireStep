@@ -15,6 +15,8 @@ template class Quad<int32_t>;
 
 TESTDECL(int32_t, firestep::delayMicsTotal = 0);
 
+/////////////////////////// Axis ///////////////////////
+
 Status Axis::enable(bool active) {
     if (pinEnable == NOPIN || pinStep == NOPIN || pinDir == NOPIN) {
         return STATUS_NOPIN;
@@ -24,6 +26,45 @@ Status Axis::enable(bool active) {
     enabled = active;
     return STATUS_OK;
 }
+
+uint32_t Axis::hash() {
+	uint32_t result = 0;
+	uint8_t * pStart = (uint8_t *)(void*)&AXIS_CONFIG_START;
+	uint8_t * pEnd = (uint8_t *)(void*)&AXIS_CONFIG_END;
+	size_t bytes = pEnd - pStart;
+	for (size_t i=0; i<bytes; i++) {
+		result ^= (*pStart++ << (i%24));
+	}
+	TESTCOUT2("axis hash bytes:", bytes, " result:", result);
+
+	return result;
+}
+
+char * Axis::saveConfig(char *out, size_t maxLen) {
+	snprintf(out, maxLen, "{"
+		"\"dh\":%s,"
+		"\"en\":%s,"
+		"\"ho\":%d,"
+		"\"is\":%d,"
+		"\"mi\":%d,"
+		"\"sa\":%.1f,"
+		"\"tm\":%d,"
+		"\"tn\":%d,"
+		"\"ud\":%d}",
+		dirHIGH ? "true":"false",
+		enabled ? "true":"false",
+		home,
+		idleSnooze,
+		microsteps,
+		stepAngle,
+		travelMax,
+		travelMin,
+		usDelay,
+		NULL);
+	return out + strlen(out);
+}
+
+////////////////////// Machine /////////////////////////
 
 Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
@@ -43,6 +84,22 @@ Machine::Machine()
 	for (int16_t i=0; i<PROBE_DATA; i++) {
 		op.probe.probeData[i] = 0;
 	}
+}
+
+uint32_t Machine::hash() {
+	uint32_t result = 0;
+	uint8_t *pStart = (uint8_t*)(void*) &MACHINE_CONFIG_START;
+	uint8_t *pEnd = (uint8_t*)(void*) &MACHINE_CONFIG_END;
+	size_t bytes = pEnd - pStart;
+	for (size_t i=0; i<bytes; i++) {
+		result ^= (*pStart++ << (i%24));
+	}
+	for (AxisIndex i=0; i<AXIS_COUNT; i++) {
+		result ^= axis[i].hash();
+	}
+	TESTCOUT2("machine hash bytes:", bytes, " result:", result);
+
+	return result;
 }
 
 bool Machine::isCorePin(int16_t pin) {
@@ -605,3 +662,61 @@ XYZ3D Machine::getXYZ3D() {
                              ));
     }
 }
+
+char * Machine::saveSysConfig(char *out, size_t maxLen) {
+	snprintf(out, maxLen, "{"
+		"\"db\":%d,"
+		"\"eu\":%d,"
+		"\"hp\":%d,"
+		"\"jp\":%s,"
+		"\"lb\":%d,"
+		"\"lh\":%s,"
+		"\"mv\":%ld,"
+		"\"om\":%d,"
+		"\"pc\":%d,"
+		"\"pi\":%d,"
+		"\"to\":%d,"
+		"\"tv\":%.2f}",
+		debounce,
+		eeUser,
+		homingPulses,
+		jsonPrettyPrint ? "true":"false",
+		latchBackoff,
+		invertLim ? "true":"false",
+		(long) vMax,
+		outputMode,
+		pinConfig,
+		pinStatus,
+		topology,
+		tvMax,
+		NULL);
+	return out + strlen(out);
+}
+
+char * Machine::saveDimConfig(char *out, size_t maxLen) {
+	Angle3D ha = delta.getHomeAngles();
+	snprintf(out, maxLen, "{"
+		"\"e\":%.2f,"
+		"\"f\":%.2f,"
+		"\"gr\":%.4f,"
+		"\"ha1\":%.2f,"
+		"\"ha2\":%.2f,"
+		"\"ha3\":%.2f,"
+		"\"mi\":%d,"
+		"\"re\":%.2f,"
+		"\"rf\":%.2f,"
+		"\"st\":%d}",
+		delta.getEffectorLength(),
+		delta.getBaseArmLength(),
+		delta.getGearRatio(),
+		ha.theta1,
+		ha.theta2,
+		ha.theta3,
+		delta.getMicrosteps(),
+		delta.getEffectorTriangleSide(),
+		delta.getBaseTriangleSide(),
+		delta.getSteps360(),
+		NULL);
+	return out + strlen(out);
+}
+

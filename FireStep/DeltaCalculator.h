@@ -103,16 +103,16 @@ public:
     inline void setEffectorLength(PH5TYPE value) {
         re = value;
     }
-    inline PH5TYPE getSteps360() {
+    inline int16_t getSteps360() {
         return steps360;
     }
-    inline void setSteps360(PH5TYPE value) {
+    inline void setSteps360(int16_t value) {
         steps360 = value;
     }
-    inline PH5TYPE getMicrosteps() {
+    inline int16_t getMicrosteps() {
         return microsteps;
     }
-    inline void setMicrosteps(PH5TYPE value) {
+    inline void setMicrosteps(int16_t value) {
         microsteps = value;
     }
     inline PH5TYPE getGearRatio() {
