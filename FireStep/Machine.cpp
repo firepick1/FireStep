@@ -15,6 +15,44 @@ template class Quad<int32_t>;
 
 TESTDECL(int32_t, firestep::delayMicsTotal = 0);
 
+/////////// Silly things done without snprintf (ARDUINO!!!!) /////////////
+char * firestep::saveConfigValue(const char *key, const char *value, char *out) {
+	sprintf(out, "\"%s\":%s,", key, value);
+	return out+strlen(out);
+}
+
+char * firestep::saveConfigValue(const char *key, bool value, char *out) {
+	return saveConfigValue(key, value ? "true":"false", out);
+}
+
+char * firestep::saveConfigValue(const char *key, int32_t value, char *out) {
+	sprintf(out, "\"%s\":%ld,", key, (long) value);
+	return out+strlen(out);
+}
+
+char * firestep::saveConfigValue(const char *key, PH5TYPE value, char *out) {
+	bool minus = (value < 0);
+	if (minus) {
+		value = -value;
+	}
+	int32_t ivalue = value;
+	out = saveConfigValue(key,minus ? -ivalue : ivalue, out);
+	out--;
+	*out++ = '.';
+	value -= ivalue;
+	ivalue = value * 1000 + 0.5;
+	out[2] = '0' + (ivalue % 10);
+	ivalue /= 10;
+	out[1] = '0' + (ivalue % 10);
+	ivalue /= 10;
+	out[0] = '0' + (ivalue % 10);
+	out += 3;
+	*out++ = ',';
+	*out = 0;
+
+	return out;
+}
+
 /////////////////////////// Axis ///////////////////////
 
 Status Axis::enable(bool active) {
@@ -40,31 +78,24 @@ uint32_t Axis::hash() {
 }
 
 char * Axis::saveConfig(char *out, size_t maxLen) {
-    if (enabled) {
-        snprintf(out, maxLen, "{"
-                 "\"dh\":%s,"
-                 "\"en\":%s,"
-                 "\"ho\":%d,"
-                 "\"is\":%d,"
-                 "\"mi\":%d,"
-                 "\"sa\":%.1f,"
-                 "\"tm\":%d,"
-                 "\"tn\":%d,"
-                 "\"ud\":%d}",
-                 dirHIGH ? "true":"false",
-                 enabled ? "true":"false",
-                 home,
-                 idleSnooze,
-                 microsteps,
-                 stepAngle,
-                 travelMax,
-                 travelMin,
-                 usDelay,
-                 NULL);
-    } else {
-        snprintf(out, maxLen, "{\"en\":false}");
+	*out++ = '{';
+	if (enabled) {
+		out = saveConfigValue("dh", dirHIGH, out);
+		out = saveConfigValue("en", enabled, out);
+		out = saveConfigValue("ho", home, out);
+		out = saveConfigValue("is", idleSnooze, out);
+		out = saveConfigValue("mi", microsteps, out);
+		out = saveConfigValue("sa", stepAngle, out);
+		out = saveConfigValue("tm", travelMax, out);
+		out = saveConfigValue("tn", travelMin, out);
+		out = saveConfigValue("ud", usDelay, out);
+	} else {
+		out = saveConfigValue("en", enabled, out);
     }
-    return out + strlen(out);
+	out--;
+	*out++ = '}';
+	*out = 0;
+    return out;
 }
 
 ////////////////////// Machine /////////////////////////
@@ -667,62 +698,43 @@ XYZ3D Machine::getXYZ3D() {
 }
 
 char * Machine::saveSysConfig(char *out, size_t maxLen) {
-    snprintf(out, maxLen, "{"
-             "\"as\":%s,"
-             "\"db\":%d,"
-             "\"eu\":%d,"
-             "\"hp\":%d,"
-             "\"jp\":%s,"
-             "\"lb\":%d,"
-             "\"lh\":%s,"
-             "\"mv\":%ld,"
-             "\"om\":%d,"
-             "\"pc\":%d,"
-             "\"pi\":%d,"
-             "\"to\":%d,"
-             "\"tv\":%.2f}",
-             autoSync ? "true":"false",
-             debounce,
-             eeUser,
-             homingPulses,
-             jsonPrettyPrint ? "true":"false",
-             latchBackoff,
-             invertLim ? "true":"false",
-             (long) vMax,
-             outputMode,
-             pinConfig,
-             pinStatus,
-             topology,
-             tvMax,
-             NULL);
-    return out + strlen(out);
+	*out++ = '{';
+	out = saveConfigValue("as", autoSync, out);
+	out = saveConfigValue("db", debounce, out);
+	out = saveConfigValue("eu", eeUser, out);
+	out = saveConfigValue("hp", homingPulses, out);
+	out = saveConfigValue("jp", jsonPrettyPrint, out);
+	out = saveConfigValue("lb", latchBackoff, out);
+	out = saveConfigValue("lh", invertLim, out);
+	out = saveConfigValue("mv", vMax, out);
+	out = saveConfigValue("om", outputMode, out);
+	out = saveConfigValue("pc", pinConfig, out);
+	out = saveConfigValue("pi", pinStatus, out);
+	out = saveConfigValue("to", topology, out);
+	out = saveConfigValue("tv", tvMax, out);
+	out--;
+	*out++ = '}';
+	*out = 0;
+    return out;
 }
 
 char * Machine::saveDimConfig(char *out, size_t maxLen) {
     Angle3D ha = delta.getHomeAngles();
-    snprintf(out, maxLen, "{"
-             "\"e\":%.2f,"
-             "\"f\":%.2f,"
-             "\"gr\":%.4f,"
-             "\"ha1\":%.2f,"
-             "\"ha2\":%.2f,"
-             "\"ha3\":%.2f,"
-             "\"mi\":%d,"
-             "\"re\":%.2f,"
-             "\"rf\":%.2f,"
-             "\"st\":%d}",
-             delta.getEffectorLength(),
-             delta.getBaseArmLength(),
-             delta.getGearRatio(),
-             ha.theta1,
-             ha.theta2,
-             ha.theta3,
-             delta.getMicrosteps(),
-             delta.getEffectorTriangleSide(),
-             delta.getBaseTriangleSide(),
-             delta.getSteps360(),
-             NULL);
-    return out + strlen(out);
+	*out++ = '{';
+	out = saveConfigValue("e", delta.getEffectorLength(), out);
+	out = saveConfigValue("f", delta.getBaseArmLength(), out);
+	out = saveConfigValue("gr", delta.getGearRatio(), out);
+	out = saveConfigValue("ha1", ha.theta1, out);
+	out = saveConfigValue("ha2", ha.theta1, out);
+	out = saveConfigValue("ha3", ha.theta1, out);
+	out = saveConfigValue("mi", delta.getMicrosteps(), out);
+	out = saveConfigValue("re", delta.getEffectorTriangleSide(), out);
+	out = saveConfigValue("rf", delta.getBaseTriangleSide(), out);
+	out = saveConfigValue("st", delta.getSteps360(), out);
+	out--;
+	*out++ = '}';
+	*out = 0;
+    return out;
 }
 
 Status Machine::sync(Status status) {

@@ -142,11 +142,11 @@ void test_Machine() {
     arduino.setPin(PC2_Y_MIN_PIN, 0);
     arduino.setPin(PC2_Z_MIN_PIN, 0);
     Machine machine;
-	uint32_t hash1 = 247994412;
-	ASSERTEQUAL(hash1, machine.hash());
+	uint32_t hash1 = machine.hash();
+	ASSERT(hash1);
     machine.setPinConfig(PC2_RAMPS_1_4);
-	uint32_t hash2 = 219683069;
-	ASSERTEQUAL(hash2, machine.hash());
+	uint32_t hash2 = machine.hash();
+	ASSERT(hash1 != hash2);
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_X_STEP_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_STEP_PIN));
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_X_DIR_PIN));
@@ -220,22 +220,23 @@ void test_Machine() {
 
 	ASSERTEQUAL(hash2, machine.hash());
 	machine.axis[5].pinStep = 3;
-	uint32_t hash3 = 219682817;
-	ASSERTEQUAL(hash3, machine.hash());
+	uint32_t hash3 = machine.hash();
+	ASSERT(hash1 != hash3);
+	ASSERT(hash2 != hash3);
 
 	// Configuration save
 	char buf[255];
 	char *out = machine.axis[0].saveConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
+	ASSERTEQUALS(JT("{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.800,'tm':32000,'tn':-32000,'ud':0}"), buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveSysConfig(buf, sizeof(buf));
 	ASSERTEQUALS(JT("{'as':false,'db':0,'eu':2000,'hp':3,'jp':false,'lb':200,'lh':false,"
-				 "'mv':12800,'om':0,'pc':2,'pi':11,'to':0,'tv':0.70}"), 
+				 "'mv':12800,'om':0,'pc':2,'pi':11,'to':0,'tv':0.700}"), 
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveDimConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'e':270.00,'f':90.00,'gr':9.3750,'ha1':-52.33,'ha2':-52.33,'ha3':-52.33,'mi':16,'re':131.64,"
-				 "'rf':190.53,'st':200}"), 
+	ASSERTEQUALS(JT("{'e':270.000,'f':90.000,'gr':9.375,'ha1':-52.330,'ha2':-52.330,'ha3':-52.330,'mi':16,'re':131.636,"
+				 "'rf':190.526,'st':200}"), 
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 
@@ -1922,18 +1923,73 @@ void test_PrettyPrint() {
 void test_autoSync() {
     cout << "TEST	: test_autoSync() =====" << endl;
 
+	char buf[100];
+	char *out = saveConfigValue("tv", (PH5TYPE) 1.2345, buf);
+	ASSERTEQUALS("\"tv\":1.235,", buf);
+	ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
+	out = saveConfigValue("tv", (PH5TYPE) -1.2345, buf);
+	ASSERTEQUALS("\"tv\":-1.235,", buf);
+	ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
+	out = saveConfigValue("as", true, buf);
+	ASSERTEQUALS("\"as\":true,", buf);
+	ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
+	out = saveConfigValue("as", false, buf);
+	ASSERTEQUALS("\"as\":false,", buf);
+	ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
+
+	arduino.clear();
+    threadRunner.clear();
+    MachineThread mt;
+    mt.machine.pDisplay = &testDisplay;
+	Machine & machine = mt.machine;
+    testDisplay.clear();
+    //mt.setup(PC2_RAMPS_1_4);
+    //Serial.clear();
+    //delayMicsTotal = 0;
+    //arduino.setPin(mt.machine.axis[0].pinMin, 0);
+    //arduino.setPin(mt.machine.axis[1].pinMin, 0);
+    //arduino.setPin(mt.machine.axis[2].pinMin, 0);
+    //mt.loop();
+    //ASSERTEQUAL(HIGH, arduino.getPin(PC2_X_DIR_PIN));
+    //ASSERTEQUAL(HIGH, arduino.getPin(PC2_Y_DIR_PIN));
+    //ASSERTEQUAL(HIGH, arduino.getPin(PC2_Z_DIR_PIN));
+    //ASSERTEQUAL(LOW, arduino.getPin(PC2_X_ENABLE_PIN)); // enabled
+    //ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_ENABLE_PIN)); // enabled
+    //ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_ENABLE_PIN)); // enabled
+    //if (clearArduino) {
+        //ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+        //char buf[100];
+        //snprintf(buf, sizeof(buf), "FireStep %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+        //ASSERTEQUALS(buf, Serial.output().c_str());
+    //}
+    //ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
+    //for (int i=0; i<MOTOR_COUNT; i++) {
+        //ASSERTEQUAL((size_t) &mt.machine.axis[i], (size_t) &mt.machine.getMotorAxis(i));
+    //}
+
 	ASSERTEQUAL(1000, MAX_JSON);
     uint8_t *eeaddr = 0;
-    MachineThread mt = test_setup();
-    Machine &machine = mt.machine;
 	ASSERTEQUAL(0, machine.syncHash);
+	ASSERT(!machine.autoSync);
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 	ASSERT(machine.syncHash);
 	uint32_t hash1 = machine.syncHash;
+
+    Serial.push(JT("{'sysas':true}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERT(machine.autoSync);
+
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
 	machine.autoSync = true;
 	machine.topology = MTO_FPD;
+	machine.setPinConfig(PC2_RAMPS_1_4);
 	ASSERTEQUAL(hash1, machine.syncHash);
     mt.loop();
 	ASSERT(hash1 != machine.syncHash);

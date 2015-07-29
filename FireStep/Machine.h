@@ -353,6 +353,11 @@ public:
 extern int32_t delayMicsTotal;
 #endif
 
+char * saveConfigValue(const char *key, const char *value, char *out);
+char * saveConfigValue(const char *key, bool value, char *out);
+char * saveConfigValue(const char *key, int32_t value, char *out);
+char * saveConfigValue(const char *key, PH5TYPE value, char *out);
+
 } // namespace firestep
 
 #endif
