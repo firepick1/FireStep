@@ -730,6 +730,42 @@ Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
             }
         }
         status = execute(jcmd, &kidObj);
+    } else if (strcmp("movrx",key) == 0 || strcmp("rx",key) == 0) {
+        // TODO: clean up mov implementation
+        switch (machine.topology) {
+        case MTO_FPD: {
+            XYZ3D xyz = machine.getXYZ3D();
+            PH5TYPE x = 0;
+            status = processField<PH5TYPE, PH5TYPE>(jobj, key, x);
+            if (status == STATUS_OK) {
+                destination.value[0] = xyz.x + x;
+                if (strcmp("movrx",key) == 0) {
+                    status = execute(jcmd, NULL);
+                }
+            }
+            break;
+        }
+        default:
+            return jcmd.setError(STATUS_MTO_FIELD, key);
+        }
+    } else if (strcmp("movry",key) == 0 || strcmp("ry",key) == 0) {
+        // TODO: clean up mov implementation
+        switch (machine.topology) {
+        case MTO_FPD: {
+            XYZ3D xyz = machine.getXYZ3D();
+            PH5TYPE y = 0;
+            status = processField<PH5TYPE, PH5TYPE>(jobj, key, y);
+            if (status == STATUS_OK) {
+                destination.value[1] = xyz.y + y;
+                if (strcmp("movry",key) == 0) {
+                    status = execute(jcmd, NULL);
+                }
+            }
+            break;
+        }
+        default:
+            return jcmd.setError(STATUS_MTO_FIELD, key);
+        }
     } else if (strcmp("movrz",key) == 0 || strcmp("rz",key) == 0) {
         // TODO: clean up mov implementation
         switch (machine.topology) {
