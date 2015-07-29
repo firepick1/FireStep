@@ -25,6 +25,11 @@ char * firestep::saveConfigValue(const char *key, bool value, char *out) {
 	return saveConfigValue(key, value ? "true":"false", out);
 }
 
+char * firestep::saveConfigValue(const char *key, int16_t value, char *out) {
+	sprintf(out, "\"%s\":%d,", key, value);
+	return out+strlen(out);
+}
+
 char * firestep::saveConfigValue(const char *key, int32_t value, char *out) {
 	sprintf(out, "\"%s\":%ld,", key, (long) value);
 	return out+strlen(out);
