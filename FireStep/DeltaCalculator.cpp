@@ -214,8 +214,8 @@ XYZ3D DeltaCalculator::calcXYZ(Angle3D angles) {
     return result;
 }
 
-uint32_t DeltaCalculator::hash() {
-	uint32_t result = 0
+int32_t DeltaCalculator::hash() {
+	int32_t result = 0
 		^ (*(uint32_t *)(void*)& f)
 		^ (*(uint32_t *)(void*)& e)
 		^ (*(uint32_t *)(void*)& rf)

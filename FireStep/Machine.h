@@ -117,7 +117,7 @@ public:
         homing(false)
     {};
 
-    uint32_t hash();
+    int32_t hash();
     Status enable(bool active);
     char * saveConfig(char *out, size_t maxLen);
     bool isEnabled() {
@@ -246,7 +246,7 @@ public:
     } op;
 
 public:
-    uint32_t	syncHash;
+    int32_t		syncHash;
     Axis 		axis[AXIS_COUNT];
     Display*	pDisplay;
     Axis *		motorAxis[MOTOR_COUNT];
@@ -261,7 +261,7 @@ protected:
 
 public:
     Machine();
-    uint32_t hash();
+    int32_t hash();
     virtual	Status step(const Quad<StepDV> &pulse);
     bool isCorePin(int16_t pin);
     inline bool isAtLimit(PinType pin) {

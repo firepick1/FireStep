@@ -70,8 +70,8 @@ Status Axis::enable(bool active) {
     return STATUS_OK;
 }
 
-uint32_t Axis::hash() {
-    uint32_t result = 0
+int32_t Axis::hash() {
+    int32_t result = 0
 		^ (dirHIGH << 0)
 		^ (enabled << 1)
 		^ ((uint32_t) home << 0)
@@ -128,8 +128,8 @@ Machine::Machine()
     }
 }
 
-uint32_t Machine::hash() {
-	uint32_t result = 0
+int32_t Machine::hash() {
+	int32_t result = 0
 		^ (outputMode << 0)
 		^ (topology << 1)
 		^ (invertLim << 2)

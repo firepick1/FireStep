@@ -909,6 +909,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
             node["as"] = "";
+			node["ch"] = "";
             node["eu"] = "";
             node["fr"] = "";
             node["hp"] = "";
@@ -937,6 +938,9 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         }
     } else if (strcmp("as", key) == 0 || strcmp("sysas", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.autoSync);
+    } else if (strcmp("ch", key) == 0 || strcmp("sysch", key) == 0) {
+		jobj[key] = machine.hash();
+        status = STATUS_OK;
     } else if (strcmp("db", key) == 0 || strcmp("sysdb", key) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.debounce);
     } else if (strcmp("eu", key) == 0 || strcmp("syseu", key) == 0) {
