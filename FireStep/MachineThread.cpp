@@ -134,6 +134,8 @@ void MachineThread::sync() {
     out += strlen(out);
     out = machine.saveSysConfig(out, MAX_JSON-(out-buf));
 
+	if (Serial.available()) { return; }
+
     // save dimension config
     switch (machine.topology) {
     case MTO_RAW:
@@ -146,12 +148,15 @@ void MachineThread::sync() {
         break;
     }
 
+	if (Serial.available()) { return; }
+
     // save axis config
     const char * axisNames = "xyzabc";
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
         snprintf(out, MAX_JSON-(out-buf), ",\"%c\":", axisNames[i]);
         out += strlen(out);
         out = machine.axis[i].saveConfig(out, MAX_JSON-(out-buf));
+		if (Serial.available()) { return; }
     }
 
     snprintf(out, MAX_JSON-(out-buf), "}\n");
@@ -164,16 +169,20 @@ void MachineThread::sync() {
         eeprom_write_byte(eepAddr+i, buf[i]);
     }
     TESTCOUT3("sync len:", strlen(buf), " buf:", buf, " status:", (int) status);
-    // Execute config JSON and commit to EEPROM iff valid
+    // Commit config JSON to EEPROM iff JSON is valid
     status = command.parse(buf, status);
-    if (status < 0) {
+    if (status == STATUS_BUSY_PARSED) {
+		machine.syncHash = machine.hash(); // commit saved
+		status = STATUS_WAIT_IDLE;
+	} else {
         eeprom_write_byte(eepAddr, ' '); // disable eeprom since JSON is invalid
+		machine.autoSync = false; // no point trying again
     }
-    TESTCOUT1("sync parse:", (int) status);
 }
 
 void MachineThread::loop() {
 #ifdef THROTTLE_SPEED
+	if (Serial.available()) { return; }
     controller.speed = ADCH;
     if (controller.speed <= 251) {
         ThreadEnable(false);

@@ -769,6 +769,5 @@ Status Machine::sync(Status status) {
         return status;
     }
 
-    syncHash = newHash;
     return STATUS_BUSY_SYNC;
 }

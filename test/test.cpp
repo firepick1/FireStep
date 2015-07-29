@@ -1975,39 +1975,41 @@ void test_autoSync() {
 	ASSERT(machine.syncHash);
 	uint32_t hash1 = machine.syncHash;
 
+	// enable auto-sync
     Serial.push(JT("{'sysas':true}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
 	ASSERT(machine.autoSync);
-
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_SYNC, mt.status);
+	ASSERT(hash1 == machine.syncHash);
+	mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    ASSERTEQUAL(machine.syncHash, machine.hash());
+    ASSERT(hash1 != machine.syncHash);
+	uint32_t hash2 = machine.syncHash;
+	ASSERTEQUAL(hash2, machine.hash());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-	machine.autoSync = true;
+	// change config
+	machine.axis[0].home = 123;
 	machine.topology = MTO_FPD;
-	machine.setPinConfig(PC2_RAMPS_1_4);
-	ASSERTEQUAL(hash1, machine.syncHash);
     mt.loop();
-	ASSERT(hash1 != machine.syncHash);
-	uint32_t hash2 = machine.syncHash;
     ASSERTEQUAL(STATUS_BUSY_SYNC, mt.status);
     mt.loop();
-	ASSERTEQUAL(hash2, machine.syncHash);
-    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	// changed configuration should be reset
-	machine.axis[0].home = 123;
-	machine.topology = MTO_RAW;
-	ASSERTEQUAL(MTO_RAW, machine.topology);
-	ASSERTEQUAL(123, machine.axis[0].home);
-    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 	ASSERTEQUAL(MTO_FPD, machine.topology);
-	ASSERTEQUAL(0, machine.axis[0].home);
-	ASSERTEQUAL(hash2, machine.syncHash);
-    ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUAL(123, machine.axis[0].home);
+	uint32_t hash3 = machine.syncHash;
+	ASSERTEQUAL(hash3, machine.hash());
+	ASSERT(hash1 != hash3);
+	ASSERT(hash2 != hash3);
     mt.loop();
-	ASSERTEQUAL(hash2, machine.syncHash);
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     cout << "TEST	: test_autoSync() OK " << endl;
