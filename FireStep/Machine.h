@@ -74,7 +74,6 @@ private:
     bool		enabled; // true: stepper drivers are enabled and powered
 
 public: // configuration
-#define AXIS_CONFIG_START pinStep
     StepCoord	home; // home position
     StepCoord 	travelMin; // soft minimum travel limit
     StepCoord 	travelMax; // soft maximum travel limit
@@ -85,7 +84,6 @@ public: // configuration
     bool		dirHIGH; // advance on HIGH
 
 public:
-#define AXIS_CONFIG_END advancing
     PinType 	pinStep; // step pin
     PinType 	pinDir;	// step direction pin
     PinType 	pinMin; // homing minimum limit switch
@@ -225,7 +223,6 @@ typedef class Machine : public QuadStepper {
     friend void ::test_Home();
 
 public:
-#define MACHINE_CONFIG_START pinConfig
     PinConfig	pinConfig;
     bool	 	pinEnableHigh;
     bool		invertLim;
@@ -249,7 +246,6 @@ public:
     } op;
 
 public:
-#define MACHINE_CONFIG_END syncHash;
     uint32_t	syncHash;
     Axis 		axis[AXIS_COUNT];
     Display*	pDisplay;

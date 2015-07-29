@@ -143,6 +143,7 @@ public:
     XYZ3D calcXYZ(Step3D pulses);
     XYZ3D calcXYZ(Angle3D angles);
     PH5TYPE calcAngleYZ(PH5TYPE x, PH5TYPE y, PH5TYPE z);
+	uint32_t hash();
 } DeltaCalculator;
 
 } // firestep

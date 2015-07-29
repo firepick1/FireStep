@@ -214,3 +214,19 @@ XYZ3D DeltaCalculator::calcXYZ(Angle3D angles) {
     return result;
 }
 
+uint32_t DeltaCalculator::hash() {
+	uint32_t result = 0
+		^ (*(uint32_t *)(void*)& f)
+		^ (*(uint32_t *)(void*)& e)
+		^ (*(uint32_t *)(void*)& rf)
+		^ (*(uint32_t *)(void*)& re)
+		^ ((int32_t)steps360 << 0)
+		^ ((int32_t)microsteps << 1)
+		^ (*(uint32_t *)(void*)& gearRatio)
+		^ (*(uint32_t *)(void*)& dz)
+		^ (*(uint32_t *)(void*)& eTheta.theta1)
+		^ (*(uint32_t *)(void*)& eTheta.theta2)
+		^ (*(uint32_t *)(void*)& eTheta.theta3)
+	;
+	return result;
+}

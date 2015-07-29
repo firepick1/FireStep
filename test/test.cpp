@@ -220,9 +220,7 @@ void test_Machine() {
 
 	ASSERTEQUAL(hash2, machine.hash());
 	machine.axis[5].pinStep = 3;
-	uint32_t hash3 = machine.hash();
-	ASSERT(hash1 != hash3);
-	ASSERT(hash2 != hash3);
+	ASSERTEQUAL(hash2, machine.hash());
 
 	// Configuration save
 	char buf[255];

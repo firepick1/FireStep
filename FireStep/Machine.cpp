@@ -71,13 +71,16 @@ Status Axis::enable(bool active) {
 }
 
 uint32_t Axis::hash() {
-    uint32_t result = 0;
-    uint8_t * pStart = (uint8_t *)(void*)&AXIS_CONFIG_START;
-    uint8_t * pEnd = (uint8_t *)(void*)&AXIS_CONFIG_END;
-    size_t bytes = pEnd - pStart;
-    for (size_t i=0; i<bytes; i++) {
-        result ^= (*pStart++ << (i%24));
-    }
+    uint32_t result = 0
+		^ (dirHIGH << 0)
+		^ (enabled << 1)
+		^ ((uint32_t) home << 0)
+		^ ((uint32_t) idleSnooze << 1)
+		^ ((uint32_t) microsteps << 2)
+		^ ((uint32_t) travelMin << 3)
+		^ ((uint32_t) travelMax << 4)
+		^ ((uint32_t) usDelay << 5)
+		;
 
     return result;
 }
@@ -126,13 +129,24 @@ Machine::Machine()
 }
 
 uint32_t Machine::hash() {
-    uint32_t result = 0;
-    uint8_t *pStart = (uint8_t*)(void*) &MACHINE_CONFIG_START;
-    uint8_t *pEnd = (uint8_t*)(void*) &MACHINE_CONFIG_END;
-    size_t bytes = pEnd - pStart;
-    for (size_t i=0; i<bytes; i++) {
-        result ^= (*pStart++ << (i%24));
-    }
+	uint32_t result = 0
+		^ (outputMode << 0)
+		^ (topology << 1)
+		^ (invertLim << 2)
+		^ (pinEnableHigh << 3)
+		^ (autoSync << 4)
+		^ (pinConfig << 5)
+		^ (jsonPrettyPrint << 5)
+		^ delta.hash()
+		^ (vMax) 
+		^ (*(uint32_t *)(void*)&tvMax) 
+		^ (debounce)
+		^ (homingPulses)
+		^ (latchBackoff)
+		^ (searchDelay) 
+		^ (pinStatus)
+		^ (eeUser)	
+	;
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
         result ^= axis[i].hash();
     }
