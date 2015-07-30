@@ -13,6 +13,7 @@ v0.2.1
 * NEW: MTO_FPD "mov:{a,d}" move in XY plane to polar coordinate `d` millimeters from X0Y0 at `a` degrees CCW from x-axis.
 * NEW: "sysom" output mode option shows individual responses from JSON command arrays
 * NEW: "sysas" configuration auto-sync to EEPROM
+* NEW: "sysch" configuration hash (changes when configuration changes)
 
 v0.2.0
 ------
