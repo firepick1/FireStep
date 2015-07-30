@@ -44,7 +44,6 @@ void MachineThread::displayStatus() {
     case STATUS_BUSY_SETUP:
     case STATUS_BUSY_EEPROM:
     case STATUS_WAIT_BUSY:
-    case STATUS_BUSY_SYNC:
     case STATUS_BUSY:
         machine.pDisplay->setStatus(DISPLAY_BUSY);
         break;
@@ -130,11 +129,9 @@ void MachineThread::sync() {
     TESTCOUT1("SAVING CONFIGURATION TO EEPROM","");
 
     // save system config
-    snprintf(out, MAX_JSON-(out-buf), "{\"sys\":");
+    snprintf(out, MAX_JSON-(out-buf), "[{\"sys\":");
     out += strlen(out);
     out = machine.saveSysConfig(out, MAX_JSON-(out-buf));
-
-	if (Serial.available()) { return; }
 
     // save dimension config
     switch (machine.topology) {
@@ -142,40 +139,38 @@ void MachineThread::sync() {
     default:
         break;
     case MTO_FPD:
-        snprintf(out, MAX_JSON-(out-buf), ",\"dim\":");
+        snprintf(out, MAX_JSON-(out-buf), "},{\"dim\":");
         out += strlen(out);
         out = machine.saveDimConfig(out, MAX_JSON-(out-buf));
         break;
     }
 
-	if (Serial.available()) { return; }
-
     // save axis config
     const char * axisNames = "xyzabc";
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
-        snprintf(out, MAX_JSON-(out-buf), ",\"%c\":", axisNames[i]);
+        snprintf(out, MAX_JSON-(out-buf), "},{\"%c\":", axisNames[i]);
         out += strlen(out);
         out = machine.axis[i].saveConfig(out, MAX_JSON-(out-buf));
-		if (Serial.available()) { return; }
     }
 
-    snprintf(out, MAX_JSON-(out-buf), "}\n");
+    snprintf(out, MAX_JSON-(out-buf), "}]\n");
     out += strlen(out);
 
     // Save to EEPROM before executing config JSON (parsing is destructive)
     size_t len = strlen(buf);
     uint8_t *eepAddr = 0;
-    for (int16_t i=0; i<len; i++) {
+	eeprom_write_byte(eepAddr, ' '); // disable eeprom
+    for (int16_t i=1; i<=len; i++) { // include terminator
         eeprom_write_byte(eepAddr+i, buf[i]);
+		if (Serial.available()) { return; }
     }
     TESTCOUT3("sync len:", strlen(buf), " buf:", buf, " status:", (int) status);
     // Commit config JSON to EEPROM iff JSON is valid
     status = command.parse(buf, status);
     if (status == STATUS_BUSY_PARSED) {
 		machine.syncHash = machine.hash(); // commit saved
-		status = STATUS_WAIT_IDLE;
+        eeprom_write_byte(eepAddr, buf[0]); // enable eeprom
 	} else {
-        eeprom_write_byte(eepAddr, ' '); // disable eeprom since JSON is invalid
 		machine.autoSync = false; // no point trying again
     }
 }
@@ -216,9 +211,6 @@ void MachineThread::loop() {
             status = command.parse(NULL, status);
         }
         break;
-    case STATUS_BUSY_SYNC:
-        sync();
-        break;
     case STATUS_BUSY_PARSED:
     case STATUS_BUSY_OK:
     case STATUS_BUSY:
@@ -234,6 +226,7 @@ void MachineThread::loop() {
         status = executeEEPROM();
         break;
     case STATUS_BUSY_SETUP: {
+		machine.syncHash = machine.hash();
         uint8_t c = eeprom_read_byte((uint8_t*) 0);
         if (c == '{' || c == '[') {
             status = STATUS_BUSY_EEPROM;
@@ -247,6 +240,11 @@ void MachineThread::loop() {
         break;
     }
     case STATUS_OK:
+		if (machine.syncHash == 0) {
+			machine.syncHash = machine.hash();
+		} else if (machine.autoSync && machine.syncHash != machine.hash()) {
+			sync();
+		}
         status = STATUS_WAIT_IDLE;
         break;
     }

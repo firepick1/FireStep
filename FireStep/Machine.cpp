@@ -35,7 +35,7 @@ char * firestep::saveConfigValue(const char *key, int32_t value, char *out) {
 	return out+strlen(out);
 }
 
-char * firestep::saveConfigValue(const char *key, PH5TYPE value, char *out) {
+char * firestep::saveConfigValue(const char *key, PH5TYPE value, char *out, uint8_t places) {
 	bool minus = (value < 0);
 	if (minus) {
 		value = -value;
@@ -45,13 +45,30 @@ char * firestep::saveConfigValue(const char *key, PH5TYPE value, char *out) {
 	out--;
 	*out++ = '.';
 	value -= ivalue;
-	ivalue = value * 1000 + 0.5;
-	out[2] = '0' + (ivalue % 10);
-	ivalue /= 10;
-	out[1] = '0' + (ivalue % 10);
-	ivalue /= 10;
-	out[0] = '0' + (ivalue % 10);
-	out += 3;
+	switch (places) {
+	case 3:
+		ivalue = value * 1000 + 0.5;
+		out[2] = '0' + (ivalue % 10);
+		ivalue /= 10;
+		out[1] = '0' + (ivalue % 10);
+		ivalue /= 10;
+		out[0] = '0' + (ivalue % 10);
+		out += 3;
+		break;
+	case 2:
+	default:
+		ivalue = value * 100 + 0.5;
+		out[1] = '0' + (ivalue % 10);
+		ivalue /= 10;
+		out[0] = '0' + (ivalue % 10);
+		out += 2;
+		break;
+	case 1:
+		ivalue = value * 10 + 0.5;
+		out[0] = '0' + (ivalue % 10);
+		out += 1;
+		break;
+	}
 	*out++ = ',';
 	*out = 0;
 
@@ -93,7 +110,7 @@ char * Axis::saveConfig(char *out, size_t maxLen) {
 		out = saveConfigValue("ho", home, out);
 		out = saveConfigValue("is", idleSnooze, out);
 		out = saveConfigValue("mi", microsteps, out);
-		out = saveConfigValue("sa", stepAngle, out);
+		out = saveConfigValue("sa", stepAngle, out, 1);
 		out = saveConfigValue("tm", travelMax, out);
 		out = saveConfigValue("tn", travelMin, out);
 		out = saveConfigValue("ud", usDelay, out);
@@ -679,6 +696,9 @@ Quad<StepCoord> Machine::getMotorPosition() {
 }
 
 Status Machine::idle(Status status) {
+	if (syncHash == 0) {
+		syncHash = hash();
+	}
     for (MotorIndex i = 0; i < MOTOR_COUNT; i++) {
         if (motorAxis[i]->enabled && motorAxis[i]->idleSnooze) {
             motorAxis[i]->enable(false);
@@ -686,7 +706,7 @@ Status Machine::idle(Status status) {
             motorAxis[i]->enable(true);
         }
     }
-    return sync(status);
+    return status;
 }
 
 /**
@@ -719,6 +739,7 @@ XYZ3D Machine::getXYZ3D() {
 char * Machine::saveSysConfig(char *out, size_t maxLen) {
 	*out++ = '{';
 	out = saveConfigValue("as", autoSync, out);
+	out = saveConfigValue("ch", hash(), out);
 	out = saveConfigValue("db", debounce, out);
 	out = saveConfigValue("eu", eeUser, out);
 	out = saveConfigValue("hp", homingPulses, out);
@@ -742,7 +763,7 @@ char * Machine::saveDimConfig(char *out, size_t maxLen) {
 	*out++ = '{';
 	out = saveConfigValue("e", delta.getEffectorLength(), out);
 	out = saveConfigValue("f", delta.getBaseArmLength(), out);
-	out = saveConfigValue("gr", delta.getGearRatio(), out);
+	out = saveConfigValue("gr", delta.getGearRatio(), out, 3);
 	out = saveConfigValue("ha1", ha.theta1, out);
 	out = saveConfigValue("ha2", ha.theta1, out);
 	out = saveConfigValue("ha3", ha.theta1, out);
@@ -756,18 +777,3 @@ char * Machine::saveDimConfig(char *out, size_t maxLen) {
     return out;
 }
 
-Status Machine::sync(Status status) {
-    if (syncHash == 0) {
-        syncHash = hash();
-        return status;
-    }
-    if (!autoSync || status!=STATUS_WAIT_IDLE) {
-        return status;
-    }
-    uint32_t newHash = hash();
-    if (syncHash == newHash) {
-        return status;
-    }
-
-    return STATUS_BUSY_SYNC;
-}

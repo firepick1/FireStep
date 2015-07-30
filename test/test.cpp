@@ -225,16 +225,16 @@ void test_Machine() {
 	// Configuration save
 	char buf[255];
 	char *out = machine.axis[0].saveConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.800,'tm':32000,'tn':-32000,'ud':0}"), buf);
+	ASSERTEQUALS(JT("{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveSysConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'as':false,'db':0,'eu':2000,'hp':3,'jp':false,'lb':200,'lh':false,"
-				 "'mv':12800,'om':0,'pc':2,'pi':11,'to':0,'tv':0.700}"), 
+	ASSERTEQUALS(JT("{'as':false,'ch':2133533136,'db':0,'eu':2000,'hp':3,'jp':false,'lb':200,'lh':false,"
+				 "'mv':12800,'om':0,'pc':2,'pi':11,'to':0,'tv':0.70}"), 
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveDimConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'e':270.000,'f':90.000,'gr':9.375,'ha1':-52.330,'ha2':-52.330,'ha3':-52.330,'mi':16,'re':131.636,"
-				 "'rf':190.526,'st':200}"), 
+	ASSERTEQUALS(JT("{'e':270.00,'f':90.00,'gr':9.375,'ha1':-52.33,'ha2':-52.33,'ha3':-52.33,'mi':16,'re':131.64,"
+				 "'rf':190.53,'st':200}"), 
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 
@@ -1923,10 +1923,10 @@ void test_autoSync() {
 
 	char buf[100];
 	char *out = saveConfigValue("tv", (PH5TYPE) 1.2345, buf);
-	ASSERTEQUALS("\"tv\":1.235,", buf);
+	ASSERTEQUALS("\"tv\":1.23,", buf);
 	ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
 	out = saveConfigValue("tv", (PH5TYPE) -1.2345, buf);
-	ASSERTEQUALS("\"tv\":-1.235,", buf);
+	ASSERTEQUALS("\"tv\":-1.23,", buf);
 	ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
 	out = saveConfigValue("as", true, buf);
 	ASSERTEQUALS("\"as\":true,", buf);
@@ -1985,30 +1985,11 @@ void test_autoSync() {
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     mt.loop();
-    ASSERTEQUAL(STATUS_BUSY_SYNC, mt.status);
-	ASSERT(hash1 == machine.syncHash);
+	ASSERT(hash1 != machine.syncHash);
 	mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-    ASSERTEQUAL(machine.syncHash, machine.hash());
-    ASSERT(hash1 != machine.syncHash);
 	uint32_t hash2 = machine.syncHash;
 	ASSERTEQUAL(hash2, machine.hash());
-    mt.loop();
-    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-
-	// change config
-	machine.axis[0].home = 123;
-	machine.topology = MTO_FPD;
-    mt.loop();
-    ASSERTEQUAL(STATUS_BUSY_SYNC, mt.status);
-    mt.loop();
-    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-	ASSERTEQUAL(MTO_FPD, machine.topology);
-	ASSERTEQUAL(123, machine.axis[0].home);
-	uint32_t hash3 = machine.syncHash;
-	ASSERTEQUAL(hash3, machine.hash());
-	ASSERT(hash1 != hash3);
-	ASSERT(hash2 != hash3);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
