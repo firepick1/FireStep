@@ -16,6 +16,7 @@ protected:
     size_t readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen);
 
 public:
+	uint32_t syncHash;
     Status status;
     Machine machine;
     JsonCommand command;
@@ -25,7 +26,7 @@ public:
     MachineThread();
     void setup(PinConfig pc);
     void loop();
-    void sync();
+    Status sync();
 } MachineThread;
 
 } // namespace firestep

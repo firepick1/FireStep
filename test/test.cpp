@@ -592,7 +592,8 @@ MachineThread test_setup(bool clearArduino=true) {
     if (clearArduino) {
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
         char buf[100];
-        snprintf(buf, sizeof(buf), "FireStep %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+        snprintf(buf, sizeof(buf), "FireStep %d.%d.%d sysch:%ld\n", 
+			VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) mt.machine.hash());
         ASSERTEQUALS(buf, Serial.output().c_str());
     }
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
@@ -1921,75 +1922,65 @@ void test_PrettyPrint() {
 void test_autoSync() {
     cout << "TEST	: test_autoSync() =====" << endl;
 
-	char buf[100];
-	char *out = saveConfigValue("tv", (PH5TYPE) 1.2345, buf);
-	ASSERTEQUALS("\"tv\":1.23,", buf);
-	ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
-	out = saveConfigValue("tv", (PH5TYPE) -1.2345, buf);
-	ASSERTEQUALS("\"tv\":-1.23,", buf);
-	ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
-	out = saveConfigValue("as", true, buf);
-	ASSERTEQUALS("\"as\":true,", buf);
-	ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
-	out = saveConfigValue("as", false, buf);
-	ASSERTEQUALS("\"as\":false,", buf);
-	ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
+    char buf[100];
+    char *out = saveConfigValue("tv", (PH5TYPE) 1.2345, buf);
+    ASSERTEQUALS("\"tv\":1.23,", buf);
+    ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
+    out = saveConfigValue("tv", (PH5TYPE) -1.2345, buf);
+    ASSERTEQUALS("\"tv\":-1.23,", buf);
+    ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
+    out = saveConfigValue("as", true, buf);
+    ASSERTEQUALS("\"as\":true,", buf);
+    ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
+    out = saveConfigValue("as", false, buf);
+    ASSERTEQUALS("\"as\":false,", buf);
+    ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
 
-	arduino.clear();
+    arduino.clear();
     threadRunner.clear();
     MachineThread mt;
     mt.machine.pDisplay = &testDisplay;
-	Machine & machine = mt.machine;
+    mt.setup(PC1_EMC02);
+
+    Machine & machine = mt.machine;
     testDisplay.clear();
-    //mt.setup(PC2_RAMPS_1_4);
-    //Serial.clear();
-    //delayMicsTotal = 0;
-    //arduino.setPin(mt.machine.axis[0].pinMin, 0);
-    //arduino.setPin(mt.machine.axis[1].pinMin, 0);
-    //arduino.setPin(mt.machine.axis[2].pinMin, 0);
-    //mt.loop();
-    //ASSERTEQUAL(HIGH, arduino.getPin(PC2_X_DIR_PIN));
-    //ASSERTEQUAL(HIGH, arduino.getPin(PC2_Y_DIR_PIN));
-    //ASSERTEQUAL(HIGH, arduino.getPin(PC2_Z_DIR_PIN));
-    //ASSERTEQUAL(LOW, arduino.getPin(PC2_X_ENABLE_PIN)); // enabled
-    //ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_ENABLE_PIN)); // enabled
-    //ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_ENABLE_PIN)); // enabled
-    //if (clearArduino) {
-        //ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-        //char buf[100];
-        //snprintf(buf, sizeof(buf), "FireStep %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-        //ASSERTEQUALS(buf, Serial.output().c_str());
-    //}
-    //ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
-    //for (int i=0; i<MOTOR_COUNT; i++) {
-        //ASSERTEQUAL((size_t) &mt.machine.axis[i], (size_t) &mt.machine.getMotorAxis(i));
-    //}
 
-	ASSERTEQUAL(1000, MAX_JSON);
+    ASSERTEQUAL(1000, MAX_JSON);
     uint8_t *eeaddr = 0;
-	ASSERTEQUAL(0, machine.syncHash);
-	ASSERT(!machine.autoSync);
-    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    ASSERTEQUAL(0, mt.syncHash);
+    ASSERT(!machine.autoSync);
+    ASSERTEQUAL(STATUS_BUSY_SETUP, mt.status);
     mt.loop();
+    Serial.clear(); // banner
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-	ASSERT(machine.syncHash);
-	uint32_t hash1 = machine.syncHash;
+    ASSERT(mt.syncHash);
+    uint32_t hash1 = mt.syncHash;
 
-	// enable auto-sync
+    // enable auto-sync
     Serial.push(JT("{'sysas':true}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
+    ASSERTEQUALS(JT("{'s':0,'r':{'sysas':true},'t':0.000}\n"), Serial.output().c_str());
     ASSERTEQUAL(STATUS_OK, mt.status);
-	ASSERT(machine.autoSync);
+    ASSERT(machine.autoSync);
     mt.loop();
+    ASSERTEQUALS(JT( "["
+                     "{'sys':{'as':true,'ch':2133533102,'db':0,'eu':2000,'hp':3,'jp':false,'lb':200,'lh':false,'mv':12800,'om':0,'pc':1,'pi':7,'to':0,'tv':0.70}},"
+                     "{'x':{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'y':{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'z':{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'a':{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'b':{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'c':{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}}]"),
+                 eeprom_read_string(0).c_str());
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     mt.loop();
-	ASSERT(hash1 != machine.syncHash);
-	mt.loop();
+    ASSERT(hash1 != mt.syncHash);
+    mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-	uint32_t hash2 = machine.syncHash;
-	ASSERTEQUAL(hash2, machine.hash());
+    uint32_t hash2 = mt.syncHash;
+    ASSERTEQUAL(hash2, machine.hash());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -2014,6 +2005,7 @@ void test_eep() {
     eeprom_write_byte(eeaddr++, '"');
     eeprom_write_byte(eeaddr++, '}');
     MachineThread mt = test_setup(false);
+    Serial.clear(); // banner
     Machine &machine = mt.machine;
     ASSERTEQUAL(STATUS_BUSY_EEPROM, mt.status);
     mt.loop();
@@ -2095,6 +2087,7 @@ void test_eep() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'0':'{\\\"systv\\\":0.700}'}},'t':0.000}\n"), Serial.output().c_str());
     test_ticks(1);
+    ASSERTEQUALS(JT("{'systv':0.700}"), eeprom_read_string(0).c_str());
 
     // test restart
     mt.status = STATUS_BUSY_SETUP;

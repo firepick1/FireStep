@@ -22,7 +22,7 @@ void MachineThread::setup(PinConfig pc) {
 
 MachineThread::MachineThread()
 //: status(STATUS_BUSY_SETUP) , controller(machine) {
-    : status(STATUS_WAIT_IDLE) , controller(machine) {
+    : status(STATUS_WAIT_IDLE) , controller(machine), syncHash(0) {
 }
 
 void MachineThread::displayStatus() {
@@ -120,7 +120,8 @@ Status MachineThread::executeEEPROM() {
     return status;
 }
 
-void MachineThread::sync() {
+Status MachineThread::sync() {
+	Status status = STATUS_WAIT_IDLE;
     command.clear();
     char *buf = command.allocate(MAX_JSON);
     ASSERT(buf);
@@ -162,17 +163,20 @@ void MachineThread::sync() {
 	eeprom_write_byte(eepAddr, ' '); // disable eeprom
     for (int16_t i=1; i<=len; i++) { // include terminator
         eeprom_write_byte(eepAddr+i, buf[i]);
-		if (Serial.available()) { return; }
+		//if (Serial.available()) { return; }
     }
     TESTCOUT3("sync len:", strlen(buf), " buf:", buf, " status:", (int) status);
     // Commit config JSON to EEPROM iff JSON is valid
     status = command.parse(buf, status);
     if (status == STATUS_BUSY_PARSED) {
-		machine.syncHash = machine.hash(); // commit saved
+		syncHash = machine.hash(); // commit saved
         eeprom_write_byte(eepAddr, buf[0]); // enable eeprom
+        eeprom_write_byte(eepAddr+len-1, 0); // remove EOL
+		status = STATUS_WAIT_IDLE;
 	} else {
 		machine.autoSync = false; // no point trying again
     }
+	return status;
 }
 
 void MachineThread::loop() {
@@ -220,32 +224,38 @@ void MachineThread::loop() {
             status = controller.cancel(command, STATUS_SERIAL_CANCEL);
         } else {
             status = controller.process(command);
+			TESTCOUT1("controller.process status:", status);
         }
         break;
     case STATUS_BUSY_EEPROM:
         status = executeEEPROM();
         break;
     case STATUS_BUSY_SETUP: {
-		machine.syncHash = machine.hash();
+		char msg[100];
+		syncHash = machine.hash();
+		snprintf(msg, sizeof(msg), "FireStep %d.%d.%d sysch:%ld",
+				 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) syncHash);
+		Serial.println(msg);
         uint8_t c = eeprom_read_byte((uint8_t*) 0);
         if (c == '{' || c == '[') {
             status = STATUS_BUSY_EEPROM;
         } else {
-            char msg[100];
-            snprintf(msg, sizeof(msg), "FireStep %d.%d.%d",
-                     VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-            Serial.println(msg);
             status = STATUS_WAIT_IDLE;
         }
         break;
     }
     case STATUS_OK:
-		if (machine.syncHash == 0) {
-			machine.syncHash = machine.hash();
-		} else if (machine.autoSync && machine.syncHash != machine.hash()) {
-			sync();
+		status = STATUS_WAIT_IDLE;
+		if (machine.autoSync) {
+			if (syncHash == machine.hash()) {
+				TESTCOUT1("STATUS_OK (fresh):", syncHash);
+			} else {
+				TESTCOUT1("STATUS_OK (stale):", syncHash);
+				status = sync();
+			}
+		} else {
+			TESTCOUT1("STATUS_OK:", syncHash);
 		}
-        status = STATUS_WAIT_IDLE;
         break;
     }
 

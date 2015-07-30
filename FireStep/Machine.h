@@ -246,7 +246,6 @@ public:
     } op;
 
 public:
-    int32_t		syncHash;
     Axis 		axis[AXIS_COUNT];
     Display*	pDisplay;
     Axis *		motorAxis[MOTOR_COUNT];

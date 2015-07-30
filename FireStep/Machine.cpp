@@ -129,7 +129,7 @@ Machine::Machine()
     : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
       tvMax(0.7), homingPulses(3), latchBackoff(LATCH_BACKOFF),
       searchDelay(800), pinStatus(NOPIN), eeUser(2000), topology(MTO_RAW),
-      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0)
+      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -696,9 +696,6 @@ Quad<StepCoord> Machine::getMotorPosition() {
 }
 
 Status Machine::idle(Status status) {
-	if (syncHash == 0) {
-		syncHash = hash();
-	}
     for (MotorIndex i = 0; i < MOTOR_COUNT; i++) {
         if (motorAxis[i]->enabled && motorAxis[i]->idleSnooze) {
             motorAxis[i]->enable(false);

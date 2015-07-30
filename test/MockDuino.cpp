@@ -279,3 +279,12 @@ void eeprom_write_byte(uint8_t *addr, uint8_t value) {
     }
 }
 
+string eeprom_read_string(uint8_t *addr) {
+	string result;
+	for (size_t i=0; i+(size_t)addr<EEPROM_END; i++) {
+		uint8_t b = eeprom_read_byte(i+addr);
+		if (!b) { break; }
+		result += (char) b;
+	}
+	return result;
+}	

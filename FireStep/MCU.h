@@ -122,6 +122,7 @@ inline int16_t freeRam () {
 #ifdef TEST
 extern uint8_t eeprom_read_byte(uint8_t *addr);
 extern void eeprom_write_byte(uint8_t *addr, uint8_t value);
+string eeprom_read_string(uint8_t *addr);
 #endif
 
 #endif
