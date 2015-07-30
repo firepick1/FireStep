@@ -12,8 +12,10 @@ typedef class MachineThread : Thread {
 
 protected:
     void displayStatus();
+	char * buildStartupJson();
     Status executeEEPROM();
     size_t readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen);
+	void printBanner();
 
 public:
 	uint32_t syncHash;
@@ -21,6 +23,7 @@ public:
     Machine machine;
     JsonCommand command;
     JsonController controller;
+	bool printBannerOnIdle;
 
 public:
     MachineThread();

@@ -225,10 +225,10 @@ void test_Machine() {
 	// Configuration save
 	char buf[255];
 	char *out = machine.axis[0].saveConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
+	ASSERTEQUALS(JT("{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveSysConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'as':false,'ch':2133533136,'db':0,'eu':2000,'hp':3,'jp':false,'lb':200,'lh':false,"
+	ASSERTEQUALS(JT("{'as':0,'ch':2133533136,'db':0,'eu':2000,'hp':3,'jp':0,'lb':200,'lh':0,"
 				 "'mv':12800,'om':0,'pc':2,'pi':11,'to':0,'tv':0.70}"), 
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
@@ -590,6 +590,8 @@ MachineThread test_setup(bool clearArduino=true) {
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_ENABLE_PIN)); // enabled
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_ENABLE_PIN)); // enabled
     if (clearArduino) {
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+		mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
         char buf[100];
         snprintf(buf, sizeof(buf), "FireStep %d.%d.%d sysch:%ld\n", 
@@ -1930,10 +1932,10 @@ void test_autoSync() {
     ASSERTEQUALS("\"tv\":-1.23,", buf);
     ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
     out = saveConfigValue("as", true, buf);
-    ASSERTEQUALS("\"as\":true,", buf);
+    ASSERTEQUALS("\"as\":1,", buf);
     ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
     out = saveConfigValue("as", false, buf);
-    ASSERTEQUALS("\"as\":false,", buf);
+    ASSERTEQUALS("\"as\":0,", buf);
     ASSERTEQUAL(strlen(buf), (size_t)(out-buf));
 
     arduino.clear();
@@ -1951,28 +1953,30 @@ void test_autoSync() {
     ASSERT(!machine.autoSync);
     ASSERTEQUAL(STATUS_BUSY_SETUP, mt.status);
     mt.loop();
-    Serial.clear(); // banner
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    Serial.clear(); // banner
     ASSERT(mt.syncHash);
     uint32_t hash1 = mt.syncHash;
 
     // enable auto-sync
-    Serial.push(JT("{'sysas':true}\n"));
+    Serial.push(JT("{'sysas':1,'sysom':1}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
-    ASSERTEQUALS(JT("{'s':0,'r':{'sysas':true},'t':0.000}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'sysas':true,'sysom':1},'t':0.000}\n"), Serial.output().c_str());
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERT(machine.autoSync);
     mt.loop();
     ASSERTEQUALS(JT( "["
-                     "{'sys':{'as':true,'ch':2133533102,'db':0,'eu':2000,'hp':3,'jp':false,'lb':200,'lh':false,'mv':12800,'om':0,'pc':1,'pi':7,'to':0,'tv':0.70}},"
-                     "{'x':{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
-                     "{'y':{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
-                     "{'z':{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
-                     "{'a':{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
-                     "{'b':{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
-                     "{'c':{'dh':true,'en':true,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}}]"),
+                     "{'sys':{'as':1,'ch':2133533103,'db':0,'eu':2000,'hp':3,'jp':0,'lb':200,'lh':0,'mv':12800,'om':1,'pc':1,'pi':7,'to':0,'tv':0.70}},"
+                     "{'x':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'y':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'z':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'a':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'b':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'c':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}}]"),
                  eeprom_read_string(0).c_str());
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     mt.loop();
@@ -1983,6 +1987,48 @@ void test_autoSync() {
     ASSERTEQUAL(hash2, machine.hash());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	// simulate restart
+	mt.syncHash = 0;
+	mt.printBannerOnIdle = true;
+	machine.autoSync = false;
+	mt.status = STATUS_BUSY_SETUP;
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_EEPROM, mt.status);
+    mt.loop(); // parse startup JSON
+	Serial.clear(); // banner
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // sys
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	ASSERTEQUAL(true, machine.autoSync);
+	ASSERTEQUALS(JT("{'s':0,'r':" 
+                    "{'sys':{'as':true,'ch':2133533103,'db':0,'eu':2000,'hp':3,'jp':false,'lb':200,'lh':false,'mv':12800,'om':1,'pc':1,'pi':7,'to':0,'tv':0.700}}"
+					"}\n"),
+					Serial.output().c_str());
+    mt.loop(); // x
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // y
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // z
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // a
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // b
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // c
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(hash2, machine.hash());
+	ASSERTEQUAL(true, machine.autoSync);
+	Serial.clear();
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    mt.loop(); // banner
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	snprintf(buf, sizeof(buf), "FireStep %d.%d.%d sysch:%ld\n", 
+		VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) 2133533103);
+	ASSERTEQUALS(buf, Serial.output().c_str());
 
     cout << "TEST	: test_autoSync() OK " << endl;
 }
@@ -2005,10 +2051,10 @@ void test_eep() {
     eeprom_write_byte(eeaddr++, '"');
     eeprom_write_byte(eeaddr++, '}');
     MachineThread mt = test_setup(false);
-    Serial.clear(); // banner
     Machine &machine = mt.machine;
     ASSERTEQUAL(STATUS_BUSY_EEPROM, mt.status);
     mt.loop();
+    Serial.clear(); // banner
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);

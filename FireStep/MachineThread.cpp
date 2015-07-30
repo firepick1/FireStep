@@ -22,7 +22,7 @@ void MachineThread::setup(PinConfig pc) {
 
 MachineThread::MachineThread()
 //: status(STATUS_BUSY_SETUP) , controller(machine) {
-    : status(STATUS_WAIT_IDLE) , controller(machine), syncHash(0) {
+    : status(STATUS_WAIT_IDLE) , controller(machine), syncHash(0), printBannerOnIdle(true) {
 }
 
 void MachineThread::displayStatus() {
@@ -88,7 +88,7 @@ size_t MachineThread::readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen)
     return len;
 }
 
-Status MachineThread::executeEEPROM() {
+char * MachineThread::buildStartupJson() {
     command.clear();
     char *buf = command.allocate(MAX_JSON);
     ASSERT(buf);
@@ -98,6 +98,9 @@ Status MachineThread::executeEEPROM() {
     len += readEEPROM((uint8_t*)(size_t) 0, buf+len, MAX_JSON-len);
     if (len > 1) {
         buf[len++] = ',';
+		if (buf[1] == '[') {
+			buf[1] = ' ';
+		}
     }
     size_t len2 = readEEPROM((uint8_t*)(size_t) machine.eeUser, buf+len, MAX_JSON-len);
     if (len2==0 && len>1) {
@@ -113,9 +116,25 @@ Status MachineThread::executeEEPROM() {
     }
     buf[len] = 0;
 
-    TESTCOUT3("executeEEPROM:", buf, " len:", len, " status:", (int) status);
+	return buf;
+}
+
+Status MachineThread::executeEEPROM() {
+	char *buf = buildStartupJson();
+    TESTCOUT3("executeEEPROM:", buf, " len:", strlen(buf), " status:", (int) status);
     status = command.parse(buf, status);
-    TESTCOUT1("executeEEPROM status:", (int) status);
+    TESTCOUT2("executeEEPROM status:", (int) status, " buf:", buf);
+	if (status < 0) {
+		Serial.print("{\"s\":");
+		Serial.print(status);
+		Serial.println(",\"r\":");
+		buf = buildStartupJson();
+		for (char *s = buf; *s; s++) {
+			Serial.print(*s);
+		}
+		Serial.println();
+		Serial.println("}");
+	}
 
     return status;
 }
@@ -179,6 +198,14 @@ Status MachineThread::sync() {
 	return status;
 }
 
+void MachineThread::printBanner() {
+	char msg[100];
+	syncHash = machine.hash();
+	snprintf(msg, sizeof(msg), "FireStep %d.%d.%d sysch:%ld",
+			 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) syncHash);
+	Serial.println(msg);
+}
+
 void MachineThread::loop() {
 #ifdef THROTTLE_SPEED
 	if (Serial.available()) { return; }
@@ -207,6 +234,10 @@ void MachineThread::loop() {
             command.clear();
             status = command.parse(NULL, status);
         } else {
+			if (printBannerOnIdle) {
+				printBanner();
+				printBannerOnIdle = false;
+			}
             status = machine.idle(status);
         }
         break;
@@ -224,18 +255,13 @@ void MachineThread::loop() {
             status = controller.cancel(command, STATUS_SERIAL_CANCEL);
         } else {
             status = controller.process(command);
-			TESTCOUT1("controller.process status:", status);
+			//TESTCOUT1("controller.process status:", status);
         }
         break;
     case STATUS_BUSY_EEPROM:
         status = executeEEPROM();
         break;
     case STATUS_BUSY_SETUP: {
-		char msg[100];
-		syncHash = machine.hash();
-		snprintf(msg, sizeof(msg), "FireStep %d.%d.%d sysch:%ld",
-				 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) syncHash);
-		Serial.println(msg);
         uint8_t c = eeprom_read_byte((uint8_t*) 0);
         if (c == '{' || c == '[') {
             status = STATUS_BUSY_EEPROM;

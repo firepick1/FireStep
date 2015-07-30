@@ -10,7 +10,7 @@ enum Status {
     STATUS_BUSY_MOVING = 12,		// Processing motion command
     STATUS_BUSY_SETUP = 13,			// Processing setup
     STATUS_BUSY_OK = 14,			// sub-command completed successfully
-    STATUS_BUSY_EEPROM = 15,		// EEPROM command queued for processing
+    STATUS_BUSY_EEPROM = 15,		// Startup EEPROM command queued for processing
     STATUS_BUSY_CALIBRATING = 16,	// Processing calibration command
     STATUS_WAIT_IDLE = 20,			// Awaiting input: inactive
     STATUS_WAIT_EOL = 21,			// Awaiting input: remainder of EOL-terminated command

@@ -92,6 +92,14 @@ size_t SerialType::write(uint8_t value) {
     return 1;
 }
 
+void SerialType::print(const char value) {
+	char buf[2];
+	buf[0] = value;
+	buf[1] = 0;
+    serialout.append(buf);
+    serialline.append(buf);
+}
+
 void SerialType::print(const char *value) {
     serialout.append(value);
     serialline.append(value);

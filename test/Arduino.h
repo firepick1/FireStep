@@ -87,6 +87,7 @@ typedef class SerialType : public Print {
         void begin(long speed) ;
         byte read() ;
 		virtual size_t write(uint8_t value);
+        void print(const char value);
         void print(const char *value);
         void print(int value, int format = DEC);
         void println(const char value, int format = DEC) ;

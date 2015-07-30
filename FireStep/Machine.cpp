@@ -22,7 +22,7 @@ char * firestep::saveConfigValue(const char *key, const char *value, char *out) 
 }
 
 char * firestep::saveConfigValue(const char *key, bool value, char *out) {
-	return saveConfigValue(key, value ? "true":"false", out);
+	return saveConfigValue(key, value ? "1":"0", out);
 }
 
 char * firestep::saveConfigValue(const char *key, int16_t value, char *out) {
