@@ -908,6 +908,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
+            node["ah"] = "";
             node["as"] = "";
 			node["ch"] = "";
             node["eu"] = "";
@@ -936,6 +937,8 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
                 }
             }
         }
+    } else if (strcmp("ah", key) == 0 || strcmp("sysah", key) == 0) {
+        status = processField<bool, bool>(jobj, key, machine.autoHome);
     } else if (strcmp("as", key) == 0 || strcmp("sysas", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.autoSync);
     } else if (strcmp("ch", key) == 0 || strcmp("sysch", key) == 0) {

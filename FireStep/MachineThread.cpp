@@ -14,7 +14,7 @@ void MachineThread::setup(PinConfig pc) {
     ADC_LISTEN8(ANALOG_SPEED_PIN);
 #endif
     Thread::setup();
-    machine.setPinConfig(pc);
+    machine.setup(pc);
     status = STATUS_BUSY_SETUP;
     displayStatus();
     controller.setup();
@@ -97,9 +97,18 @@ char * MachineThread::buildStartupJson() {
     buf[len++] = '[';
     len += readEEPROM((uint8_t*)(size_t) 0, buf+len, MAX_JSON-len);
     if (len > 1) {
-        buf[len++] = ',';
 		if (buf[1] == '[') {
 			buf[1] = ' ';
+		}
+		if (buf[len-1] == ']') {
+			buf[len-1] = ' ';
+		}
+        buf[len++] = ',';
+		if (machine.autoHome) {
+			const char *hom = "{\"hom\":\"\"},";
+			snprintf(buf+len, MAX_JSON-len, "%s", hom);
+			TESTCOUT1("autoHome:", buf+len);
+			len += strlen(hom);
 		}
     }
     size_t len2 = readEEPROM((uint8_t*)(size_t) machine.eeUser, buf+len, MAX_JSON-len);

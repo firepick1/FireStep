@@ -144,7 +144,7 @@ void test_Machine() {
     Machine machine;
 	uint32_t hash1 = machine.hash();
 	ASSERT(hash1);
-    machine.setPinConfig(PC2_RAMPS_1_4);
+    machine.setup(PC2_RAMPS_1_4);
 	uint32_t hash2 = machine.hash();
 	ASSERT(hash1 != hash2);
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_X_STEP_PIN));
@@ -228,7 +228,7 @@ void test_Machine() {
 	ASSERTEQUALS(JT("{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveSysConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'as':0,'ch':2133533136,'db':0,'eu':2000,'hp':3,'jp':0,'lb':200,'lh':0,"
+	ASSERTEQUALS(JT("{'ah':0,'as':0,'ch':2144575057,'db':0,'eu':2000,'hp':3,'jp':0,'lb':200,'lh':0,"
 				 "'mv':12800,'om':0,'pc':2,'pi':11,'to':0,'tv':0.70}"), 
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
@@ -525,15 +525,15 @@ void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
     testJSON(machine, jc, replace, "{'?':{'sa':1.8}}", "{'s':0,'r':{'?':{'sa':1.800}},'t':0.000}\n");
 
     testJSON(machine, jc, replace, "{'x':''}",
-             "{'s':0,'r':{'x':{'dh':true,'en':true,'ho':0,'is':0,'lm':false,'ln':false,"\
+             "{'s':0,'r':{'x':{'dh':true,'en':false,'ho':0,'is':0,'lm':false,'ln':false,"\
              "'mi':16,'pd':55,'pe':38,'pm':255,'pn':3,'po':0,'ps':54,"\
              "'sa':1.800,'tm':32000,'tn':-32000,'ud':0}},'t':0.000}\n");
     testJSON(machine, jc, replace, "{'y':''}",
-             "{'s':0,'r':{'y':{'dh':true,'en':true,'ho':0,'is':0,'lm':false,'ln':false,"\
+             "{'s':0,'r':{'y':{'dh':true,'en':false,'ho':0,'is':0,'lm':false,'ln':false,"\
              "'mi':16,'pd':61,'pe':56,'pm':255,'pn':14,'po':0,'ps':60,"\
              "'sa':1.800,'tm':32000,'tn':-32000,'ud':0}},'t':0.000}\n");
     testJSON(machine, jc, replace, "{'z':''}",
-             "{'s':0,'r':{'z':{'dh':true,'en':true,'ho':0,'is':0,'lm':false,'ln':false,"\
+             "{'s':0,'r':{'z':{'dh':true,'en':false,'ho':0,'is':0,'lm':false,'ln':false,"\
              "'mi':16,'pd':48,'pe':62,'pm':255,'pn':18,'po':0,'ps':46,"\
              "'sa':1.800,'tm':32000,'tn':-32000,'ud':0}},'t':0.000}\n");
 }
@@ -730,7 +730,7 @@ void test_JsonController() {
     jc.process(jcmd);
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
-                      "{'as':false,'ch':2133533136,'eu':2000,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
+                      "{'ah':false,'as':false,'ch':2144574995,'eu':2000,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
                       "'lp':0,'mv':12800,'om':0,'pc':2,'pi':11,'sd':800,'tc':12345,"\
                       "'to':0,'tv':0.700,'v':%.3f}"\
                       "},'t':0.000}\n";
@@ -987,7 +987,7 @@ void test_Machine_step() {
     ASSERTEQUAL(false, machine.axis[1].atMin);
     ASSERTEQUAL(false, machine.axis[2].atMin);
     ASSERTEQUAL(false, machine.axis[3].atMin);
-    machine.setPinConfig(PC2_RAMPS_1_4);
+    machine.setup(PC2_RAMPS_1_4);
     for (int i = 0; i < 4; i++) {
         arduino.setPin(machine.axis[i].pinMin, 0);
     }
@@ -1959,32 +1959,44 @@ void test_autoSync() {
     Serial.clear(); // banner
     ASSERT(mt.syncHash);
     uint32_t hash1 = mt.syncHash;
+	ASSERTEQUAL(hash1, machine.hash());
+	machine.axis[4].enable(false);
+	machine.axis[5].enable(false); 
+	uint32_t hash2 = machine.hash();
+	ASSERT(hash1 != hash2);
 
     // enable auto-sync
-    Serial.push(JT("{'sysas':1,'sysom':1}\n"));
+    Serial.push(JT("{'sysas':1,'sysom':1,'sysah':1,'syspc':2}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	ASSERTEQUAL(false, machine.axis[4].isEnabled());
     mt.loop();
-    ASSERTEQUALS(JT("{'s':0,'r':{'sysas':true,'sysom':1},'t':0.000}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'sysas':true,'sysom':1,'sysah':true,'syspc':2},'t':0.000}\n"), 
+		Serial.output().c_str());
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERT(machine.autoSync);
+	ASSERT(hash2 != machine.hash());
+	ASSERTEQUAL(false, machine.axis[4].isEnabled());
+
     mt.loop();
+#define HASH_EXPECTED "2146410289"
     ASSERTEQUALS(JT( "["
-                     "{'sys':{'as':1,'ch':2133533103,'db':0,'eu':2000,'hp':3,'jp':0,'lb':200,'lh':0,'mv':12800,'om':1,'pc':1,'pi':7,'to':0,'tv':0.70}},"
+                     "{'sys':{'ah':1,'as':1,'ch':" HASH_EXPECTED ",'db':0,'eu':2000,'hp':3,'jp':0,"
+					 "'lb':200,'lh':0,'mv':12800,'om':1,'pc':2,'pi':11,'to':0,'tv':0.70}},"
                      "{'x':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'y':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'z':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'a':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
-                     "{'b':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
-                     "{'c':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}}]"),
+                     "{'b':{'en':0}},"
+                     "{'c':{'en':0}}]"),
                  eeprom_read_string(0).c_str());
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     mt.loop();
     ASSERT(hash1 != mt.syncHash);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-    uint32_t hash2 = mt.syncHash;
-    ASSERTEQUAL(hash2, machine.hash());
+    uint32_t hash3 = mt.syncHash;
+    ASSERTEQUAL(hash3, machine.hash());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -2002,7 +2014,8 @@ void test_autoSync() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 	ASSERTEQUAL(true, machine.autoSync);
 	ASSERTEQUALS(JT("{'s':0,'r':" 
-                    "{'sys':{'as':true,'ch':2133533103,'db':0,'eu':2000,'hp':3,'jp':false,'lb':200,'lh':false,'mv':12800,'om':1,'pc':1,'pi':7,'to':0,'tv':0.700}}"
+                    "{'sys':{'ah':true,'as':true,'ch':" HASH_EXPECTED ",'db':0,'eu':2000,'hp':3,"
+					"'jp':false,'lb':200,'lh':false,'mv':12800,'om':1,'pc':2,'pi':11,'to':0,'tv':0.700}}"
 					"}\n"),
 					Serial.output().c_str());
     mt.loop(); // x
@@ -2017,17 +2030,26 @@ void test_autoSync() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop(); // c
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // home
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    arduino.setPin(PC2_X_MIN_PIN, HIGH);
+    arduino.setPin(PC2_Y_MIN_PIN, HIGH);
+    arduino.setPin(PC2_Z_MIN_PIN, HIGH);
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUAL(hash2, machine.hash());
+    ASSERTEQUAL(hash3, machine.hash());
 	ASSERTEQUAL(true, machine.autoSync);
 	Serial.clear();
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     mt.loop(); // banner
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-	snprintf(buf, sizeof(buf), "FireStep %d.%d.%d sysch:%ld\n", 
-		VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) 2133533103);
+	snprintf(buf, sizeof(buf), "FireStep %d.%d.%d sysch:%s\n", 
+		VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, HASH_EXPECTED);
 	ASSERTEQUALS(buf, Serial.output().c_str());
 
     cout << "TEST	: test_autoSync() OK " << endl;

@@ -87,10 +87,11 @@ Status Axis::enable(bool active) {
     return STATUS_OK;
 }
 
+#define BIT_HASH ((uint32_t)0x3)
 int32_t Axis::hash() {
     int32_t result = 0
-		^ (dirHIGH << 0)
-		^ (enabled << 1)
+		^ (dirHIGH ? (BIT_HASH << 0) : 0)
+		^ (enabled ? (BIT_HASH << 1) : 0)
 		^ ((uint32_t) home << 0)
 		^ ((uint32_t) idleSnooze << 1)
 		^ ((uint32_t) microsteps << 2)
@@ -126,7 +127,7 @@ char * Axis::saveConfig(char *out, size_t maxLen) {
 ////////////////////// Machine /////////////////////////
 
 Machine::Machine()
-    : invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
+    : autoHome(false),invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
       tvMax(0.7), homingPulses(3), latchBackoff(LATCH_BACKOFF),
       searchDelay(800), pinStatus(NOPIN), eeUser(2000), topology(MTO_RAW),
       outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false)
@@ -145,15 +146,24 @@ Machine::Machine()
     }
 }
 
+void Machine::setup(PinConfig cfg) {
+	setPinConfig(cfg);
+	for (AxisIndex i=0; i<AXIS_COUNT; i++) {
+		axis[i].enable(false); // toggle
+		axis[i].enable(true);
+	}
+}
+
 int32_t Machine::hash() {
 	int32_t result = 0
-		^ (outputMode << 0)
-		^ (topology << 1)
-		^ (invertLim << 2)
-		^ (pinEnableHigh << 3)
-		^ (autoSync << 4)
-		^ (pinConfig << 5)
-		^ (jsonPrettyPrint << 5)
+		^ ((uint32_t) outputMode << 8)
+		^ ((uint32_t) topology << 9)
+		^ ((uint32_t) pinConfig << 10)
+		^ (invertLim ? (BIT_HASH << 16) : 0)
+		^ (pinEnableHigh ? (BIT_HASH << 17) : 0)
+		^ (autoSync ? (BIT_HASH << 18) : 0)
+		^ (jsonPrettyPrint ? (BIT_HASH << 19) : 0)
+		^ (autoHome ? (BIT_HASH << 20) : 0)
 		^ delta.hash()
 		^ (vMax) 
 		^ (*(uint32_t *)(void*)&tvMax) 
@@ -165,7 +175,7 @@ int32_t Machine::hash() {
 		^ (eeUser)	
 	;
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
-        result ^= axis[i].hash();
+        result ^= axis[i].hash() << i;
     }
 
     return result;
@@ -272,7 +282,9 @@ Status Machine::setPinConfig_RAMPS1_4() {
 
 Status Machine::setPinConfig(PinConfig pc) {
     Status status = STATUS_OK;
+	bool enabled[AXIS_COUNT];
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
+        enabled[i] = axis[i].isEnabled();
         axis[i].enable(false);
     }
     switch (pc) {
@@ -297,7 +309,7 @@ Status Machine::setPinConfig(PinConfig pc) {
 
     pinConfig = pc;
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
-        axis[i].enable(true);
+        axis[i].enable(enabled[i]);
     }
     pDisplay->setup(pinStatus);
 
@@ -535,7 +547,7 @@ Status Machine::finalizeHome() {
             status = STATUS_OK;
         } else if (status == STATUS_OK) {
             // we hit something and that's not good
-            status = STATUS_TRAVEL_MAX;
+            status = STATUS_LIMIT_MAX;
         }
     } // case MTO_FPD
     break;
@@ -735,6 +747,7 @@ XYZ3D Machine::getXYZ3D() {
 
 char * Machine::saveSysConfig(char *out, size_t maxLen) {
 	*out++ = '{';
+	out = saveConfigValue("ah", autoHome, out);
 	out = saveConfigValue("as", autoSync, out);
 	out = saveConfigValue("ch", hash(), out);
 	out = saveConfigValue("db", debounce, out);

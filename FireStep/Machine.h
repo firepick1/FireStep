@@ -224,6 +224,7 @@ typedef class Machine : public QuadStepper {
 
 public:
     PinConfig	pinConfig;
+	bool		autoHome;
     bool	 	pinEnableHigh;
     bool		invertLim;
     bool		jsonPrettyPrint;
@@ -260,6 +261,7 @@ protected:
 
 public:
     Machine();
+	void setup(PinConfig cfg);
     int32_t hash();
     virtual	Status step(const Quad<StepDV> &pulse);
     bool isCorePin(int16_t pin);
