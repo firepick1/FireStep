@@ -68,7 +68,7 @@ void MachineThread::displayStatus() {
 }
 
 size_t MachineThread::readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen) {
-	DisplayStatus ds = machine.pDisplay.getStatus();
+	DisplayStatus ds = machine.pDisplay->getStatus();
 	machine.pDisplay->setStatus(DISPLAY_EEPROM);
     uint8_t c = eeprom_read_byte(eeprom_addr);
     if (!dst || (c != '{' && c != '[')) {
@@ -221,7 +221,7 @@ Status MachineThread::syncConfig() {
     out += strlen(out);
 
     // Save to EEPROM before executing config JSON (parsing is destructive)
-	DisplayStatus ds = machine.pDisplay.getStatus();
+	DisplayStatus ds = machine.pDisplay->getStatus();
 	machine.pDisplay->setStatus(DISPLAY_EEPROM);
     size_t len = strlen(buf);
     uint8_t *eepAddr = 0;

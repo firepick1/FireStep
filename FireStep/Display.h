@@ -38,9 +38,6 @@ public:
     inline DisplayStatus getStatus() {
         return (DisplayStatus) status;
     }
-    virtual DisplayStatus getStatus() {
-		return this->status;
-	}
     virtual void setStatus(DisplayStatus status = DISPLAY_WAIT_IDLE) {
         this->status = status;
         show();
