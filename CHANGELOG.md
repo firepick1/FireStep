@@ -15,6 +15,7 @@ v0.2.1
 * NEW: "sysas" configuration auto-sync to EEPROM
 * NEW: "sysch" configuration hash (changes when configuration changes)
 * NEW: "sysah" auto-home on startup
+* NEW: "cmt" write comment line to serial
 
 v0.2.0
 ------

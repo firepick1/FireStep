@@ -1447,6 +1447,9 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
                 status = processProbe_MTO_FPD(jcmd, jobj, it->key);
                 break;
             }
+		} else if (strcmp("cmt", it->key) == 0) {
+			const char *s = it->value;
+			Serial.println(s);
         } else {
             switch (it->key[0]) {
             case '1':

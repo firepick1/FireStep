@@ -3248,6 +3248,37 @@ void test_DeltaCalculator() {
     cout << "TEST	: test_DeltaCalculator() OK " << endl;
 }
 
+void test_cmt() {
+    cout << "TEST	: test_cmt() =====" << endl;
+
+    arduino.clear();
+    threadRunner.clear();
+    MachineThread mt;
+	Machine &machine(mt.machine);
+    machine.pDisplay = &testDisplay;
+    mt.setup(PC1_EMC02);
+
+	ASSERTEQUAL(STATUS_BUSY_SETUP, mt.status);
+	mt.loop();
+	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    Serial.push(JT("[{'cmt':'quack'},{'cmt':'duck'}]\n"));
+	mt.loop();
+	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	mt.loop();
+    ASSERTEQUALS(JT("quack\n"), Serial.output().c_str());
+	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	mt.loop();
+    ASSERTEQUALS(JT("duck\n"), Serial.output().c_str());
+	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	mt.loop();
+	ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'cmt':'duck'},'t':0.000}\n"), Serial.output().c_str());
+	mt.loop();
+	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    cout << "TEST	: test_cmt() OK " << endl;
+}
+
 int main(int argc, char *argv[]) {
     LOGINFO3("INFO	: FireStep test v%d.%d.%d",
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -3294,6 +3325,7 @@ int main(int argc, char *argv[]) {
         test_DeltaCalculator();
         test_MTO_FPD();
         test_autoSync();
+		test_cmt();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;
