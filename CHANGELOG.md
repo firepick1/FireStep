@@ -20,6 +20,7 @@ v0.2.1
 * NEW: "sysom:1" output mode option shows individual responses from JSON command arrays
 * NEW: "sysom:2" writes out comments
 * NEW: "sysom" bit values can be OR'ed together (e.g., sysom:3)
+* NEW: status display now indicates EEPROM reading/writing (NeoPixel blue)
 
 v0.2.0
 ------

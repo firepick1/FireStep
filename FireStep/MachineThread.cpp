@@ -65,11 +65,11 @@ void MachineThread::displayStatus() {
         }
         break;
     }
-
-    machine.pDisplay->show();
 }
 
 size_t MachineThread::readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen) {
+	DisplayStatus ds = machine.pDisplay.getStatus();
+	machine.pDisplay->setStatus(DISPLAY_EEPROM);
     uint8_t c = eeprom_read_byte(eeprom_addr);
     if (!dst || (c != '{' && c != '[')) {
         return 0;
@@ -84,6 +84,7 @@ size_t MachineThread::readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen)
         dst[len] = c;
     }
     dst[len] = 0;
+	machine.pDisplay->setStatus(ds);
 
     return len;
 }
@@ -220,6 +221,8 @@ Status MachineThread::syncConfig() {
     out += strlen(out);
 
     // Save to EEPROM before executing config JSON (parsing is destructive)
+	DisplayStatus ds = machine.pDisplay.getStatus();
+	machine.pDisplay->setStatus(DISPLAY_EEPROM);
     size_t len = strlen(buf);
     uint8_t *eepAddr = 0;
 	eeprom_write_byte(eepAddr, ' '); // disable eeprom
@@ -227,6 +230,7 @@ Status MachineThread::syncConfig() {
         eeprom_write_byte(eepAddr+i, buf[i]);
 		//if (Serial.available()) { return; }
     }
+	machine.pDisplay->setStatus(ds);
     TESTCOUT3("syncConfig len:", strlen(buf), " buf:", buf, " status:", (int) status);
     // Commit config JSON to EEPROM iff JSON is valid
     status = command.parse(buf, status);

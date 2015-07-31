@@ -949,9 +949,10 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp("eu", key) == 0 || strcmp("syseu", key) == 0) {
         int16_t eu = machine.eeUser;
         status = processField<int16_t, long>(jobj, key, eu);
-        if (eu < 0 || EEPROM_END <= eu) {
-            return jcmd.setError(STATUS_EEPROM_ADDR, key);
+        if (eu < 2000 || EEPROM_END <= eu) {
+            return jcmd.setError(STATUS_USER_EEPROM, key);
         }
+		machine.eeUser = eu;
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
         leastFreeRam = min(leastFreeRam, freeRam());
         jobj[key] = leastFreeRam;
