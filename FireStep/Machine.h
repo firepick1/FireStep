@@ -26,6 +26,7 @@ namespace firestep {
 #define INDEX_NONE -1
 #define PROBE_DATA 9
 #define EEUSER 2000
+#define EEUSER_ENABLED (EEUSER-1)
 
 typedef int16_t DelayMics; // delay microseconds
 #ifdef TEST
@@ -346,6 +347,8 @@ public:
     char * saveDimConfig(char *out, size_t maxLen);
     Status idle(Status status);
     Status sync(Status status);
+	void enableEEUser(bool enable);
+	bool isEEUserEnabled();
 } Machine;
 
 #ifdef TEST

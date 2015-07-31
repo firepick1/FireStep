@@ -926,6 +926,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             node["ah"] = "";
             node["as"] = "";
 			node["ch"] = "";
+			node["eu"] = "";
             node["fr"] = "";
             node["hp"] = "";
             node["jp"] = "";
@@ -963,6 +964,13 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
 		//TESTCOUT3("B curHash:", curHash, " jsonHash:", jsonHash, " jobj[key]:", (int32_t) jobj[key]);
 		if (jsonHash != curHash) {
 			machine.syncHash = jsonHash;
+		}
+    } else if (strcmp("eu", key) == 0 || strcmp("syseu", key) == 0) {
+		bool euExisting = machine.isEEUserEnabled();
+		bool euNew = euExisting;
+        status = processField<bool, bool>(jobj, key, euNew);
+		if (euNew != euExisting) {
+			machine.enableEEUser(euNew);
 		}
     } else if (strcmp("db", key) == 0 || strcmp("sysdb", key) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.debounce);

@@ -731,7 +731,7 @@ void test_JsonController() {
     jc.process(jcmd);
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
-                      "{'ah':false,'as':false,'ch':2144573891,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
+                      "{'ah':false,'as':false,'ch':2144573891,'eu':false,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
                       "'lp':0,'mv':12800,'om':0,'pc':2,'pi':11,'sd':800,'tc':12345,"\
                       "'to':0,'tv':0.700,'v':%.3f}"\
                       "},'t':0.000}\n";
@@ -2196,23 +2196,44 @@ void test_eep() {
                  Serial.output().c_str());
     test_ticks(1);
     mt.status = STATUS_BUSY_SETUP;
-    machine.tvMax = 0.5;
     test_ticks(1);
     ASSERTEQUAL(STATUS_BUSY_EEPROM, mt.status);
-    ASSERTEQUALT(0.5, machine.tvMax, 0.0001);
+    test_ticks(1); // parse EEPROM
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    test_ticks(1); // system EEPROM
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    ASSERTEQUALT(0.7, machine.tvMax, 0.0001);
+    test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUAL(false, machine.isEEUserEnabled());
+    test_ticks(1);
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    Serial.clear();
+    Serial.push(JT("{'syseu':1}\n"));
     test_ticks(1);
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    ASSERTEQUALT(0.5, machine.tvMax, 0.0001);
     test_ticks(1);
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'syseu':true},'t':0.000}\n"),
+                 Serial.output().c_str());
+    test_ticks(1);
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	ASSERTEQUAL(true, machine.isEEUserEnabled());
+    mt.status = STATUS_BUSY_SETUP;
+    test_ticks(1);
+    ASSERTEQUAL(STATUS_BUSY_EEPROM, mt.status);
+    test_ticks(1); // parse EEPROM
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    test_ticks(1);
+    test_ticks(1); // system EEPROM
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    test_ticks(1); // user EEPROM (enabled)
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1);
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALT(0.6, machine.tvMax, 0.0001);
     test_ticks(1);
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-    ASSERTEQUALT(0.6, machine.tvMax, 0.0001);
 
     cout << "TEST	: test_eep() OK " << endl;
 }

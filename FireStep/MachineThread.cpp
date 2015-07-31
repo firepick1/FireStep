@@ -106,14 +106,21 @@ char * MachineThread::buildStartupJson() {
 		}
         buf[len++] = ',';
     }
-    size_t len2 = readEEPROM((uint8_t*)(size_t) EEUSER, buf+len, MAX_JSON-len);
-    if (len2==0 && len>1) {
-        len--; // remove comma
+
+	size_t eeUserLen = 0;
+	if (machine.isEEUserEnabled()) {
+		eeUserLen = readEEPROM((uint8_t*)(size_t) EEUSER, buf+len, MAX_JSON-len);
+	}
+
+    if (eeUserLen == 0) {
+		if (len > 1) {
+			len--; // remove comma
+		}
     } else {
         if (buf[len] == '[') {
             buf[len] = ' ';
         }
-        len += len2;
+        len += eeUserLen;
     }
     if (buf[len-1] != ']') {
         buf[len++] = ']';
@@ -298,15 +305,17 @@ void MachineThread::loop() {
     }
     case STATUS_OK:
 		status = STATUS_WAIT_IDLE;
-		if (machine.autoSync) {
-			if (machine.syncHash == machine.hash()) {
-				TESTCOUT1("STATUS_OK (fresh):", machine.syncHash);
-			} else {
-				TESTCOUT1("STATUS_OK (stale):", machine.syncHash);
+		if (machine.syncHash != machine.hash()) {
+			if (machine.autoSync) {
+				TESTCOUT2("STATUS_OK autoSync syncHash:", machine.syncHash, " hash:", machine.hash());
 				status = syncConfig();
+			} else {
+				TESTCOUT2("STATUS_OK syncHash:", machine.syncHash, " hash:", machine.hash());
 			}
-		} else {
-			TESTCOUT1("STATUS_OK:", machine.syncHash);
+			if (machine.syncHash != 0 && machine.isEEUserEnabled()) {
+				TESTCOUT1("STATUS_OK user EEPROM:", "disabled");
+				machine.enableEEUser(false);
+			}
 		}
         break;
     }
