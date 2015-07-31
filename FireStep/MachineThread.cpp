@@ -22,7 +22,7 @@ void MachineThread::setup(PinConfig pc) {
 
 MachineThread::MachineThread()
 //: status(STATUS_BUSY_SETUP) , controller(machine) {
-    : status(STATUS_WAIT_IDLE) , controller(machine), syncHash(0), printBannerOnIdle(true) {
+    : status(STATUS_WAIT_IDLE) , controller(machine), printBannerOnIdle(true) {
 }
 
 void MachineThread::displayStatus() {
@@ -106,7 +106,7 @@ char * MachineThread::buildStartupJson() {
 		}
         buf[len++] = ',';
     }
-    size_t len2 = readEEPROM((uint8_t*)(size_t) machine.eeUser, buf+len, MAX_JSON-len);
+    size_t len2 = readEEPROM((uint8_t*)(size_t) EEUSER, buf+len, MAX_JSON-len);
     if (len2==0 && len>1) {
         len--; // remove comma
     } else {
@@ -153,27 +153,6 @@ Status MachineThread::syncConfig() {
     TESTCOUT1("SAVING CONFIGURATION TO EEPROM","");
 
 	*out++ = '[';
-
-	// save message
-	*out++ = '{';
-	*out++ = '"';
-	*out++ = 'c';
-	*out++ = 'm';
-	*out++ = 't';
-	*out++ = '"';
-	*out++ = ':';
-	*out++ = '"';
-	*out++ = 's';
-	*out++ = 'y';
-	*out++ = 's';
-	*out++ = 'c';
-	*out++ = 'h';
-	*out++ = ':';
-	snprintf(out, MAX_JSON-(out-buf), "%ld", (long)machine.hash());
-	out += strlen(out);
-	*out++ = '"';
-	*out++ = '}';
-	*out++ = ',';
 
     // save system config
 	*out++ = '{';
@@ -235,7 +214,7 @@ Status MachineThread::syncConfig() {
     // Commit config JSON to EEPROM iff JSON is valid
     status = command.parse(buf, status);
     if (status == STATUS_BUSY_PARSED) {
-		syncHash = machine.hash(); // commit saved
+		machine.syncHash = machine.hash(); // commit saved
         eeprom_write_byte(eepAddr, buf[0]); // enable eeprom
         eeprom_write_byte(eepAddr+len-1, 0); // remove EOL
 		status = STATUS_WAIT_IDLE;
@@ -247,9 +226,9 @@ Status MachineThread::syncConfig() {
 
 void MachineThread::printBanner() {
 	char msg[100];
-	syncHash = machine.hash();
+	machine.syncHash = machine.hash();
 	snprintf(msg, sizeof(msg), "FireStep %d.%d.%d sysch:%ld",
-			 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) syncHash);
+			 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) machine.syncHash);
 	Serial.println(msg);
 }
 
@@ -320,14 +299,14 @@ void MachineThread::loop() {
     case STATUS_OK:
 		status = STATUS_WAIT_IDLE;
 		if (machine.autoSync) {
-			if (syncHash == machine.hash()) {
-				TESTCOUT1("STATUS_OK (fresh):", syncHash);
+			if (machine.syncHash == machine.hash()) {
+				TESTCOUT1("STATUS_OK (fresh):", machine.syncHash);
 			} else {
-				TESTCOUT1("STATUS_OK (stale):", syncHash);
+				TESTCOUT1("STATUS_OK (stale):", machine.syncHash);
 				status = syncConfig();
 			}
 		} else {
-			TESTCOUT1("STATUS_OK:", syncHash);
+			TESTCOUT1("STATUS_OK:", machine.syncHash);
 		}
         break;
     }

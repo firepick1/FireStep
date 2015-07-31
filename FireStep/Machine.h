@@ -25,6 +25,7 @@ namespace firestep {
 #define MICROSTEPS_DEFAULT 16
 #define INDEX_NONE -1
 #define PROBE_DATA 9
+#define EEUSER 2000
 
 typedef int16_t DelayMics; // delay microseconds
 #ifdef TEST
@@ -240,12 +241,12 @@ public:
     StepCoord	latchBackoff;
     DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
     PinType		pinStatus;
-    int16_t		eeUser;	// EEPROM user startup commands
     Topology	topology;
     OutputMode	outputMode;
     struct {
         OpProbe		probe;
     } op;
+	int32_t		syncHash;
 
 public:
     Axis 		axis[AXIS_COUNT];

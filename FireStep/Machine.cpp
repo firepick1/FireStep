@@ -129,8 +129,8 @@ char * Axis::saveConfig(char *out, size_t maxLen) {
 Machine::Machine()
     : autoHome(false),invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
       tvMax(0.7), homingPulses(3), latchBackoff(LATCH_BACKOFF),
-      searchDelay(800), pinStatus(NOPIN), eeUser(2000), topology(MTO_RAW),
-      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false)
+      searchDelay(800), pinStatus(NOPIN), topology(MTO_RAW),
+      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -172,7 +172,7 @@ int32_t Machine::hash() {
 		^ (latchBackoff)
 		^ (searchDelay) 
 		^ (pinStatus)
-		^ (eeUser)	
+		//^ (eeUser)	
 	;
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
         result ^= axis[i].hash() << i;
@@ -749,8 +749,9 @@ char * Machine::saveSysConfig(char *out, size_t maxLen) {
 	*out++ = '{';
 	out = saveConfigValue("ah", autoHome, out);
 	out = saveConfigValue("as", autoSync, out);
+	out = saveConfigValue("ch", hash(), out);
 	out = saveConfigValue("db", debounce, out);
-	out = saveConfigValue("eu", eeUser, out);
+	//out = saveConfigValue("eu", eeUser, out);
 	out = saveConfigValue("hp", homingPulses, out);
 	out = saveConfigValue("jp", jsonPrettyPrint, out);
 	out = saveConfigValue("lb", latchBackoff, out);

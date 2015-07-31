@@ -23,9 +23,13 @@ Status processField(JsonObject& jobj, const char* key, TF& field) {
     if ((s = jobj[key]) && *s == 0) { // query
         status = (jobj[key] = (TJ) field).success() ? status : STATUS_FIELD_ERROR;
     } else {
-        float value = (TJ)jobj[key];
-        field = (TF)value;
-        if ((float) field != value) {
+		TJ tjValue = jobj[key];
+        double value = tjValue;
+		TF tfValue = (TF) value;
+        field = tfValue;
+		float diff = abs(tfValue - tjValue);
+        if (diff > 1e-7) {
+			TESTCOUT3("STATUS_VALUE_RANGE tfValue:", tfValue, " tjValue:", tjValue, " diff:", diff);
             return STATUS_VALUE_RANGE;
         }
         jobj[key] = (TJ) field;
@@ -911,7 +915,6 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             node["ah"] = "";
             node["as"] = "";
 			node["ch"] = "";
-            node["eu"] = "";
             node["fr"] = "";
             node["hp"] = "";
             node["jp"] = "";
@@ -942,17 +945,16 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp("as", key) == 0 || strcmp("sysas", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.autoSync);
     } else if (strcmp("ch", key) == 0 || strcmp("sysch", key) == 0) {
-		jobj[key] = machine.hash();
-        status = STATUS_OK;
+		int32_t curHash = machine.hash();
+		int32_t jsonHash = curHash;
+		//TESTCOUT3("A curHash:", curHash, " jsonHash:", jsonHash, " jobj[key]:", (int32_t) jobj[key]);
+        status = processField<int32_t, int32_t>(jobj, key, jsonHash);
+		//TESTCOUT3("B curHash:", curHash, " jsonHash:", jsonHash, " jobj[key]:", (int32_t) jobj[key]);
+		if (jsonHash != curHash) {
+			machine.syncHash = jsonHash;
+		}
     } else if (strcmp("db", key) == 0 || strcmp("sysdb", key) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.debounce);
-    } else if (strcmp("eu", key) == 0 || strcmp("syseu", key) == 0) {
-        int16_t eu = machine.eeUser;
-        status = processField<int16_t, long>(jobj, key, eu);
-        if (eu < 2000 || EEPROM_END <= eu) {
-            return jcmd.setError(STATUS_USER_EEPROM, key);
-        }
-		machine.eeUser = eu;
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
         leastFreeRam = min(leastFreeRam, freeRam());
         jobj[key] = leastFreeRam;

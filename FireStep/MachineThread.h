@@ -18,7 +18,6 @@ protected:
 	void printBanner();
 
 public:
-	uint32_t syncHash;
     Status status;
     Machine machine;
     JsonCommand command;

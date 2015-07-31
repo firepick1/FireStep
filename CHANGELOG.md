@@ -3,8 +3,7 @@ FireStep: change log
 
 v0.2.1
 ------
-* NEW: User EEPROM startup JSON (executed after system startup JSON)
-* FIX: "syseu" get/set user EEPROM address 
+* NEW: User EEPROM JSON commands at EEPROM address 2000 will execute after system startup JSON
 * NEW: MTO_FPD "hom" now moves to Z0 after hitting the limit switch. Motion is over-constrained at limit switch, making it rather useless as a starting position. However, at Z0, motion constraints are much more relaxed, which makes X0Y0Z0 a great "at rest" position. If you really want to park the effector "up there", just "mov" to X0Y0Z0, then "movz" up to the limit switch position.
 * NEW: MTO_FPD "prbpd" stores up to 9 Z-probe data archived by "prb"
 * NEW: MTO_FPD "movrx" moves X-relative (vs. absolute)
