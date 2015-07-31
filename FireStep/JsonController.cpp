@@ -38,10 +38,21 @@ Status processField(JsonObject& jobj, const char* key, TF& field) {
 }
 template Status processField<int16_t, int32_t>(JsonObject& jobj, const char *key, int16_t& field);
 template Status processField<uint16_t, int32_t>(JsonObject& jobj, const char *key, uint16_t& field);
-template Status processField<int32_t, int32_t>(JsonObject& jobj, const char *key, int32_t& field);
 template Status processField<uint8_t, int32_t>(JsonObject& jobj, const char *key, uint8_t& field);
 template Status processField<PH5TYPE, PH5TYPE>(JsonObject& jobj, const char *key, PH5TYPE& field);
 template Status processField<bool, bool>(JsonObject& jobj, const char *key, bool& field);
+
+template<>
+Status processField<int32_t, int32_t>(JsonObject& jobj, const char *key, int32_t& field) {
+    Status status = STATUS_OK;
+    const char *s;
+    if ((s = jobj[key]) && *s == 0) { // query
+        status = (jobj[key] = field).success() ? status : STATUS_FIELD_ERROR;
+    } else {
+		field = jobj[key];
+    }
+    return status;
+}
 
 Status processProbeField(Machine& machine, MotorIndex iMotor, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
     Status status = processField<StepCoord, int32_t>(jobj, key, machine.op.probe.end.value[iMotor]);
