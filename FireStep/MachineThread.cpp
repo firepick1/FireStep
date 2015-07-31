@@ -104,12 +104,6 @@ char * MachineThread::buildStartupJson() {
 			buf[len-1] = ' ';
 		}
         buf[len++] = ',';
-		if (machine.autoHome) {
-			const char *hom = "{\"hom\":\"\"},";
-			snprintf(buf+len, MAX_JSON-len, "%s", hom);
-			TESTCOUT1("autoHome:", buf+len);
-			len += strlen(hom);
-		}
     }
     size_t len2 = readEEPROM((uint8_t*)(size_t) machine.eeUser, buf+len, MAX_JSON-len);
     if (len2==0 && len>1) {
@@ -148,7 +142,7 @@ Status MachineThread::executeEEPROM() {
     return status;
 }
 
-Status MachineThread::sync() {
+Status MachineThread::syncConfig() {
 	Status status = STATUS_WAIT_IDLE;
     command.clear();
     char *buf = command.allocate(MAX_JSON);
@@ -157,9 +151,37 @@ Status MachineThread::sync() {
 
     TESTCOUT1("SAVING CONFIGURATION TO EEPROM","");
 
+	*out++ = '[';
+
+	// save message
+	*out++ = '{';
+	*out++ = '"';
+	*out++ = 'c';
+	*out++ = 'm';
+	*out++ = 't';
+	*out++ = '"';
+	*out++ = ':';
+	*out++ = '"';
+	*out++ = 's';
+	*out++ = 'y';
+	*out++ = 's';
+	*out++ = 'c';
+	*out++ = 'h';
+	*out++ = ':';
+	snprintf(out, MAX_JSON-(out-buf), "%ld", (long)machine.hash());
+	out += strlen(out);
+	*out++ = '"';
+	*out++ = '}';
+	*out++ = ',';
+
     // save system config
-    snprintf(out, MAX_JSON-(out-buf), "[{\"sys\":");
-    out += strlen(out);
+	*out++ = '{';
+	*out++ = '"';
+	*out++ = 's';
+	*out++ = 'y';
+	*out++ = 's';
+	*out++ = '"';
+	*out++ = ':';
     out = machine.saveSysConfig(out, MAX_JSON-(out-buf));
 
     // save dimension config
@@ -177,12 +199,24 @@ Status MachineThread::sync() {
     // save axis config
     const char * axisNames = "xyzabc";
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
-        snprintf(out, MAX_JSON-(out-buf), "},{\"%c\":", axisNames[i]);
+        snprintf(out, MAX_JSON-(out-buf+1), "},{\"%c\":", axisNames[i]);
         out += strlen(out);
         out = machine.axis[i].saveConfig(out, MAX_JSON-(out-buf));
     }
+	*out++ = '}';
 
-    snprintf(out, MAX_JSON-(out-buf), "}]\n");
+	if (machine.autoHome) {
+		const char *hom = ",{\"hom\":\"\"}";
+        snprintf(out, MAX_JSON-(out-buf), "%s", hom);
+		TESTCOUT1("autoHome:", out);
+		out += strlen(hom);
+	}
+
+	if (out-buf+2 >= MAX_JSON) {
+		return STATUS_JSON_MEM3;
+	}
+	*out++ = ']';
+	*out++ = '\n';
     out += strlen(out);
 
     // Save to EEPROM before executing config JSON (parsing is destructive)
@@ -193,7 +227,7 @@ Status MachineThread::sync() {
         eeprom_write_byte(eepAddr+i, buf[i]);
 		//if (Serial.available()) { return; }
     }
-    TESTCOUT3("sync len:", strlen(buf), " buf:", buf, " status:", (int) status);
+    TESTCOUT3("syncConfig len:", strlen(buf), " buf:", buf, " status:", (int) status);
     // Commit config JSON to EEPROM iff JSON is valid
     status = command.parse(buf, status);
     if (status == STATUS_BUSY_PARSED) {
@@ -286,7 +320,7 @@ void MachineThread::loop() {
 				TESTCOUT1("STATUS_OK (fresh):", syncHash);
 			} else {
 				TESTCOUT1("STATUS_OK (stale):", syncHash);
-				status = sync();
+				status = syncConfig();
 			}
 		} else {
 			TESTCOUT1("STATUS_OK:", syncHash);

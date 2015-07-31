@@ -749,7 +749,6 @@ char * Machine::saveSysConfig(char *out, size_t maxLen) {
 	*out++ = '{';
 	out = saveConfigValue("ah", autoHome, out);
 	out = saveConfigValue("as", autoSync, out);
-	out = saveConfigValue("ch", hash(), out);
 	out = saveConfigValue("db", debounce, out);
 	out = saveConfigValue("eu", eeUser, out);
 	out = saveConfigValue("hp", homingPulses, out);

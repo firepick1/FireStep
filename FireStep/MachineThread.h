@@ -29,7 +29,7 @@ public:
     MachineThread();
     void setup(PinConfig pc);
     void loop();
-    Status sync();
+    Status syncConfig();
 } MachineThread;
 
 } // namespace firestep

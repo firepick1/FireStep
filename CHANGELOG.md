@@ -11,11 +11,14 @@ v0.2.1
 * NEW: MTO_FPD "movry" moves Y-relative (vs. absolute)
 * NEW: MTO_FPD "movrz" moves Z-relative (vs. absolute)
 * NEW: MTO_FPD "mov:{a,d}" move in XY plane to polar coordinate `d` millimeters from X0Y0 at `a` degrees CCW from x-axis.
-* NEW: "sysom" output mode option shows individual responses from JSON command arrays
 * NEW: "sysas" configuration auto-sync to EEPROM
 * NEW: "sysch" configuration hash (changes when configuration changes)
 * NEW: "sysah" auto-home on startup
-* NEW: "cmt" write comment line to serial
+* NEW: "cmt" comment (ignored)
+* NEW: "msg" write message line to serial
+* NEW: "sysom:1" output mode option shows individual responses from JSON command arrays
+* NEW: "sysom:2" writes out comments
+* NEW: "sysom" bit values can be OR'ed together (e.g., sysom:3)
 
 v0.2.0
 ------

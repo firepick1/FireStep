@@ -34,6 +34,7 @@ extern int32_t delayMicsTotal;
 enum OutputMode {
     OUTPUT_ARRAY1=0, //  JSON command arrays only return last command response
     OUTPUT_ARRAYN=1, // JSON command arrays return all command responses
+	OUTPUT_CMT=2, // Write comments 
 };
 
 /**

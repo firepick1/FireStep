@@ -228,7 +228,7 @@ void test_Machine() {
 	ASSERTEQUALS(JT("{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveSysConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'ah':0,'as':0,'ch':2144575057,'db':0,'eu':2000,'hp':3,'jp':0,'lb':200,'lh':0,"
+	ASSERTEQUALS(JT("{'ah':0,'as':0,'db':0,'eu':2000,'hp':3,'jp':0,'lb':200,'lh':0,"
 				 "'mv':12800,'om':0,'pc':2,'pi':11,'to':0,'tv':0.70}"), 
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
@@ -1966,12 +1966,12 @@ void test_autoSync() {
 	ASSERT(hash1 != hash2);
 
     // enable auto-sync
-    Serial.push(JT("{'sysas':1,'sysom':1,'sysah':1,'syspc':2}\n"));
+    Serial.push(JT("{'sysas':1,'sysom':3,'sysah':1,'syspc':2}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 	ASSERTEQUAL(false, machine.axis[4].isEnabled());
     mt.loop();
-    ASSERTEQUALS(JT("{'s':0,'r':{'sysas':true,'sysom':1,'sysah':true,'syspc':2},'t':0.000}\n"), 
+    ASSERTEQUALS(JT("{'s':0,'r':{'sysas':true,'sysom':3,'sysah':true,'syspc':2},'t':0.000}\n"), 
 		Serial.output().c_str());
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERT(machine.autoSync);
@@ -1979,16 +1979,18 @@ void test_autoSync() {
 	ASSERTEQUAL(false, machine.axis[4].isEnabled());
 
     mt.loop();
-#define HASH_EXPECTED "2146410289"
+#define HASH_EXPECTED "2146409777"
     ASSERTEQUALS(JT( "["
-                     "{'sys':{'ah':1,'as':1,'ch':" HASH_EXPECTED ",'db':0,'eu':2000,'hp':3,'jp':0,"
-					 "'lb':200,'lh':0,'mv':12800,'om':1,'pc':2,'pi':11,'to':0,'tv':0.70}},"
+					 "{'cmt':'sysch:" HASH_EXPECTED "'},"
+                     "{'sys':{'ah':1,'as':1,'db':0,'eu':2000,'hp':3,'jp':0,"
+					 "'lb':200,'lh':0,'mv':12800,'om':3,'pc':2,'pi':11,'to':0,'tv':0.70}},"
                      "{'x':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'y':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'z':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'a':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'b':{'en':0}},"
-                     "{'c':{'en':0}}]"),
+                     "{'c':{'en':0}},"
+					 "{'hom':''}]"),
                  eeprom_read_string(0).c_str());
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     mt.loop();
@@ -2010,13 +2012,17 @@ void test_autoSync() {
     mt.loop(); // parse startup JSON
 	Serial.clear(); // banner
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // CMT
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    ASSERTEQUALS(JT("sysch:" HASH_EXPECTED "\n"
+					"{'s':0,'r':{'cmt':'sysch:" HASH_EXPECTED "'},'t':0.000}\n"), Serial.output().c_str());
     mt.loop(); // sys
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 	ASSERTEQUAL(true, machine.autoSync);
 	ASSERTEQUALS(JT("{'s':0,'r':" 
-                    "{'sys':{'ah':true,'as':true,'ch':" HASH_EXPECTED ",'db':0,'eu':2000,'hp':3,"
-					"'jp':false,'lb':200,'lh':false,'mv':12800,'om':1,'pc':2,'pi':11,'to':0,'tv':0.700}}"
-					"}\n"),
+                    "{'sys':{'ah':true,'as':true,'db':0,'eu':2000,'hp':3,"
+					"'jp':false,'lb':200,'lh':false,'mv':12800,'om':3,'pc':2,'pi':11,'to':0,'tv':0.700}},"
+					"'t':0.000}\n"),
 					Serial.output().c_str());
     mt.loop(); // x
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -3248,8 +3254,8 @@ void test_DeltaCalculator() {
     cout << "TEST	: test_DeltaCalculator() OK " << endl;
 }
 
-void test_cmt() {
-    cout << "TEST	: test_cmt() =====" << endl;
+void test_msg_cmt() {
+    cout << "TEST	: test_msg_cmt() =====" << endl;
 
     arduino.clear();
     threadRunner.clear();
@@ -3261,22 +3267,44 @@ void test_cmt() {
 	ASSERTEQUAL(STATUS_BUSY_SETUP, mt.status);
 	mt.loop();
 	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-    Serial.push(JT("[{'cmt':'quack'},{'cmt':'duck'}]\n"));
+    Serial.push(JT("[{'msg':'quack'},{'cmt':'hello'},{'msg':'duck'}]\n"));
 	mt.loop();
 	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mt.loop();
+	mt.loop(); // quack
     ASSERTEQUALS(JT("quack\n"), Serial.output().c_str());
 	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mt.loop();
+	mt.loop(); // hello
+    ASSERTEQUALS(JT(""), Serial.output().c_str());
+	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	mt.loop(); // duck
     ASSERTEQUALS(JT("duck\n"), Serial.output().c_str());
 	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 	mt.loop();
 	ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'cmt':'duck'},'t':0.000}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'msg':'duck'},'t':0.000}\n"), Serial.output().c_str());
 	mt.loop();
 	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-    cout << "TEST	: test_cmt() OK " << endl;
+	machine.outputMode = OUTPUT_CMT;
+    Serial.push(JT("[{'msg':'quack'},{'cmt':'hello'},{'msg':'duck'}]\n"));
+	mt.loop();
+	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	mt.loop(); // quack
+    ASSERTEQUALS(JT("quack\n"), Serial.output().c_str());
+	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	mt.loop(); // hello
+    ASSERTEQUALS(JT("hello\n"), Serial.output().c_str());
+	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	mt.loop(); // duck
+    ASSERTEQUALS(JT("duck\n"), Serial.output().c_str());
+	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	mt.loop();
+	ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'msg':'duck'},'t':0.000}\n"), Serial.output().c_str());
+	mt.loop();
+	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    cout << "TEST	: test_msg_cmt() OK " << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -3325,7 +3353,7 @@ int main(int argc, char *argv[]) {
         test_DeltaCalculator();
         test_MTO_FPD();
         test_autoSync();
-		test_cmt();
+		test_msg_cmt();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;

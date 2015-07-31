@@ -1448,8 +1448,15 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
                 break;
             }
 		} else if (strcmp("cmt", it->key) == 0) {
+			if (OUTPUT_CMT==(machine.outputMode&OUTPUT_CMT)) {
+				const char *s = it->value;
+				Serial.println(s);
+			}
+			status = STATUS_OK;
+		} else if (strcmp("msg", it->key) == 0) {
 			const char *s = it->value;
 			Serial.println(s);
+			status = STATUS_OK;
         } else {
             switch (it->key[0]) {
             case '1':
@@ -1494,6 +1501,7 @@ Status JsonController::process(JsonCommand& jcmd) {
             if (status == STATUS_OK) {
                 bool isLast = jcmd.cmdIndex >= jarr.size()-1;
                 if (!isLast && OUTPUT_ARRAYN==(machine.outputMode&OUTPUT_ARRAYN)) {
+					jcmd.setTicks();
                     sendResponse(jcmd, status);
                 }
                 status = STATUS_BUSY_PARSED;
