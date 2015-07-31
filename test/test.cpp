@@ -3254,8 +3254,8 @@ void test_DeltaCalculator() {
     cout << "TEST	: test_DeltaCalculator() OK " << endl;
 }
 
-void test_msg_cmt() {
-    cout << "TEST	: test_msg_cmt() =====" << endl;
+void test_msg_cmt_idl() {
+    cout << "TEST	: test_msg_cmt_idl() =====" << endl;
 
     arduino.clear();
     threadRunner.clear();
@@ -3304,7 +3304,16 @@ void test_msg_cmt() {
 	mt.loop();
 	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-    cout << "TEST	: test_msg_cmt() OK " << endl;
+    Serial.push(JT("{'idl':123}\n"));
+	mt.loop();
+	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	mt.loop();
+	ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'idl':123},'t':0.123}\n"), Serial.output().c_str());
+	mt.loop();
+	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    cout << "TEST	: test_msg_cmt_idl() OK " << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -3353,7 +3362,7 @@ int main(int argc, char *argv[]) {
         test_DeltaCalculator();
         test_MTO_FPD();
         test_autoSync();
-		test_msg_cmt();
+		test_msg_cmt_idl();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;

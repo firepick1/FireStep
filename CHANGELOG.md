@@ -14,6 +14,7 @@ v0.2.1
 * NEW: "sysas" configuration auto-sync to EEPROM
 * NEW: "sysch" configuration hash (changes when configuration changes)
 * NEW: "sysah" auto-home on startup
+* NEW: "idl" idle for given milliseconds
 * NEW: "cmt" comment (ignored)
 * NEW: "msg" write message line to serial
 * NEW: "sysom:1" output mode option shows individual responses from JSON command arrays
