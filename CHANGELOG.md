@@ -14,6 +14,7 @@ v0.2.1
 * NEW: "sysom" output mode option shows individual responses from JSON command arrays
 * NEW: "sysas" configuration auto-sync to EEPROM
 * NEW: "sysch" configuration hash (changes when configuration changes)
+* NEW: "sysah" auto-home on startup
 
 v0.2.0
 ------
