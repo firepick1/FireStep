@@ -18,6 +18,9 @@ private:
     Status processRawSteps(Quad<StepCoord> &steps);
 protected:
     Machine &machine;
+
+protected:
+	int axisOf(char c);
     void sendResponse(JsonCommand& jcmd, Status status);
     Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);
     Status initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
@@ -52,9 +55,25 @@ public:
     JsonController(Machine& machine);
 public:
     Status setup();
+	JsonController& operator=(JsonController& that);
     Status process(JsonCommand& jcmd);
     Status cancel(JsonCommand &jcmd, Status cause);
 } JsonController;
+
+typedef class PHMoveTo {
+private:
+    int32_t nLoops;
+    Quad<PH5TYPE> destination;
+    int16_t nSegs;
+    Machine &machine;
+
+private:
+    Status execute(JsonCommand& jcmd, JsonObject *pjobj);
+
+public:
+    PHMoveTo(Machine& machine);
+    Status process(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+}PHMoveTo;
 
 } // namespace firestep
 

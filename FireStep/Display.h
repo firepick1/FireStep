@@ -23,6 +23,7 @@ enum DisplayStatus {
 
 typedef class Display {
     friend class JsonController;
+    friend class FPDController;
 protected:
     uint8_t status;	// DisplayStatus
     uint8_t level; // 0:off, 255:brightest

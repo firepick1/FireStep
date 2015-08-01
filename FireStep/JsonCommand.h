@@ -24,6 +24,7 @@ namespace firestep {
 
 typedef class JsonCommand {
     friend class JsonController;
+    friend class FPDController;
 private:
     bool parsed;
     int8_t cmdIndex;

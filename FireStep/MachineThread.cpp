@@ -21,8 +21,11 @@ void MachineThread::setup(PinConfig pc) {
 }
 
 MachineThread::MachineThread()
-//: status(STATUS_BUSY_SETUP) , controller(machine) {
-    : status(STATUS_WAIT_IDLE) , controller(machine), printBannerOnIdle(true) {
+    : defaultController(machine), controller(defaultController), status(STATUS_BUSY_SETUP), printBannerOnIdle(true) {
+}
+
+void MachineThread::setController(JsonController &controller) {
+	this->controller = controller;
 }
 
 void MachineThread::displayStatus() {

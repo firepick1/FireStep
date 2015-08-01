@@ -5,6 +5,7 @@
 #endif
 #include "version.h"
 #include "JsonController.h"
+#include "ProcessField.h"
 
 using namespace firestep;
 
@@ -16,72 +17,12 @@ Status JsonController::setup() {
     return STATUS_OK;
 }
 
-template<class TF, class TJ>
-Status processField(JsonObject& jobj, const char* key, TF& field) {
-    Status status = STATUS_OK;
-    const char *s;
-    if ((s = jobj[key]) && *s == 0) { // query
-        status = (jobj[key] = (TJ) field).success() ? status : STATUS_FIELD_ERROR;
-    } else {
-		TJ tjValue = jobj[key];
-        double value = tjValue;
-		TF tfValue = (TF) value;
-        field = tfValue;
-		float diff = abs(tfValue - tjValue);
-        if (diff > 1e-7) {
-			TESTCOUT3("STATUS_VALUE_RANGE tfValue:", tfValue, " tjValue:", tjValue, " diff:", diff);
-            return STATUS_VALUE_RANGE;
-        }
-        jobj[key] = (TJ) field;
-    }
-    return status;
-}
-template Status processField<int16_t, int32_t>(JsonObject& jobj, const char *key, int16_t& field);
-template Status processField<uint16_t, int32_t>(JsonObject& jobj, const char *key, uint16_t& field);
-template Status processField<uint8_t, int32_t>(JsonObject& jobj, const char *key, uint8_t& field);
-template Status processField<PH5TYPE, PH5TYPE>(JsonObject& jobj, const char *key, PH5TYPE& field);
-template Status processField<bool, bool>(JsonObject& jobj, const char *key, bool& field);
-
-template<>
-Status processField<int32_t, int32_t>(JsonObject& jobj, const char *key, int32_t& field) {
-    Status status = STATUS_OK;
-    const char *s;
-    if ((s = jobj[key]) && *s == 0) { // query
-        status = (jobj[key] = field).success() ? status : STATUS_FIELD_ERROR;
-    } else {
-		field = jobj[key];
-    }
-    return status;
+JsonController& JsonController::operator=(JsonController& that) {
+	this->machine = that.machine;
+	return *this;
 }
 
-Status processProbeField(Machine& machine, MotorIndex iMotor, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
-    Status status = processField<StepCoord, int32_t>(jobj, key, machine.op.probe.end.value[iMotor]);
-    if (status == STATUS_OK) {
-        Axis &a = machine.getMotorAxis(iMotor);
-        if (!a.isEnabled()) {
-            return jcmd.setError(STATUS_AXIS_DISABLED, key);
-        }
-        StepCoord delta = abs(machine.op.probe.end.value[iMotor] - a.position);
-        machine.op.probe.maxDelta = max(machine.op.probe.maxDelta, delta);
-    }
-    return status;
-}
-
-Status processHomeField(Machine& machine, AxisIndex iAxis, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
-    Status status = processField<StepCoord, int32_t>(jobj, key, machine.axis[iAxis].home);
-    Axis &a = machine.axis[iAxis];
-    if (a.isEnabled() && a.pinMin != NOPIN) {
-        jobj[key] = a.home;
-        a.homing = true;
-    } else {
-        jobj[key] = a.position;
-        a.homing = false;
-    }
-
-    return status;
-}
-
-int axisOf(char c) {
+int JsonController::axisOf(char c) {
     switch (c) {
     default:
         return -1;
@@ -597,39 +538,26 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
     return status;
 }
 
-typedef class PHMoveTo {
-private:
-    int32_t nLoops;
-    Quad<PH5TYPE> destination;
-    int16_t nSegs;
-    Machine &machine;
-
-private:
-    Status execute(JsonCommand& jcmd, JsonObject *pjobj);
-
-public:
-    PHMoveTo(Machine& machine)
-        : nLoops(0), nSegs(0), machine(machine) {
-        Quad<StepCoord> curPos = machine.getMotorPosition();
-        for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
-            destination.value[i] = curPos.value[i];
-        }
-        switch (machine.topology) {
-        case MTO_RAW:
-        default:
-            // no conversion required
-            break;
-        case MTO_FPD:
-            XYZ3D xyz(machine.getXYZ3D());
-            destination.value[0] = xyz.x;
-            destination.value[1] = xyz.y;
-            destination.value[2] = xyz.z;
-            break;
-        }
-    }
-
-    Status process(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-} PHMoveTo;
+PHMoveTo::PHMoveTo(Machine& machine) 
+	: nLoops(0), nSegs(0), machine(machine) 
+{
+	Quad<StepCoord> curPos = machine.getMotorPosition();
+	for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
+		destination.value[i] = curPos.value[i];
+	}
+	switch (machine.topology) {
+	case MTO_RAW:
+	default:
+		// no conversion required
+		break;
+	case MTO_FPD:
+		XYZ3D xyz(machine.getXYZ3D());
+		destination.value[0] = xyz.x;
+		destination.value[1] = xyz.y;
+		destination.value[2] = xyz.z;
+		break;
+	}
+}
 
 Status PHMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     StrokeBuilder sb(machine.vMax, machine.tvMax);

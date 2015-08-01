@@ -21,11 +21,13 @@ public:
     Status status;
     Machine machine;
     JsonCommand command;
-    JsonController controller;
+	JsonController defaultController;
+    JsonController &controller;
 	bool printBannerOnIdle;
 
 public:
     MachineThread();
+	void setController(JsonController &controller);
     void setup(PinConfig pc);
     void loop();
     Status syncConfig();
