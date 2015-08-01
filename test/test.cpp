@@ -3275,6 +3275,16 @@ void test_DeltaCalculator() {
     XYZ3D xyz4 = dc.calcXYZ(pulses4);
     ASSERTEQUALT(0.0742645, xyz.z - xyz4.z, 0.00001);
 
+	// zBowlError
+	PH5TYPE e = 0.004;
+	PH5TYPE zCenter = -61.6;
+	PH5TYPE radius = 50;
+	ASSERTEQUALT(0.610, dc.calcZBowlError(zCenter, radius, -10), e);
+	ASSERTEQUALT(0.299, dc.calcZBowlError(zCenter, radius, -5), e);
+	ASSERTEQUALT(0, dc.calcZBowlError(zCenter, radius, 0), e);
+	ASSERTEQUALT(-0.283, dc.calcZBowlError(zCenter, radius, 5), e);
+	ASSERTEQUALT(-0.536, dc.calcZBowlError(zCenter, radius, 10), e);
+
     cout << "TEST	: test_DeltaCalculator() OK " << endl;
 }
 
