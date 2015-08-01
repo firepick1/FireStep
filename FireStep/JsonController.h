@@ -33,11 +33,11 @@ protected:
     Status processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj,
                               const char* key, const char *addr);
     Status processEEPROM(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-    Status processProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+    virtual Status processProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
     Status processPin(JsonObject& jobj, const char *key,
                       PinType &pin, int16_t mode, int16_t value = LOW);
-    Status processPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);
+    virtual Status processPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);
 
     Status processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key);
     Status processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key);
@@ -54,7 +54,6 @@ protected:
 public:
     JsonController(Machine& machine);
 public:
-    Status setup();
 	JsonController& operator=(JsonController& that);
     Status process(JsonCommand& jcmd);
     Status cancel(JsonCommand &jcmd, Status cause);

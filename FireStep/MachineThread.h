@@ -2,6 +2,7 @@
 #define MACHINETHREAD_H
 
 #include "JsonController.h"
+#include "FPDController.h"
 
 extern void test_Home();
 
@@ -21,7 +22,8 @@ public:
     Status status;
     Machine machine;
     JsonCommand command;
-	JsonController defaultController;
+	JsonController rawController;
+	FPDController fpdController;
     JsonController &controller;
 	bool printBannerOnIdle;
 

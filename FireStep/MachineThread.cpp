@@ -17,11 +17,10 @@ void MachineThread::setup(PinConfig pc) {
     machine.setup(pc);
     status = STATUS_BUSY_SETUP;
     displayStatus();
-    controller.setup();
 }
 
 MachineThread::MachineThread()
-    : defaultController(machine), controller(defaultController), status(STATUS_BUSY_SETUP), printBannerOnIdle(true) {
+    : rawController(machine), fpdController(machine), controller(fpdController), status(STATUS_BUSY_SETUP), printBannerOnIdle(true) {
 }
 
 void MachineThread::setController(JsonController &controller) {
@@ -243,6 +242,15 @@ void MachineThread::printBanner() {
 }
 
 void MachineThread::loop() {
+	switch (machine.topology) {
+	default:
+	case MTO_RAW:
+		controller = rawController;
+		break;
+	case MTO_FPD:
+		controller = fpdController;
+		break;
+	}
 #ifdef THROTTLE_SPEED
 	if (Serial.available()) { return; }
     controller.speed = ADCH;

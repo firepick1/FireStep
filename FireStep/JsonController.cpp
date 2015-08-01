@@ -13,10 +13,6 @@ JsonController::JsonController(Machine& machine)
     : machine(machine) {
 }
 
-Status JsonController::setup() {
-    return STATUS_OK;
-}
-
 JsonController& JsonController::operator=(JsonController& that) {
 	this->machine = that.machine;
 	return *this;
@@ -1364,15 +1360,7 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
         } else if (strncmp("dpy", it->key, 3) == 0) {
             status = processDisplay(jcmd, jobj, it->key);
         } else if (strncmp("mpo", it->key, 3) == 0) {
-            switch (machine.topology) {
-            case MTO_RAW:
-            default:
-                status = processPosition(jcmd, jobj, it->key);
-                break;
-            case MTO_FPD:
-                status = processPosition_MTO_FPD(jcmd, jobj, it->key);
-                break;
-            }
+			status = processPosition(jcmd, jobj, it->key);
         } else if (strncmp("io", it->key, 2) == 0) {
             status = processIO(jcmd, jobj, it->key);
         } else if (strncmp("eep", it->key, 3) == 0) {
@@ -1478,77 +1466,6 @@ Status JsonController::process(JsonCommand& jcmd) {
 }
 
 //////////////// MTO_FPD /////////
-Status JsonController::processPosition_MTO_FPD(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
-    Status status = STATUS_OK;
-    const char *axisStr = key + strlen(key) - 1;
-    const char *s;
-    if (strlen(key) == 3) {
-        if ((s = jobj[key]) && *s == 0) {
-            JsonObject& node = jobj.createNestedObject(key);
-            node["1"] = "";
-            node["2"] = "";
-            node["3"] = "";
-            node["4"] = "";
-            node["x"] = "";
-            node["y"] = "";
-            node["z"] = "";
-            if (!node.at("4").success()) {
-                return jcmd.setError(STATUS_JSON_KEY, "4");
-            }
-        }
-        JsonObject& kidObj = jobj[key];
-        if (!kidObj.success()) {
-            return jcmd.setError(STATUS_POSITION_ERROR, key);
-        }
-        for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-            status = processPosition_MTO_FPD(jcmd, kidObj, it->key);
-            if (status != STATUS_OK) {
-                return status;
-            }
-        }
-    } else if (strcmp("1", axisStr) == 0) {
-        status = processField<StepCoord, int32_t>(jobj, key, machine.axis[0].position);
-    } else if (strcmp("2", axisStr) == 0) {
-        status = processField<StepCoord, int32_t>(jobj, key, machine.axis[1].position);
-    } else if (strcmp("3", axisStr) == 0) {
-        status = processField<StepCoord, int32_t>(jobj, key, machine.axis[2].position);
-    } else if (strcmp("4", axisStr) == 0) {
-        status = processField<StepCoord, int32_t>(jobj, key, machine.axis[3].position);
-    } else if (strcmp("x", axisStr) == 0) {
-        XYZ3D xyz(machine.getXYZ3D());
-        if (!xyz.isValid()) {
-            return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
-        }
-        PH5TYPE value = xyz.x;
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        if (value != xyz.x) {
-            status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
-        }
-    } else if (strcmp("y", axisStr) == 0) {
-        XYZ3D xyz(machine.getXYZ3D());
-        if (!xyz.isValid()) {
-            return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
-        }
-        PH5TYPE value = xyz.y;
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        if (value != xyz.y) {
-            status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
-        }
-    } else if (strcmp("z", axisStr) == 0) {
-        XYZ3D xyz(machine.getXYZ3D());
-        if (!xyz.isValid()) {
-            return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
-        }
-        PH5TYPE value = xyz.z;
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        if (value != xyz.z) {
-            status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
-        }
-    } else {
-        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
-    }
-    return status;
-}
 
 Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj,
         const char* key, bool clear)
