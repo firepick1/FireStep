@@ -15,7 +15,7 @@ Status processField<int32_t, int32_t>(JsonObject& jobj, const char *key, int32_t
     if ((s = jobj[key]) && *s == 0) { // query
         status = (jobj[key] = field).success() ? status : STATUS_FIELD_ERROR;
     } else {
-		field = jobj[key];
+        field = jobj[key];
     }
     return status;
 }

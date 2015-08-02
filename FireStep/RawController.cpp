@@ -22,24 +22,24 @@ private:
 public:
     MTO_RAWMoveTo(Machine& machine);
     Status process(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-}MTO_RAWMoveTo;
+} MTO_RAWMoveTo;
 
-MTO_RAWMoveTo::MTO_RAWMoveTo(Machine& machine) 
-	: nLoops(0), nSegs(0), machine(machine) 
+MTO_RAWMoveTo::MTO_RAWMoveTo(Machine& machine)
+    : nLoops(0), nSegs(0), machine(machine)
 {
-	Quad<StepCoord> curPos = machine.getMotorPosition();
-	for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
-		destination.value[i] = curPos.value[i];
-	}
+    Quad<StepCoord> curPos = machine.getMotorPosition();
+    for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
+        destination.value[i] = curPos.value[i];
+    }
 }
 
 Status MTO_RAWMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     StrokeBuilder sb(machine.vMax, machine.tvMax);
     Quad<StepCoord> curPos = machine.getMotorPosition();
     Quad<StepCoord> dPos;
-	for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
-		dPos.value[i] = destination.value[i] - curPos.value[i];
-	}
+    for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
+        dPos.value[i] = destination.value[i] - curPos.value[i];
+    }
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         if (!machine.getMotorAxis(i).isEnabled()) {
             dPos.value[i] = 0;
@@ -135,11 +135,11 @@ Status MTO_RAWMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* k
         }
         status = execute(jcmd, &kidObj);
     } else if (strcmp("movrx",key) == 0 || strcmp("rx",key) == 0) {
-		return jcmd.setError(STATUS_MTO_FIELD, key);
+        return jcmd.setError(STATUS_MTO_FIELD, key);
     } else if (strcmp("movry",key) == 0 || strcmp("ry",key) == 0) {
-		return jcmd.setError(STATUS_MTO_FIELD, key);
+        return jcmd.setError(STATUS_MTO_FIELD, key);
     } else if (strcmp("movrz",key) == 0 || strcmp("rz",key) == 0) {
-		return jcmd.setError(STATUS_MTO_FIELD, key);
+        return jcmd.setError(STATUS_MTO_FIELD, key);
     } else if (strncmp("mov", key, 3) == 0) { // short form
         // TODO: clean up mov implementation
         MotorIndex iMotor = machine.motorOfName(key + strlen(key) - 1);
@@ -250,7 +250,7 @@ Status RawController::processPosition(JsonCommand &jcmd, JsonObject& jobj, const
 }
 
 Status RawController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
-                                       const char* key, bool clear)
+                                      const char* key, bool clear)
 {
     Status status = STATUS_OK;
     if (clear) {
@@ -324,10 +324,10 @@ Status RawController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const ch
 
 
 Status RawController::processDimension(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-	return jcmd.setError(STATUS_TOPOLOGY_NAME, key);
+    return jcmd.setError(STATUS_TOPOLOGY_NAME, key);
 }
 
 Status RawController::processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-	return MTO_RAWMoveTo(machine).process(jcmd, jobj, key);
+    return MTO_RAWMoveTo(machine).process(jcmd, jobj, key);
 }
 

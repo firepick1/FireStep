@@ -14,8 +14,8 @@ JsonController::JsonController(Machine& machine)
 }
 
 JsonController& JsonController::operator=(JsonController& that) {
-	this->machine = that.machine;
-	return *this;
+    this->machine = that.machine;
+    return *this;
 }
 
 int JsonController::axisOf(char c) {
@@ -563,8 +563,8 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             JsonObject& node = jobj.createNestedObject(key);
             node["ah"] = "";
             node["as"] = "";
-			node["ch"] = "";
-			node["eu"] = "";
+            node["ch"] = "";
+            node["eu"] = "";
             node["fr"] = "";
             node["hp"] = "";
             node["jp"] = "";
@@ -595,21 +595,21 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp("as", key) == 0 || strcmp("sysas", key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.autoSync);
     } else if (strcmp("ch", key) == 0 || strcmp("sysch", key) == 0) {
-		int32_t curHash = machine.hash();
-		int32_t jsonHash = curHash;
-		//TESTCOUT3("A curHash:", curHash, " jsonHash:", jsonHash, " jobj[key]:", (int32_t) jobj[key]);
+        int32_t curHash = machine.hash();
+        int32_t jsonHash = curHash;
+        //TESTCOUT3("A curHash:", curHash, " jsonHash:", jsonHash, " jobj[key]:", (int32_t) jobj[key]);
         status = processField<int32_t, int32_t>(jobj, key, jsonHash);
-		//TESTCOUT3("B curHash:", curHash, " jsonHash:", jsonHash, " jobj[key]:", (int32_t) jobj[key]);
-		if (jsonHash != curHash) {
-			machine.syncHash = jsonHash;
-		}
+        //TESTCOUT3("B curHash:", curHash, " jsonHash:", jsonHash, " jobj[key]:", (int32_t) jobj[key]);
+        if (jsonHash != curHash) {
+            machine.syncHash = jsonHash;
+        }
     } else if (strcmp("eu", key) == 0 || strcmp("syseu", key) == 0) {
-		bool euExisting = machine.isEEUserEnabled();
-		bool euNew = euExisting;
+        bool euExisting = machine.isEEUserEnabled();
+        bool euNew = euExisting;
         status = processField<bool, bool>(jobj, key, euNew);
-		if (euNew != euExisting) {
-			machine.enableEEUser(euNew);
-		}
+        if (euNew != euExisting) {
+            machine.enableEEUser(euNew);
+        }
     } else if (strcmp("db", key) == 0 || strcmp("sysdb", key) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.debounce);
     } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
@@ -1001,28 +1001,28 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
         } else if (strncmp("dpy", it->key, 3) == 0) {
             status = processDisplay(jcmd, jobj, it->key);
         } else if (strncmp("mpo", it->key, 3) == 0) {
-			status = processPosition(jcmd, jobj, it->key);
+            status = processPosition(jcmd, jobj, it->key);
         } else if (strncmp("io", it->key, 2) == 0) {
             status = processIO(jcmd, jobj, it->key);
         } else if (strncmp("eep", it->key, 3) == 0) {
             status = processEEPROM(jcmd, jobj, it->key);
         } else if (strncmp("dim", it->key, 3) == 0) {
-			status = processDimension(jcmd, jobj, it->key);
+            status = processDimension(jcmd, jobj, it->key);
         } else if (strncmp("prb", it->key, 3) == 0) {
-			status = processProbe(jcmd, jobj, it->key);
-		} else if (strcmp("idl", it->key) == 0) {
-			int16_t ms = it->value;
-			delay(ms);
-		} else if (strcmp("cmt", it->key) == 0) {
-			if (OUTPUT_CMT==(machine.outputMode&OUTPUT_CMT)) {
-				const char *s = it->value;
-				Serial.println(s);
-			}
-			status = STATUS_OK;
-		} else if (strcmp("msg", it->key) == 0) {
-			const char *s = it->value;
-			Serial.println(s);
-			status = STATUS_OK;
+            status = processProbe(jcmd, jobj, it->key);
+        } else if (strcmp("idl", it->key) == 0) {
+            int16_t ms = it->value;
+            delay(ms);
+        } else if (strcmp("cmt", it->key) == 0) {
+            if (OUTPUT_CMT==(machine.outputMode&OUTPUT_CMT)) {
+                const char *s = it->value;
+                Serial.println(s);
+            }
+            status = STATUS_OK;
+        } else if (strcmp("msg", it->key) == 0) {
+            const char *s = it->value;
+            Serial.println(s);
+            status = STATUS_OK;
         } else {
             switch (it->key[0]) {
             case '1':

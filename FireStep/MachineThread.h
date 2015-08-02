@@ -14,28 +14,28 @@ typedef class MachineThread : Thread {
 
 protected:
     void displayStatus();
-	char * buildStartupJson();
+    char * buildStartupJson();
     Status executeEEPROM();
     size_t readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen);
-	void printBanner();
+    void printBanner();
 
 public:
     Status status;
     Machine machine;
     JsonCommand command;
-	RawController rawController;
-	FPDController fpdController;
+    RawController rawController;
+    FPDController fpdController;
     JsonController *pController;
-	bool printBannerOnIdle;
+    bool printBannerOnIdle;
 
 public:
     MachineThread();
-	void setController(JsonController &controller);
+    void setController(JsonController &controller);
     void setup(PinConfig pc);
     void loop();
     Status syncConfig();
     Status process(JsonCommand& jcmd);
-	const char * updateController();
+    const char * updateController();
 } MachineThread;
 
 } // namespace firestep

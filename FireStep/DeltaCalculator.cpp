@@ -215,39 +215,39 @@ XYZ3D DeltaCalculator::calcXYZ(Angle3D angles) {
 }
 
 int32_t DeltaCalculator::hash() {
-	int32_t result = 0
-		^ (*(uint32_t *)(void*)& f)
-		^ (*(uint32_t *)(void*)& e)
-		^ (*(uint32_t *)(void*)& rf)
-		^ (*(uint32_t *)(void*)& re)
-		^ ((int32_t)steps360 << 0)
-		^ ((int32_t)microsteps << 1)
-		^ (*(uint32_t *)(void*)& gearRatio)
-		^ (*(uint32_t *)(void*)& dz)
-		^ (*(uint32_t *)(void*)& eTheta.theta1)
-		^ (*(uint32_t *)(void*)& eTheta.theta2)
-		^ (*(uint32_t *)(void*)& eTheta.theta3)
-	;
-	return result;
+    int32_t result = 0
+                     ^ (*(uint32_t *)(void*)& f)
+                     ^ (*(uint32_t *)(void*)& e)
+                     ^ (*(uint32_t *)(void*)& rf)
+                     ^ (*(uint32_t *)(void*)& re)
+                     ^ ((int32_t)steps360 << 0)
+                     ^ ((int32_t)microsteps << 1)
+                     ^ (*(uint32_t *)(void*)& gearRatio)
+                     ^ (*(uint32_t *)(void*)& dz)
+                     ^ (*(uint32_t *)(void*)& eTheta.theta1)
+                     ^ (*(uint32_t *)(void*)& eTheta.theta2)
+                     ^ (*(uint32_t *)(void*)& eTheta.theta3)
+                     ;
+    return result;
 }
 
 PH5TYPE DeltaCalculator::calcZBowlError(Step3D center, Step3D rim, PH5TYPE eTheta) {
-	Angle3D eThetaSave = this->eTheta;
-	this->eTheta.theta1 = this->eTheta.theta2 = this->eTheta.theta3 = eTheta;
-	XYZ3D xyzCtr = calcXYZ(center);
-	XYZ3D xyzRim = calcXYZ(rim);
-	PH5TYPE error = xyzRim.z - xyzCtr.z;
-	this->eTheta = eThetaSave;
-	return error;
+    Angle3D eThetaSave = this->eTheta;
+    this->eTheta.theta1 = this->eTheta.theta2 = this->eTheta.theta3 = eTheta;
+    XYZ3D xyzCtr = calcXYZ(center);
+    XYZ3D xyzRim = calcXYZ(rim);
+    PH5TYPE error = xyzRim.z - xyzCtr.z;
+    this->eTheta = eThetaSave;
+    return error;
 }
 
 PH5TYPE DeltaCalculator::calcZBowlError(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eTheta) {
-	XYZ3D xyzCtr(0,0,zCenter);
-	XYZ3D xyzRim(radius, 0, zCenter);
-	Angle3D eThetaSave = this->eTheta;
-	this->eTheta.theta1 = this->eTheta.theta2 = this->eTheta.theta3 = 0;
-	Step3D center = calcPulses(xyzCtr);
-	Step3D rim = calcPulses(xyzRim);
-	this->eTheta = eThetaSave;
-	return calcZBowlError(center, rim, eTheta);
+    XYZ3D xyzCtr(0,0,zCenter);
+    XYZ3D xyzRim(radius, 0, zCenter);
+    Angle3D eThetaSave = this->eTheta;
+    this->eTheta.theta1 = this->eTheta.theta2 = this->eTheta.theta3 = 0;
+    Step3D center = calcPulses(xyzCtr);
+    Step3D rim = calcPulses(xyzRim);
+    this->eTheta = eThetaSave;
+    return calcZBowlError(center, rim, eTheta);
 }

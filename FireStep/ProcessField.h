@@ -1,5 +1,5 @@
-#ifndef PROCESSFIELD_H	
-#define PROCESSFIELD_H	
+#ifndef PROCESSFIELD_H
+#define PROCESSFIELD_H
 
 #include "JsonController.h"
 
@@ -12,13 +12,13 @@ Status processField(JsonObject& jobj, const char* key, TF& field) {
     if ((s = jobj[key]) && *s == 0) { // query
         status = (jobj[key] = (TJ) field).success() ? status : STATUS_FIELD_ERROR;
     } else {
-		TJ tjValue = jobj[key];
+        TJ tjValue = jobj[key];
         double value = tjValue;
-		TF tfValue = (TF) value;
+        TF tfValue = (TF) value;
         field = tfValue;
-		float diff = abs(tfValue - tjValue);
+        float diff = abs(tfValue - tjValue);
         if (diff > 1e-7) {
-			TESTCOUT3("STATUS_VALUE_RANGE tfValue:", tfValue, " tjValue:", tjValue, " diff:", diff);
+            TESTCOUT3("STATUS_VALUE_RANGE tfValue:", tfValue, " tjValue:", tjValue, " diff:", diff);
             return STATUS_VALUE_RANGE;
         }
         jobj[key] = (TJ) field;

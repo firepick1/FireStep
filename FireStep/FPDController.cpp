@@ -22,32 +22,32 @@ private:
 public:
     MTO_FPDMoveTo(Machine& machine);
     Status process(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-}MTO_FPDMoveTo;
+} MTO_FPDMoveTo;
 
-MTO_FPDMoveTo::MTO_FPDMoveTo(Machine& machine) 
-	: nLoops(0), nSegs(0), machine(machine) 
+MTO_FPDMoveTo::MTO_FPDMoveTo(Machine& machine)
+    : nLoops(0), nSegs(0), machine(machine)
 {
-	Quad<StepCoord> curPos = machine.getMotorPosition();
-	for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
-		destination.value[i] = curPos.value[i];
-	}
+    Quad<StepCoord> curPos = machine.getMotorPosition();
+    for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
+        destination.value[i] = curPos.value[i];
+    }
 
-	XYZ3D xyz(machine.getXYZ3D());
-	destination.value[0] = xyz.x;
-	destination.value[1] = xyz.y;
-	destination.value[2] = xyz.z;
+    XYZ3D xyz(machine.getXYZ3D());
+    destination.value[0] = xyz.x;
+    destination.value[1] = xyz.y;
+    destination.value[2] = xyz.z;
 }
 
 Status MTO_FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     StrokeBuilder sb(machine.vMax, machine.tvMax);
     Quad<StepCoord> curPos = machine.getMotorPosition();
     Quad<StepCoord> dPos;
-	XYZ3D xyz(destination.value[0], destination.value[1], destination.value[2]);
-	Step3D pulses(machine.delta.calcPulses(xyz));
-	dPos.value[0] = pulses.p1 - curPos.value[0];
-	dPos.value[1] = pulses.p2 - curPos.value[1];
-	dPos.value[2] = pulses.p3 - curPos.value[2];
-	dPos.value[3] = destination.value[3] - curPos.value[3];
+    XYZ3D xyz(destination.value[0], destination.value[1], destination.value[2]);
+    Step3D pulses(machine.delta.calcPulses(xyz));
+    dPos.value[0] = pulses.p1 - curPos.value[0];
+    dPos.value[1] = pulses.p2 - curPos.value[1];
+    dPos.value[2] = pulses.p3 - curPos.value[2];
+    dPos.value[3] = destination.value[3] - curPos.value[3];
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         if (!machine.getMotorAxis(i).isEnabled()) {
             dPos.value[i] = 0;
@@ -548,6 +548,6 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
 }
 
 Status FPDController::processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-	return MTO_FPDMoveTo(machine).process(jcmd, jobj, key);
+    return MTO_FPDMoveTo(machine).process(jcmd, jobj, key);
 }
 

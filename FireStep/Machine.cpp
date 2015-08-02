@@ -17,62 +17,62 @@ TESTDECL(int32_t, firestep::delayMicsTotal = 0);
 
 /////////// Silly things done without snprintf (ARDUINO!!!!) /////////////
 char * firestep::saveConfigValue(const char *key, const char *value, char *out) {
-	sprintf(out, "\"%s\":%s,", key, value);
-	return out+strlen(out);
+    sprintf(out, "\"%s\":%s,", key, value);
+    return out+strlen(out);
 }
 
 char * firestep::saveConfigValue(const char *key, bool value, char *out) {
-	return saveConfigValue(key, value ? "1":"0", out);
+    return saveConfigValue(key, value ? "1":"0", out);
 }
 
 char * firestep::saveConfigValue(const char *key, int16_t value, char *out) {
-	sprintf(out, "\"%s\":%d,", key, value);
-	return out+strlen(out);
+    sprintf(out, "\"%s\":%d,", key, value);
+    return out+strlen(out);
 }
 
 char * firestep::saveConfigValue(const char *key, int32_t value, char *out) {
-	sprintf(out, "\"%s\":%ld,", key, (long) value);
-	return out+strlen(out);
+    sprintf(out, "\"%s\":%ld,", key, (long) value);
+    return out+strlen(out);
 }
 
 char * firestep::saveConfigValue(const char *key, PH5TYPE value, char *out, uint8_t places) {
-	bool minus = (value < 0);
-	if (minus) {
-		value = -value;
-	}
-	int32_t ivalue = value;
-	out = saveConfigValue(key,minus ? -ivalue : ivalue, out);
-	out--;
-	*out++ = '.';
-	value -= ivalue;
-	switch (places) {
-	case 3:
-		ivalue = value * 1000 + 0.5;
-		out[2] = '0' + (ivalue % 10);
-		ivalue /= 10;
-		out[1] = '0' + (ivalue % 10);
-		ivalue /= 10;
-		out[0] = '0' + (ivalue % 10);
-		out += 3;
-		break;
-	case 2:
-	default:
-		ivalue = value * 100 + 0.5;
-		out[1] = '0' + (ivalue % 10);
-		ivalue /= 10;
-		out[0] = '0' + (ivalue % 10);
-		out += 2;
-		break;
-	case 1:
-		ivalue = value * 10 + 0.5;
-		out[0] = '0' + (ivalue % 10);
-		out += 1;
-		break;
-	}
-	*out++ = ',';
-	*out = 0;
+    bool minus = (value < 0);
+    if (minus) {
+        value = -value;
+    }
+    int32_t ivalue = value;
+    out = saveConfigValue(key,minus ? -ivalue : ivalue, out);
+    out--;
+    *out++ = '.';
+    value -= ivalue;
+    switch (places) {
+    case 3:
+        ivalue = value * 1000 + 0.5;
+        out[2] = '0' + (ivalue % 10);
+        ivalue /= 10;
+        out[1] = '0' + (ivalue % 10);
+        ivalue /= 10;
+        out[0] = '0' + (ivalue % 10);
+        out += 3;
+        break;
+    case 2:
+    default:
+        ivalue = value * 100 + 0.5;
+        out[1] = '0' + (ivalue % 10);
+        ivalue /= 10;
+        out[0] = '0' + (ivalue % 10);
+        out += 2;
+        break;
+    case 1:
+        ivalue = value * 10 + 0.5;
+        out[0] = '0' + (ivalue % 10);
+        out += 1;
+        break;
+    }
+    *out++ = ',';
+    *out = 0;
 
-	return out;
+    return out;
 }
 
 /////////////////////////// Axis ///////////////////////
@@ -90,37 +90,37 @@ Status Axis::enable(bool active) {
 #define BIT_HASH ((uint32_t)0x3)
 int32_t Axis::hash() {
     int32_t result = 0
-		^ (dirHIGH ? (BIT_HASH << 0) : 0)
-		^ (enabled ? (BIT_HASH << 1) : 0)
-		^ ((uint32_t) home << 0)
-		^ ((uint32_t) idleSnooze << 1)
-		^ ((uint32_t) microsteps << 2)
-		^ ((uint32_t) travelMin << 3)
-		^ ((uint32_t) travelMax << 4)
-		^ ((uint32_t) usDelay << 5)
-		;
+                     ^ (dirHIGH ? (BIT_HASH << 0) : 0)
+                     ^ (enabled ? (BIT_HASH << 1) : 0)
+                     ^ ((uint32_t) home << 0)
+                     ^ ((uint32_t) idleSnooze << 1)
+                     ^ ((uint32_t) microsteps << 2)
+                     ^ ((uint32_t) travelMin << 3)
+                     ^ ((uint32_t) travelMax << 4)
+                     ^ ((uint32_t) usDelay << 5)
+                     ;
 
     return result;
 }
 
 char * Axis::saveConfig(char *out, size_t maxLen) {
-	*out++ = '{';
-	if (enabled) {
-		out = saveConfigValue("dh", dirHIGH, out);
-		out = saveConfigValue("en", enabled, out);
-		out = saveConfigValue("ho", home, out);
-		out = saveConfigValue("is", idleSnooze, out);
-		out = saveConfigValue("mi", microsteps, out);
-		out = saveConfigValue("sa", stepAngle, out, 1);
-		out = saveConfigValue("tm", travelMax, out);
-		out = saveConfigValue("tn", travelMin, out);
-		out = saveConfigValue("ud", usDelay, out);
-	} else {
-		out = saveConfigValue("en", enabled, out);
+    *out++ = '{';
+    if (enabled) {
+        out = saveConfigValue("dh", dirHIGH, out);
+        out = saveConfigValue("en", enabled, out);
+        out = saveConfigValue("ho", home, out);
+        out = saveConfigValue("is", idleSnooze, out);
+        out = saveConfigValue("mi", microsteps, out);
+        out = saveConfigValue("sa", stepAngle, out, 1);
+        out = saveConfigValue("tm", travelMax, out);
+        out = saveConfigValue("tn", travelMin, out);
+        out = saveConfigValue("ud", usDelay, out);
+    } else {
+        out = saveConfigValue("en", enabled, out);
     }
-	out--;
-	*out++ = '}';
-	*out = 0;
+    out--;
+    *out++ = '}';
+    *out = 0;
     return out;
 }
 
@@ -147,33 +147,33 @@ Machine::Machine()
 }
 
 void Machine::setup(PinConfig cfg) {
-	setPinConfig(cfg);
-	for (AxisIndex i=0; i<AXIS_COUNT; i++) {
-		axis[i].enable(false); // toggle
-		axis[i].enable(true);
-	}
+    setPinConfig(cfg);
+    for (AxisIndex i=0; i<AXIS_COUNT; i++) {
+        axis[i].enable(false); // toggle
+        axis[i].enable(true);
+    }
 }
 
 int32_t Machine::hash() {
-	int32_t result = 0
-		^ ((uint32_t) outputMode << 8)
-		^ ((uint32_t) topology << 9)
-		^ ((uint32_t) pinConfig << 10)
-		^ (invertLim ? (BIT_HASH << 16) : 0)
-		^ (pinEnableHigh ? (BIT_HASH << 17) : 0)
-		^ (autoSync ? (BIT_HASH << 18) : 0)
-		^ (jsonPrettyPrint ? (BIT_HASH << 19) : 0)
-		^ (autoHome ? (BIT_HASH << 20) : 0)
-		^ delta.hash()
-		^ (vMax) 
-		^ (*(uint32_t *)(void*)&tvMax) 
-		^ (debounce)
-		^ (homingPulses)
-		^ (latchBackoff)
-		^ (searchDelay) 
-		^ (pinStatus)
-		//^ (eeUser)	
-	;
+    int32_t result = 0
+                     ^ ((uint32_t) outputMode << 8)
+                     ^ ((uint32_t) topology << 9)
+                     ^ ((uint32_t) pinConfig << 10)
+                     ^ (invertLim ? (BIT_HASH << 16) : 0)
+                     ^ (pinEnableHigh ? (BIT_HASH << 17) : 0)
+                     ^ (autoSync ? (BIT_HASH << 18) : 0)
+                     ^ (jsonPrettyPrint ? (BIT_HASH << 19) : 0)
+                     ^ (autoHome ? (BIT_HASH << 20) : 0)
+                     ^ delta.hash()
+                     ^ (vMax)
+                     ^ (*(uint32_t *)(void*)&tvMax)
+                     ^ (debounce)
+                     ^ (homingPulses)
+                     ^ (latchBackoff)
+                     ^ (searchDelay)
+                     ^ (pinStatus)
+                     //^ (eeUser)
+                     ;
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
         result ^= axis[i].hash() << i;
     }
@@ -282,7 +282,7 @@ Status Machine::setPinConfig_RAMPS1_4() {
 
 Status Machine::setPinConfig(PinConfig pc) {
     Status status = STATUS_OK;
-	bool enabled[AXIS_COUNT];
+    bool enabled[AXIS_COUNT];
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
         enabled[i] = axis[i].isEnabled();
         axis[i].enable(false);
@@ -746,54 +746,54 @@ XYZ3D Machine::getXYZ3D() {
 }
 
 char * Machine::saveSysConfig(char *out, size_t maxLen) {
-	*out++ = '{';
-	out = saveConfigValue("ah", autoHome, out);
-	out = saveConfigValue("as", autoSync, out);
-	out = saveConfigValue("ch", hash(), out);
-	out = saveConfigValue("db", debounce, out);
-	//out = saveConfigValue("eu", eeUser, out);
-	out = saveConfigValue("hp", homingPulses, out);
-	out = saveConfigValue("jp", jsonPrettyPrint, out);
-	out = saveConfigValue("lb", latchBackoff, out);
-	out = saveConfigValue("lh", invertLim, out);
-	out = saveConfigValue("mv", vMax, out);
-	out = saveConfigValue("om", outputMode, out);
-	out = saveConfigValue("pc", pinConfig, out);
-	out = saveConfigValue("pi", pinStatus, out);
-	out = saveConfigValue("to", topology, out);
-	out = saveConfigValue("tv", tvMax, out);
-	out--;
-	*out++ = '}';
-	*out = 0;
+    *out++ = '{';
+    out = saveConfigValue("ah", autoHome, out);
+    out = saveConfigValue("as", autoSync, out);
+    out = saveConfigValue("ch", hash(), out);
+    out = saveConfigValue("db", debounce, out);
+    //out = saveConfigValue("eu", eeUser, out);
+    out = saveConfigValue("hp", homingPulses, out);
+    out = saveConfigValue("jp", jsonPrettyPrint, out);
+    out = saveConfigValue("lb", latchBackoff, out);
+    out = saveConfigValue("lh", invertLim, out);
+    out = saveConfigValue("mv", vMax, out);
+    out = saveConfigValue("om", outputMode, out);
+    out = saveConfigValue("pc", pinConfig, out);
+    out = saveConfigValue("pi", pinStatus, out);
+    out = saveConfigValue("to", topology, out);
+    out = saveConfigValue("tv", tvMax, out);
+    out--;
+    *out++ = '}';
+    *out = 0;
     return out;
 }
 
 char * Machine::saveDimConfig(char *out, size_t maxLen) {
     Angle3D ha = delta.getHomeAngles();
-	*out++ = '{';
-	out = saveConfigValue("e", delta.getEffectorLength(), out);
-	out = saveConfigValue("f", delta.getBaseArmLength(), out);
-	out = saveConfigValue("gr", delta.getGearRatio(), out, 3);
-	out = saveConfigValue("ha1", ha.theta1, out);
-	out = saveConfigValue("ha2", ha.theta1, out);
-	out = saveConfigValue("ha3", ha.theta1, out);
-	out = saveConfigValue("mi", delta.getMicrosteps(), out);
-	out = saveConfigValue("re", delta.getEffectorTriangleSide(), out);
-	out = saveConfigValue("rf", delta.getBaseTriangleSide(), out);
-	out = saveConfigValue("st", delta.getSteps360(), out);
-	out--;
-	*out++ = '}';
-	*out = 0;
+    *out++ = '{';
+    out = saveConfigValue("e", delta.getEffectorLength(), out);
+    out = saveConfigValue("f", delta.getBaseArmLength(), out);
+    out = saveConfigValue("gr", delta.getGearRatio(), out, 3);
+    out = saveConfigValue("ha1", ha.theta1, out);
+    out = saveConfigValue("ha2", ha.theta1, out);
+    out = saveConfigValue("ha3", ha.theta1, out);
+    out = saveConfigValue("mi", delta.getMicrosteps(), out);
+    out = saveConfigValue("re", delta.getEffectorTriangleSide(), out);
+    out = saveConfigValue("rf", delta.getBaseTriangleSide(), out);
+    out = saveConfigValue("st", delta.getSteps360(), out);
+    out--;
+    *out++ = '}';
+    *out = 0;
     return out;
 }
 
 void Machine::enableEEUser(bool enable) {
-	if (isEEUserEnabled() != enable) {
-		eeprom_write_byte((uint8_t *)EEUSER_ENABLED, (uint8_t)(enable ? 'y' : 'n'));
-	}
+    if (isEEUserEnabled() != enable) {
+        eeprom_write_byte((uint8_t *)EEUSER_ENABLED, (uint8_t)(enable ? 'y' : 'n'));
+    }
 }
 
 bool Machine::isEEUserEnabled() {
-	return 'y' == eeprom_read_byte((uint8_t *)EEUSER_ENABLED);
+    return 'y' == eeprom_read_byte((uint8_t *)EEUSER_ENABLED);
 }
 

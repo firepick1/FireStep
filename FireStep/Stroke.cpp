@@ -118,7 +118,7 @@ Status Stroke::start(Ticks tStart) {
     this->tStart = tStart;
 
     if (dtTotal <= 0) {
-		TESTCOUT1("Stroke::start dtTotal:", dtTotal);
+        TESTCOUT1("Stroke::start dtTotal:", dtTotal);
         return STATUS_STROKE_TIME;
     }
 

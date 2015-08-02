@@ -21,11 +21,11 @@ void MachineThread::setup(PinConfig pc) {
 
 MachineThread::MachineThread()
     : rawController(machine), fpdController(machine), status(STATUS_BUSY_SETUP), printBannerOnIdle(true) {
-	setController(rawController);
+    setController(rawController);
 }
 
 void MachineThread::setController(JsonController &controller) {
-	this->pController = &controller;
+    this->pController = &controller;
 }
 
 void MachineThread::displayStatus() {
@@ -71,8 +71,8 @@ void MachineThread::displayStatus() {
 }
 
 size_t MachineThread::readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen) {
-	DisplayStatus ds = machine.pDisplay->getStatus();
-	machine.pDisplay->setStatus(DISPLAY_EEPROM);
+    DisplayStatus ds = machine.pDisplay->getStatus();
+    machine.pDisplay->setStatus(DISPLAY_EEPROM);
     uint8_t c = eeprom_read_byte(eeprom_addr);
     if (!dst || (c != '{' && c != '[')) {
         return 0;
@@ -87,7 +87,7 @@ size_t MachineThread::readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen)
         dst[len] = c;
     }
     dst[len] = 0;
-	machine.pDisplay->setStatus(ds);
+    machine.pDisplay->setStatus(ds);
 
     return len;
 }
@@ -101,24 +101,24 @@ char * MachineThread::buildStartupJson() {
     buf[len++] = '[';
     len += readEEPROM((uint8_t*)(size_t) 0, buf+len, MAX_JSON-len);
     if (len > 1) {
-		if (buf[1] == '[') {
-			buf[1] = ' ';
-		}
-		if (buf[len-1] == ']') {
-			buf[len-1] = ' ';
-		}
+        if (buf[1] == '[') {
+            buf[1] = ' ';
+        }
+        if (buf[len-1] == ']') {
+            buf[len-1] = ' ';
+        }
         buf[len++] = ',';
     }
 
-	size_t eeUserLen = 0;
-	if (machine.isEEUserEnabled()) {
-		eeUserLen = readEEPROM((uint8_t*)(size_t) EEUSER, buf+len, MAX_JSON-len);
-	}
+    size_t eeUserLen = 0;
+    if (machine.isEEUserEnabled()) {
+        eeUserLen = readEEPROM((uint8_t*)(size_t) EEUSER, buf+len, MAX_JSON-len);
+    }
 
     if (eeUserLen == 0) {
-		if (len > 1) {
-			len--; // remove comma
-		}
+        if (len > 1) {
+            len--; // remove comma
+        }
     } else {
         if (buf[len] == '[') {
             buf[len] = ' ';
@@ -130,31 +130,31 @@ char * MachineThread::buildStartupJson() {
     }
     buf[len] = 0;
 
-	return buf;
+    return buf;
 }
 
 Status MachineThread::executeEEPROM() {
-	char *buf = buildStartupJson();
+    char *buf = buildStartupJson();
     TESTCOUT3("executeEEPROM:", buf, " len:", strlen(buf), " status:", (int) status);
     status = command.parse(buf, status);
     TESTCOUT2("executeEEPROM status:", (int) status, " buf:", buf);
-	if (status < 0) {
-		Serial.print("{\"s\":");
-		Serial.print(status);
-		Serial.println(",\"r\":");
-		buf = buildStartupJson();
-		for (char *s = buf; *s; s++) {
-			Serial.print(*s);
-		}
-		Serial.println();
-		Serial.println("}");
-	}
+    if (status < 0) {
+        Serial.print("{\"s\":");
+        Serial.print(status);
+        Serial.println(",\"r\":");
+        buf = buildStartupJson();
+        for (char *s = buf; *s; s++) {
+            Serial.print(*s);
+        }
+        Serial.println();
+        Serial.println("}");
+    }
 
     return status;
 }
 
 Status MachineThread::syncConfig() {
-	Status status = STATUS_WAIT_IDLE;
+    Status status = STATUS_WAIT_IDLE;
     command.clear();
     char *buf = command.allocate(MAX_JSON);
     ASSERT(buf);
@@ -162,16 +162,16 @@ Status MachineThread::syncConfig() {
 
     TESTCOUT1("SAVING CONFIGURATION TO EEPROM","");
 
-	*out++ = '[';
+    *out++ = '[';
 
     // save system config
-	*out++ = '{';
-	*out++ = '"';
-	*out++ = 's';
-	*out++ = 'y';
-	*out++ = 's';
-	*out++ = '"';
-	*out++ = ':';
+    *out++ = '{';
+    *out++ = '"';
+    *out++ = 's';
+    *out++ = 'y';
+    *out++ = 's';
+    *out++ = '"';
+    *out++ = ':';
     out = machine.saveSysConfig(out, MAX_JSON-(out-buf));
 
     // save dimension config
@@ -193,58 +193,60 @@ Status MachineThread::syncConfig() {
         out += strlen(out);
         out = machine.axis[i].saveConfig(out, MAX_JSON-(out-buf));
     }
-	*out++ = '}';
+    *out++ = '}';
 
-	if (machine.autoHome) {
-		const char *hom = ",{\"hom\":\"\"}";
+    if (machine.autoHome) {
+        const char *hom = ",{\"hom\":\"\"}";
         snprintf(out, MAX_JSON-(out-buf), "%s", hom);
-		TESTCOUT1("autoHome:", out);
-		out += strlen(hom);
-	}
+        TESTCOUT1("autoHome:", out);
+        out += strlen(hom);
+    }
 
-	if (out-buf+2 >= MAX_JSON) {
-		return STATUS_JSON_MEM3;
-	}
-	*out++ = ']';
-	*out++ = '\n';
+    if (out-buf+2 >= MAX_JSON) {
+        return STATUS_JSON_MEM3;
+    }
+    *out++ = ']';
+    *out++ = '\n';
     out += strlen(out);
 
     // Save to EEPROM before executing config JSON (parsing is destructive)
-	DisplayStatus ds = machine.pDisplay->getStatus();
-	machine.pDisplay->setStatus(DISPLAY_EEPROM);
+    DisplayStatus ds = machine.pDisplay->getStatus();
+    machine.pDisplay->setStatus(DISPLAY_EEPROM);
     size_t len = strlen(buf);
     uint8_t *eepAddr = 0;
-	eeprom_write_byte(eepAddr, ' '); // disable eeprom
+    eeprom_write_byte(eepAddr, ' '); // disable eeprom
     for (int16_t i=1; i<=len; i++) { // include terminator
         eeprom_write_byte(eepAddr+i, buf[i]);
-		//if (Serial.available()) { return; }
+        //if (Serial.available()) { return; }
     }
-	machine.pDisplay->setStatus(ds);
+    machine.pDisplay->setStatus(ds);
     TESTCOUT3("syncConfig len:", strlen(buf), " buf:", buf, " status:", (int) status);
     // Commit config JSON to EEPROM iff JSON is valid
     status = command.parse(buf, status);
     if (status == STATUS_BUSY_PARSED) {
-		machine.syncHash = machine.hash(); // commit saved
+        machine.syncHash = machine.hash(); // commit saved
         eeprom_write_byte(eepAddr, buf[0]); // enable eeprom
         eeprom_write_byte(eepAddr+len-1, 0); // remove EOL
-		status = STATUS_WAIT_IDLE;
-	} else {
-		machine.autoSync = false; // no point trying again
+        status = STATUS_WAIT_IDLE;
+    } else {
+        machine.autoSync = false; // no point trying again
     }
-	return status;
+    return status;
 }
 
 void MachineThread::printBanner() {
-	char msg[100];
-	machine.syncHash = machine.hash();
-	snprintf(msg, sizeof(msg), "FireStep %d.%d.%d sysch:%ld",
-			 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) machine.syncHash);
-	Serial.println(msg);
+    char msg[100];
+    machine.syncHash = machine.hash();
+    snprintf(msg, sizeof(msg), "FireStep %d.%d.%d sysch:%ld",
+             VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) machine.syncHash);
+    Serial.println(msg);
 }
 
 void MachineThread::loop() {
 #ifdef THROTTLE_SPEED
-	if (Serial.available()) { return; }
+    if (Serial.available()) {
+        return;
+    }
     pController->speed = ADCH;
     if (pController->speed <= 251) {
         ThreadEnable(false);
@@ -270,10 +272,10 @@ void MachineThread::loop() {
             command.clear();
             status = command.parse(NULL, status);
         } else {
-			if (printBannerOnIdle) {
-				printBanner();
-				printBannerOnIdle = false;
-			}
+            if (printBannerOnIdle) {
+                printBanner();
+                printBannerOnIdle = false;
+            }
             status = machine.idle(status);
         }
         break;
@@ -291,7 +293,7 @@ void MachineThread::loop() {
             status = pController->cancel(command, STATUS_SERIAL_CANCEL);
         } else {
             status = process(command);
-			//TESTCOUT1("pController->process status:", status);
+            //TESTCOUT1("pController->process status:", status);
         }
         break;
     case STATUS_BUSY_EEPROM:
@@ -307,19 +309,19 @@ void MachineThread::loop() {
         break;
     }
     case STATUS_OK:
-		status = STATUS_WAIT_IDLE;
-		if (machine.syncHash != machine.hash()) {
-			if (machine.autoSync) {
-				TESTCOUT2("STATUS_OK autoSync syncHash:", machine.syncHash, " hash:", machine.hash());
-				status = syncConfig();
-			} else {
-				TESTCOUT2("STATUS_OK syncHash:", machine.syncHash, " hash:", machine.hash());
-			}
-			if (machine.syncHash != 0 && machine.isEEUserEnabled()) {
-				TESTCOUT1("STATUS_OK user EEPROM:", "disabled");
-				machine.enableEEUser(false);
-			}
-		}
+        status = STATUS_WAIT_IDLE;
+        if (machine.syncHash != machine.hash()) {
+            if (machine.autoSync) {
+                TESTCOUT2("STATUS_OK autoSync syncHash:", machine.syncHash, " hash:", machine.hash());
+                status = syncConfig();
+            } else {
+                TESTCOUT2("STATUS_OK syncHash:", machine.syncHash, " hash:", machine.hash());
+            }
+            if (machine.syncHash != 0 && machine.isEEUserEnabled()) {
+                TESTCOUT1("STATUS_OK user EEPROM:", "disabled");
+                machine.enableEEUser(false);
+            }
+        }
         break;
     }
 
@@ -330,26 +332,26 @@ void MachineThread::loop() {
 
 Status MachineThread::process(JsonCommand& jcmd) {
     Status status = STATUS_OK;
-	updateController();
+    updateController();
     JsonVariant &jroot = jcmd.requestRoot();
 
     if (jroot.is<JsonObject&>()) {
         JsonObject& jobj = jroot;
         status = pController->processObj(jcmd, jobj);
-		updateController();
+        updateController();
     } else if (jroot.is<JsonArray&>()) {
         JsonArray& jarr = jroot;
         if (jcmd.cmdIndex < jarr.size()) {
             JsonObject& jobj = jarr[jcmd.cmdIndex];
             jcmd.jResponseRoot["r"] = jobj;
             status = pController->processObj(jcmd, jobj);
-			updateController();
+            updateController();
             //TESTCOUT3("JsonController::process(", (int) jcmd.cmdIndex+1,
             //" of ", jarr.size(), ") status:", status);
             if (status == STATUS_OK) {
                 bool isLast = jcmd.cmdIndex >= jarr.size()-1;
                 if (!isLast && OUTPUT_ARRAYN==(machine.outputMode&OUTPUT_ARRAYN)) {
-					jcmd.setTicks();
+                    jcmd.setTicks();
                     pController->sendResponse(jcmd, status);
                 }
                 status = STATUS_BUSY_PARSED;
@@ -373,21 +375,21 @@ Status MachineThread::process(JsonCommand& jcmd) {
 }
 
 const char * MachineThread::updateController() {
-	const char *name = pController->name();
-	switch (machine.topology) {
-	default:
-	case MTO_RAW:
-		if (strcmp(name, rawController.name()) != 0) {
-			setController(rawController);
-			TESTCOUT1("updateControllerRAW:", pController->name());
-		}
-		break;
-	case MTO_FPD:
-		if (strcmp(name, fpdController.name()) != 0) {
-			setController(fpdController);
-			TESTCOUT1("updateControllerFPD:", pController->name());
-		}
-		break;
-	}
-	return name;
+    const char *name = pController->name();
+    switch (machine.topology) {
+    default:
+    case MTO_RAW:
+        if (strcmp(name, rawController.name()) != 0) {
+            setController(rawController);
+            TESTCOUT1("updateControllerRAW:", pController->name());
+        }
+        break;
+    case MTO_FPD:
+        if (strcmp(name, fpdController.name()) != 0) {
+            setController(fpdController);
+            TESTCOUT1("updateControllerFPD:", pController->name());
+        }
+        break;
+    }
+    return name;
 }

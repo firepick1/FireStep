@@ -20,8 +20,8 @@ protected:
     Machine &machine;
 
 protected:
-	int axisOf(char c);
-	Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);
+    int axisOf(char c);
+    Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);
     Status initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
     Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
     Status processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key);
@@ -44,11 +44,11 @@ public:
     JsonController(Machine& machine);
     void sendResponse(JsonCommand& jcmd, Status status);
     Status processObj(JsonCommand& jcmd, JsonObject&jobj);
-	JsonController& operator=(JsonController& that);
+    JsonController& operator=(JsonController& that);
     Status cancel(JsonCommand &jcmd, Status cause);
 
 public:
-	virtual const char *name() = 0;
+    virtual const char *name() = 0;
     virtual Status processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
     virtual Status processProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
     virtual Status processPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key)=0;

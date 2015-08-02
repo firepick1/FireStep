@@ -11,7 +11,7 @@ private:
 protected:
 public:
     RawController(Machine& machine);
-	virtual const char *name();
+    virtual const char *name();
     virtual Status processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);

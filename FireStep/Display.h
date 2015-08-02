@@ -18,7 +18,7 @@ enum DisplayStatus {
     DISPLAY_BUSY = 30, // FireStep is busy but not moving
     DISPLAY_BUSY_MOVING = 31, // FireStep is busy and moving
     DISPLAY_BUSY_CALIBRATING = 32, // FireStep is busy and calibrating
-	DISPLAY_EEPROM = 33, // Accessing EEPROM
+    DISPLAY_EEPROM = 33, // Accessing EEPROM
 };
 
 typedef class Display {

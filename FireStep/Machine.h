@@ -36,7 +36,7 @@ extern int32_t delayMicsTotal;
 enum OutputMode {
     OUTPUT_ARRAY1=0, //  JSON command arrays only return last command response
     OUTPUT_ARRAYN=1, // JSON command arrays return all command responses
-	OUTPUT_CMT=2, // Write comments 
+    OUTPUT_CMT=2, // Write comments
 };
 
 /**
@@ -227,7 +227,7 @@ typedef class Machine : public QuadStepper {
 
 public:
     PinConfig	pinConfig;
-	bool		autoHome;
+    bool		autoHome;
     bool	 	pinEnableHigh;
     bool		invertLim;
     bool		jsonPrettyPrint;
@@ -247,7 +247,7 @@ public:
     struct {
         OpProbe		probe;
     } op;
-	int32_t		syncHash;
+    int32_t		syncHash;
 
 public:
     Axis 		axis[AXIS_COUNT];
@@ -264,7 +264,7 @@ protected:
 
 public:
     Machine();
-	void setup(PinConfig cfg);
+    void setup(PinConfig cfg);
     int32_t hash();
     virtual	Status step(const Quad<StepDV> &pulse);
     bool isCorePin(int16_t pin);
@@ -347,8 +347,8 @@ public:
     char * saveDimConfig(char *out, size_t maxLen);
     Status idle(Status status);
     Status sync(Status status);
-	void enableEEUser(bool enable);
-	bool isEEUserEnabled();
+    void enableEEUser(bool enable);
+    bool isEEUserEnabled();
 } Machine;
 
 #ifdef TEST
