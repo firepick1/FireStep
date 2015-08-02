@@ -257,22 +257,22 @@ PH5TYPE DeltaCalculator::calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE 
     XYZ3D xyzRim(radius, 0, zCenter);
     Step3D center = calcPulses(xyzCtr);
     Step3D rim = calcPulses(xyzRim);
-	PH5TYPE eThetaCur = (eTheta.theta1+eTheta.theta2+eTheta.theta3)/3.0;
+    PH5TYPE eThetaCur = (eTheta.theta1+eTheta.theta2+eTheta.theta3)/3.0;
 
-	// Newton Raphson: calculate slope@eTheta0 = ZBowl error/degree
-	PH5TYPE eDegrees = eThetaCur;
-	PH5TYPE zError0 = zRim - zCenter;
-	PH5TYPE zErrorNext = 0;
-	PH5TYPE dzError = zErrorNext - zError0;
-	PH5TYPE dTheta = 1;
-	for (int16_t i=0; dzError && i<6; i++) {
-		PH5TYPE slope = (calcZBowlError(center, rim, eDegrees+dTheta)-zErrorNext)/dTheta; 
-		TESTCOUT3("eDegrees:", eDegrees, " dzError:", dzError, " slope:", slope);
-		eDegrees -= dzError / slope;
-		zErrorNext = calcZBowlError(center, rim, eDegrees);
-		dzError = zErrorNext - zError0;
-		dTheta /= 2;
-	}
+    // Newton Raphson: calculate slope@eTheta0 = ZBowl error/degree
+    PH5TYPE eDegrees = eThetaCur;
+    PH5TYPE zError0 = zRim - zCenter;
+    PH5TYPE zErrorNext = 0;
+    PH5TYPE dzError = zErrorNext - zError0;
+    PH5TYPE dTheta = 1;
+    for (int16_t i=0; dzError && i<6; i++) {
+        PH5TYPE slope = (calcZBowlError(center, rim, eDegrees+dTheta)-zErrorNext)/dTheta;
+        TESTCOUT3("eDegrees:", eDegrees, " dzError:", dzError, " slope:", slope);
+        eDegrees -= dzError / slope;
+        zErrorNext = calcZBowlError(center, rim, eDegrees);
+        dzError = zErrorNext - zError0;
+        dTheta /= 2;
+    }
 
-	return eDegrees;
+    return eDegrees;
 }
