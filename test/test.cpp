@@ -3294,13 +3294,24 @@ void test_DeltaCalculator() {
 	ASSERTEQUALT(-0.266, dc.calcZBowlError(zCenter, radius, 5), e);
 	ASSERTEQUALT(-0.517, dc.calcZBowlError(zCenter, radius, 10), e);
 
-	// ZBowlETheta
-	PH5TYPE zRim = -60.5;
-	PH5TYPE eTheta = dc.calcZBowlETheta(zCenter, zRim, radius);
-	ASSERTEQUALT(-8.058, eTheta, e);
-	Angle3D he(-8, -8, -8);
-	dc.setHomingError(he);
-	ASSERTEQUALT(-8.277, dc.calcZBowlETheta(zCenter, zCenter+0.01, radius), e);
+	// ZBowlETheta (initial calibration)
+	PH5TYPE zRim = -60.5; // 0.5mm bowl error
+	PH5TYPE eTheta1 = dc.calcZBowlETheta(zCenter, zRim, radius);
+	ASSERTEQUALT(-8.058, eTheta1, e);
+	ASSERTEQUALT(-52.33, dc.getHomeAngles().theta1,0.001); // default
+	dc.setHomingError(Angle3D(eTheta1,eTheta1,eTheta1));
+	ASSERTEQUALT(-60.388, dc.getHomeAngles().theta1,0.001); // corrected
+	ASSERTEQUAL(-5032, dc.getHomePulses().p1);
+	// subsequent calibration with no error
+	PH5TYPE eTheta2 = dc.calcZBowlETheta(zCenter, zCenter, radius);
+	ASSERTEQUALT(eTheta1, eTheta2, 0);
+	// subsequent calibration with almost undetectable error
+	PH5TYPE zErrTiny = 0.01; // 10 microns
+	PH5TYPE eTheta3 = dc.calcZBowlETheta(zCenter, zCenter+zErrTiny, radius);
+	ASSERTEQUALT(-8.342, eTheta3, e);
+	dc.setHomingError(Angle3D(eTheta3,eTheta3,eTheta3));
+	ASSERTEQUALT(-60.673, dc.getHomeAngles().theta1,0.001); // corrected
+	ASSERTEQUAL(-5056, dc.getHomePulses().p1);
 
     cout << "TEST	: test_DeltaCalculator() OK " << endl;
 }
