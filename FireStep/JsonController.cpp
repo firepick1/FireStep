@@ -42,7 +42,6 @@ int JsonController::axisOf(char c) {
 }
 
 Status JsonController::processPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
-	TESTCOUT1("processPosition:", "MTO_RAW");
     Status status = STATUS_OK;
     const char *s;
     if (strlen(key) == 3) {
@@ -539,47 +538,41 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
     return status;
 }
 
-PHMoveTo::PHMoveTo(Machine& machine) 
+typedef class MTO_RAWMoveTo {
+private:
+    int32_t nLoops;
+    Quad<PH5TYPE> destination;
+    int16_t nSegs;
+    Machine &machine;
+
+private:
+    Status execute(JsonCommand& jcmd, JsonObject *pjobj);
+
+public:
+    MTO_RAWMoveTo(Machine& machine);
+    Status process(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+}MTO_RAWMoveTo;
+
+#include <sys/types.h>
+#include <unistd.h>
+#include <signal.h>
+
+MTO_RAWMoveTo::MTO_RAWMoveTo(Machine& machine) 
 	: nLoops(0), nSegs(0), machine(machine) 
 {
 	Quad<StepCoord> curPos = machine.getMotorPosition();
 	for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
 		destination.value[i] = curPos.value[i];
 	}
-	switch (machine.topology) {
-	case MTO_RAW:
-	default:
-		// no conversion required
-		break;
-	case MTO_FPD:
-		XYZ3D xyz(machine.getXYZ3D());
-		destination.value[0] = xyz.x;
-		destination.value[1] = xyz.y;
-		destination.value[2] = xyz.z;
-		break;
-	}
 }
 
-Status PHMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
+Status MTO_RAWMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     StrokeBuilder sb(machine.vMax, machine.tvMax);
     Quad<StepCoord> curPos = machine.getMotorPosition();
     Quad<StepCoord> dPos;
-    switch (machine.topology) {
-    case MTO_RAW:
-    default:
-        for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
-            dPos.value[i] = destination.value[i] - curPos.value[i];
-        }
-        break;
-    case MTO_FPD:
-        XYZ3D xyz(destination.value[0], destination.value[1], destination.value[2]);
-        Step3D pulses(machine.delta.calcPulses(xyz));
-        dPos.value[0] = pulses.p1 - curPos.value[0];
-        dPos.value[1] = pulses.p2 - curPos.value[1];
-        dPos.value[2] = pulses.p3 - curPos.value[2];
-        dPos.value[3] = destination.value[3] - curPos.value[3];
-        break;
-    }
+	for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
+		dPos.value[i] = destination.value[i] - curPos.value[i];
+	}
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         if (!machine.getMotorAxis(i).isEnabled()) {
             dPos.value[i] = 0;
@@ -636,7 +629,7 @@ Status PHMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     return status;
 }
 
-Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+Status MTO_RAWMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     const char *s;
 
@@ -669,65 +662,17 @@ Status PHMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
         for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
             status = process(jcmd, kidObj, it->key);
             if (status != STATUS_OK) {
-                TESTCOUT1("PHMoveTo::process() status:", status);
+                TESTCOUT1("MTO_RAWMoveTo::process() status:", status);
                 return status;
             }
         }
         status = execute(jcmd, &kidObj);
     } else if (strcmp("movrx",key) == 0 || strcmp("rx",key) == 0) {
-        // TODO: clean up mov implementation
-        switch (machine.topology) {
-        case MTO_FPD: {
-            XYZ3D xyz = machine.getXYZ3D();
-            PH5TYPE x = 0;
-            status = processField<PH5TYPE, PH5TYPE>(jobj, key, x);
-            if (status == STATUS_OK) {
-                destination.value[0] = xyz.x + x;
-                if (strcmp("movrx",key) == 0) {
-                    status = execute(jcmd, NULL);
-                }
-            }
-            break;
-        }
-        default:
-            return jcmd.setError(STATUS_MTO_FIELD, key);
-        }
+		return jcmd.setError(STATUS_MTO_FIELD, key);
     } else if (strcmp("movry",key) == 0 || strcmp("ry",key) == 0) {
-        // TODO: clean up mov implementation
-        switch (machine.topology) {
-        case MTO_FPD: {
-            XYZ3D xyz = machine.getXYZ3D();
-            PH5TYPE y = 0;
-            status = processField<PH5TYPE, PH5TYPE>(jobj, key, y);
-            if (status == STATUS_OK) {
-                destination.value[1] = xyz.y + y;
-                if (strcmp("movry",key) == 0) {
-                    status = execute(jcmd, NULL);
-                }
-            }
-            break;
-        }
-        default:
-            return jcmd.setError(STATUS_MTO_FIELD, key);
-        }
+		return jcmd.setError(STATUS_MTO_FIELD, key);
     } else if (strcmp("movrz",key) == 0 || strcmp("rz",key) == 0) {
-        // TODO: clean up mov implementation
-        switch (machine.topology) {
-        case MTO_FPD: {
-            XYZ3D xyz = machine.getXYZ3D();
-            PH5TYPE z = 0;
-            status = processField<PH5TYPE, PH5TYPE>(jobj, key, z);
-            if (status == STATUS_OK) {
-                destination.value[2] = xyz.z + z;
-                if (strcmp("movrz",key) == 0) {
-                    status = execute(jcmd, NULL);
-                }
-            }
-            break;
-        }
-        default:
-            return jcmd.setError(STATUS_MTO_FIELD, key);
-        }
+		return jcmd.setError(STATUS_MTO_FIELD, key);
     } else if (strncmp("mov", key, 3) == 0) { // short form
         // TODO: clean up mov implementation
         MotorIndex iMotor = machine.motorOfName(key + strlen(key) - 1);
@@ -1346,6 +1291,14 @@ void JsonController::sendResponse(JsonCommand &jcmd, Status status) {
     Serial.println();
 }
 
+Status JsonController::processDimension(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+	return jcmd.setError(STATUS_TOPOLOGY_NAME, key);
+}
+
+Status JsonController::processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+	return MTO_RAWMoveTo(machine).process(jcmd, jobj, key);
+}
+
 Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
     JsonVariant node;
     node = jobj;
@@ -1355,7 +1308,7 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
         if (strcmp("dvs", it->key) == 0) {
             status = processStroke(jcmd, jobj, it->key);
         } else if (strncmp("mov", it->key, 3) == 0) {
-            status = PHMoveTo(machine).process(jcmd, jobj, it->key);
+            status = processMove(jcmd, jobj, it->key);
         } else if (strncmp("hom", it->key, 3) == 0) {
             status = processHome(jcmd, jobj, it->key);
         } else if (strncmp("tst", it->key, 3) == 0) {
@@ -1371,25 +1324,9 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
         } else if (strncmp("eep", it->key, 3) == 0) {
             status = processEEPROM(jcmd, jobj, it->key);
         } else if (strncmp("dim", it->key, 3) == 0) {
-            switch (machine.topology) {
-            case MTO_RAW:
-            default:
-                status = jcmd.setError(STATUS_TOPOLOGY_NAME, it->key);
-                break;
-            case MTO_FPD:
-                status = processDimension_MTO_FPD(jcmd, jobj, it->key);
-                break;
-            }
+			status = processDimension(jcmd, jobj, it->key);
         } else if (strncmp("prb", it->key, 3) == 0) {
-            switch (machine.topology) {
-            case MTO_RAW:
-            default:
-                status = processProbe(jcmd, jobj, it->key);
-                break;
-            case MTO_FPD:
-                status = processProbe_MTO_FPD(jcmd, jobj, it->key);
-                break;
-            }
+			status = processProbe(jcmd, jobj, it->key);
 		} else if (strcmp("idl", it->key) == 0) {
 			int16_t ms = it->value;
 			delay(ms);
@@ -1426,266 +1363,6 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
         }
     }
 
-    return status;
-}
-
-#ifdef LEGACY
-Status JsonController::process(JsonCommand& jcmd) {
-    Status status = STATUS_OK;
-    JsonVariant &jroot = jcmd.requestRoot();
-
-    if (jroot.is<JsonObject&>()) {
-        JsonObject& jobj = jroot;
-        status = processObj(jcmd, jobj);
-    } else if (jroot.is<JsonArray&>()) {
-        JsonArray& jarr = jroot;
-        if (jcmd.cmdIndex < jarr.size()) {
-            JsonObject& jobj = jarr[jcmd.cmdIndex];
-            jcmd.jResponseRoot["r"] = jobj;
-            status = processObj(jcmd, jobj);
-            //TESTCOUT3("JsonController::process(", (int) jcmd.cmdIndex+1,
-            //" of ", jarr.size(), ") status:", status);
-            if (status == STATUS_OK) {
-                bool isLast = jcmd.cmdIndex >= jarr.size()-1;
-                if (!isLast && OUTPUT_ARRAYN==(machine.outputMode&OUTPUT_ARRAYN)) {
-					jcmd.setTicks();
-                    sendResponse(jcmd, status);
-                }
-                status = STATUS_BUSY_PARSED;
-                jcmd.cmdIndex++;
-            }
-        } else {
-            status = STATUS_OK;
-        }
-    } else {
-        status = STATUS_JSON_CMD;
-    }
-
-    jcmd.setTicks();
-    jcmd.setStatus(status);
-
-    if (!isProcessing(status)) {
-        sendResponse(jcmd,status);
-    }
-
-    return status;
-}
-#endif
-
-//////////////// MTO_FPD /////////
-
-Status JsonController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj,
-        const char* key, bool clear)
-{
-    Status status = STATUS_OK;
-    OpProbe &probe = machine.op.probe;
-
-    if (clear) {
-        Quad<StepCoord> curPos = machine.getMotorPosition();
-        probe.setup(curPos);
-    }
-    Step3D probeEnd(probe.end.value[0], probe.end.value[1], probe.end.value[2]);
-    XYZ3D xyzEnd = machine.delta.calcXYZ(probeEnd);
-    const char *s;
-    if (strcmp("prb", key) == 0) {
-        if ((s = jobj[key]) && *s == 0) {
-            JsonObject& node = jobj.createNestedObject(key);
-            xyzEnd.z = machine.delta.getMinZ(xyzEnd.z, xyzEnd.y);
-            node["1"] = "";
-            node["2"] = "";
-            node["3"] = "";
-            node["4"] = "";
-            node["ip"] = "";
-            node["pn"] = machine.op.probe.pinProbe;
-            node["sd"] = "";
-            node["x"] = xyzEnd.x;
-            node["y"] = xyzEnd.y;
-            node["z"] = xyzEnd.z;
-        }
-        JsonObject& kidObj = jobj[key];
-        if (kidObj.success()) {
-            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-                status = initializeProbe_MTO_FPD(jcmd, kidObj, it->key, false);
-                if (status < 0) {
-                    return jcmd.setError(status, it->key);
-                }
-            }
-            if (status == STATUS_BUSY_CALIBRATING && machine.op.probe.pinProbe==NOPIN) {
-                return jcmd.setError(STATUS_FIELD_REQUIRED, "pn");
-            }
-        }
-    } else if (strcmp("prbip", key) == 0 || strcmp("ip", key) == 0) {
-        status = processField<bool, bool>(jobj, key, machine.op.probe.invertProbe);
-    } else if (strcmp("prbpn", key) == 0 || strcmp("pn", key) == 0) {
-        status = processField<PinType, int32_t>(jobj, key, machine.op.probe.pinProbe);
-    } else if (strcmp("prbsd", key) == 0 || strcmp("sd", key) == 0) {
-        status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
-    } else if (strcmp("prbx", key) == 0 || strcmp("x", key) == 0) {
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.x);
-    } else if (strcmp("prby", key) == 0 || strcmp("y", key) == 0) {
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.y);
-    } else if (strcmp("prbz", key) == 0 || strcmp("z", key) == 0) {
-        machine.op.probe.dataSource = PDS_Z;
-        xyzEnd.z = machine.delta.getMinZ(xyzEnd.x, xyzEnd.y);
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.z);
-    } else {
-        MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));
-        if (iMotor != INDEX_NONE) {
-            if ((s = jobj[key]) && *s == 0) {
-                // query is fine
-            } else {
-                return jcmd.setError(STATUS_OUTPUT_FIELD, key);
-            }
-        } else {
-            return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
-        }
-    }
-
-    // This code only works for probes along a single cartesian axis
-    Step3D pEnd = machine.delta.calcPulses(xyzEnd);
-    machine.op.probe.end.value[0] = pEnd.p1;
-    machine.op.probe.end.value[1] = pEnd.p2;
-    machine.op.probe.end.value[2] = pEnd.p3;
-    TESTCOUT3("pEnd:", pEnd.p1, ", ", pEnd.p2, ", ", pEnd.p3);
-    machine.op.probe.maxDelta = 0;
-    for (MotorIndex iMotor=0; iMotor<3; iMotor++) {
-        StepCoord delta = machine.op.probe.end.value[iMotor] - machine.op.probe.start.value[iMotor];
-        machine.op.probe.maxDelta = max((StepCoord)abs(machine.op.probe.maxDelta), delta);
-    }
-
-    return status == STATUS_OK ? STATUS_BUSY_CALIBRATING : status;
-}
-
-Status JsonController::finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-    XYZ3D xyz = machine.getXYZ3D();
-    if (!xyz.isValid()) {
-        return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
-    }
-    if (strcmp("prbx",key) == 0 || strcmp("x",key) == 0) {
-        jobj[key] = xyz.x;
-    } else if (strcmp("prby",key) == 0 || strcmp("y",key) == 0) {
-        jobj[key] = xyz.y;
-    } else if (strcmp("prbz",key) == 0 || strcmp("z",key) == 0) {
-        jobj[key] = xyz.z;
-    } else if (strcmp("1",key) == 0) {
-        jobj[key] = machine.getMotorAxis(0).position;
-    } else if (strcmp("2",key) == 0) {
-        jobj[key] = machine.getMotorAxis(1).position;
-    } else if (strcmp("3",key) == 0) {
-        jobj[key] = machine.getMotorAxis(2).position;
-    } else if (strcmp("4",key) == 0) {
-        jobj[key] = machine.getMotorAxis(3).position;
-    }
-    return STATUS_OK;
-}
-
-Status JsonController::processProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-    Status status = jcmd.getStatus();
-    switch (status) {
-    case STATUS_BUSY_PARSED:
-        status = initializeProbe_MTO_FPD(jcmd, jobj, key, true);
-        break;
-    case STATUS_BUSY_OK:
-    case STATUS_BUSY_CALIBRATING:
-        status = machine.probe(status);
-        if (status == STATUS_OK) {
-            if (jobj[key].is<JsonObject&>()) {
-                JsonObject &kidObj = jobj[key];
-                for (JsonObject::iterator it = kidObj.begin(); status == STATUS_OK && it != kidObj.end(); ++it) {
-                    status = finalizeProbe_MTO_FPD(jcmd, kidObj, it->key);
-                }
-            } else {
-                status = finalizeProbe_MTO_FPD(jcmd, jobj, key);
-            }
-        }
-        break;
-    default:
-        ASSERT(false);
-        return jcmd.setError(STATUS_STATE, key);
-    }
-    return status;
-}
-
-Status JsonController::processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-    Status status = STATUS_OK;
-    if (strcmp("dim", key) == 0) {
-        const char *s;
-        if ((s = jobj[key]) && *s == 0) {
-            JsonObject& node = jobj.createNestedObject(key);
-            node["e"] = "";
-            node["f"] = "";
-            node["gr"] = "";
-            node["ha1"] = "";
-            node["ha2"] = "";
-            node["ha3"] = "";
-            node["mi"] = "";
-            node["pd"] = "";
-            node["re"] = "";
-            node["rf"] = "";
-            node["st"] = "";
-        }
-        JsonObject& kidObj = jobj[key];
-        if (kidObj.success()) {
-            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-                status = processDimension_MTO_FPD(jcmd, kidObj, it->key);
-                if (status != STATUS_OK) {
-                    return status;
-                }
-            }
-        }
-    } else if (strcmp("e", key) == 0 || strcmp("dime", key) == 0) {
-        PH5TYPE value = machine.delta.getEffectorLength();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setEffectorLength(value);
-    } else if (strcmp("f", key) == 0 || strcmp("dimf", key) == 0) {
-        PH5TYPE value = machine.delta.getBaseArmLength();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setBaseArmLength(value);
-    } else if (strcmp("gr", key) == 0 || strcmp("dimgr", key) == 0) {
-        PH5TYPE value = machine.delta.getGearRatio();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setGearRatio(value);
-    } else if (strcmp("ha1", key) == 0 || strcmp("dimha1", key) == 0) {
-        Angle3D homeAngles = machine.delta.getHomeAngles();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngles.theta1);
-        machine.delta.setHomeAngles(homeAngles);
-    } else if (strcmp("ha2", key) == 0 || strcmp("dimha2", key) == 0) {
-        Angle3D homeAngles = machine.delta.getHomeAngles();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngles.theta2);
-        machine.delta.setHomeAngles(homeAngles);
-    } else if (strcmp("ha3", key) == 0 || strcmp("dimha3", key) == 0) {
-        Angle3D homeAngles = machine.delta.getHomeAngles();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngles.theta3);
-        machine.delta.setHomeAngles(homeAngles);
-    } else if (strcmp("mi", key) == 0 || strcmp("dimmi", key) == 0) {
-        int16_t value = machine.delta.getMicrosteps();
-        status = processField<int16_t, int16_t>(jobj, key, value);
-        machine.delta.setMicrosteps(value);
-    } else if (strcmp("pd", key) == 0 || strcmp("dimpd", key) == 0) {
-        const char *s;
-        if ((s = jobj[key]) && *s == 0) {
-            JsonArray &jarr = jobj.createNestedArray(key);
-            for (int16_t i=0; i<PROBE_DATA; i++) {
-                jarr.add(machine.op.probe.probeData[i]);
-            }
-        } else {
-            status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
-        }
-    } else if (strcmp("re", key) == 0 || strcmp("dimre", key) == 0) {
-        PH5TYPE value = machine.delta.getEffectorTriangleSide();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setEffectorTriangleSide(value);
-    } else if (strcmp("rf", key) == 0 || strcmp("dimrf", key) == 0) {
-        PH5TYPE value = machine.delta.getBaseTriangleSide();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setBaseTriangleSide(value);
-    } else if (strcmp("st", key) == 0 || strcmp("dimst", key) == 0) {
-        int16_t value = machine.delta.getSteps360();
-        status = processField<int16_t, int16_t>(jobj, key, value);
-        machine.delta.setSteps360(value);
-    } else {
-        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
-    }
     return status;
 }
 

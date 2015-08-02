@@ -41,36 +41,19 @@ protected:
     Status processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status traverseStroke(JsonCommand &jcmd, JsonObject &stroke);
 
-    Status initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
-    Status processProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-    Status finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-    Status processDimension_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-
 public:
     JsonController(Machine& machine);
     void sendResponse(JsonCommand& jcmd, Status status);
     Status processObj(JsonCommand& jcmd, JsonObject&jobj);
 	virtual const char *name();
+    virtual Status processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key);
+    virtual Status processDimension(JsonCommand& jcmd, JsonObject& jobj, const char* key);
 	JsonController& operator=(JsonController& that);
     Status cancel(JsonCommand &jcmd, Status cause);
 } JsonController;
 
-typedef class PHMoveTo {
-private:
-    int32_t nLoops;
-    Quad<PH5TYPE> destination;
-    int16_t nSegs;
-    Machine &machine;
-
-private:
-    Status execute(JsonCommand& jcmd, JsonObject *pjobj);
-
-public:
-    PHMoveTo(Machine& machine);
-    Status process(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-}PHMoveTo;
 
 } // namespace firestep
 

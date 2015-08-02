@@ -335,7 +335,6 @@ Status MachineThread::process(JsonCommand& jcmd) {
 
     if (jroot.is<JsonObject&>()) {
         JsonObject& jobj = jroot;
-		TESTCOUT1("process obj:", pController->name());
         status = pController->processObj(jcmd, jobj);
 		updateController();
     } else if (jroot.is<JsonArray&>()) {
