@@ -553,7 +553,7 @@ Status Machine::home(Status status) {
                 a.homing = false;
             }
         }
-		status = STATUS_OK;
+        status = STATUS_OK;
         break;
     }
 

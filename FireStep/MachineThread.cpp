@@ -26,7 +26,7 @@ MachineThread::MachineThread()
 
 void MachineThread::setController(JsonController &controller) {
     this->pController = &controller;
-	this->pController->onTopologyChanged();
+    this->pController->onTopologyChanged();
 }
 
 void MachineThread::displayStatus() {

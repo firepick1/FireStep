@@ -15,7 +15,7 @@ private:
     Quad<PH5TYPE> destination;
     int16_t nSegs;
     Machine &machine;
-	FPDController &controller;
+    FPDController &controller;
 
 private:
     Status execute(JsonCommand& jcmd, JsonObject *pjobj);
@@ -448,10 +448,10 @@ Status FPDController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const ch
     case STATUS_BUSY_CALIBRATING:
         status = machine.probe(status);
         if (status == STATUS_OK) {
-			if (machine.op.probe.dataSource == PDS_Z) {
-				XYZ3D xyz = getXYZ3D();
-				machine.op.probe.archiveData(xyz.z);
-			}
+            if (machine.op.probe.dataSource == PDS_Z) {
+                XYZ3D xyz = getXYZ3D();
+                machine.op.probe.archiveData(xyz.z);
+            }
             if (jobj[key].is<JsonObject&>()) {
                 JsonObject &kidObj = jobj[key];
                 for (JsonObject::iterator it = kidObj.begin(); status == STATUS_OK && it != kidObj.end(); ++it) {
@@ -568,9 +568,9 @@ Status FPDController::processHome(JsonCommand& jcmd, JsonObject& jobj, const cha
         break;
     case STATUS_BUSY_CALIBRATING:
         status = machine.home(status);
-		if (status == STATUS_OK) {
-			status = finalizeHome();
-		}
+        if (status == STATUS_OK) {
+            status = finalizeHome();
+        }
         break;
     default:
         TESTCOUT1("status:", status);
@@ -582,27 +582,27 @@ Status FPDController::processHome(JsonCommand& jcmd, JsonObject& jobj, const cha
 
 Status FPDController::finalizeHome() {
     Status status = STATUS_OK;
-	Quad<StepCoord> limit = machine.getMotorPosition();
-	Step3D pulses = machine.delta.calcPulses(XYZ3D());
-	machine.op.probe.setup(limit, Quad<StepCoord>(
-					   pulses.p1,
-					   pulses.p2,
-					   pulses.p3,
-					   limit.value[3]
-				   ));
-	status = STATUS_BUSY_CALIBRATING;
-	do {
-		// fast probe because we don't expect to hit anything
-		status = machine.probe(status, 0);
-		//TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
-	} while (status == STATUS_BUSY_CALIBRATING);
-	if (status == STATUS_PROBE_FAILED) {
-		// we didn't hit anything and that is good
-		status = STATUS_OK;
-	} else if (status == STATUS_OK) {
-		// we hit something and that's not good
-		status = STATUS_LIMIT_MAX;
-	}
+    Quad<StepCoord> limit = machine.getMotorPosition();
+    Step3D pulses = machine.delta.calcPulses(XYZ3D());
+    machine.op.probe.setup(limit, Quad<StepCoord>(
+                               pulses.p1,
+                               pulses.p2,
+                               pulses.p3,
+                               limit.value[3]
+                           ));
+    status = STATUS_BUSY_CALIBRATING;
+    do {
+        // fast probe because we don't expect to hit anything
+        status = machine.probe(status, 0);
+        //TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
+    } while (status == STATUS_BUSY_CALIBRATING);
+    if (status == STATUS_PROBE_FAILED) {
+        // we didn't hit anything and that is good
+        status = STATUS_OK;
+    } else if (status == STATUS_OK) {
+        // we hit something and that's not good
+        status = STATUS_LIMIT_MAX;
+    }
     return status;
 }
 
@@ -624,9 +624,9 @@ void FPDController::onTopologyChanged() {
 
 XYZ3D FPDController::getXYZ3D() {
     return machine.delta.calcXYZ(Step3D(
-                             machine.motorAxis[0]->position,
-                             machine.motorAxis[1]->position,
-                             machine.motorAxis[2]->position
-                         ));
+                                     machine.motorAxis[0]->position,
+                                     machine.motorAxis[1]->position,
+                                     machine.motorAxis[2]->position
+                                 ));
 }
 
