@@ -145,6 +145,7 @@ public:
     PH5TYPE calcAngleYZ(PH5TYPE x, PH5TYPE y, PH5TYPE z);
     PH5TYPE calcZBowlError(Step3D center, Step3D rim, PH5TYPE eTheta);
     PH5TYPE calcZBowlError(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eTheta);
+    PH5TYPE calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE radius);
     int32_t hash();
 } DeltaCalculator;
 
