@@ -331,3 +331,22 @@ Status RawController::processMove(JsonCommand& jcmd, JsonObject& jobj, const cha
     return MTO_RAWMoveTo(machine).process(jcmd, jobj, key);
 }
 
+Status RawController::processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = jcmd.getStatus();
+    switch (status) {
+    case STATUS_BUSY_PARSED:
+        status = initializeHome(jcmd, jobj, key, true);
+        break;
+    case STATUS_BUSY_MOVING:
+    case STATUS_BUSY_OK:
+    case STATUS_BUSY_CALIBRATING:
+        status = machine.home(status);
+        break;
+    default:
+        TESTCOUT1("status:", status);
+        ASSERT(false);
+        return jcmd.setError(STATUS_STATE, key);
+    }
+    return status;
+}
+

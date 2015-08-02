@@ -1275,7 +1275,7 @@ void test_MTO_FPD() {
     ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTQUAD(Quad<StepCoord>(-4361,-4361,-4361,0), machine.getMotorPosition());
-    XYZ3D xyz = machine.getXYZ3D();
+    XYZ3D xyz = mt.fpdController.getXYZ3D();
     ASSERTEQUALT(0, xyz.x, 0.01);
     ASSERTEQUALT(0, xyz.y, 0.01);
     ASSERTEQUALT(58.91, xyz.z, 0.01);
@@ -1329,7 +1329,7 @@ void test_MTO_FPD() {
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
-    xyz = machine.getXYZ3D();
+    xyz = mt.fpdController.getXYZ3D();
     ASSERTEQUALT(1.0085, xyz.x, 0.0001);
     ASSERTEQUALT(0.0000, xyz.y, 0.0001);
     ASSERTEQUALT(0.0020, xyz.z, 0.0001);
@@ -1364,7 +1364,7 @@ void test_MTO_FPD() {
     ASSERTEQUAL(996, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(996, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(996, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
-    xyz = machine.getXYZ3D();
+    xyz = mt.fpdController.getXYZ3D();
     ASSERTEQUALT(-21.4839, xyz.z, 0.0001);
     arduino.setPin(PC2_PROBE_PIN, HIGH);
     test_ticks(1);	// tripped
@@ -1411,7 +1411,7 @@ void test_MTO_FPD() {
     ASSERTEQUAL(996, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(996, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(996, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
-    xyz = machine.getXYZ3D();
+    xyz = mt.fpdController.getXYZ3D();
     ASSERTEQUALT(-21.4839, xyz.z, 0.0001);
     arduino.setPin(PC2_PROBE_PIN, HIGH);
     test_ticks(1);	// tripped
@@ -1479,7 +1479,7 @@ void test_MTO_FPD() {
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
     ypulses = arduino.pulses(PC2_Y_STEP_PIN);
     zpulses = arduino.pulses(PC2_Z_STEP_PIN);
-    xyz = machine.getXYZ3D();
+    xyz = mt.fpdController.getXYZ3D();
     ASSERTEQUALT(5, xyz.x, 0.01);
     ASSERTEQUALT(5, xyz.y, 0.01);
     ASSERTEQUALT(-50, xyz.z, 0.01);
@@ -1501,7 +1501,7 @@ void test_MTO_FPD() {
     ASSERTEQUAL(99, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTEQUALS(JT("{'s':0,'r':{'prbz':-50.491},'t':1.521}\n"),
                  Serial.output().c_str());
-    xyz = machine.getXYZ3D();
+    xyz = mt.fpdController.getXYZ3D();
     ASSERTEQUALT(5, xyz.x, 0.03);
     ASSERTEQUALT(5, xyz.y, 0.03);
     ASSERTEQUALT(-50.491, xyz.z, 0.001);
@@ -1525,7 +1525,7 @@ void test_MTO_FPD() {
     ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':-4361,'2':-4361,'3':-4361,'4':0}},'t':0.000}\n"),
                  Serial.output().c_str());
     ASSERTQUAD(Quad<StepCoord>(), machine.getMotorPosition());
-    xyz = machine.getXYZ3D();
+    xyz = mt.fpdController.getXYZ3D();
     ASSERTEQUALT(0, xyz.x, 0.01);
     ASSERTEQUALT(0, xyz.y, 0.01);
     ASSERTEQUALT(0, xyz.z, 0.01);
@@ -1543,7 +1543,7 @@ void test_MTO_FPD() {
     ASSERTEQUALS(JT("{'s':0,'r':{'movrz':-1.000},'t':1.215}\n"),
                  Serial.output().c_str());
     ASSERTQUAD(Quad<StepCoord>(212,212,212,0), machine.getMotorPosition());
-	xyz = machine.getXYZ3D();
+	xyz = mt.fpdController.getXYZ3D();
 	ASSERTEQUALT(0, xyz.x, 0.01);
     ASSERTEQUALT(0, xyz.y, 0.01);
     ASSERTEQUALT(-1, xyz.z, 0.01);
@@ -1564,7 +1564,7 @@ void test_MTO_FPD() {
     ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'a':30,'d':10,'rz':-1.000}},'t':1.394}\n"),
                  Serial.output().c_str());
     ASSERTQUAD(Quad<StepCoord>(710,-658,709), machine.getMotorPosition());
-	xyz = machine.getXYZ3D();
+	xyz = mt.fpdController.getXYZ3D();
 	ASSERTEQUALT(8.667, xyz.x, 0.01);
     ASSERTEQUALT(5, xyz.y, 0.01);
     ASSERTEQUALT(-1, xyz.z, 0.01);

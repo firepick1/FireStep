@@ -327,7 +327,6 @@ public:
     Quad<StepCoord> getMotorPosition();
     void setMotorPosition(const Quad<StepCoord> &position);
     virtual Status home(Status status);
-    virtual Status finalizeHome();
     virtual Status probe(Status status, DelayMics delay=-1);
     Status setAxisIndex(MotorIndex iMotor, AxisIndex iAxis);
     AxisIndex getAxisIndex(MotorIndex iMotor) {
@@ -342,7 +341,6 @@ public:
     PinConfig getPinConfig() {
         return pinConfig;
     }
-    XYZ3D getXYZ3D();
     char * saveSysConfig(char *out, size_t maxLen);
     char * saveDimConfig(char *out, size_t maxLen);
     Status idle(Status status);

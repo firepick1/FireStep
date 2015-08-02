@@ -15,24 +15,25 @@ private:
     Quad<PH5TYPE> destination;
     int16_t nSegs;
     Machine &machine;
+	FPDController &controller;
 
 private:
     Status execute(JsonCommand& jcmd, JsonObject *pjobj);
 
 public:
-    MTO_FPDMoveTo(Machine& machine);
+    MTO_FPDMoveTo(FPDController &controller, Machine& machine);
     Status process(JsonCommand& jcmd, JsonObject& jobj, const char* key);
 } MTO_FPDMoveTo;
 
-MTO_FPDMoveTo::MTO_FPDMoveTo(Machine& machine)
-    : nLoops(0), nSegs(0), machine(machine)
+MTO_FPDMoveTo::MTO_FPDMoveTo(FPDController &controller, Machine& machine)
+    : nLoops(0), nSegs(0), machine(machine), controller(controller)
 {
     Quad<StepCoord> curPos = machine.getMotorPosition();
     for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
         destination.value[i] = curPos.value[i];
     }
 
-    XYZ3D xyz(machine.getXYZ3D());
+    XYZ3D xyz(controller.getXYZ3D());
     destination.value[0] = xyz.x;
     destination.value[1] = xyz.y;
     destination.value[2] = xyz.z;
@@ -146,7 +147,7 @@ Status MTO_FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* k
         // TODO: clean up mov implementation
         switch (machine.topology) {
         case MTO_FPD: {
-            XYZ3D xyz = machine.getXYZ3D();
+            XYZ3D xyz = controller.getXYZ3D();
             PH5TYPE x = 0;
             status = processField<PH5TYPE, PH5TYPE>(jobj, key, x);
             if (status == STATUS_OK) {
@@ -164,7 +165,7 @@ Status MTO_FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* k
         // TODO: clean up mov implementation
         switch (machine.topology) {
         case MTO_FPD: {
-            XYZ3D xyz = machine.getXYZ3D();
+            XYZ3D xyz = controller.getXYZ3D();
             PH5TYPE y = 0;
             status = processField<PH5TYPE, PH5TYPE>(jobj, key, y);
             if (status == STATUS_OK) {
@@ -182,7 +183,7 @@ Status MTO_FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* k
         // TODO: clean up mov implementation
         switch (machine.topology) {
         case MTO_FPD: {
-            XYZ3D xyz = machine.getXYZ3D();
+            XYZ3D xyz = controller.getXYZ3D();
             PH5TYPE z = 0;
             status = processField<PH5TYPE, PH5TYPE>(jobj, key, z);
             if (status == STATUS_OK) {
@@ -297,7 +298,7 @@ Status FPDController::processPosition(JsonCommand &jcmd, JsonObject& jobj, const
     } else if (strcmp("4", axisStr) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, machine.axis[3].position);
     } else if (strcmp("x", axisStr) == 0) {
-        XYZ3D xyz(machine.getXYZ3D());
+        XYZ3D xyz(getXYZ3D());
         if (!xyz.isValid()) {
             return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
         }
@@ -307,7 +308,7 @@ Status FPDController::processPosition(JsonCommand &jcmd, JsonObject& jobj, const
             status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
     } else if (strcmp("y", axisStr) == 0) {
-        XYZ3D xyz(machine.getXYZ3D());
+        XYZ3D xyz(getXYZ3D());
         if (!xyz.isValid()) {
             return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
         }
@@ -317,7 +318,7 @@ Status FPDController::processPosition(JsonCommand &jcmd, JsonObject& jobj, const
             status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
     } else if (strcmp("z", axisStr) == 0) {
-        XYZ3D xyz(machine.getXYZ3D());
+        XYZ3D xyz(getXYZ3D());
         if (!xyz.isValid()) {
             return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
         }
@@ -415,7 +416,7 @@ Status FPDController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& job
 }
 
 Status FPDController::finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-    XYZ3D xyz = machine.getXYZ3D();
+    XYZ3D xyz = getXYZ3D();
     if (!xyz.isValid()) {
         return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
     }
@@ -447,6 +448,10 @@ Status FPDController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const ch
     case STATUS_BUSY_CALIBRATING:
         status = machine.probe(status);
         if (status == STATUS_OK) {
+			if (machine.op.probe.dataSource == PDS_Z) {
+				XYZ3D xyz = getXYZ3D();
+				machine.op.probe.archiveData(xyz.z);
+			}
             if (jobj[key].is<JsonObject&>()) {
                 JsonObject &kidObj = jobj[key];
                 for (JsonObject::iterator it = kidObj.begin(); status == STATUS_OK && it != kidObj.end(); ++it) {
@@ -548,6 +553,80 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
 }
 
 Status FPDController::processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-    return MTO_FPDMoveTo(machine).process(jcmd, jobj, key);
+    return MTO_FPDMoveTo(*this, machine).process(jcmd, jobj, key);
+}
+
+Status FPDController::processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = jcmd.getStatus();
+    switch (status) {
+    case STATUS_BUSY_PARSED:
+        status = initializeHome(jcmd, jobj, key, true);
+        break;
+    case STATUS_BUSY_MOVING:
+    case STATUS_BUSY_OK:
+        status = machine.home(status);
+        break;
+    case STATUS_BUSY_CALIBRATING:
+        status = machine.home(status);
+		if (status == STATUS_OK) {
+			status = finalizeHome();
+		}
+        break;
+    default:
+        TESTCOUT1("status:", status);
+        ASSERT(false);
+        return jcmd.setError(STATUS_STATE, key);
+    }
+    return status;
+}
+
+Status FPDController::finalizeHome() {
+    Status status = STATUS_OK;
+	Quad<StepCoord> limit = machine.getMotorPosition();
+	Step3D pulses = machine.delta.calcPulses(XYZ3D());
+	machine.op.probe.setup(limit, Quad<StepCoord>(
+					   pulses.p1,
+					   pulses.p2,
+					   pulses.p3,
+					   limit.value[3]
+				   ));
+	status = STATUS_BUSY_CALIBRATING;
+	do {
+		// fast probe because we don't expect to hit anything
+		status = machine.probe(status, 0);
+		//TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
+	} while (status == STATUS_BUSY_CALIBRATING);
+	if (status == STATUS_PROBE_FAILED) {
+		// we didn't hit anything and that is good
+		status = STATUS_OK;
+	} else if (status == STATUS_OK) {
+		// we hit something and that's not good
+		status = STATUS_LIMIT_MAX;
+	}
+    return status;
+}
+
+void FPDController::onTopologyChanged() {
+    machine.delta.setup();
+    if (machine.axis[0].home >= 0 &&
+            machine.axis[1].home >= 0 &&
+            machine.axis[2].home >= 0) {
+        // Delta always has negateve home limit switch
+        Step3D home = machine.delta.getHomePulses();
+        machine.axis[0].position += home.p1-machine.axis[0].home;
+        machine.axis[1].position += home.p2-machine.axis[1].home;
+        machine.axis[2].position += home.p3-machine.axis[2].home;
+        machine.axis[0].home = home.p1;
+        machine.axis[1].home = home.p2;
+        machine.axis[2].home = home.p3;
+    }
+}
+
+XYZ3D FPDController::getXYZ3D() {
+    return machine.delta.calcXYZ(Step3D(
+                             machine.motorAxis[0]->position,
+                             machine.motorAxis[1]->position,
+                             machine.motorAxis[2]->position
+                         ));
 }
 

@@ -648,31 +648,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp("sd", key) == 0 || strcmp("syssd", key) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else if (strcmp("to", key) == 0 || strcmp("systo", key) == 0) {
-        Topology value = machine.topology;
-        status = processField<Topology, int32_t>(jobj, key, value);
-        if (value != machine.topology) {
-            machine.topology = value;
-            switch (machine.topology) {
-            case MTO_RAW:
-            default:
-                break;
-            case MTO_FPD:
-                machine.delta.setup();
-                if (machine.axis[0].home >= 0 &&
-                        machine.axis[1].home >= 0 &&
-                        machine.axis[2].home >= 0) {
-                    // Delta always has negateve home limit switch
-                    Step3D home = machine.delta.getHomePulses();
-                    machine.axis[0].position += home.p1-machine.axis[0].home;
-                    machine.axis[1].position += home.p2-machine.axis[1].home;
-                    machine.axis[2].position += home.p3-machine.axis[2].home;
-                    machine.axis[0].home = home.p1;
-                    machine.axis[1].home = home.p2;
-                    machine.axis[2].home = home.p3;
-                }
-                break;
-            }
-        }
+        status = processField<Topology, int32_t>(jobj, key, machine.topology);
     } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
         jobj[key] = threadClock.ticks;
     } else if (strcmp("tv", key) == 0 || strcmp("systv", key) == 0) {
@@ -720,25 +696,6 @@ Status JsonController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
         status = processHomeField(machine, iMotor, jcmd, jobj, key);
     }
     return status == STATUS_OK ? STATUS_BUSY_MOVING : status;
-}
-
-Status JsonController::processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-    Status status = jcmd.getStatus();
-    switch (status) {
-    case STATUS_BUSY_PARSED:
-        status = initializeHome(jcmd, jobj, key, true);
-        break;
-    case STATUS_BUSY_MOVING:
-    case STATUS_BUSY_OK:
-    case STATUS_BUSY_CALIBRATING:
-        status = machine.home(status);
-        break;
-    default:
-        TESTCOUT1("status:", status);
-        ASSERT(false);
-        return jcmd.setError(STATUS_STATE, key);
-    }
-    return status;
 }
 
 Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, const char* key, const char*addr) {

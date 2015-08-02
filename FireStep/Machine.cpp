@@ -521,40 +521,6 @@ Status Machine::pulse(Quad<StepCoord> &pulses) {
     return STATUS_OK;
 }
 
-Status Machine::finalizeHome() {
-    Status status = STATUS_OK;
-    switch (topology) {
-    case MTO_RAW:
-    default:
-        break;
-    case MTO_FPD: {
-        Quad<StepCoord> limit = getMotorPosition();
-        Step3D pulses = delta.calcPulses(XYZ3D());
-        op.probe.setup(limit, Quad<StepCoord>(
-                           pulses.p1,
-                           pulses.p2,
-                           pulses.p3,
-                           limit.value[3]
-                       ));
-        status = STATUS_BUSY_CALIBRATING;
-        do {
-            // fast probe because we don't expect to hit anything
-            status = probe(status, 0);
-            //TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
-        } while (status == STATUS_BUSY_CALIBRATING);
-        if (status == STATUS_PROBE_FAILED) {
-            // we didn't hit anything and that is good
-            status = STATUS_OK;
-        } else if (status == STATUS_OK) {
-            // we hit something and that's not good
-            status = STATUS_LIMIT_MAX;
-        }
-    } // case MTO_FPD
-    break;
-    }
-    return status;
-}
-
 Status Machine::home(Status status) {
     for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         Axis &a(*motorAxis[i]);
@@ -587,7 +553,7 @@ Status Machine::home(Status status) {
                 a.homing = false;
             }
         }
-        status = finalizeHome();
+		status = STATUS_OK;
         break;
     }
 
@@ -612,10 +578,6 @@ Status Machine::probe(Status status, DelayMics delay) {
     if (op.probe.probing) {
         status = stepProbe(delay < 0 ? searchDelay : delay);
     } else {
-        if (topology == MTO_FPD && op.probe.dataSource == PDS_Z) {
-            XYZ3D xyz = getXYZ3D();
-            op.probe.archiveData(xyz.z);
-        }
         status = STATUS_OK;
     }
 
@@ -724,24 +686,6 @@ Status Machine::idle(Status status) {
 void Machine::setMotorPosition(const Quad<StepCoord> &position) {
     for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         motorAxis[i]->position = position.value[i];
-    }
-}
-
-XYZ3D Machine::getXYZ3D() {
-    switch (topology) {
-    case MTO_RAW:
-    default:
-        return XYZ3D(
-                   motorAxis[0]->position,
-                   motorAxis[1]->position,
-                   motorAxis[2]->position
-               );
-    case MTO_FPD:
-        return delta.calcXYZ(Step3D(
-                                 motorAxis[0]->position,
-                                 motorAxis[1]->position,
-                                 motorAxis[2]->position
-                             ));
     }
 }
 

@@ -25,7 +25,6 @@ protected:
     Status initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
     Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
     Status processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-    Status processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status processIOPin(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj,
@@ -49,6 +48,8 @@ public:
 
 public:
     virtual const char *name() = 0;
+	virtual void onTopologyChanged() {};
+    virtual Status processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
     virtual Status processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
     virtual Status processProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
     virtual Status processPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key)=0;
