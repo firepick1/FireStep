@@ -27,7 +27,6 @@ typedef class JsonCommand {
     friend class FPDController;
 private:
     bool parsed;
-    int8_t cmdIndex;
     char json[MAX_JSON];
     char *pJsonFree;
     StaticJsonBuffer<JSON_REQUEST_BUFFER> jbRequest;
@@ -35,7 +34,6 @@ private:
     Quad<StepCoord> move;
     StepCoord stepRate; // steps per second
     JsonVariant jRequestRoot;
-    JsonVariant jResponseRoot;
     Ticks tStart;
     char error[8];
 
@@ -44,6 +42,8 @@ private:
     Status parseInput(const char *jsonIn, Status status);
 public:
     JsonCommand();
+    JsonVariant jResponseRoot;
+    int8_t cmdIndex;
     void clear();
     inline JsonVariant& requestRoot() {
         return jRequestRoot;

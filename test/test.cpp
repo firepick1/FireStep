@@ -445,7 +445,7 @@ void test_JsonCommand() {
     cout << "TEST	: test_JsonCommand() OK " << endl;
 }
 
-void testJSON_process(Machine& machine, JsonController&jc, JsonCommand &jcmd, string replace,
+void testJSON_process(MachineThread& mt, JsonCommand &jcmd, string replace,
                       const char *jsonOut, Status status = STATUS_OK) {
     Serial.clear();
     string jo(jsonOut);
@@ -455,14 +455,14 @@ void testJSON_process(Machine& machine, JsonController&jc, JsonCommand &jcmd, st
         replaceChar(jo, cmatch, creplace);
     }
     ticks();
-    Status actualStatus = jc.process(jcmd);
+    Status actualStatus = mt.process(jcmd);
     ASSERTEQUAL(status, actualStatus);
     ASSERT(jcmd.requestAvailable() > sizeof(JsonVariant));
     ASSERT(jcmd.responseAvailable() > sizeof(JsonVariant));
     ASSERTEQUALS(jo.c_str(), Serial.output().c_str());
 }
 
-JsonCommand testJSON(Machine& machine, JsonController &jc, string replace, const char *jsonIn,
+JsonCommand testJSON(MachineThread &mt, string replace, const char *jsonIn,
                      const char* jsonOut, Status processStatus = STATUS_OK) {
     string ji(jsonTemplate(jsonIn, replace));
     JsonCommand jcmd;
@@ -472,12 +472,12 @@ JsonCommand testJSON(Machine& machine, JsonController &jc, string replace, const
     jcmd.requestRoot().printTo(parseOut, sizeof(parseOut));
     ASSERTEQUALS(ji.c_str(), parseOut);
 
-    testJSON_process(machine, jc, jcmd, replace, jsonOut, processStatus);
+    testJSON_process(mt, jcmd, replace, jsonOut, processStatus);
 
     return jcmd;
 }
 
-void test_JsonController_motor(Machine& machine, JsonController &jc, char motor) {
+void test_JsonController_motor(MachineThread &mt, char motor) {
     string replace;
     replace.push_back('\'');
     replace.push_back('"');
@@ -485,88 +485,58 @@ void test_JsonController_motor(Machine& machine, JsonController &jc, char motor)
     replace.push_back(motor);
     replace.push_back('!');
     replace.push_back(motor - 1);
-    testJSON(machine, jc, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':!},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?ma':4}", "{'s':0,'r':{'?ma':4},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':4},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':4}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'ma':!}}", "{'s':0,'r':{'?':{'ma':!}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':!}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':''}", "{'s':0,'r':{'?':{'ma':!}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':!},'t':0.000}\n");
+    testJSON(mt, replace, "{'?ma':4}", "{'s':0,'r':{'?ma':4},'t':0.000}\n");
+    testJSON(mt, replace, "{'?ma':''}", "{'s':0,'r':{'?ma':4},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':4}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'ma':!}}", "{'s':0,'r':{'?':{'ma':!}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'ma':''}}", "{'s':0,'r':{'?':{'ma':!}},'t':0.000}\n");
 }
 
-void test_JsonController_axis(Machine& machine, JsonController &jc, char axis) {
+void test_JsonController_axis(MachineThread &mt, char axis) {
     string replace;
     replace.push_back('\'');
     replace.push_back('"');
     replace.push_back('?');
     replace.push_back(axis);
-    testJSON(machine, jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':-32000},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?tn':111}", "{'s':0,'r':{'?tn':111},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':111},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':111}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'tn':-32000}}", "{'s':0,'r':{'?':{'tn':-32000}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':-32000}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':32000},'t':0.000}\n");  	// default
-    testJSON(machine, jc, replace, "{'?tm':222}", "{'s':0,'r':{'?tm':222},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':222},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':222}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'tm':32000}}", "{'s':0,'r':{'?':{'tm':32000}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':32000}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':16}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'mi':1}}", "{'s':0,'r':{'?':{'mi':1}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':1}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'mi':16}}", "{'s':0,'r':{'?':{'mi':16}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'dh':''}}", "{'s':0,'r':{'?':{'dh':true}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'dh':false}}", "{'s':0,'r':{'?':{'dh':false}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'dh':''}}", "{'s':0,'r':{'?':{'dh':false}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'dh':true}}", "{'s':0,'r':{'?':{'dh':true}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':1.800}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'sa':0.9}}", "{'s':0,'r':{'?':{'sa':0.900}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':0.900}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'?':{'sa':1.8}}", "{'s':0,'r':{'?':{'sa':1.800}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':-32000},'t':0.000}\n");
+    testJSON(mt, replace, "{'?tn':111}", "{'s':0,'r':{'?tn':111},'t':0.000}\n");
+    testJSON(mt, replace, "{'?tn':''}", "{'s':0,'r':{'?tn':111},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':111}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'tn':-32000}}", "{'s':0,'r':{'?':{'tn':-32000}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'tn':''}}", "{'s':0,'r':{'?':{'tn':-32000}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':32000},'t':0.000}\n");  	// default
+    testJSON(mt, replace, "{'?tm':222}", "{'s':0,'r':{'?tm':222},'t':0.000}\n");
+    testJSON(mt, replace, "{'?tm':''}", "{'s':0,'r':{'?tm':222},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':222}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'tm':32000}}", "{'s':0,'r':{'?':{'tm':32000}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'tm':''}}", "{'s':0,'r':{'?':{'tm':32000}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':16}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'mi':1}}", "{'s':0,'r':{'?':{'mi':1}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'mi':''}}", "{'s':0,'r':{'?':{'mi':1}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'mi':16}}", "{'s':0,'r':{'?':{'mi':16}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'dh':''}}", "{'s':0,'r':{'?':{'dh':true}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'dh':false}}", "{'s':0,'r':{'?':{'dh':false}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'dh':''}}", "{'s':0,'r':{'?':{'dh':false}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'dh':true}}", "{'s':0,'r':{'?':{'dh':true}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':1.800}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'sa':0.9}}", "{'s':0,'r':{'?':{'sa':0.900}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'sa':''}}", "{'s':0,'r':{'?':{'sa':0.900}},'t':0.000}\n");
+    testJSON(mt, replace, "{'?':{'sa':1.8}}", "{'s':0,'r':{'?':{'sa':1.800}},'t':0.000}\n");
 
-    testJSON(machine, jc, replace, "{'x':''}",
+    testJSON(mt, replace, "{'x':''}",
              "{'s':0,'r':{'x':{'dh':true,'en':false,'ho':0,'is':0,'lm':false,'ln':false,"\
              "'mi':16,'pd':55,'pe':38,'pm':255,'pn':3,'po':0,'ps':54,"\
              "'sa':1.800,'tm':32000,'tn':-32000,'ud':0}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'y':''}",
+    testJSON(mt, replace, "{'y':''}",
              "{'s':0,'r':{'y':{'dh':true,'en':false,'ho':0,'is':0,'lm':false,'ln':false,"\
              "'mi':16,'pd':61,'pe':56,'pm':255,'pn':14,'po':0,'ps':60,"\
              "'sa':1.800,'tm':32000,'tn':-32000,'ud':0}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'z':''}",
+    testJSON(mt, replace, "{'z':''}",
              "{'s':0,'r':{'z':{'dh':true,'en':false,'ho':0,'is':0,'lm':false,'ln':false,"\
              "'mi':16,'pd':48,'pe':62,'pm':255,'pn':18,'po':0,'ps':46,"\
              "'sa':1.800,'tm':32000,'tn':-32000,'ud':0}},'t':0.000}\n");
-}
-
-void test_JsonController_machinePosition(Machine& machine, JsonController &jc) {
-    string replace;
-    replace.push_back('\'');
-    replace.push_back('"');
-    testJSON(machine, jc, replace,
-             "{'mpo':''}", "{'s':0,'r':{'mpo':{'1':0,'2':0,'3':0,'4':0}},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':0},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo1':32760}", "{'s':0,'r':{'mpo1':32760},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':32760},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo1':-32760}", "{'s':0,'r':{'mpo1':-32760},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':-32760},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':0},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo2':32761}", "{'s':0,'r':{'mpo2':32761},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':32761},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo2':-32761}", "{'s':0,'r':{'mpo2':-32761},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':-32761},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':0},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo3':32762}", "{'s':0,'r':{'mpo3':32762},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':32762},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo3':-32762}", "{'s':0,'r':{'mpo3':-32762},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':-32762},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':0},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo4':32763}", "{'s':0,'r':{'mpo4':32763},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':32763},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo4':-32763}", "{'s':0,'r':{'mpo4':-32763},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':-32763},'t':0.000}\n");
-    testJSON(machine, jc, replace, "{'mpo':''}",
-             "{'s':0,'r':{'mpo':{'1':-32760,'2':-32761,'3':-32762,'4':-32763}},'t':0.000}\n");
 }
 
 MachineThread test_setup(bool clearArduino=true) {
@@ -607,6 +577,45 @@ MachineThread test_setup(bool clearArduino=true) {
     return mt;
 }
 
+void test_mpo() {
+    arduino.clear();
+    threadRunner.clear();
+    MachineThread mt;
+    mt.machine.pDisplay = &testDisplay;
+    mt.setup(PC1_EMC02);
+
+    Machine & machine = mt.machine;
+    testDisplay.clear();
+
+    string replace;
+    replace.push_back('\'');
+    replace.push_back('"');
+    testJSON(mt, replace,
+             "{'mpo':''}", "{'s':0,'r':{'mpo':{'1':0,'2':0,'3':0,'4':0}},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':0},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo1':32760}", "{'s':0,'r':{'mpo1':32760},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':32760},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo1':-32760}", "{'s':0,'r':{'mpo1':-32760},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo1':''}", "{'s':0,'r':{'mpo1':-32760},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':0},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo2':32761}", "{'s':0,'r':{'mpo2':32761},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':32761},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo2':-32761}", "{'s':0,'r':{'mpo2':-32761},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo2':''}", "{'s':0,'r':{'mpo2':-32761},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':0},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo3':32762}", "{'s':0,'r':{'mpo3':32762},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':32762},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo3':-32762}", "{'s':0,'r':{'mpo3':-32762},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo3':''}", "{'s':0,'r':{'mpo3':-32762},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':0},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo4':32763}", "{'s':0,'r':{'mpo4':32763},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':32763},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo4':-32763}", "{'s':0,'r':{'mpo4':-32763},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo4':''}", "{'s':0,'r':{'mpo4':-32763},'t':0.000}\n");
+    testJSON(mt, replace, "{'mpo':''}",
+             "{'s':0,'r':{'mpo':{'1':-32760,'2':-32761,'3':-32762,'4':-32763}},'t':0.000}\n");
+}
+
 void test_JsonController_tst() {
     MachineThread mt = test_setup();
     int32_t xdirpulses;
@@ -635,7 +644,7 @@ void test_JsonController_tst() {
     ydirpulses = arduino.pulses(PC2_Y_DIR_PIN);
     zdirpulses = arduino.pulses(PC2_Z_DIR_PIN);
 
-    mt.loop();	// controller.process
+    mt.loop();	// pController->process
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
     ASSERTEQUAL(xpulses + 2 * 3200, arduino.pulses(PC2_X_STEP_PIN));
@@ -668,7 +677,7 @@ void test_JsonController_tst() {
     ASSERTEQUAL(DISPLAY_BUSY, mt.machine.pDisplay->getStatus());
     ASSERTEQUAL(0, Serial.available());
 
-    mt.loop();	// controller.process
+    mt.loop();	// pController->process
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(DISPLAY_WAIT_IDLE, mt.machine.pDisplay->getStatus());
     ASSERTEQUAL(xpulses + 1, arduino.pulses(PC2_X_STEP_PIN));
@@ -693,14 +702,14 @@ void test_JsonController_tst() {
     ypulses = arduino.pulses(PC2_Y_STEP_PIN);
     zpulses = arduino.pulses(PC2_Z_STEP_PIN);
 
-    mt.loop();	// controller.process
+    mt.loop();	// pController->process
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
     ASSERTEQUAL(xpulses + 2 * 3200, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTEQUAL(ypulses + 2 * 6400, arduino.pulses(PC2_Y_STEP_PIN));
     ASSERTEQUAL(zpulses, arduino.pulses(PC2_Z_STEP_PIN));
 
-    mt.loop();	// controller.process
+    mt.loop();	// pController->process
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(DISPLAY_BUSY_MOVING, mt.machine.pDisplay->getStatus());
     ASSERTEQUAL(xpulses + 4 * 3200L, arduino.pulses(PC2_X_STEP_PIN));
@@ -716,9 +725,10 @@ void test_JsonController_tst() {
 void test_JsonController() {
     cout << "TEST	: test_JsonController() =====" << endl;
 
-    Machine machine;
+	MachineThread mt;
+    Machine & machine(mt.machine);
     machine.setPinConfig(PC2_RAMPS_1_4);
-    JsonController jc(machine);
+    JsonController &jc(*mt.pController);
     arduino.setPin(PC2_X_MIN_PIN, false);
     arduino.setPin(PC2_Y_MIN_PIN, false);
     arduino.setPin(PC2_Z_MIN_PIN, false);
@@ -728,7 +738,7 @@ void test_JsonController() {
     JsonCommand jcmd;
     ASSERTEQUAL(STATUS_BUSY_PARSED, jcmd.parse("{\"sys\":\"\"}", STATUS_WAIT_IDLE));
     threadClock.ticks = 12345;
-    jc.process(jcmd);
+    mt.process(jcmd);
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
                       "{'ah':false,'as':false,'ch':2144573891,'eu':false,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
@@ -739,19 +749,17 @@ void test_JsonController() {
              STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
     ASSERTEQUALS(sysbuf, Serial.output().c_str());
 
-    test_JsonController_axis(machine, jc, 'x');
-    test_JsonController_axis(machine, jc, 'y');
-    test_JsonController_axis(machine, jc, 'z');
-    test_JsonController_axis(machine, jc, 'a');
-    test_JsonController_axis(machine, jc, 'b');
-    test_JsonController_axis(machine, jc, 'c');
+    test_JsonController_axis(mt, 'x');
+    test_JsonController_axis(mt, 'y');
+    test_JsonController_axis(mt, 'z');
+    test_JsonController_axis(mt, 'a');
+    test_JsonController_axis(mt, 'b');
+    test_JsonController_axis(mt, 'c');
 
-    test_JsonController_motor(machine, jc, '1');
-    test_JsonController_motor(machine, jc, '2');
-    test_JsonController_motor(machine, jc, '3');
-    test_JsonController_motor(machine, jc, '4');
-
-    test_JsonController_machinePosition(machine, jc);
+    test_JsonController_motor(mt, '1');
+    test_JsonController_motor(mt, '2');
+    test_JsonController_motor(mt, '3');
+    test_JsonController_motor(mt, '4');
 
     test_JsonController_tst();
 
@@ -1274,6 +1282,7 @@ void test_MTO_FPD() {
     ASSERTEQUALS(JT("{'s':0,'r':{'systo':1},'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
+	ASSERTEQUALS("MTO_FPD", mt.pController->name());
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     // mov long form
@@ -2889,10 +2898,10 @@ void test_Display() {
     test_DisplayPersistence(mt, DISPLAY_WAIT_CAMERA, STATUS_WAIT_CAMERA);
     test_DisplayPersistence(mt, DISPLAY_WAIT_ERROR, STATUS_WAIT_ERROR);
 
-    testJSON(mt.machine, mt.controller, "'\"",
+    testJSON(mt, "'\"",
              "{'dpycr':10,'dpycg':20,'dpycb':30,'dpyds':12,'dpydl':255}",
              "{'s':0,'r':{'dpycr':10,'dpycg':20,'dpycb':30,'dpyds':12,'dpydl':255},'t':0.000}\n");
-    testJSON(mt.machine, mt.controller, "'\"",
+    testJSON(mt, "'\"",
              "{'dpy':{'ds':30,'dl':255,'cr':1,'cg':2,'cb':3}}",
              "{'s':25,'r':{'dpy':{'ds':30,'dl':255,'cr':1,'cg':2,'cb':3}},'t':0.000}\n", STATUS_WAIT_BUSY);
 
@@ -3363,9 +3372,10 @@ int main(int argc, char *argv[]) {
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
         //test_DeltaCalculator();
-        //test_MTO_FPD();
+        test_MTO_FPD();
         //test_eep();
-        test_autoSync();
+        //test_autoSync();
+		//test_mpo();
     } else {
         test_Serial();
         test_Thread();
@@ -3397,6 +3407,7 @@ int main(int argc, char *argv[]) {
         test_MTO_FPD();
         test_autoSync();
 		test_msg_cmt_idl();
+		test_mpo();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;

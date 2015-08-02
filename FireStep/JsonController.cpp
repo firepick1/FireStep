@@ -18,6 +18,10 @@ JsonController& JsonController::operator=(JsonController& that) {
 	return *this;
 }
 
+const char * JsonController::name() {
+    return "MTO_RAW";
+}
+
 int JsonController::axisOf(char c) {
     switch (c) {
     default:
@@ -38,6 +42,7 @@ int JsonController::axisOf(char c) {
 }
 
 Status JsonController::processPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
+	TESTCOUT1("processPosition:", "MTO_RAW");
     Status status = STATUS_OK;
     const char *s;
     if (strlen(key) == 3) {
@@ -1424,6 +1429,7 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
     return status;
 }
 
+#ifdef LEGACY
 Status JsonController::process(JsonCommand& jcmd) {
     Status status = STATUS_OK;
     JsonVariant &jroot = jcmd.requestRoot();
@@ -1464,6 +1470,7 @@ Status JsonController::process(JsonCommand& jcmd) {
 
     return status;
 }
+#endif
 
 //////////////// MTO_FPD /////////
 

@@ -16,6 +16,7 @@ protected:
 
 public:
     FPDController(Machine& machine);
+	const char * name();
 } FPDController;
 
 } // namespace firestep

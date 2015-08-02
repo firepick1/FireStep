@@ -24,7 +24,7 @@ public:
     JsonCommand command;
 	JsonController rawController;
 	FPDController fpdController;
-    JsonController &controller;
+    JsonController *pController;
 	bool printBannerOnIdle;
 
 public:
@@ -33,6 +33,8 @@ public:
     void setup(PinConfig pc);
     void loop();
     Status syncConfig();
+    Status process(JsonCommand& jcmd);
+	const char * updateController();
 } MachineThread;
 
 } // namespace firestep

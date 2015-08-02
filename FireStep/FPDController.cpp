@@ -13,6 +13,10 @@ FPDController::FPDController(Machine& machine)
     : JsonController(machine) {
 }
 
+const char * FPDController::name() {
+    return "MTO_FPD";
+}
+
 Status FPDController::processPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     const char *axisStr = key + strlen(key) - 1;

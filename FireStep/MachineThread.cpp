@@ -20,11 +20,12 @@ void MachineThread::setup(PinConfig pc) {
 }
 
 MachineThread::MachineThread()
-    : rawController(machine), fpdController(machine), controller(fpdController), status(STATUS_BUSY_SETUP), printBannerOnIdle(true) {
+    : rawController(machine), fpdController(machine), status(STATUS_BUSY_SETUP), printBannerOnIdle(true) {
+	setController(rawController);
 }
 
 void MachineThread::setController(JsonController &controller) {
-	this->controller = controller;
+	this->pController = &controller;
 }
 
 void MachineThread::displayStatus() {
@@ -242,21 +243,12 @@ void MachineThread::printBanner() {
 }
 
 void MachineThread::loop() {
-	switch (machine.topology) {
-	default:
-	case MTO_RAW:
-		controller = rawController;
-		break;
-	case MTO_FPD:
-		controller = fpdController;
-		break;
-	}
 #ifdef THROTTLE_SPEED
 	if (Serial.available()) { return; }
-    controller.speed = ADCH;
-    if (controller.speed <= 251) {
+    pController->speed = ADCH;
+    if (pController->speed <= 251) {
         ThreadEnable(false);
-        for (byte iPause = controller.speed; iPause <= 247; iPause++) {
+        for (byte iPause = pController->speed; iPause <= 247; iPause++) {
             for (byte iIdle = 0; iIdle < 10; iIdle++) {
                 DELAY500NS;
                 DELAY500NS;
@@ -296,10 +288,10 @@ void MachineThread::loop() {
     case STATUS_BUSY_CALIBRATING:
     case STATUS_BUSY_MOVING:
         if (Serial.available()) {
-            status = controller.cancel(command, STATUS_SERIAL_CANCEL);
+            status = pController->cancel(command, STATUS_SERIAL_CANCEL);
         } else {
-            status = controller.process(command);
-			//TESTCOUT1("controller.process status:", status);
+            status = process(command);
+			//TESTCOUT1("pController->process status:", status);
         }
         break;
     case STATUS_BUSY_EEPROM:
@@ -336,3 +328,67 @@ void MachineThread::loop() {
     nextLoop.ticks = 0; // Highest priority
 }
 
+Status MachineThread::process(JsonCommand& jcmd) {
+    Status status = STATUS_OK;
+	updateController();
+    JsonVariant &jroot = jcmd.requestRoot();
+
+    if (jroot.is<JsonObject&>()) {
+        JsonObject& jobj = jroot;
+		TESTCOUT1("process obj:", pController->name());
+        status = pController->processObj(jcmd, jobj);
+		updateController();
+    } else if (jroot.is<JsonArray&>()) {
+        JsonArray& jarr = jroot;
+        if (jcmd.cmdIndex < jarr.size()) {
+            JsonObject& jobj = jarr[jcmd.cmdIndex];
+            jcmd.jResponseRoot["r"] = jobj;
+            status = pController->processObj(jcmd, jobj);
+			updateController();
+            //TESTCOUT3("JsonController::process(", (int) jcmd.cmdIndex+1,
+            //" of ", jarr.size(), ") status:", status);
+            if (status == STATUS_OK) {
+                bool isLast = jcmd.cmdIndex >= jarr.size()-1;
+                if (!isLast && OUTPUT_ARRAYN==(machine.outputMode&OUTPUT_ARRAYN)) {
+					jcmd.setTicks();
+                    pController->sendResponse(jcmd, status);
+                }
+                status = STATUS_BUSY_PARSED;
+                jcmd.cmdIndex++;
+            }
+        } else {
+            status = STATUS_OK;
+        }
+    } else {
+        status = STATUS_JSON_CMD;
+    }
+
+    jcmd.setTicks();
+    jcmd.setStatus(status);
+
+    if (!isProcessing(status)) {
+        pController->sendResponse(jcmd,status);
+    }
+
+    return status;
+}
+
+const char * MachineThread::updateController() {
+	const char *name = pController->name();
+	switch (machine.topology) {
+	default:
+	case MTO_RAW:
+		if (strcmp(name, rawController.name()) != 0) {
+			setController(rawController);
+			TESTCOUT1("updateControllerRAW:", pController->name());
+		}
+		break;
+	case MTO_FPD:
+		if (strcmp(name, fpdController.name()) != 0) {
+			setController(fpdController);
+			TESTCOUT1("updateControllerFPD:", pController->name());
+		}
+		break;
+	}
+	return name;
+}
