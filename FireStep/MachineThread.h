@@ -3,6 +3,7 @@
 
 #include "JsonController.h"
 #include "FPDController.h"
+#include "RawController.h"
 
 extern void test_Home();
 
@@ -22,7 +23,7 @@ public:
     Status status;
     Machine machine;
     JsonCommand command;
-	JsonController rawController;
+	RawController rawController;
 	FPDController fpdController;
     JsonController *pController;
 	bool printBannerOnIdle;

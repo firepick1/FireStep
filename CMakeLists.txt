@@ -79,6 +79,7 @@ add_executable(test
 	FireStep/JsonCommand.cpp
 	FireStep/JsonController.cpp
 	FireStep/FPDController.cpp
+	FireStep/RawController.cpp
 	FireStep/NeoPixel.cpp
 	FireStep/Thread.cpp
 	FireStep/Stroke.cpp

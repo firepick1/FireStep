@@ -250,6 +250,8 @@ Status MTO_FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* k
     return status;
 }
 
+////////////////////// FPDController ///////////////
+
 FPDController::FPDController(Machine& machine)
     : JsonController(machine) {
 }
