@@ -553,10 +553,6 @@ public:
     Status process(JsonCommand& jcmd, JsonObject& jobj, const char* key);
 }MTO_RAWMoveTo;
 
-#include <sys/types.h>
-#include <unistd.h>
-#include <signal.h>
-
 MTO_RAWMoveTo::MTO_RAWMoveTo(Machine& machine) 
 	: nLoops(0), nSegs(0), machine(machine) 
 {
