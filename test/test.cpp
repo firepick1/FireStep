@@ -3296,11 +3296,16 @@ void test_DeltaCalculator() {
 
 	// ZBowlETheta (initial calibration)
 	PH5TYPE zRim = -60.5; // 0.5mm bowl error
+#ifdef NEIL
+zCenter = -10.808;
+zRim = -10.468;
+#endif
 	PH5TYPE eTheta1 = dc.calcZBowlETheta(zCenter, zRim, radius);
-	ASSERTEQUALT(-8.058, eTheta1, e);
 	ASSERTEQUALT(-52.33, dc.getHomeAngles().theta1,0.001); // default
 	dc.setHomingError(Angle3D(eTheta1,eTheta1,eTheta1));
+	TESTCOUT2("Homing angle:", dc.getHomeAngles().theta1, " error:", eTheta1);
 	ASSERTEQUALT(-60.388, dc.getHomeAngles().theta1,0.001); // corrected
+	ASSERTEQUALT(-8.058, eTheta1, e);
 	ASSERTEQUAL(-5032, dc.getHomePulses().p1);
 	// subsequent calibration with no error
 	PH5TYPE eTheta2 = dc.calcZBowlETheta(zCenter, zCenter, radius);
