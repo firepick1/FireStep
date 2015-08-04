@@ -1587,6 +1587,63 @@ void test_MTO_FPD() {
     cout << "TEST	: test_MTO_FPD() OK " << endl;
 }
 
+void test_calibrate() {
+    cout << "TEST	: test_calibrate() =====" << endl;
+    MachineThread mt = test_setup();
+    Machine &machine = mt.machine;
+
+    Serial.push(JT("{'systo':1}\n"));
+	mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	Serial.clear();
+
+	machine.op.probe.probeData[0] = -62.202;
+	machine.op.probe.probeData[1] = -61.646;
+	machine.op.probe.probeData[2] = -61.519;
+	machine.op.probe.probeData[3] = -61.422;
+	machine.op.probe.probeData[4] = -61.477;
+	machine.op.probe.probeData[5] = -61.604;
+	machine.op.probe.probeData[6] = -61.707;
+	machine.op.probe.probeData[7] = -62.202;
+    Serial.push(JT("{'cal':''}\n"));
+	mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{"
+                    "'cal':{'ha':-62.769,'he':-10.439,'sv':false,'zc':-62.202,'zr':-61.562}},"
+                    "'t':0.000}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	machine.op.probe.probeData[0] = -62.259;
+	machine.op.probe.probeData[1] = -61.701;
+	machine.op.probe.probeData[2] = -61.556;
+	machine.op.probe.probeData[3] = -61.465;
+	machine.op.probe.probeData[4] = -61.495;
+	machine.op.probe.probeData[5] = -61.695;
+	machine.op.probe.probeData[6] = -61.761;
+	machine.op.probe.probeData[7] = -62.259;
+    Serial.push(JT("{'cal':''}\n"));
+	mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{"
+                    "'cal':{'ha':-62.851,'he':-10.521,'sv':false,'zc':-62.259,'zr':-61.612}},"
+                    "'t':0.000}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    cout << "TEST	: test_calibrate() OK " << endl;
+}
+
 void test_stroke_endpos() {
     cout << "TEST	: test_stroke_endpos() =====" << endl;
 
@@ -3396,7 +3453,8 @@ int main(int argc, char *argv[]) {
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
         //test_DeltaCalculator();
-        test_MTO_FPD();
+        //test_MTO_FPD();
+		test_calibrate();
         //test_eep();
         //test_autoSync();
 		//test_mpo();
@@ -3432,6 +3490,7 @@ int main(int argc, char *argv[]) {
         test_autoSync();
 		test_msg_cmt_idl();
 		test_mpo();
+		test_calibrate();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;

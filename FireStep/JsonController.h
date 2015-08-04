@@ -49,6 +49,7 @@ public:
 public:
     virtual const char *name() = 0;
     virtual void onTopologyChanged() {};
+    virtual Status processCalibrate(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
     virtual Status processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
     virtual Status processProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;

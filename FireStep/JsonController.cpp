@@ -853,6 +853,10 @@ Status JsonController::processIO(JsonCommand& jcmd, JsonObject& jobj, const char
     return status;
 }
 
+Status JsonController::processCalibrate(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+	return jcmd.setError(STATUS_TOPOLOGY_NAME, key);
+}
+
 Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("dpy", key) == 0) {
@@ -965,6 +969,8 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
             status = processEEPROM(jcmd, jobj, it->key);
         } else if (strncmp("dim", it->key, 3) == 0) {
             status = processDimension(jcmd, jobj, it->key);
+        } else if (strncmp("cal", it->key, 3) == 0) {
+            status = processCalibrate(jcmd, jobj, it->key);
         } else if (strncmp("prb", it->key, 3) == 0) {
             status = processProbe(jcmd, jobj, it->key);
         } else if (strcmp("idl", it->key) == 0) {

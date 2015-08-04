@@ -51,6 +51,7 @@ enum Status {
     STATUS_PROBE_PIN = -139,		// No probe pin specified
     STATUS_KINEMATIC_XYZ = -140,	// Could not solve XYZ cartesian kinematics
     STATUS_USER_EEPROM = -141,		// user EEPROM address out of range [2000,EEPROM_END)
+	STATUS_CAL_HOME1 = -142,		// Home calibration probe data invalid: zCenter/zRim too far apart
 
     // stroke
     STATUS_STROKE_SEGPULSES = -200,	// Stroke has too many pulses per segment [-127,127]

@@ -9,6 +9,42 @@
 
 using namespace firestep;
 
+//////////////// FPDCalibrateHome ///////////////
+
+FPDCalibrateHome::FPDCalibrateHome(Machine& machine) 
+	: machine(machine), status(STATUS_BUSY_CALIBRATING) {
+}
+
+Status FPDCalibrateHome::calibrate() {
+	if (status != STATUS_BUSY_CALIBRATING) {
+		return status;
+	}
+	OpProbe& probe = machine.op.probe;
+	zCenter = (probe.probeData[0]+probe.probeData[7])/2;
+	PH5TYPE zRim0 = (probe.probeData[1]+probe.probeData[4])/2;;
+	PH5TYPE zRim60 = (probe.probeData[2]+probe.probeData[5])/2;;
+	PH5TYPE zRim120 = (probe.probeData[3]+probe.probeData[6])/2;;
+	zRim = (zRim0+zRim60+zRim120)/3;
+	if (abs(zRim-zCenter) > 2) {
+		status = STATUS_CAL_HOME1;
+		return status;
+	}
+	PH5TYPE radius = 50;
+	eTheta = machine.delta.calcZBowlETheta(zCenter, zRim, radius);
+	Angle3D angles = machine.delta.getHomeAngles();
+	homeAngle = (angles.theta1+angles.theta2+angles.theta3)/3 + eTheta;
+	TESTCOUT4("CalibrateHome zCenter:", zCenter, " zRim:", zRim,
+			  " eTheta:", eTheta, " homeAngle:", homeAngle);
+	status = STATUS_OK;
+	return status;
+}
+
+Status FPDCalibrateHome::save() {
+	Status status = calibrate();
+	return status;
+}
+
+/////////////////////////// MTO_FPDMoveTo ///////////////
 typedef class MTO_FPDMoveTo {
 private:
     int32_t nLoops;
@@ -556,6 +592,32 @@ Status FPDController::processMove(JsonCommand& jcmd, JsonObject& jobj, const cha
     return MTO_FPDMoveTo(*this, machine).process(jcmd, jobj, key);
 }
 
+Status FPDController::finalizeHome() {
+    Status status = STATUS_OK;
+    Quad<StepCoord> limit = machine.getMotorPosition();
+    Step3D pulses = machine.delta.calcPulses(XYZ3D());
+    machine.op.probe.setup(limit, Quad<StepCoord>(
+                               pulses.p1,
+                               pulses.p2,
+                               pulses.p3,
+                               limit.value[3]
+                           ));
+    status = STATUS_BUSY_CALIBRATING;
+    do {
+        // fast probe because we don't expect to hit anything
+        status = machine.probe(status, 0);
+        //TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
+    } while (status == STATUS_BUSY_CALIBRATING);
+    if (status == STATUS_PROBE_FAILED) {
+        // we didn't hit anything and that is good
+        status = STATUS_OK;
+    } else if (status == STATUS_OK) {
+        // we hit something and that's not good
+        status = STATUS_LIMIT_MAX;
+    }
+    return status;
+}
+
 Status FPDController::processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = jcmd.getStatus();
     switch (status) {
@@ -580,28 +642,69 @@ Status FPDController::processHome(JsonCommand& jcmd, JsonObject& jobj, const cha
     return status;
 }
 
-Status FPDController::finalizeHome() {
-    Status status = STATUS_OK;
-    Quad<StepCoord> limit = machine.getMotorPosition();
-    Step3D pulses = machine.delta.calcPulses(XYZ3D());
-    machine.op.probe.setup(limit, Quad<StepCoord>(
-                               pulses.p1,
-                               pulses.p2,
-                               pulses.p3,
-                               limit.value[3]
-                           ));
-    status = STATUS_BUSY_CALIBRATING;
-    do {
-        // fast probe because we don't expect to hit anything
-        status = machine.probe(status, 0);
-        //TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
-    } while (status == STATUS_BUSY_CALIBRATING);
-    if (status == STATUS_PROBE_FAILED) {
-        // we didn't hit anything and that is good
-        status = STATUS_OK;
-    } else if (status == STATUS_OK) {
-        // we hit something and that's not good
-        status = STATUS_LIMIT_MAX;
+Status FPDController::processCalibrate(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
+	FPDCalibrateHome cal(machine);
+	Status status = cal.calibrate();
+	if (status != STATUS_OK) {
+		return status;
+	}
+	return processCalibrateCore(jcmd, jobj, key, cal);
+}
+Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, const char* key, FPDCalibrateHome &cal) {
+    Status status = jcmd.getStatus();
+    const char *s;
+    if (strcmp("cal", key) == 0) {
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+            node["ha"] = "";
+            node["he"] = "";
+            node["sv"] = "";
+            node["zc"] = "";
+            node["zr"] = "";
+        }
+        JsonObject& kidObj = jobj[key];
+        if (!kidObj.success()) {
+            return jcmd.setError(STATUS_JSON_OBJECT, key);
+        }
+        for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+            status = processCalibrateCore(jcmd, kidObj, it->key, cal);
+            if (status != STATUS_OK) {
+                TESTCOUT1("processCalibrate status:", status);
+                return status;
+            }
+        }
+    } else if (strcmp("calha",key) == 0 || strcmp("ha",key) == 0) {
+		PH5TYPE value = cal.homeAngle;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+		if (value != cal.homeAngle) {
+			return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+		}
+    } else if (strcmp("calhe",key) == 0 || strcmp("he",key) == 0) {
+		PH5TYPE value = cal.eTheta;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+		if (value != cal.eTheta) {
+			return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+		}
+    } else if (strcmp("calzc",key) == 0 || strcmp("zc",key) == 0) {
+		PH5TYPE value = cal.zCenter;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+		if (value != cal.zCenter) {
+			return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+		}
+    } else if (strcmp("calzr",key) == 0 || strcmp("zr",key) == 0) {
+		PH5TYPE value = cal.zRim;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+		if (value != cal.zRim) {
+			return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+		}
+    } else if (strcmp("calsv",key) == 0 || strcmp("sv",key) == 0) {
+		bool value = false;
+        status = processField<bool, bool>(jobj, key, value);
+		if (value) {
+			cal.save();
+		}
+    } else {
+        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
     return status;
 }
