@@ -1437,10 +1437,10 @@ void test_MTO_FPD() {
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
-                    "{'e':270.000,'f':90.000,'gr':9.375,'ha1':-67.242,'ha2':-67.242,'ha3':-67.242,"
+                    "{'e':131.636,'f':190.526,'gr':9.375,'ha1':-67.242,'ha2':-67.242,'ha3':-67.242,"
                     "'mi':16,"
                     "'pd':[-21.484,8.000,7.000,6.000,5.000,4.000,3.000,2.000,1.000],"
-                    "'re':131.636,'rf':190.526,'st':200}}"
+                    "'re':270.000,'rf':90.000,'st':200}}"
                     ",'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1448,15 +1448,15 @@ void test_MTO_FPD() {
 
     // dim set
     machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
-    Serial.push(JT("{'dim':{'e':270.001,'f':90.001,'gr':9.371,'ha1':-67.241,'ha2':-67.242,'ha3':-67.243,"
-                   "'mi':32,'re':131.631,'rf':190.521,'st':400}}\n"));
+    Serial.push(JT("{'dim':{'e':131.636,'f':190.526,'gr':9.371,'ha1':-67.241,'ha2':-67.242,'ha3':-67.243,"
+                   "'mi':32,'re':270.000,'rf':90.000,'st':400}}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
-                    "{'e':270.001,'f':90.001,'gr':9.371,'ha1':-67.241,'ha2':-67.242,'ha3':-67.243,"
-                    "'mi':32,'re':131.631,'rf':190.521,'st':400}},"
+					"{'e':131.636,'f':190.526,'gr':9.371,'ha1':-67.241,'ha2':-67.242,'ha3':-67.243,"
+                   	"'mi':32,'re':270.000,'rf':90.000,'st':400}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1473,7 +1473,7 @@ void test_MTO_FPD() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    ASSERTEQUAL(10419, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(10420, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(9524, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(10181, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -1485,8 +1485,8 @@ void test_MTO_FPD() {
     ASSERTEQUALT(-50, xyz.z, 0.01);
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
-    ASSERTQUAD(Quad<StepCoord>(10419,9524,10181,0), machine.op.probe.start);
-    ASSERTQUAD(Quad<StepCoord>(28930,27623,28578,0), machine.op.probe.end);
+    ASSERTQUAD(Quad<StepCoord>(10420,9524,10181,0), machine.op.probe.start);
+    ASSERTQUAD(Quad<StepCoord>(28931,27623,28577,0), machine.op.probe.end);
     for (int i=0; i<100; i++) {
         mt.loop();
         ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
@@ -1504,7 +1504,7 @@ void test_MTO_FPD() {
     xyz = mt.fpdController.getXYZ3D();
     ASSERTEQUALT(5, xyz.x, 0.03);
     ASSERTEQUALT(5, xyz.y, 0.03);
-    ASSERTEQUALT(-50.491, xyz.z, 0.001);
+    ASSERTEQUALT(-50.492, xyz.z, 0.001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -1572,7 +1572,7 @@ void test_MTO_FPD() {
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
 	// dimpd
-    Serial.push(JT("{'dimpd':''}}\n"));
+    Serial.push(JT("{'dimpd':''}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
@@ -1583,6 +1583,19 @@ void test_MTO_FPD() {
                  Serial.output().c_str());
     test_ticks(1);	// tripped
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	// dim f, e, rf, re
+    Serial.push(JT("{'dim':{'e':130,'f':189,'re':271,'rf':91}}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'dim':{'e':130.000,'f':189.000,'re':271.000,'rf':91.000}},'t':0.000}\n"),
+		Serial.output().c_str());
+	ASSERTEQUAL(130, machine.delta.getEffectorTriangleSide());
+	ASSERTEQUAL(189, machine.delta.getBaseTriangleSide());
+	ASSERTEQUAL(271, machine.delta.getEffectorLength());
+	ASSERTEQUAL(91, machine.delta.getBaseArmLength());
 
     cout << "TEST	: test_MTO_FPD() OK " << endl;
 }

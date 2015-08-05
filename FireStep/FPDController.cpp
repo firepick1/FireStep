@@ -540,13 +540,13 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
             }
         }
     } else if (strcmp("e", key) == 0 || strcmp("dime", key) == 0) {
-        PH5TYPE value = machine.delta.getEffectorLength();
+        PH5TYPE value = machine.delta.getEffectorTriangleSide();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setEffectorLength(value);
+        machine.delta.setEffectorTriangleSide(value);
     } else if (strcmp("f", key) == 0 || strcmp("dimf", key) == 0) {
-        PH5TYPE value = machine.delta.getBaseArmLength();
+        PH5TYPE value = machine.delta.getBaseTriangleSide();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setBaseArmLength(value);
+        machine.delta.setBaseTriangleSide(value);
     } else if (strcmp("gr", key) == 0 || strcmp("dimgr", key) == 0) {
         PH5TYPE value = machine.delta.getGearRatio();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
@@ -578,13 +578,13 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
             status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
     } else if (strcmp("re", key) == 0 || strcmp("dimre", key) == 0) {
-        PH5TYPE value = machine.delta.getEffectorTriangleSide();
+        PH5TYPE value = machine.delta.getEffectorLength();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setEffectorTriangleSide(value);
+        machine.delta.setEffectorLength(value);
     } else if (strcmp("rf", key) == 0 || strcmp("dimrf", key) == 0) {
-        PH5TYPE value = machine.delta.getBaseTriangleSide();
+        PH5TYPE value = machine.delta.getBaseArmLength();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setBaseTriangleSide(value);
+        machine.delta.setBaseArmLength(value);
     } else if (strcmp("st", key) == 0 || strcmp("dimst", key) == 0) {
         int16_t value = machine.delta.getSteps360();
         status = processField<int16_t, int16_t>(jobj, key, value);
