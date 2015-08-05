@@ -41,6 +41,13 @@ Status FPDCalibrateHome::calibrate() {
 
 Status FPDCalibrateHome::save() {
 	Status status = calibrate();
+	if (status == STATUS_OK) {
+		machine.delta.setHomeAngles(Angle3D( homeAngle, homeAngle, homeAngle));
+		Step3D pulses = machine.delta.getHomePulses();
+		machine.axis[0].home = pulses.p1;
+		machine.axis[1].home = pulses.p2;
+		machine.axis[2].home = pulses.p3;
+	}
 	return status;
 }
 

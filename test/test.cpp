@@ -1610,6 +1610,9 @@ void test_calibrate() {
 	machine.op.probe.probeData[5] = -61.604;
 	machine.op.probe.probeData[6] = -61.707;
 	machine.op.probe.probeData[7] = -62.202;
+	ASSERTEQUAL(-5603, machine.axis[0].home);
+	ASSERTEQUAL(-5603, machine.axis[1].home);
+	ASSERTEQUAL(-5603, machine.axis[2].home);
     Serial.push(JT("{'cal':''}\n"));
 	mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -1619,6 +1622,9 @@ void test_calibrate() {
                     "'cal':{'ha':-77.681,'he':-10.439,'sv':false,'zc':-62.202,'zr':-61.562}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
+	ASSERTEQUAL(-5603, machine.axis[0].home);
+	ASSERTEQUAL(-5603, machine.axis[1].home);
+	ASSERTEQUAL(-5603, machine.axis[2].home);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -1631,15 +1637,18 @@ void test_calibrate() {
 	machine.op.probe.probeData[5] = -61.695;
 	machine.op.probe.probeData[6] = -61.761;
 	machine.op.probe.probeData[7] = -62.259;
-    Serial.push(JT("{'cal':''}\n"));
+    Serial.push(JT("{'cal':{'ha':'','sv':true}}\n"));
 	mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{"
-                    "'cal':{'ha':-77.763,'he':-10.521,'sv':false,'zc':-62.259,'zr':-61.612}},"
+                    "'cal':{'ha':-77.763,'sv':true}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
+	ASSERTEQUAL(-6480, machine.axis[0].home);
+	ASSERTEQUAL(-6480, machine.axis[1].home);
+	ASSERTEQUAL(-6480, machine.axis[2].home);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
