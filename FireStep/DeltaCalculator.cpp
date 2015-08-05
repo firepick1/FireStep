@@ -27,10 +27,11 @@ StepCoord roundStep(PH5TYPE value) {
 }
 
 DeltaCalculator::DeltaCalculator()
-    : e(131.636), // effector equilateral triangle side
-      f(190.526), // base equilateral triangle side
-      re(270.000), // effector arm length
-      rf(90.000), // base arm length
+    : e(131.636), // effector equilateral triangle side (mm)
+      f(190.526), // base equilateral triangle side (mm)
+      re(270.000), // effector arm length (mm)
+      rf(90.000), // base arm length (mm)
+	  acr(25), // arm clearance radius (mm)
       steps360(200),
       microsteps(16),
       gearRatio(150/16.0),
@@ -49,10 +50,9 @@ void DeltaCalculator::setup() {
 }
 
 PH5TYPE DeltaCalculator::getMinDegrees() {
-    PH5TYPE crf = f / sqrt3; // base circumcircle radius
-    PH5TYPE minDegrees = 180*asin(crf/(re-rf))/pi - 90;
-    TESTCOUT3("minDegrees:", minDegrees, " crf:", crf, " re-rf:", re-rf);
-    return minDegrees;
+	PH5TYPE armsParallel = 180*asin((f-e)/(re*sqrt3))/pi - 90;
+	PH5TYPE clearanceAngle = 180*atan(acr/rf)/pi;
+    return armsParallel + clearanceAngle;
 }
 
 void DeltaCalculator::setHomeAngles(Angle3D value) {

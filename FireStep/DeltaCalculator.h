@@ -62,6 +62,7 @@ protected:
     PH5TYPE e;
     PH5TYPE rf;
     PH5TYPE re;
+	PH5TYPE acr; // arm clearance radius at pulley
     int16_t steps360;
     int16_t microsteps;
     PH5TYPE gearRatio;
@@ -103,6 +104,12 @@ public:
     inline void setEffectorLength(PH5TYPE value) {
         re = value;
     }
+	inline PH5TYPE getArmClearanceRadius() {
+		return acr;
+	}
+	inline void setArmClearanceRadius(PH5TYPE value) {
+		acr = value;
+	}
     inline int16_t getSteps360() {
         return steps360;
     }

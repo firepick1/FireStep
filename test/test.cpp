@@ -234,7 +234,7 @@ void test_Machine() {
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveDimConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'e':270.00,'f':90.00,'gr':9.375,'ha1':-52.33,'ha2':-52.33,'ha3':-52.33,'mi':16,'re':131.64,"
+	ASSERTEQUALS(JT("{'e':270.00,'f':90.00,'gr':9.375,'ha1':-67.24,'ha2':-67.24,'ha3':-67.24,'mi':16,'re':131.64,"
 				 "'rf':190.53,'st':200}"), 
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
@@ -1268,17 +1268,17 @@ void test_MTO_FPD() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUAL(-4361, machine.axis[0].home);
-    ASSERTEQUAL(-4361, machine.axis[1].home);
-    ASSERTEQUAL(-4361, machine.axis[2].home);
+    ASSERTEQUAL(-5603, machine.axis[0].home);
+    ASSERTEQUAL(-5603, machine.axis[1].home);
+    ASSERTEQUAL(-5603, machine.axis[2].home);
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
-    ASSERTQUAD(Quad<StepCoord>(-4361,-4361,-4361,0), machine.getMotorPosition());
+    ASSERTQUAD(Quad<StepCoord>(-5603,-5603,-5603,0), machine.getMotorPosition());
     XYZ3D xyz = mt.fpdController.getXYZ3D();
     ASSERTEQUALT(0, xyz.x, 0.01);
     ASSERTEQUALT(0, xyz.y, 0.01);
-    ASSERTEQUALT(58.91, xyz.z, 0.01);
+    ASSERTEQUALT(65.903, xyz.z, 0.01);
     ASSERTEQUALS(JT("{'s':0,'r':{'systo':1},'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1437,7 +1437,7 @@ void test_MTO_FPD() {
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
-                    "{'e':270.000,'f':90.000,'gr':9.375,'ha1':-52.330,'ha2':-52.330,'ha3':-52.330,"
+                    "{'e':270.000,'f':90.000,'gr':9.375,'ha1':-67.242,'ha2':-67.242,'ha3':-67.242,"
                     "'mi':16,"
                     "'pd':[-21.484,8.000,7.000,6.000,5.000,4.000,3.000,2.000,1.000],"
                     "'re':131.636,'rf':190.526,'st':200}}"
@@ -1448,14 +1448,14 @@ void test_MTO_FPD() {
 
     // dim set
     machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
-    Serial.push(JT("{'dim':{'e':270.001,'f':90.001,'gr':9.371,'ha1':-52.331,'ha2':-52.332,'ha3':-52.333,"
+    Serial.push(JT("{'dim':{'e':270.001,'f':90.001,'gr':9.371,'ha1':-67.241,'ha2':-67.242,'ha3':-67.243,"
                    "'mi':32,'re':131.631,'rf':190.521,'st':400}}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
-                    "{'e':270.001,'f':90.001,'gr':9.371,'ha1':-52.331,'ha2':-52.332,'ha3':-52.333,"
+                    "{'e':270.001,'f':90.001,'gr':9.371,'ha1':-67.241,'ha2':-67.242,'ha3':-67.243,"
                     "'mi':32,'re':131.631,'rf':190.521,'st':400}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
@@ -1474,8 +1474,8 @@ void test_MTO_FPD() {
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTEQUAL(10419, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-    ASSERTEQUAL(9523, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
-    ASSERTEQUAL(10180, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(9524, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(10181, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
     ypulses = arduino.pulses(PC2_Y_STEP_PIN);
     zpulses = arduino.pulses(PC2_Z_STEP_PIN);
@@ -1485,8 +1485,8 @@ void test_MTO_FPD() {
     ASSERTEQUALT(-50, xyz.z, 0.01);
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
-    ASSERTQUAD(Quad<StepCoord>(10419,9523,10180,0), machine.op.probe.start);
-    ASSERTQUAD(Quad<StepCoord>(28931,27623,28577,0), machine.op.probe.end);
+    ASSERTQUAD(Quad<StepCoord>(10419,9524,10181,0), machine.op.probe.start);
+    ASSERTQUAD(Quad<StepCoord>(28930,27623,28578,0), machine.op.probe.end);
     for (int i=0; i<100; i++) {
         mt.loop();
         ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
@@ -1499,7 +1499,7 @@ void test_MTO_FPD() {
     ASSERTEQUAL(100, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(98, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(99, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
-    ASSERTEQUALS(JT("{'s':0,'r':{'prbz':-50.491},'t':1.521}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'prbz':-50.492},'t':1.521}\n"),
                  Serial.output().c_str());
     xyz = mt.fpdController.getXYZ3D();
     ASSERTEQUALT(5, xyz.x, 0.03);
@@ -1522,7 +1522,7 @@ void test_MTO_FPD() {
     ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
     mt.loop(); // calibrating
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':-4361,'2':-4361,'3':-4361,'4':0}},'t':0.000}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':-5603,'2':-5603,'3':-5603,'4':0}},'t':0.000}\n"),
                  Serial.output().c_str());
     ASSERTQUAD(Quad<StepCoord>(), machine.getMotorPosition());
     xyz = mt.fpdController.getXYZ3D();
@@ -1578,7 +1578,7 @@ void test_MTO_FPD() {
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{"
-                    "'dimpd':[-50.491,-21.484,8.000,7.000,6.000,5.000,4.000,3.000,2.000]},"
+                    "'dimpd':[-50.492,-21.484,8.000,7.000,6.000,5.000,4.000,3.000,2.000]},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
     test_ticks(1);	// tripped
@@ -1601,6 +1601,7 @@ void test_calibrate() {
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 	Serial.clear();
 
+	// dataset #1
 	machine.op.probe.probeData[0] = -62.202;
 	machine.op.probe.probeData[1] = -61.646;
 	machine.op.probe.probeData[2] = -61.519;
@@ -1615,12 +1616,13 @@ void test_calibrate() {
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{"
-                    "'cal':{'ha':-62.769,'he':-10.439,'sv':false,'zc':-62.202,'zr':-61.562}},"
+                    "'cal':{'ha':-77.681,'he':-10.439,'sv':false,'zc':-62.202,'zr':-61.562}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
+	// dataset #2
 	machine.op.probe.probeData[0] = -62.259;
 	machine.op.probe.probeData[1] = -61.701;
 	machine.op.probe.probeData[2] = -61.556;
@@ -1635,7 +1637,7 @@ void test_calibrate() {
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{"
-                    "'cal':{'ha':-62.851,'he':-10.521,'sv':false,'zc':-62.259,'zr':-61.612}},"
+                    "'cal':{'ha':-77.763,'he':-10.521,'sv':false,'zc':-62.259,'zr':-61.612}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -3290,9 +3292,6 @@ void test_DeltaCalculator() {
     dc.setup();
     Step3D homePulses = dc.getHomePulses();
     ASSERT(homePulses.isValid());
-    ASSERTEQUAL(-4361, homePulses.p1);
-    ASSERTEQUAL(-4361, homePulses.p2);
-    ASSERTEQUAL(-4361, homePulses.p3);
     ASSERTEQUALT(131.636, dc.getEffectorTriangleSide(), 0.0001);
     ASSERTEQUALT(190.526, dc.getBaseTriangleSide(), 0.0001);
     ASSERTEQUALT(270, dc.getEffectorLength(), 0.000001);
@@ -3302,11 +3301,14 @@ void test_DeltaCalculator() {
     ASSERTEQUALT(150/16.0, dc.getGearRatio(), 0.000001);
     ASSERTEQUALT(-111.571, dc.getMinZ(), 0.001);
     ASSERTEQUALT(-69.571, dc.getMinZ(100,100), 0.001);
-    ASSERTEQUALT(-52.33, dc.getMinDegrees(), 0.001);
+    ASSERTEQUALT(-67.242, dc.getMinDegrees(), 0.001);
+    ASSERTEQUAL(-5603, homePulses.p1);
+    ASSERTEQUAL(-5603, homePulses.p2);
+    ASSERTEQUAL(-5603, homePulses.p3);
     Angle3D homeAngles = dc.getHomeAngles();
-    ASSERTEQUALT(-52.33, homeAngles.theta1, 0.001);
-    ASSERTEQUALT(-52.33, homeAngles.theta2, 0.001);
-    ASSERTEQUALT(-52.33, homeAngles.theta3, 0.001);
+    ASSERTEQUALT(-67.242, homeAngles.theta1, 0.001);
+    ASSERTEQUALT(-67.242, homeAngles.theta2, 0.001);
+    ASSERTEQUALT(-67.242, homeAngles.theta3, 0.001);
 
     XYZ3D xyz = dc.calcXYZ(Angle3D());
     ASSERT(xyz.isValid());
@@ -3343,37 +3345,37 @@ void test_DeltaCalculator() {
 
 	// ZBowlError
 	PH5TYPE e = 0.015;
-	PH5TYPE zCenter = -61;
+	PH5TYPE zCenter = -60.5;
 	PH5TYPE radius = 50;
-	ASSERTEQUALT(0.621, dc.calcZBowlError(zCenter, radius, -10), e);
-	ASSERTEQUALT(0.311, dc.calcZBowlError(zCenter, radius, -5), e);
+	ASSERTEQUALT(0.601, dc.calcZBowlError(zCenter, radius, -10), e);
+	ASSERTEQUALT(0.291, dc.calcZBowlError(zCenter, radius, -5), e);
 	ASSERTEQUALT(0, dc.calcZBowlError(zCenter, radius, 0), e);
-	ASSERTEQUALT(-0.266, dc.calcZBowlError(zCenter, radius, 5), e);
-	ASSERTEQUALT(-0.517, dc.calcZBowlError(zCenter, radius, 10), e);
+	ASSERTEQUALT(-0.284, dc.calcZBowlError(zCenter, radius, 5), e);
+	ASSERTEQUALT(-0.534, dc.calcZBowlError(zCenter, radius, 10), e);
 
 	// ZBowlETheta (initial calibration)
-	PH5TYPE zRim = -60.5; // 0.5mm bowl error
+	PH5TYPE zRim = -61; // 0.5mm bowl error
 #ifdef NEIL
 zCenter = -10.808;
 zRim = -10.468;
 #endif
 	PH5TYPE eTheta1 = dc.calcZBowlETheta(zCenter, zRim, radius);
-	ASSERTEQUALT(-52.33, dc.getHomeAngles().theta1,0.001); // default
+	ASSERTEQUALT(-67.242, dc.getHomeAngles().theta1,0.001); // default
 	dc.setHomingError(Angle3D(eTheta1,eTheta1,eTheta1));
 	TESTCOUT2("Homing angle:", dc.getHomeAngles().theta1, " error:", eTheta1);
-	ASSERTEQUALT(-60.388, dc.getHomeAngles().theta1,0.001); // corrected
-	ASSERTEQUALT(-8.058, eTheta1, e);
-	ASSERTEQUAL(-5032, dc.getHomePulses().p1);
+	ASSERTEQUALT(-57.951, dc.getHomeAngles().theta1,0.001); // corrected
+	ASSERTEQUALT(9.291, eTheta1, e);
+	ASSERTEQUAL(-4829, dc.getHomePulses().p1);
 	// subsequent calibration with no error
 	PH5TYPE eTheta2 = dc.calcZBowlETheta(zCenter, zCenter, radius);
 	ASSERTEQUALT(eTheta1, eTheta2, 0);
 	// subsequent calibration with almost undetectable error
 	PH5TYPE zErrTiny = 0.01; // 10 microns
 	PH5TYPE eTheta3 = dc.calcZBowlETheta(zCenter, zCenter+zErrTiny, radius);
-	ASSERTEQUALT(-8.342, eTheta3, e);
+	ASSERTEQUALT(9.205, eTheta3, e);
 	dc.setHomingError(Angle3D(eTheta3,eTheta3,eTheta3));
-	ASSERTEQUALT(-60.673, dc.getHomeAngles().theta1,0.001); // corrected
-	ASSERTEQUAL(-5056, dc.getHomePulses().p1);
+	ASSERTEQUALT(-58.037, dc.getHomeAngles().theta1,0.001); // corrected
+	ASSERTEQUAL(-4836, dc.getHomePulses().p1);
 
     cout << "TEST	: test_DeltaCalculator() OK " << endl;
 }
@@ -3452,9 +3454,9 @@ int main(int argc, char *argv[]) {
     // test first
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
-        //test_DeltaCalculator();
+        test_DeltaCalculator();
         //test_MTO_FPD();
-		test_calibrate();
+		//test_calibrate();
         //test_eep();
         //test_autoSync();
 		//test_mpo();
