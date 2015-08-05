@@ -143,6 +143,7 @@ public:
     PH5TYPE getMinZ(PH5TYPE x=0, PH5TYPE y=0);  // lowest possible point at given XY
     PH5TYPE getMinDegrees(); // base/effector arms are colinear here (which is usually bad mechanically)
     Step3D getHomePulses();
+    void setHomePulses(Step3D value);
     Angle3D getHomeAngles();
     void setHomeAngles(Angle3D value);
     Step3D calcPulses(XYZ3D xyz);

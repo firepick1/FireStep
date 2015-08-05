@@ -85,6 +85,17 @@ Step3D DeltaCalculator::getHomePulses() {
     return pulses;
 }
 
+void DeltaCalculator::setHomePulses(Step3D pulses) {
+    PH5TYPE dp = degreePulses();
+    Angle3D angles(
+		pulses.p1/dp,
+		pulses.p2/dp,
+		pulses.p3/dp
+	);
+	setHomeAngles(angles);
+    TESTCOUT3("DeltaCalculator.setHomePulses:", angles.theta1, " valid:", angles.isValid(), " pulses:", pulses.p1);
+}
+
 PH5TYPE DeltaCalculator::calcAngleYZ(PH5TYPE X, PH5TYPE Y, PH5TYPE Z) {
     PH5TYPE y1 = -tan30_half * f; // f/2 * tg 30
     Y -= tan30_half * e; // shift center to edge

@@ -741,3 +741,10 @@ bool Machine::isEEUserEnabled() {
     return 'y' == eeprom_read_byte((uint8_t *)EEUSER_ENABLED);
 }
 
+void Machine::loadDeltaCalculator() {
+	delta.setHomePulses(Step3D(
+		axis[0].home,
+		axis[1].home,
+		axis[2].home
+	));
+}

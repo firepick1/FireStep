@@ -1271,6 +1271,10 @@ void test_MTO_FPD() {
     ASSERTEQUAL(-5603, machine.axis[0].home);
     ASSERTEQUAL(-5603, machine.axis[1].home);
     ASSERTEQUAL(-5603, machine.axis[2].home);
+	Step3D pulses = machine.delta.getHomePulses();
+	ASSERTEQUAL(machine.axis[0].home, pulses.p1);
+	ASSERTEQUAL(machine.axis[1].home, pulses.p2);
+	ASSERTEQUAL(machine.axis[2].home, pulses.p3);
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
@@ -1583,6 +1587,16 @@ void test_MTO_FPD() {
                  Serial.output().c_str());
     test_ticks(1);	// tripped
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	// loadDeltaCalculator
+	machine.axis[0].home = -5001;
+	machine.axis[1].home = -5002;
+	machine.axis[2].home = -5003;
+	machine.loadDeltaCalculator();
+	pulses = machine.delta.getHomePulses();
+	ASSERTEQUAL(machine.axis[0].home, pulses.p1);
+	ASSERTEQUAL(machine.axis[1].home, pulses.p2);
+	ASSERTEQUAL(machine.axis[2].home, pulses.p3);
 
 	// dim f, e, rf, re
     Serial.push(JT("{'dim':{'e':130,'f':189,'re':271,'rf':91}}\n"));

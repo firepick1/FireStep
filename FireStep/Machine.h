@@ -347,6 +347,7 @@ public:
     Status sync(Status status);
     void enableEEUser(bool enable);
     bool isEEUserEnabled();
+	void loadDeltaCalculator(); // initialize from raw axis
 } Machine;
 
 #ifdef TEST
