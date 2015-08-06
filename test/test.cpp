@@ -1249,51 +1249,84 @@ void test_sys() {
     cout << "TEST	: test_sys() OK " << endl;
 }
 
-void test_MTO_FPD() {
-    cout << "TEST	: test_MTO_FPD() =====" << endl;
+MachineThread test_MTO_FPD_setup() {
+    cout << "TEST	: test_MTO_FPD_setup() =====" << endl;
 
     MachineThread mt = test_setup();
     Machine &machine = mt.machine;
-    int32_t xpulses;
-    int32_t ypulses;
-    int32_t zpulses;
+    int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    int32_t ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    int32_t zpulses = arduino.pulses(PC2_Z_STEP_PIN);
 
-    // systo:1
-    xpulses = arduino.pulses(PC2_X_STEP_PIN);
-    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
-    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
-    machine.setMotorPosition(Quad<StepCoord>());
+	// switch topologies at limit switch
+    machine.setMotorPosition(Quad<StepCoord>()); 
+
     Serial.push(JT("{'systo':1}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
+
+	// switching topologies does not move anything
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+
+	// but our first 3 axis coordinates have changed
+    ASSERTQUAD(Quad<StepCoord>(-5603,-5603,-5603,0), machine.getMotorPosition());
+
+	// since our home position has changed
     ASSERTEQUAL(-5603, machine.axis[0].home);
     ASSERTEQUAL(-5603, machine.axis[1].home);
     ASSERTEQUAL(-5603, machine.axis[2].home);
+
+	// DeltaCalculator should be in sync with FPD axes
 	Step3D pulses = machine.delta.getHomePulses();
 	ASSERTEQUAL(machine.axis[0].home, pulses.p1);
 	ASSERTEQUAL(machine.axis[1].home, pulses.p2);
 	ASSERTEQUAL(machine.axis[2].home, pulses.p3);
-    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-    ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
-    ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
-    ASSERTQUAD(Quad<StepCoord>(-5603,-5603,-5603,0), machine.getMotorPosition());
+
+	// Verify Cartesian coordinates
     XYZ3D xyz = mt.fpdController.getXYZ3D();
     ASSERTEQUALT(0, xyz.x, 0.01);
     ASSERTEQUALT(0, xyz.y, 0.01);
     ASSERTEQUALT(65.903, xyz.z, 0.01);
+
+	// Verify that the FPDController is active
+	ASSERTEQUALS("MTO_FPD", mt.pController->name());
     ASSERTEQUALS(JT("{'s':0,'r':{'systo':1},'t':0.000}\n"),
                  Serial.output().c_str());
+
+	// Prepare for next command	
     mt.loop();
-	ASSERTEQUALS("MTO_FPD", mt.pController->name());
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	// Set coordinate to Cartesian origin and verify
+    machine.setMotorPosition(Quad<StepCoord>());
+    ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.getMotorPosition());
+    xyz = mt.fpdController.getXYZ3D();
+    ASSERTEQUALT(0, xyz.x, 0.01);
+    ASSERTEQUALT(0, xyz.y, 0.01);
+    ASSERTEQUALT(0, xyz.z, 0.01);
+
+    cout << "TEST	: test_setup() OK " << endl;
+
+	return mt;
+}
+
+void test_MTO_FPD() {
+    cout << "TEST	: test_MTO_FPD() =====" << endl;
+
+    MachineThread mt = test_MTO_FPD_setup();
+    Machine &machine = mt.machine;
+    int32_t xpulses;
+    int32_t ypulses;
+    int32_t zpulses;
 
     // mov long form
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
     ypulses = arduino.pulses(PC2_Y_STEP_PIN);
     zpulses = arduino.pulses(PC2_Z_STEP_PIN);
-    machine.setMotorPosition(Quad<StepCoord>());
     Serial.push(JT("{'mov':{'z':1}}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -1333,7 +1366,7 @@ void test_MTO_FPD() {
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
-    xyz = mt.fpdController.getXYZ3D();
+    XYZ3D xyz = mt.fpdController.getXYZ3D();
     ASSERTEQUALT(1.0085, xyz.x, 0.0001);
     ASSERTEQUALT(0.0000, xyz.y, 0.0001);
     ASSERTEQUALT(0.0020, xyz.z, 0.0001);
@@ -1593,7 +1626,7 @@ void test_MTO_FPD() {
 	machine.axis[1].home = -5002;
 	machine.axis[2].home = -5003;
 	machine.loadDeltaCalculator();
-	pulses = machine.delta.getHomePulses();
+	Step3D pulses = machine.delta.getHomePulses();
 	ASSERTEQUAL(machine.axis[0].home, pulses.p1);
 	ASSERTEQUAL(machine.axis[1].home, pulses.p2);
 	ASSERTEQUAL(machine.axis[2].home, pulses.p3);
@@ -3524,6 +3557,7 @@ int main(int argc, char *argv[]) {
         test_eep();
         test_probe();
         test_DeltaCalculator();
+        test_MTO_FPD_setup();
         test_MTO_FPD();
         test_autoSync();
 		test_msg_cmt_idl();
