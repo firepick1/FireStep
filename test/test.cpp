@@ -1535,8 +1535,8 @@ void test_MTO_FPD_prb() {
     cout << "TEST	: test_MTO_FPD_prb() OK " << endl;
 }
 
-void test_MTO_FPD() {
-    cout << "TEST	: test_MTO_FPD() =====" << endl;
+void test_MTO_FPD_dim() {
+    cout << "TEST	: test_MTO_FPD_dim() =====" << endl;
 
     MachineThread mt = test_MTO_FPD_setup();
     Machine &machine = mt.machine;
@@ -1557,8 +1557,31 @@ void test_MTO_FPD() {
                    	"'mi':32,'re':270.000,'rf':90.000,'st':400}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
+	DeltaCalculator& dc = machine.delta;
+	ASSERTEQUALT(131.636, dc.getEffectorTriangleSide(), 0.001);
+	ASSERTEQUALT(190.526, dc.getBaseTriangleSide(), 0.001);
+	ASSERTEQUALT(9.371, dc.getGearRatio(), 0.001);
+	ASSERTEQUALT(-67.241, dc.getHomeAngles().theta1, 0.001);
+	ASSERTEQUALT(-67.242, dc.getHomeAngles().theta2, 0.001);
+	ASSERTEQUALT(-67.243, dc.getHomeAngles().theta3, 0.001);
+	ASSERTEQUALT(32, dc.getMicrosteps(), 0.001);
+	ASSERTEQUALT(270.000, dc.getEffectorLength(), 0.001);
+	ASSERTEQUALT(90.000, dc.getBaseArmLength(), 0.001);
+	ASSERTEQUALT(400.000, dc.getSteps360(), 0.001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    cout << "TEST	: test_MTO_FPD_dim() OK " << endl;
+}
+
+void test_MTO_FPD() {
+    cout << "TEST	: test_MTO_FPD() =====" << endl;
+
+    MachineThread mt = test_MTO_FPD_setup();
+    Machine &machine = mt.machine;
+    int32_t xpulses;
+    int32_t ypulses;
+    int32_t zpulses;
 
     // mov/prb
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -1571,20 +1594,20 @@ void test_MTO_FPD() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    ASSERTEQUAL(10420, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-    ASSERTEQUAL(9524, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
-    ASSERTEQUAL(10181, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(2606, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(2382, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(2546, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
     ypulses = arduino.pulses(PC2_Y_STEP_PIN);
     zpulses = arduino.pulses(PC2_Z_STEP_PIN);
     XYZ3D xyz = mt.fpdController.getXYZ3D();
-    ASSERTEQUALT(5, xyz.x, 0.01);
+    ASSERTEQUALT(4.99, xyz.x, 0.01);
     ASSERTEQUALT(5, xyz.y, 0.01);
     ASSERTEQUALT(-50, xyz.z, 0.01);
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
-    ASSERTQUAD(Quad<StepCoord>(10420,9524,10181,0), machine.op.probe.start);
-    ASSERTQUAD(Quad<StepCoord>(28931,27623,28577,0), machine.op.probe.end);
+    ASSERTQUAD(Quad<StepCoord>(2606,2382,2546,0), machine.op.probe.start);
+    ASSERTQUAD(Quad<StepCoord>(7236,6909,7147,0), machine.op.probe.end);
     for (int i=0; i<100; i++) {
         mt.loop();
         ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
@@ -1597,12 +1620,12 @@ void test_MTO_FPD() {
     ASSERTEQUAL(100, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(98, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(99, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
-    ASSERTEQUALS(JT("{'s':0,'r':{'prbz':-50.492},'t':1.521}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'prbz':-51.955},'t':0.762}\n"),
                  Serial.output().c_str());
     xyz = mt.fpdController.getXYZ3D();
-    ASSERTEQUALT(5, xyz.x, 0.03);
-    ASSERTEQUALT(5, xyz.y, 0.03);
-    ASSERTEQUALT(-50.492, xyz.z, 0.001);
+    ASSERTEQUALT(5.05, xyz.x, 0.03);
+    ASSERTEQUALT(5.09, xyz.y, 0.03);
+    ASSERTEQUALT(-51.956, xyz.z, 0.001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -1638,9 +1661,9 @@ void test_MTO_FPD() {
 	arduino.timer1(MS_TICKS(1000));
 	mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'movrz':-1.000},'t':1.215}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'movrz':-1.000},'t':1.108}\n"),
                  Serial.output().c_str());
-    ASSERTQUAD(Quad<StepCoord>(212,212,212,0), machine.getMotorPosition());
+    ASSERTQUAD(Quad<StepCoord>(53,53,53,0), machine.getMotorPosition());
 	xyz = mt.fpdController.getXYZ3D();
 	ASSERTEQUALT(0, xyz.x, 0.01);
     ASSERTEQUALT(0, xyz.y, 0.01);
@@ -1659,9 +1682,9 @@ void test_MTO_FPD() {
 	arduino.timer1(MS_TICKS(1000));
 	mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'a':30,'d':10,'rz':-1.000}},'t':1.394}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'a':30,'d':10,'rz':-1.000}},'t':1.197}\n"),
                  Serial.output().c_str());
-    ASSERTQUAD(Quad<StepCoord>(710,-658,709), machine.getMotorPosition());
+    ASSERTQUAD(Quad<StepCoord>(177,-165,177), machine.getMotorPosition());
 	xyz = mt.fpdController.getXYZ3D();
 	ASSERTEQUALT(8.667, xyz.x, 0.01);
     ASSERTEQUALT(5, xyz.y, 0.01);
@@ -3585,6 +3608,7 @@ int main(int argc, char *argv[]) {
         test_MTO_FPD_setup();
         test_MTO_FPD_mov();
         test_MTO_FPD_prb();
+        test_MTO_FPD_dim();
         test_MTO_FPD();
         test_autoSync();
 		test_msg_cmt_idl();
