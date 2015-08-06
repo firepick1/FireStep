@@ -234,8 +234,8 @@ void test_Machine() {
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveDimConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'e':270.00,'f':90.00,'gr':9.375,'ha1':-67.20,'ha2':-67.20,'ha3':-67.20,'mi':16,'re':131.64,"
-				 "'rf':190.53,'st':200}"), 
+	ASSERTEQUALS(JT("{'e':270.00,'f':90.00,'gr':9.375,'mi':16,'re':131.64,'rf':190.53,'st':200,"
+					"'ha1':-67.20,'ha2':-67.20,'ha3':-67.20}"),
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 
