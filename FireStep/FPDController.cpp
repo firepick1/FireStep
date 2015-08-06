@@ -51,8 +51,8 @@ Status FPDCalibrateHome::save() {
 	return status;
 }
 
-/////////////////////////// MTO_FPDMoveTo ///////////////
-typedef class MTO_FPDMoveTo {
+/////////////////////////// FPDMoveTo ///////////////
+typedef class FPDMoveTo {
 private:
     int32_t nLoops;
     Quad<PH5TYPE> destination;
@@ -64,11 +64,11 @@ private:
     Status execute(JsonCommand& jcmd, JsonObject *pjobj);
 
 public:
-    MTO_FPDMoveTo(FPDController &controller, Machine& machine);
+    FPDMoveTo(FPDController &controller, Machine& machine);
     Status process(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-} MTO_FPDMoveTo;
+} FPDMoveTo;
 
-MTO_FPDMoveTo::MTO_FPDMoveTo(FPDController &controller, Machine& machine)
+FPDMoveTo::FPDMoveTo(FPDController &controller, Machine& machine)
     : nLoops(0), nSegs(0), machine(machine), controller(controller)
 {
     Quad<StepCoord> curPos = machine.getMotorPosition();
@@ -82,7 +82,7 @@ MTO_FPDMoveTo::MTO_FPDMoveTo(FPDController &controller, Machine& machine)
     destination.value[2] = xyz.z;
 }
 
-Status MTO_FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
+Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     StrokeBuilder sb(machine.vMax, machine.tvMax);
     Quad<StepCoord> curPos = machine.getMotorPosition();
     Quad<StepCoord> dPos;
@@ -148,7 +148,7 @@ Status MTO_FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     return status;
 }
 
-Status MTO_FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     const char *s;
 
@@ -181,7 +181,7 @@ Status MTO_FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* k
         for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
             status = process(jcmd, kidObj, it->key);
             if (status != STATUS_OK) {
-                TESTCOUT1("MTO_FPDMoveTo::process() status:", status);
+                TESTCOUT1("FPDMoveTo::process() status:", status);
                 return status;
             }
         }
@@ -596,7 +596,7 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
 }
 
 Status FPDController::processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-    return MTO_FPDMoveTo(*this, machine).process(jcmd, jobj, key);
+    return FPDMoveTo(*this, machine).process(jcmd, jobj, key);
 }
 
 Status FPDController::finalizeHome() {
