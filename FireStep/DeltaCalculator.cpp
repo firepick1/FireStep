@@ -31,7 +31,7 @@ DeltaCalculator::DeltaCalculator()
       f(190.526), // base equilateral triangle side (mm)
       re(270.000), // effector arm length (mm)
       rf(90.000), // base arm length (mm)
-	  acr(25), // arm clearance radius (mm)
+	  acr(24.15), // arm clearance radius (mm)
       steps360(200),
       microsteps(16),
       gearRatio(150/16.0),
@@ -51,8 +51,13 @@ void DeltaCalculator::setup() {
 
 PH5TYPE DeltaCalculator::getMinDegrees() {
 	PH5TYPE armsParallel = 180*asin((f-e)/(re*sqrt3))/pi - 90;
-	PH5TYPE clearanceAngle = 180*atan(acr/rf)/pi;
-    return armsParallel + clearanceAngle;
+	PH5TYPE clearanceAngle = 180*asin(acr/rf)/pi;
+    PH5TYPE rawDegrees =  armsParallel + clearanceAngle;
+    PH5TYPE dp = degreePulses();
+	StepCoord minPulses = rawDegrees * dp;
+	PH5TYPE degrees =  minPulses/dp;	// digitize min degrees to stepper pulses
+	//TESTCOUT2("getMinDegrees:", degrees, " raw:", rawDegrees);
+	return degrees;
 }
 
 void DeltaCalculator::setHomeAngles(Angle3D value) {
@@ -61,6 +66,7 @@ void DeltaCalculator::setHomeAngles(Angle3D value) {
     eTheta.theta1 = value.theta1 - minDegrees;
     eTheta.theta2 = value.theta2 - minDegrees;
     eTheta.theta3 = value.theta3 - minDegrees;
+	TESTCOUT3("setHomeAngles theta1:", eTheta.theta1, " theta2:", eTheta.theta2, " theta3:", eTheta.theta3);
 }
 
 Angle3D DeltaCalculator::getHomeAngles() {

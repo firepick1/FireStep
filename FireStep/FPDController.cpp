@@ -71,6 +71,12 @@ public:
 FPDMoveTo::FPDMoveTo(FPDController &controller, Machine& machine)
     : nLoops(0), nSegs(0), machine(machine), controller(controller)
 {
+	machine.loadDeltaCalculator();
+	Step3D pulses = machine.delta.getHomePulses();
+	ASSERTEQUAL(machine.axis[0].home, pulses.p1);
+	ASSERTEQUAL(machine.axis[1].home, pulses.p2);
+	ASSERTEQUAL(machine.axis[2].home, pulses.p3);
+
     Quad<StepCoord> curPos = machine.getMotorPosition();
     for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
         destination.value[i] = curPos.value[i];
@@ -721,7 +727,7 @@ void FPDController::onTopologyChanged() {
     if (machine.axis[0].home >= 0 &&
             machine.axis[1].home >= 0 &&
             machine.axis[2].home >= 0) {
-        // Delta always has negateve home limit switch
+        // Delta always has negative home limit switch
         Step3D home = machine.delta.getHomePulses();
         machine.axis[0].position += home.p1-machine.axis[0].home;
         machine.axis[1].position += home.p2-machine.axis[1].home;
