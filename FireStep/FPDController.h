@@ -24,6 +24,7 @@ public:
 typedef class FPDController : public JsonController {
 protected:
     Status initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
+    virtual Status initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
     Status finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     Status finalizeHome();
 	Status processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, const char* key, FPDCalibrateHome &cal);

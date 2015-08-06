@@ -21,23 +21,23 @@ protected:
 
 protected:
     int axisOf(char c);
-    Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);
-    Status initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
-    Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
-    Status processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-    Status processIOPin(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-    Status processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-    Status processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj,
+    virtual Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);
+    virtual Status initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear)=0;
+    virtual Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
+    virtual Status processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+    virtual Status processIOPin(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+    virtual Status processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+    virtual Status processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj,
                               const char* key, const char *addr);
-    Status processEEPROM(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-    Status processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
-    Status processPin(JsonObject& jobj, const char *key,
+    virtual Status processEEPROM(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+    virtual Status processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
+    virtual Status processPin(JsonObject& jobj, const char *key,
                       PinType &pin, int16_t mode, int16_t value = LOW);
 
-    Status processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key);
-    Status processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-    Status processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-    Status traverseStroke(JsonCommand &jcmd, JsonObject &stroke);
+    virtual Status processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key);
+    virtual Status processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+    virtual Status processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+    virtual Status traverseStroke(JsonCommand &jcmd, JsonObject &stroke);
 
 public:
     JsonController(Machine& machine);

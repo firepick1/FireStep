@@ -8,6 +8,7 @@ namespace firestep {
 typedef class RawController : public JsonController {
 private:
     Status initializeProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
+    virtual Status initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
 protected:
 public:
     RawController(Machine& machine);

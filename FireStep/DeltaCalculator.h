@@ -67,7 +67,7 @@ protected:
     int16_t microsteps;
     PH5TYPE gearRatio;
     PH5TYPE dz;
-    Angle3D eTheta;
+	PH5TYPE homeAngle;
     static PH5TYPE sqrt3;
     static PH5TYPE sin120;
     static PH5TYPE cos120;
@@ -128,12 +128,6 @@ public:
     inline void setGearRatio(PH5TYPE value) {
         gearRatio = value;
     }
-    inline Angle3D getHomingError() {
-        return eTheta;
-    }
-    inline void setHomingError(Angle3D value) {
-        eTheta = value;
-    }
     inline PH5TYPE degreePulses() {
         return steps360 * microsteps * gearRatio / 360.0;
     }
@@ -142,10 +136,13 @@ public:
     }
     PH5TYPE getMinZ(PH5TYPE x=0, PH5TYPE y=0);  // lowest possible point at given XY
     PH5TYPE getMinDegrees(); // base/effector arms are colinear here (which is usually bad mechanically)
-    Step3D getHomePulses();
-    void setHomePulses(Step3D value);
-    Angle3D getHomeAngles();
-    void setHomeAngles(Angle3D value);
+    PH5TYPE getDefaultHomeAngle(); // calculated using arm clearance radius
+	inline PH5TYPE getHomeAngle() { return homeAngle; }
+	inline void setHomeAngle(PH5TYPE value) {
+		homeAngle = value;
+	}
+    StepCoord getHomePulses();
+    void setHomePulses(StepCoord value);
     Step3D calcPulses(XYZ3D xyz);
     Angle3D calcAngles(XYZ3D xyz);
     XYZ3D calcXYZ(Step3D pulses);

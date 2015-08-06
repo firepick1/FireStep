@@ -31,8 +31,7 @@ Status FPDCalibrateHome::calibrate() {
 	}
 	PH5TYPE radius = 50;
 	eTheta = machine.delta.calcZBowlETheta(zCenter, zRim, radius);
-	Angle3D angles = machine.delta.getHomeAngles();
-	homeAngle = (angles.theta1+angles.theta2+angles.theta3)/3 + eTheta;
+	homeAngle = machine.delta.getHomeAngle() + eTheta;
 	TESTCOUT4("CalibrateHome zCenter:", zCenter, " zRim:", zRim,
 			  " eTheta:", eTheta, " homeAngle:", homeAngle);
 	status = STATUS_OK;
@@ -42,11 +41,11 @@ Status FPDCalibrateHome::calibrate() {
 Status FPDCalibrateHome::save() {
 	Status status = calibrate();
 	if (status == STATUS_OK) {
-		machine.delta.setHomeAngles(Angle3D( homeAngle, homeAngle, homeAngle));
-		Step3D pulses = machine.delta.getHomePulses();
-		machine.axis[0].home = pulses.p1;
-		machine.axis[1].home = pulses.p2;
-		machine.axis[2].home = pulses.p3;
+		machine.delta.setHomeAngle(homeAngle);
+		StepCoord pulses = machine.delta.getHomePulses();
+		machine.axis[0].home = pulses;
+		machine.axis[1].home = pulses;
+		machine.axis[2].home = pulses;
 	}
 	return status;
 }
@@ -72,10 +71,10 @@ FPDMoveTo::FPDMoveTo(FPDController &controller, Machine& machine)
     : nLoops(0), nSegs(0), machine(machine), controller(controller)
 {
 	machine.loadDeltaCalculator();
-	Step3D pulses = machine.delta.getHomePulses();
-	ASSERTEQUAL(machine.axis[0].home, pulses.p1);
-	ASSERTEQUAL(machine.axis[1].home, pulses.p2);
-	ASSERTEQUAL(machine.axis[2].home, pulses.p3);
+	StepCoord pulses = machine.delta.getHomePulses();
+	ASSERTEQUAL(machine.axis[0].home, pulses);
+	ASSERTEQUAL(machine.axis[1].home, pulses);
+	ASSERTEQUAL(machine.axis[2].home, pulses);
 
     Quad<StepCoord> curPos = machine.getMotorPosition();
     for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
@@ -531,9 +530,10 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
             node["e"] = "";
             node["f"] = "";
             node["gr"] = "";
-            node["ha1"] = "";
-            node["ha2"] = "";
-            node["ha3"] = "";
+            node["ha"] = "";
+            //node["ha1"] = "";
+            //node["ha2"] = "";
+            //node["ha3"] = "";
             node["mi"] = "";
             node["pd"] = "";
             node["re"] = "";
@@ -561,18 +561,10 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         PH5TYPE value = machine.delta.getGearRatio();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.delta.setGearRatio(value);
-    } else if (strcmp("ha1", key) == 0 || strcmp("dimha1", key) == 0) {
-        Angle3D homeAngles = machine.delta.getHomeAngles();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngles.theta1);
-        machine.delta.setHomeAngles(homeAngles);
-    } else if (strcmp("ha2", key) == 0 || strcmp("dimha2", key) == 0) {
-        Angle3D homeAngles = machine.delta.getHomeAngles();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngles.theta2);
-        machine.delta.setHomeAngles(homeAngles);
-    } else if (strcmp("ha3", key) == 0 || strcmp("dimha3", key) == 0) {
-        Angle3D homeAngles = machine.delta.getHomeAngles();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngles.theta3);
-        machine.delta.setHomeAngles(homeAngles);
+    } else if (strcmp("ha", key) == 0 || strcmp("dimha", key) == 0) {
+        PH5TYPE homeAngle = machine.delta.getHomeAngle();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngle);
+        machine.delta.setHomeAngle(homeAngle);
     } else if (strcmp("mi", key) == 0 || strcmp("dimmi", key) == 0) {
         int16_t value = machine.delta.getMicrosteps();
         status = processField<int16_t, int16_t>(jobj, key, value);
@@ -609,22 +601,67 @@ Status FPDController::processMove(JsonCommand& jcmd, JsonObject& jobj, const cha
     return FPDMoveTo(*this, machine).process(jcmd, jobj, key);
 }
 
+Status FPDController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
+                                      const char* key, bool clear)
+{
+    Status status = STATUS_OK;
+    if (clear) {
+        for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
+            machine.getMotorAxis(i).homing = false;
+        }
+    }
+    if (strcmp("hom", key) == 0) {
+        const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+            node["1"] = "";
+            node["2"] = "";
+            node["3"] = "";
+            node["4"] = "";
+        }
+        JsonObject& kidObj = jobj[key];
+        if (kidObj.success()) {
+            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+                status = initializeHome(jcmd, kidObj, it->key, false);
+                if (status != STATUS_BUSY_MOVING) {
+                    return status;
+                }
+            }
+        }
+    } else {
+        MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));
+        if (iMotor == INDEX_NONE) {
+            return jcmd.setError(STATUS_NO_MOTOR, key);
+        }
+        status = processHomeField(machine, iMotor, jcmd, jobj, key);
+    }
+    return status == STATUS_OK ? STATUS_BUSY_MOVING : status;
+}
+
 Status FPDController::finalizeHome() {
     Status status = STATUS_OK;
+	
+	// calculate distance to post-home destination
+	machine.loadDeltaCalculator();
     Quad<StepCoord> limit = machine.getMotorPosition();
-    Step3D pulses = machine.delta.calcPulses(XYZ3D());
+	XYZ3D xyzPostHome(0,0,0); // post-home destination
+    Step3D oPulses = machine.delta.calcPulses(xyzPostHome);
+	TESTCOUT3("finalizeHome x home:", machine.delta.getHomePulses(), " pos:", machine.axis[0].position, " dst:", oPulses.p1);
     machine.op.probe.setup(limit, Quad<StepCoord>(
-                               pulses.p1,
-                               pulses.p2,
-                               pulses.p3,
+                               oPulses.p1,
+                               oPulses.p2,
+                               oPulses.p3,
                                limit.value[3]
                            ));
+	
+	// move to post-home destination using probe
     status = STATUS_BUSY_CALIBRATING;
     do {
         // fast probe because we don't expect to hit anything
         status = machine.probe(status, 0);
         //TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
     } while (status == STATUS_BUSY_CALIBRATING);
+
     if (status == STATUS_PROBE_FAILED) {
         // we didn't hit anything and that is good
         status = STATUS_OK;
@@ -632,6 +669,7 @@ Status FPDController::finalizeHome() {
         // we hit something and that's not good
         status = STATUS_LIMIT_MAX;
     }
+
     return status;
 }
 
@@ -639,16 +677,30 @@ Status FPDController::processHome(JsonCommand& jcmd, JsonObject& jobj, const cha
     Status status = jcmd.getStatus();
     switch (status) {
     case STATUS_BUSY_PARSED:
+		machine.loadDeltaCalculator();
         status = initializeHome(jcmd, jobj, key, true);
+		machine.loadDeltaCalculator();
         break;
     case STATUS_BUSY_MOVING:
     case STATUS_BUSY_OK:
         status = machine.home(status);
         break;
     case STATUS_BUSY_CALIBRATING:
+		TESTCOUT4("processHome home 1:", machine.axis[0].home,
+			" 2:", machine.axis[1].home,
+			" 3:", machine.axis[2].home,
+			" 4:", machine.axis[3].home);
         status = machine.home(status);
+		TESTCOUT4("processHome position 1:", machine.axis[0].position,
+			" 2:", machine.axis[1].position,
+			" 3:", machine.axis[2].position,
+			" 4:", machine.axis[3].position);
         if (status == STATUS_OK) {
             status = finalizeHome();
+			TESTCOUT4("processHome finalize 1:", machine.axis[0].position,
+				" 2:", machine.axis[1].position,
+				" 3:", machine.axis[2].position,
+				" 4:", machine.axis[3].position);
         }
         break;
     default:
@@ -732,13 +784,13 @@ void FPDController::onTopologyChanged() {
             machine.axis[1].home >= 0 &&
             machine.axis[2].home >= 0) {
         // Delta always has negative home limit switch
-        Step3D home = machine.delta.getHomePulses();
-        machine.axis[0].position += home.p1-machine.axis[0].home;
-        machine.axis[1].position += home.p2-machine.axis[1].home;
-        machine.axis[2].position += home.p3-machine.axis[2].home;
-        machine.axis[0].home = home.p1;
-        machine.axis[1].home = home.p2;
-        machine.axis[2].home = home.p3;
+        StepCoord home = machine.delta.getHomePulses();
+        machine.axis[0].position += home-machine.axis[0].home;
+        machine.axis[1].position += home-machine.axis[1].home;
+        machine.axis[2].position += home-machine.axis[2].home;
+        machine.axis[0].home = home;
+        machine.axis[1].home = home;
+        machine.axis[2].home = home;
     }
 }
 

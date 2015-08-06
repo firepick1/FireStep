@@ -331,6 +331,43 @@ Status RawController::processMove(JsonCommand& jcmd, JsonObject& jobj, const cha
     return MTO_RAWMoveTo(machine).process(jcmd, jobj, key);
 }
 
+Status RawController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
+                                      const char* key, bool clear)
+{
+    Status status = STATUS_OK;
+    if (clear) {
+        for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
+            machine.getMotorAxis(i).homing = false;
+        }
+    }
+    if (strcmp("hom", key) == 0) {
+        const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+            node["1"] = "";
+            node["2"] = "";
+            node["3"] = "";
+            node["4"] = "";
+        }
+        JsonObject& kidObj = jobj[key];
+        if (kidObj.success()) {
+            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+                status = initializeHome(jcmd, kidObj, it->key, false);
+                if (status != STATUS_BUSY_MOVING) {
+                    return status;
+                }
+            }
+        }
+    } else {
+        MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));
+        if (iMotor == INDEX_NONE) {
+            return jcmd.setError(STATUS_NO_MOTOR, key);
+        }
+        status = processHomeField(machine, iMotor, jcmd, jobj, key);
+    }
+    return status == STATUS_OK ? STATUS_BUSY_MOVING : status;
+}
+
 Status RawController::processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = jcmd.getStatus();
     switch (status) {

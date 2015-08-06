@@ -142,10 +142,10 @@ void test_Machine() {
     arduino.setPin(PC2_Y_MIN_PIN, 0);
     arduino.setPin(PC2_Z_MIN_PIN, 0);
     Machine machine;
-	uint32_t hash1 = machine.hash();
+	int32_t hash1 = machine.hash();
 	ASSERT(hash1);
     machine.setup(PC2_RAMPS_1_4);
-	uint32_t hash2 = machine.hash();
+	int32_t hash2 = machine.hash();
 	ASSERT(hash1 != hash2);
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(PC2_X_STEP_PIN));
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_STEP_PIN));
@@ -180,6 +180,7 @@ void test_Machine() {
     ASSERT(machine.axis[0].isEnabled());
     ASSERT(machine.axis[1].isEnabled());
     ASSERT(machine.axis[2].isEnabled());
+	ASSERTEQUAL(hash2, machine.hash());
     ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(1, 1, 1, 0)));
 	ASSERTEQUAL(hash2, machine.hash());
     ASSERTEQUAL(2, arduino.pulses(PC2_X_STEP_PIN));
@@ -228,14 +229,13 @@ void test_Machine() {
 	ASSERTEQUALS(JT("{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveSysConfig(buf, sizeof(buf));
-#define HASH1 "2144573825"
+#define HASH1 "-1118437401"
 	ASSERTEQUALS(JT("{'ah':0,'as':0,'ch':" HASH1 ",'db':0,'hp':3,'jp':0,'lb':200,'lh':0,"
 				 "'mv':12800,'om':0,'pc':2,'pi':11,'to':0,'tv':0.70}"), 
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveDimConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'e':270.00,'f':90.00,'gr':9.375,'mi':16,'re':131.64,'rf':190.53,'st':200,"
-					"'ha1':-67.20,'ha2':-67.20,'ha3':-67.20}"),
+	ASSERTEQUALS(JT("{'e':270.00,'f':90.00,'gr':9.375,'ha':-67.20,'mi':16,'re':131.64,'rf':190.53,'st':200}"),
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 
@@ -741,7 +741,7 @@ void test_JsonController() {
     mt.process(jcmd);
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
-                      "{'ah':false,'as':false,'ch':2144573891,'eu':false,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
+                      "{'ah':false,'as':false,'ch':-1118437467,'eu':false,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
                       "'lp':0,'mv':12800,'om':0,'pc':2,'pi':11,'sd':800,'tc':12345,"\
                       "'to':0,'tv':0.700,'v':%.3f}"\
                       "},'t':0.000}\n";
@@ -1281,10 +1281,10 @@ MachineThread test_MTO_FPD_setup() {
     ASSERTEQUAL(-5600, machine.axis[2].home);
 
 	// DeltaCalculator should be in sync with FPD axes
-	Step3D pulses = machine.delta.getHomePulses();
-	ASSERTEQUAL(machine.axis[0].home, pulses.p1);
-	ASSERTEQUAL(machine.axis[1].home, pulses.p2);
-	ASSERTEQUAL(machine.axis[2].home, pulses.p3);
+	StepCoord pulses = machine.delta.getHomePulses();
+	ASSERTEQUAL(machine.axis[0].home, pulses);
+	ASSERTEQUAL(machine.axis[1].home, pulses);
+	ASSERTEQUAL(machine.axis[2].home, pulses);
 
 	// Verify Cartesian coordinates
     XYZ3D xyz = mt.fpdController.getXYZ3D();
@@ -1315,10 +1315,10 @@ MachineThread test_MTO_FPD_setup() {
 }
 
 void test_loadDeltaCalculator(Machine & machine) {
-	Step3D pulses = machine.delta.getHomePulses();
-	ASSERTEQUAL(machine.axis[0].home, pulses.p1);
-	ASSERTEQUAL(machine.axis[1].home, pulses.p2);
-	ASSERTEQUAL(machine.axis[2].home, pulses.p3);
+	StepCoord pulses = machine.delta.getHomePulses();
+	ASSERTEQUAL(machine.axis[0].home, pulses);
+	ASSERTEQUAL(machine.axis[1].home, pulses);
+	ASSERTEQUAL(machine.axis[2].home, pulses);
 }
 
 void test_MTO_FPD_mov() {
@@ -1621,7 +1621,7 @@ void test_MTO_FPD_dim() {
     machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
     Serial.push(JT("{'dim':{'e':131.636,'f':190.526,'gr':9.371,"
                    "'mi':32,'re':270.000,'rf':90.000,'st':400,"
-				   "'ha1':-67.241,'ha2':-67.242,'ha3':-67.243}}\n"));
+				   "'ha':-67.3}}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
@@ -1629,16 +1629,14 @@ void test_MTO_FPD_dim() {
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
 					"'e':131.636,'f':190.526,'gr':9.371,"
                     "'mi':32,'re':270.000,'rf':90.000,'st':400,"
-				    "'ha1':-67.241,'ha2':-67.242,'ha3':-67.243}},"
+				    "'ha':-67.300}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
 	DeltaCalculator& dc = machine.delta;
 	ASSERTEQUALT(131.636, dc.getEffectorTriangleSide(), 0.001);
 	ASSERTEQUALT(190.526, dc.getBaseTriangleSide(), 0.001);
 	ASSERTEQUALT(9.371, dc.getGearRatio(), 0.001);
-	ASSERTEQUALT(-67.241, dc.getHomeAngles().theta1, 0.001);
-	ASSERTEQUALT(-67.242, dc.getHomeAngles().theta2, 0.001);
-	ASSERTEQUALT(-67.243, dc.getHomeAngles().theta3, 0.001);
+	ASSERTEQUALT(-67.3, dc.getHomeAngle(), 0.001);
 	ASSERTEQUALT(32, dc.getMicrosteps(), 0.001);
 	ASSERTEQUALT(270.000, dc.getEffectorLength(), 0.001);
 	ASSERTEQUALT(90.000, dc.getBaseArmLength(), 0.001);
@@ -1652,35 +1650,104 @@ void test_MTO_FPD_dim() {
 void test_MTO_FPD_hom() {
     cout << "TEST	: test_MTO_FPD() =====" << endl;
 
-    MachineThread mt = test_MTO_FPD_setup();
-    Machine &machine = mt.machine;
-    int32_t xpulses;
-    int32_t ypulses;
-    int32_t zpulses;
+    {   // hom
+        MachineThread mt = test_MTO_FPD_setup();
+        Machine &machine = mt.machine;
+        arduino.setPin(PC2_PROBE_PIN, LOW);
+        Serial.push(JT("{'hom':''}}\n"));
+        mt.loop();	// parse
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // initializing
+        ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+        arduino.setPin(PC2_X_MIN_PIN, HIGH);
+        arduino.setPin(PC2_Y_MIN_PIN, HIGH);
+        arduino.setPin(PC2_Z_MIN_PIN, HIGH);
+        mt.loop();
+    	int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    	int32_t ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    	int32_t zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+        ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+        mt.loop(); // calibrating
+        ASSERTEQUAL(STATUS_OK, mt.status);
+    	ASSERTEQUAL(5600, arduino.pulses(PC2_X_STEP_PIN)-xpulses-machine.latchBackoff);
+    	ASSERTEQUAL(5600, arduino.pulses(PC2_Y_STEP_PIN)-ypulses-machine.latchBackoff);
+    	ASSERTEQUAL(5600, arduino.pulses(PC2_Z_STEP_PIN)-zpulses-machine.latchBackoff);
+        ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':-5600,'2':-5600,'3':-5600,'4':0}},'t':0.000}\n"),
+                     Serial.output().c_str());
+        ASSERTQUAD(Quad<StepCoord>(), machine.getMotorPosition());
+        XYZ3D xyz = mt.fpdController.getXYZ3D();
+        ASSERTEQUALT(0, xyz.x, 0.01);
+        ASSERTEQUALT(0, xyz.y, 0.01);
+        ASSERTEQUALT(0, xyz.z, 0.01);
+        ASSERTEQUALT(-5600, machine.axis[0].home, 0.01);
+        ASSERTEQUALT(-5600, machine.axis[1].home, 0.01);
+        ASSERTEQUALT(-5600, machine.axis[2].home, 0.01);
+        ASSERTEQUALT(0, machine.axis[3].home, 0.01);
+        ASSERTEQUALT(0, machine.axis[0].position, 0.01);
+        ASSERTEQUALT(0, machine.axis[1].position, 0.01);
+        ASSERTEQUALT(0, machine.axis[2].position, 0.01);
+        ASSERTEQUALT(0, machine.axis[3].position, 0.01);
+        mt.loop();
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    }
 
-    // hom
-    arduino.setPin(PC2_PROBE_PIN, LOW);
-    Serial.push(JT("{'hom':''}}\n"));
-    mt.loop();	// parse
-    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    mt.loop(); // initializing
-    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    arduino.setPin(PC2_X_MIN_PIN, HIGH);
-    arduino.setPin(PC2_Y_MIN_PIN, HIGH);
-    arduino.setPin(PC2_Z_MIN_PIN, HIGH);
-    mt.loop();
-    ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
-    mt.loop(); // calibrating
-    ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':-5600,'2':-5600,'3':-5600,'4':0}},'t':0.000}\n"),
-                 Serial.output().c_str());
-    ASSERTQUAD(Quad<StepCoord>(), machine.getMotorPosition());
-    XYZ3D xyz = mt.fpdController.getXYZ3D();
-    ASSERTEQUALT(0, xyz.x, 0.01);
-    ASSERTEQUALT(0, xyz.y, 0.01);
-    ASSERTEQUALT(0, xyz.z, 0.01);
-    mt.loop();
-    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    {   // hom and set coordinates
+        MachineThread mt = test_MTO_FPD_setup();
+        Machine &machine = mt.machine;
+        machine = mt.machine;
+        arduino.setPin(PC2_PROBE_PIN, LOW);
+        Serial.push(JT("{'hom':{'1':-5601,'2':-5601,'3':-5601,'4':4}}\n"));
+        mt.loop();	// parse
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // initializing
+        ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+        ASSERTEQUALT(-5601, machine.axis[0].home, 0.01);
+        ASSERTEQUALT(-5601, machine.axis[1].home, 0.01);
+        ASSERTEQUALT(-5601, machine.axis[2].home, 0.01);
+        ASSERTEQUALT(4, machine.axis[3].position, 0.01);
+        ASSERTEQUALT(-5601, machine.axis[0].position, 0.01);
+        ASSERTEQUALT(-5601, machine.axis[1].position, 0.01);
+        ASSERTEQUALT(-5601, machine.axis[2].position, 0.01);
+        ASSERTEQUALT(4, machine.axis[3].home, 0.01);
+		StepCoord hp = machine.delta.getHomePulses();
+		ASSERTEQUAL(machine.axis[0].home, hp);
+		ASSERTEQUAL(machine.axis[1].home, hp);
+		ASSERTEQUAL(machine.axis[2].home, hp);
+        arduino.setPin(PC2_X_MIN_PIN, HIGH);
+        arduino.setPin(PC2_Y_MIN_PIN, HIGH);
+        arduino.setPin(PC2_Z_MIN_PIN, HIGH);
+        mt.loop();	// moving: home and backoff
+        ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+    	int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    	int32_t ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    	int32_t zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+        mt.loop(); // calibrating: rapid probe to post-home destination
+        ASSERTEQUAL(STATUS_OK, mt.status);
+        ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':-5601,'2':-5601,'3':-5601,'4':4}},'t':0.000}\n"),
+                     Serial.output().c_str());
+		hp = machine.delta.getHomePulses();
+		ASSERTEQUAL(machine.axis[0].home, hp);
+		ASSERTEQUAL(machine.axis[1].home, hp);
+		ASSERTEQUAL(machine.axis[2].home, hp);
+    	ASSERTEQUAL(5601, arduino.pulses(PC2_X_STEP_PIN)-xpulses-machine.latchBackoff);
+    	ASSERTEQUAL(5601, arduino.pulses(PC2_Y_STEP_PIN)-ypulses-machine.latchBackoff);
+    	ASSERTEQUAL(5601, arduino.pulses(PC2_Z_STEP_PIN)-zpulses-machine.latchBackoff);
+        ASSERTQUAD(Quad<StepCoord>(0,0,0,4), machine.getMotorPosition());
+        XYZ3D xyz = mt.fpdController.getXYZ3D();
+        ASSERTEQUALT(0, xyz.x, 0.01);
+        ASSERTEQUALT(0, xyz.y, 0.01);
+        ASSERTEQUALT(0, xyz.z, 0.01);
+        ASSERTEQUALT(-5601, machine.axis[0].home, 0.01);
+        ASSERTEQUALT(-5601, machine.axis[1].home, 0.01);
+        ASSERTEQUALT(-5601, machine.axis[2].home, 0.01);
+        ASSERTEQUALT(4, machine.axis[3].home, 0.01);
+        ASSERTEQUALT(0, machine.axis[0].position, 0.01);
+        ASSERTEQUALT(0, machine.axis[1].position, 0.01);
+        ASSERTEQUALT(0, machine.axis[2].position, 0.01);
+        ASSERTEQUALT(4, machine.axis[3].position, 0.01);
+        mt.loop();
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    }
 
     cout << "TEST	: test_MTO_FPD_hom() OK " << endl;
 }
@@ -1749,62 +1816,62 @@ void test_calibrate() {
     Machine &machine = mt.machine;
 
     Serial.push(JT("{'systo':1}\n"));
-	mt.loop();
+    mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-	Serial.clear();
+    Serial.clear();
 
-	// dataset #1
-	machine.op.probe.probeData[0] = -62.202;
-	machine.op.probe.probeData[1] = -61.646;
-	machine.op.probe.probeData[2] = -61.519;
-	machine.op.probe.probeData[3] = -61.422;
-	machine.op.probe.probeData[4] = -61.477;
-	machine.op.probe.probeData[5] = -61.604;
-	machine.op.probe.probeData[6] = -61.707;
-	machine.op.probe.probeData[7] = -62.202;
-	ASSERTEQUAL(-5600, machine.axis[0].home);
-	ASSERTEQUAL(-5600, machine.axis[1].home);
-	ASSERTEQUAL(-5600, machine.axis[2].home);
+    // dataset #1
+    machine.op.probe.probeData[0] = -62.202;
+    machine.op.probe.probeData[1] = -61.646;
+    machine.op.probe.probeData[2] = -61.519;
+    machine.op.probe.probeData[3] = -61.422;
+    machine.op.probe.probeData[4] = -61.477;
+    machine.op.probe.probeData[5] = -61.604;
+    machine.op.probe.probeData[6] = -61.707;
+    machine.op.probe.probeData[7] = -62.202;
+    ASSERTEQUAL(-5600, machine.axis[0].home);
+    ASSERTEQUAL(-5600, machine.axis[1].home);
+    ASSERTEQUAL(-5600, machine.axis[2].home);
     Serial.push(JT("{'cal':''}\n"));
-	mt.loop();
+    mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{"
-                    "'cal':{'ha':-77.639,'he':-10.439,'sv':false,'zc':-62.202,'zr':-61.562}},"
+                    "'cal':{'ha':-77.638,'he':-10.438,'sv':false,'zc':-62.202,'zr':-61.562}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
-	ASSERTEQUAL(-5600, machine.axis[0].home);
-	ASSERTEQUAL(-5600, machine.axis[1].home);
-	ASSERTEQUAL(-5600, machine.axis[2].home);
+    ASSERTEQUAL(-5600, machine.axis[0].home);
+    ASSERTEQUAL(-5600, machine.axis[1].home);
+    ASSERTEQUAL(-5600, machine.axis[2].home);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-	// dataset #2
-	machine.op.probe.probeData[0] = -62.259;
-	machine.op.probe.probeData[1] = -61.701;
-	machine.op.probe.probeData[2] = -61.556;
-	machine.op.probe.probeData[3] = -61.465;
-	machine.op.probe.probeData[4] = -61.495;
-	machine.op.probe.probeData[5] = -61.695;
-	machine.op.probe.probeData[6] = -61.761;
-	machine.op.probe.probeData[7] = -62.259;
+    // dataset #2
+    machine.op.probe.probeData[0] = -62.259;
+    machine.op.probe.probeData[1] = -61.701;
+    machine.op.probe.probeData[2] = -61.556;
+    machine.op.probe.probeData[3] = -61.465;
+    machine.op.probe.probeData[4] = -61.495;
+    machine.op.probe.probeData[5] = -61.695;
+    machine.op.probe.probeData[6] = -61.761;
+    machine.op.probe.probeData[7] = -62.259;
     Serial.push(JT("{'cal':{'ha':'','sv':true}}\n"));
-	mt.loop();
+    mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{"
-                    "'cal':{'ha':-77.721,'sv':true}},"
+                    "'cal':{'ha':-77.722,'sv':true}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
-	ASSERTEQUAL(-6477, machine.axis[0].home);
-	ASSERTEQUAL(-6477, machine.axis[1].home);
-	ASSERTEQUAL(-6477, machine.axis[2].home);
+    ASSERTEQUAL(-6477, machine.axis[0].home);
+    ASSERTEQUAL(-6477, machine.axis[1].home);
+    ASSERTEQUAL(-6477, machine.axis[2].home);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -2087,7 +2154,7 @@ void test_dvs() {
 }
 
 void test_error(MachineThread &mt, const char * cmd, Status status, const char *output = NULL) {
-	TESTCOUT1("test_error: ", cmd);
+    TESTCOUT1("test_error: ", cmd);
     Serial.push(JT(cmd));
     test_ticks(1); // parse
     if (mt.status == STATUS_BUSY_PARSED) {
@@ -2192,45 +2259,45 @@ void test_autoSync() {
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     Serial.clear(); // banner
     ASSERT(machine.syncHash);
-    uint32_t hash1 = machine.syncHash;
-	ASSERTEQUAL(hash1, machine.hash());
-	machine.axis[4].enable(false);
-	machine.axis[5].enable(false); 
-	uint32_t hash2 = machine.hash();
-	ASSERT(hash1 != hash2);
+    int32_t hash1 = machine.syncHash;
+    ASSERTEQUAL(hash1, machine.hash());
+    machine.axis[4].enable(false);
+    machine.axis[5].enable(false);
+    int32_t hash2 = machine.hash();
+    ASSERT(hash1 != hash2);
 
     // enable auto-sync
     Serial.push(JT("{'sysas':1,'sysom':3,'sysah':1,'syspc':2}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	ASSERTEQUAL(false, machine.axis[4].isEnabled());
+    ASSERTEQUAL(false, machine.axis[4].isEnabled());
     mt.loop();
-    ASSERTEQUALS(JT("{'s':0,'r':{'sysas':true,'sysom':3,'sysah':true,'syspc':2},'t':0.000}\n"), 
-		Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'sysas':true,'sysom':3,'sysah':true,'syspc':2},'t':0.000}\n"),
+                 Serial.output().c_str());
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERT(machine.autoSync);
-	int32_t hash3 = machine.hash();
-	ASSERT(hash2 != hash3);
-	ASSERTEQUAL(false, machine.axis[4].isEnabled());
-#define HASH3 "2146409185"
-	snprintf(buf, sizeof(buf), "%ld", (long) hash3);
-	ASSERTEQUALS(HASH3, buf);
+    int32_t hash3 = machine.hash();
+    ASSERT(hash2 != hash3);
+    ASSERTEQUAL(false, machine.axis[4].isEnabled());
+#define HASH3 "-1117127545"
+    snprintf(buf, sizeof(buf), "%ld", (long) hash3);
+    ASSERTEQUALS(HASH3, buf);
 
     mt.loop();
-	string eeprom3 = eeprom_read_string(0);
+    string eeprom3 = eeprom_read_string(0);
     ASSERTEQUALS(JT( "["
                      "{'sys':{'ah':1,'as':1,'ch':" HASH3 ",'db':0,'hp':3,'jp':0,"
-					 "'lb':200,'lh':0,'mv':12800,'om':3,'pc':2,'pi':11,'to':0,'tv':0.70}},"
+                     "'lb':200,'lh':0,'mv':12800,'om':3,'pc':2,'pi':11,'to':0,'tv':0.70}},"
                      "{'x':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'y':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'z':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'a':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'b':{'en':0}},"
                      "{'c':{'en':0}},"
-					 "{'hom':''}]"),
+                     "{'hom':''}]"),
                  eeprom3.c_str());
-	snprintf(buf, sizeof(buf), "%ld", (long) machine.syncHash);
-	ASSERTEQUALS(HASH3, buf);
+    snprintf(buf, sizeof(buf), "%ld", (long) machine.syncHash);
+    ASSERTEQUALS(HASH3, buf);
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     mt.loop();
     ASSERT(hash1 != machine.syncHash);
@@ -2241,25 +2308,25 @@ void test_autoSync() {
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-	// simulate restart
-	machine.syncHash = 0;
-	mt.printBannerOnIdle = true;
-	machine.autoSync = false;
-	mt.status = STATUS_BUSY_SETUP;
+    // simulate restart
+    machine.syncHash = 0;
+    mt.printBannerOnIdle = true;
+    machine.autoSync = false;
+    mt.status = STATUS_BUSY_SETUP;
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_EEPROM, mt.status);
     mt.loop(); // parse startup JSON
-	Serial.clear(); // banner
+    Serial.clear(); // banner
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop(); // sys
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	ASSERTEQUAL(true, machine.autoSync);
-	ASSERTEQUALS(eeprom3.c_str(), eeprom_read_string(0).c_str());
-	ASSERTEQUALS(JT("{'s':0,'r':" 
+    ASSERTEQUAL(true, machine.autoSync);
+    ASSERTEQUALS(eeprom3.c_str(), eeprom_read_string(0).c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':"
                     "{'sys':{'ah':true,'as':true,'ch':" HASH3 ",'db':0,'hp':3,"
-					"'jp':false,'lb':200,'lh':false,'mv':12800,'om':3,'pc':2,'pi':11,'to':0,'tv':0.700}},"
-					"'t':0.000}\n"),
-					Serial.output().c_str());
+                    "'jp':false,'lb':200,'lh':false,'mv':12800,'om':3,'pc':2,'pi':11,'to':0,'tv':0.700}},"
+                    "'t':0.000}\n"),
+                 Serial.output().c_str());
     mt.loop(); // x
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop(); // y
@@ -2284,15 +2351,15 @@ void test_autoSync() {
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(hash3, machine.hash());
-	ASSERTEQUAL(true, machine.autoSync);
-	Serial.clear();
+    ASSERTEQUAL(true, machine.autoSync);
+    Serial.clear();
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     mt.loop(); // banner
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-	snprintf(buf, sizeof(buf), "FireStep %d.%d.%d sysch:%s\n", 
-		VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, HASH3);
-	ASSERTEQUALS(buf, Serial.output().c_str());
+    snprintf(buf, sizeof(buf), "FireStep %d.%d.%d sysch:%s\n",
+             VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, HASH3);
+    ASSERTEQUALS(buf, Serial.output().c_str());
 
     cout << "TEST	: test_autoSync() OK " << endl;
 }
@@ -2438,7 +2505,7 @@ void test_eep() {
     ASSERTEQUALT(0.7, machine.tvMax, 0.0001);
     test_ticks(1);
     ASSERTEQUAL(STATUS_OK, mt.status);
-	ASSERTEQUAL(false, machine.isEEUserEnabled());
+    ASSERTEQUAL(false, machine.isEEUserEnabled());
     test_ticks(1);
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -2452,7 +2519,7 @@ void test_eep() {
                  Serial.output().c_str());
     test_ticks(1);
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-	ASSERTEQUAL(true, machine.isEEUserEnabled());
+    ASSERTEQUAL(true, machine.isEEUserEnabled());
     mt.status = STATUS_BUSY_SETUP;
     test_ticks(1);
     ASSERTEQUAL(STATUS_BUSY_EEPROM, mt.status);
@@ -2772,8 +2839,8 @@ void test_probe() {
     cout << "TEST	: test_probe() OK " << endl;
 }
 
-void test_Home() {
-    cout << "TEST	: test_Home() =====" << endl;
+void test_MTO_RAW_hom() {
+    cout << "TEST	: test_MTO_RAW_hom() =====" << endl;
 
     MachineThread mt = test_setup();
     Machine &machine = mt.machine;
@@ -2794,11 +2861,10 @@ void test_Home() {
 
     // TEST LONG FORM
     threadClock.ticks++;
-    Serial.push(JT("{'hom':{'x':'','z':20}}\n"));
+    Serial.push(JT("{'hom':{'x':'','z':16}}\n"));
     mt.loop();	// parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTQUAD(Quad<StepCoord>(100, 100, 100, 100), mt.machine.getMotorPosition());
-
     threadClock.ticks++;
     mt.loop(); // initializing
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
@@ -2809,9 +2875,8 @@ void test_Home() {
     ASSERTEQUAL(xpulses, arduino.pulses(PC2_X_STEP_PIN));
     ASSERTEQUAL(ypulses, arduino.pulses(PC2_Y_STEP_PIN));
     ASSERTEQUAL(zpulses, arduino.pulses(PC2_Z_STEP_PIN));
-    ASSERTQUAD(Quad<StepCoord>(100, 100, 100, 100), mt.machine.getMotorPosition());
+    ASSERTQUAD(Quad<StepCoord>(5, 100, 16, 100), mt.machine.getMotorPosition());
     ASSERTEQUALS("", Serial.output().c_str());
-
     threadClock.ticks++;
     mt.loop(); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
@@ -2824,7 +2889,6 @@ void test_Home() {
     ASSERTEQUAL(ypulses, arduino.pulses(PC2_Y_STEP_PIN));
     ASSERTEQUAL(zpulses + hPulses * 1, arduino.pulses(PC2_Z_STEP_PIN));
     ASSERTEQUALS("", Serial.output().c_str());
-
     threadClock.ticks++;
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
@@ -2848,7 +2912,6 @@ void test_Home() {
     ASSERT(!machine.axis[1].atMin);
     ASSERT(!machine.axis[2].atMin);
     ASSERT(!machine.axis[3].atMin);
-
     arduino.setPin(PC2_X_MIN_PIN, HIGH);
     threadClock.ticks++;
     mt.loop(); // hit first limit switch
@@ -2869,7 +2932,6 @@ void test_Home() {
     ASSERT(!machine.axis[1].atMin);
     ASSERT(!machine.axis[2].atMin);
     ASSERT(!machine.axis[3].atMin);
-
     arduino.setPin(PC2_Z_MIN_PIN, HIGH);
     threadClock.ticks++;
     mt.loop(); // hit final limit switch
@@ -2878,7 +2940,6 @@ void test_Home() {
     ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(hPulses * 3 + LATCH_BACKOFF, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
-
     threadClock.ticks++;
     mt.loop(); // calibrating
     ASSERTEQUAL(STATUS_OK, mt.status);
@@ -2886,14 +2947,14 @@ void test_Home() {
     ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(hPulses * 3 + 2*LATCH_BACKOFF, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
-    ASSERTQUAD(Quad<StepCoord>(5, 100, 20, 100), mt.machine.getMotorPosition());
+    ASSERTQUAD(Quad<StepCoord>(5, 100, 16, 100), mt.machine.getMotorPosition());
     ASSERTEQUAL(false, machine.axis[0].homing);
     ASSERTEQUAL(false, machine.axis[1].homing);
     ASSERTEQUAL(false, machine.axis[2].homing);
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_X_DIR_PIN)); // HIGH because we backed off
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_Y_DIR_PIN));
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_Z_DIR_PIN)); // HIGH because we backed off
-    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'x':5,'z':20}},'t':0.000}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'x':5,'z':16}},'t':0.000}\n"), Serial.output().c_str());
     ASSERT(machine.axis[0].atMin);
     ASSERT(!machine.axis[1].atMin);
     ASSERT(machine.axis[2].atMin);
@@ -2911,12 +2972,10 @@ void test_Home() {
     mt.loop(); // ready for next command
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     ASSERTEQUAL(NOPIN, machine.axis[3].pinMin);
-
     threadClock.ticks++;
     Serial.push(JT("{'homy':''}\n"));
     mt.loop();	// parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-
     threadClock.ticks++;
     mt.loop(); // initializing
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
@@ -2925,18 +2984,15 @@ void test_Home() {
     ASSERTEQUAL(false, machine.axis[0].homing);
     ASSERTEQUAL(true, machine.axis[1].homing);
     ASSERTEQUAL(false, machine.axis[2].homing);
-
     threadClock.ticks++;
     mt.loop(); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUALS("", Serial.output().c_str());
-
     arduino.setPin(PC2_Y_MIN_PIN, HIGH);
     threadClock.ticks++;
     mt.loop(); // hit limit switch
     ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
     ASSERTEQUAL(hPulses * 1 + LATCH_BACKOFF, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
-
     threadClock.ticks++;
     mt.loop(); // calibrating
     ASSERTEQUAL(STATUS_OK, mt.status);
@@ -2956,41 +3012,46 @@ void test_Home() {
     threadClock.ticks++;
     mt.loop(); // ready for next command
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-
     threadClock.ticks++;
+    machine.axis[0].home = 5;
+    machine.axis[1].home = 10;
+    machine.axis[2].home = 15;
+    machine.axis[3].home = 20;
+	ASSERT(machine.axis[0].isEnabled());
+	ASSERT(!machine.axis[1].isEnabled());
+	ASSERT(!machine.axis[2].isEnabled());
+	ASSERT(machine.axis[3].isEnabled());
     Serial.push(JT("{'hom':''}\n"));
     mt.loop();	// parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-
     threadClock.ticks++;
     mt.loop(); // initializing
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
     ASSERTEQUALS("", Serial.output().c_str());
-
     threadClock.ticks++;
     mt.loop(); // moving
     ASSERTEQUALS("", Serial.output().c_str());
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
-
     arduino.setPin(PC2_X_MIN_PIN, HIGH);
     threadClock.ticks++;
     mt.loop(); // hit limit switch
     ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
     ASSERTEQUAL(hPulses * 1 + LATCH_BACKOFF, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-
     threadClock.ticks++;
     mt.loop(); // hit limit switch
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(hPulses * 1 + 2*LATCH_BACKOFF, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
-    ASSERTQUAD(Quad<StepCoord>(5, 100, 100, 100), mt.machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':5,'2':100,'3':100,'4':100}},'t':0.000}\n"),
+    ASSERTQUAD(Quad<StepCoord>(5, 100, 100, 20), mt.machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':5,'2':10,'3':15,'4':20}},'t':0.000}\n"),
                  Serial.output().c_str());
+    mt.loop(); // hit limit switch
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-    cout << "TEST	: test_Home() OK " << endl;
+    cout << "TEST	: test_MTO_RAW_hom() OK " << endl;
 }
 
 void test_MachineThread() {
@@ -3417,6 +3478,14 @@ void test_command_array() {
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     // TEST two command array
+	ASSERT(machine.axis[0].isEnabled());
+	ASSERT(machine.axis[1].isEnabled());
+	ASSERT(machine.axis[2].isEnabled());
+	ASSERT(machine.axis[3].isEnabled());
+	machine.axis[0].home = 5;
+	machine.axis[1].home = 10;
+	machine.axis[2].home = 15;
+	machine.axis[3].home = 20;
     int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
     Serial.push(JT("[{'syspc':2},{'hom':''}]\n"));
     test_ticks(1); // parse JsonCommand
@@ -3443,7 +3512,7 @@ void test_command_array() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1); // done
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':0,'2':0,'3':0,'4':4}},'t':0.001}\n"), Serial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':5,'2':10,'3':15,'4':20}},'t':0.001}\n"), Serial.output().c_str());
     test_ticks(1); // done
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -3456,18 +3525,12 @@ void test_DeltaCalculator() {
 
     dc.setup();
 
-	Angle3D ha1 = dc.getHomeAngles();
-	dc.setHomePulses(dc.getHomePulses());
-	Angle3D ha2 = dc.getHomeAngles();
-	ASSERTEQUAL(ha1.theta1, ha2.theta1);
-	ASSERTEQUAL(ha1.theta2, ha2.theta2);
-	Angle3D eTheta = dc.getHomingError();
-	ASSERTEQUAL(0, eTheta.theta1);
-	ASSERTEQUAL(0, eTheta.theta2);
-	ASSERTEQUAL(0, eTheta.theta3);
+    PH5TYPE ha1 = dc.getHomeAngle();
+    dc.setHomePulses(dc.getHomePulses());
+    PH5TYPE ha2 = dc.getHomeAngle();
+    ASSERTEQUALT(ha1, ha2, 0.00001);
 
-    Step3D homePulses = dc.getHomePulses();
-    ASSERT(homePulses.isValid());
+    StepCoord homePulses = dc.getHomePulses();
     ASSERTEQUALT(131.636, dc.getEffectorTriangleSide(), 0.0001);
     ASSERTEQUALT(190.526, dc.getBaseTriangleSide(), 0.0001);
     ASSERTEQUALT(270, dc.getEffectorLength(), 0.000001);
@@ -3478,13 +3541,11 @@ void test_DeltaCalculator() {
     ASSERTEQUALT(-111.571, dc.getMinZ(), 0.001);
     ASSERTEQUALT(-69.571, dc.getMinZ(100,100), 0.001);
     ASSERTEQUALT(-67.2, dc.getMinDegrees(), 0.001);
-    ASSERTEQUAL(-5600, homePulses.p1);
-    ASSERTEQUAL(-5600, homePulses.p2);
-    ASSERTEQUAL(-5600, homePulses.p3);
-    Angle3D homeAngles = dc.getHomeAngles();
-    ASSERTEQUALT(-67.2, homeAngles.theta1, 0.001);
-    ASSERTEQUALT(-67.2, homeAngles.theta2, 0.001);
-    ASSERTEQUALT(-67.2, homeAngles.theta3, 0.001);
+    ASSERTEQUAL(-5600, homePulses);
+    ASSERTEQUAL(-5600, homePulses);
+    ASSERTEQUAL(-5600, homePulses);
+    PH5TYPE homeAngle = dc.getHomeAngle();
+    ASSERTEQUALT(-67.2, homeAngle, 0.001);
 
     XYZ3D xyz = dc.calcXYZ(Angle3D());
     ASSERT(xyz.isValid());
@@ -3519,39 +3580,39 @@ void test_DeltaCalculator() {
     XYZ3D xyz4 = dc.calcXYZ(pulses4);
     ASSERTEQUALT(0.0742645, xyz.z - xyz4.z, 0.00001);
 
-	// ZBowlError
-	PH5TYPE e = 0.015;
-	PH5TYPE zCenter = -60.5;
-	PH5TYPE radius = 50;
-	ASSERTEQUALT(0.601, dc.calcZBowlError(zCenter, radius, -10), e);
-	ASSERTEQUALT(0.291, dc.calcZBowlError(zCenter, radius, -5), e);
-	ASSERTEQUALT(0, dc.calcZBowlError(zCenter, radius, 0), e);
-	ASSERTEQUALT(-0.284, dc.calcZBowlError(zCenter, radius, 5), e);
-	ASSERTEQUALT(-0.534, dc.calcZBowlError(zCenter, radius, 10), e);
+    // ZBowlError
+    PH5TYPE e = 0.015;
+    PH5TYPE zCenter = -60.5;
+    PH5TYPE radius = 50;
+    ASSERTEQUALT(0.601, dc.calcZBowlError(zCenter, radius, -10), e);
+    ASSERTEQUALT(0.291, dc.calcZBowlError(zCenter, radius, -5), e);
+    ASSERTEQUALT(0, dc.calcZBowlError(zCenter, radius, 0), e);
+    ASSERTEQUALT(-0.284, dc.calcZBowlError(zCenter, radius, 5), e);
+    ASSERTEQUALT(-0.534, dc.calcZBowlError(zCenter, radius, 10), e);
 
-	// ZBowlETheta (initial calibration)
-	PH5TYPE zRim = -61; // 0.5mm bowl error
+    // ZBowlETheta (initial calibration)
+    PH5TYPE zRim = -61; // 0.5mm bowl error
 #ifdef NEIL
-zCenter = -10.808;
-zRim = -10.468;
+    zCenter = -10.808;
+    zRim = -10.468;
 #endif
-	PH5TYPE eTheta1 = dc.calcZBowlETheta(zCenter, zRim, radius);
-	ASSERTEQUALT(-67.2, dc.getHomeAngles().theta1,0.001); // default
-	dc.setHomingError(Angle3D(eTheta1,eTheta1,eTheta1));
-	TESTCOUT2("Homing angle:", dc.getHomeAngles().theta1, " error:", eTheta1);
-	ASSERTEQUALT(-57.91, dc.getHomeAngles().theta1, 0.001); // corrected
-	ASSERTEQUALT(9.291, eTheta1, e);
-	ASSERTEQUAL(-4826, dc.getHomePulses().p1);
-	// subsequent calibration with no error
-	PH5TYPE eTheta2 = dc.calcZBowlETheta(zCenter, zCenter, radius);
-	ASSERTEQUALT(eTheta1, eTheta2, 0);
-	// subsequent calibration with almost undetectable error
-	PH5TYPE zErrTiny = 0.01; // 10 microns
-	PH5TYPE eTheta3 = dc.calcZBowlETheta(zCenter, zCenter+zErrTiny, radius);
-	ASSERTEQUALT(9.205, eTheta3, e);
-	dc.setHomingError(Angle3D(eTheta3,eTheta3,eTheta3));
-	ASSERTEQUALT(-57.995, dc.getHomeAngles().theta1,0.001); // corrected
-	ASSERTEQUAL(-4833, dc.getHomePulses().p1);
+    PH5TYPE eTheta1 = dc.calcZBowlETheta(zCenter, zRim, radius);
+    ASSERTEQUALT(-67.2, dc.getHomeAngle(),0.001); // default
+	dc.setHomeAngle(dc.getDefaultHomeAngle()+eTheta1);
+    TESTCOUT2("Homing angle:", dc.getHomeAngle(), " error:", eTheta1);
+    ASSERTEQUALT(-57.907, dc.getHomeAngle(), 0.001); // corrected
+    ASSERTEQUALT(9.29296, eTheta1, 0.00001);
+    ASSERTEQUAL(-4826, dc.getHomePulses());
+    // subsequent calibration with no error
+    PH5TYPE eTheta2 = dc.calcZBowlETheta(zCenter, zCenter, radius);
+    ASSERTEQUALT(9.29296, eTheta2, 0.00001);
+    // subsequent calibration with almost undetectable error
+    PH5TYPE zErrTiny = 0.01; // 10 microns
+    PH5TYPE eTheta3 = dc.calcZBowlETheta(zCenter, zCenter+zErrTiny, radius);
+    ASSERTEQUALT(-0.300, eTheta3, 0.001);
+	dc.setHomeAngle(dc.getDefaultHomeAngle()+eTheta3);
+    ASSERTEQUALT(-67.500, dc.getHomeAngle(),0.001); // corrected
+    ASSERTEQUAL(-5625, dc.getHomePulses());
 
     cout << "TEST	: test_DeltaCalculator() OK " << endl;
 }
@@ -3562,58 +3623,58 @@ void test_msg_cmt_idl() {
     arduino.clear();
     threadRunner.clear();
     MachineThread mt;
-	Machine &machine(mt.machine);
+    Machine &machine(mt.machine);
     machine.pDisplay = &testDisplay;
     mt.setup(PC1_EMC02);
 
-	ASSERTEQUAL(STATUS_BUSY_SETUP, mt.status);
-	mt.loop();
-	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    ASSERTEQUAL(STATUS_BUSY_SETUP, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     Serial.push(JT("[{'msg':'quack'},{'cmt':'hello'},{'msg':'duck'}]\n"));
-	mt.loop();
-	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mt.loop(); // quack
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // quack
     ASSERTEQUALS(JT("quack\n"), Serial.output().c_str());
-	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mt.loop(); // hello
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // hello
     ASSERTEQUALS(JT(""), Serial.output().c_str());
-	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mt.loop(); // duck
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // duck
     ASSERTEQUALS(JT("duck\n"), Serial.output().c_str());
-	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mt.loop();
-	ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'msg':'duck'},'t':0.000}\n"), Serial.output().c_str());
-	mt.loop();
-	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-	machine.outputMode = OUTPUT_CMT;
+    machine.outputMode = OUTPUT_CMT;
     Serial.push(JT("[{'msg':'quack'},{'cmt':'hello'},{'msg':'duck'}]\n"));
-	mt.loop();
-	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mt.loop(); // quack
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // quack
     ASSERTEQUALS(JT("quack\n"), Serial.output().c_str());
-	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mt.loop(); // hello
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // hello
     ASSERTEQUALS(JT("hello\n"), Serial.output().c_str());
-	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mt.loop(); // duck
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // duck
     ASSERTEQUALS(JT("duck\n"), Serial.output().c_str());
-	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mt.loop();
-	ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'msg':'duck'},'t':0.000}\n"), Serial.output().c_str());
-	mt.loop();
-	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     Serial.push(JT("{'idl':123}\n"));
-	mt.loop();
-	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mt.loop();
-	ASSERTEQUAL(STATUS_OK, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'idl':123},'t':0.123}\n"), Serial.output().c_str());
-	mt.loop();
-	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     cout << "TEST	: test_msg_cmt_idl() OK " << endl;
 }
@@ -3632,10 +3693,10 @@ int main(int argc, char *argv[]) {
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
         test_DeltaCalculator();
         //test_MTO_FPD();
-		//test_calibrate();
+        //test_calibrate();
         //test_eep();
         //test_autoSync();
-		//test_mpo();
+        //test_mpo();
     } else {
         test_Serial();
         test_Thread();
@@ -3648,7 +3709,7 @@ int main(int argc, char *argv[]) {
         test_JsonController();
         test_MachineThread();
         test_Display();
-        test_Home();
+        test_MTO_RAW_hom();
         test_PrettyPrint();
         test_Idle();
         test_Move();
@@ -3671,9 +3732,9 @@ int main(int argc, char *argv[]) {
         test_MTO_FPD_hom();
         test_MTO_FPD();
         test_autoSync();
-		test_msg_cmt_idl();
-		test_mpo();
-		test_calibrate();
+        test_msg_cmt_idl();
+        test_mpo();
+        test_calibrate();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;

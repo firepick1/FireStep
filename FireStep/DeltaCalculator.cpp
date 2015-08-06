@@ -37,6 +37,7 @@ DeltaCalculator::DeltaCalculator()
       gearRatio(150/16.0),
       dz(0)
 {
+	homeAngle = getDefaultHomeAngle();
 }
 
 void DeltaCalculator::setup() {
@@ -50,56 +51,28 @@ void DeltaCalculator::setup() {
 }
 
 PH5TYPE DeltaCalculator::getMinDegrees() {
+	return getDefaultHomeAngle();
+}
+
+PH5TYPE DeltaCalculator::getDefaultHomeAngle() {
 	PH5TYPE armsParallel = 180*asin((f-e)/(re*sqrt3))/pi - 90;
 	PH5TYPE clearanceAngle = 180*asin(acr/rf)/pi;
     PH5TYPE rawDegrees =  armsParallel + clearanceAngle;
     PH5TYPE dp = degreePulses();
 	StepCoord minPulses = rawDegrees * dp;
 	PH5TYPE degrees =  minPulses/dp;	// digitize min degrees to stepper pulses
-	//TESTCOUT2("getMinDegrees:", degrees, " raw:", rawDegrees);
+	//TESTCOUT2("getDefaultHomeAngle:", degrees, " raw:", rawDegrees);
 	return degrees;
 }
 
-void DeltaCalculator::setHomeAngles(Angle3D value) {
-    PH5TYPE minDegrees = getMinDegrees();
-
-    eTheta.theta1 = value.theta1 - minDegrees;
-    eTheta.theta2 = value.theta2 - minDegrees;
-    eTheta.theta3 = value.theta3 - minDegrees;
-	TESTCOUT3("setHomeAngles theta1:", eTheta.theta1, " theta2:", eTheta.theta2, " theta3:", eTheta.theta3);
-}
-
-Angle3D DeltaCalculator::getHomeAngles() {
-    PH5TYPE minDegrees = getMinDegrees();
-
-    return Angle3D(
-               minDegrees+eTheta.theta1,
-               minDegrees+eTheta.theta2,
-               minDegrees+eTheta.theta3
-           );
-}
-
-Step3D DeltaCalculator::getHomePulses() {
-    Angle3D angles(getHomeAngles());
+StepCoord DeltaCalculator::getHomePulses() {
     PH5TYPE dp = degreePulses();
-    Step3D pulses(
-        roundStep(angles.theta1*dp),
-        roundStep(angles.theta2*dp),
-        roundStep(angles.theta3*dp)
-    );
-    TESTCOUT3("DeltaCalculator.homeAngle:", angles.theta1, " valid:", angles.isValid(), " pulses:", pulses.p1);
-    return pulses;
+	return roundStep(homeAngle*dp);
 }
 
-void DeltaCalculator::setHomePulses(Step3D pulses) {
+void DeltaCalculator::setHomePulses(StepCoord pulses) {
     PH5TYPE dp = degreePulses();
-    Angle3D angles(
-		pulses.p1/dp,
-		pulses.p2/dp,
-		pulses.p3/dp
-	);
-	setHomeAngles(angles);
-    TESTCOUT3("DeltaCalculator.setHomePulses:", angles.theta1, " valid:", angles.isValid(), " pulses:", pulses.p1);
+	setHomeAngle(pulses/dp);
 }
 
 PH5TYPE DeltaCalculator::calcAngleYZ(PH5TYPE X, PH5TYPE Y, PH5TYPE Z) {
@@ -152,9 +125,9 @@ Angle3D DeltaCalculator::calcAngles(XYZ3D xyz) {
         //TESTCOUT1("calcAngles:","NO_SOLUTION");
         return Angle3D(false, NO_SOLUTION);
     }
-    angles.theta1 += eTheta.theta1;
-    angles.theta2 += eTheta.theta2;
-    angles.theta3 += eTheta.theta3;
+    //angles.theta1 += eTheta.theta1;
+    //angles.theta2 += eTheta.theta2;
+    //angles.theta3 += eTheta.theta3;
     return angles;
 }
 
@@ -188,9 +161,12 @@ PH5TYPE DeltaCalculator::getMinZ(PH5TYPE x, PH5TYPE y) {
 XYZ3D DeltaCalculator::calcXYZ(Angle3D angles) {
     XYZ3D xyz;
     PH5TYPE t = (f - e) * tan30 / 2;
-    PH5TYPE theta1 = (angles.theta1 - eTheta.theta1) * dtr;
-    PH5TYPE theta2 = (angles.theta2 - eTheta.theta2) * dtr;
-    PH5TYPE theta3 = (angles.theta3 - eTheta.theta3) * dtr;
+    //PH5TYPE theta1 = (angles.theta1 - eTheta.theta1) * dtr;
+    //PH5TYPE theta2 = (angles.theta2 - eTheta.theta2) * dtr;
+    //PH5TYPE theta3 = (angles.theta3 - eTheta.theta3) * dtr;
+    PH5TYPE theta1 = (angles.theta1) * dtr;
+    PH5TYPE theta2 = (angles.theta2) * dtr;
+    PH5TYPE theta3 = (angles.theta3) * dtr;
     PH5TYPE y1 = -(t + rf * cos(theta1));
     PH5TYPE z1 = -rf * sin(theta1);
     PH5TYPE y2 = (t + rf * cos(theta2)) * sin30;
@@ -241,40 +217,42 @@ int32_t DeltaCalculator::hash() {
                      ^ ((int32_t)microsteps << 1)
                      ^ (*(uint32_t *)(void*)& gearRatio)
                      ^ (*(uint32_t *)(void*)& dz)
-                     ^ (*(uint32_t *)(void*)& eTheta.theta1)
-                     ^ (*(uint32_t *)(void*)& eTheta.theta2)
-                     ^ (*(uint32_t *)(void*)& eTheta.theta3)
+                     ^ (*(uint32_t *)(void*)& homeAngle)
                      ;
     return result;
 }
 
 PH5TYPE DeltaCalculator::calcZBowlError(Step3D center, Step3D rim, PH5TYPE eTheta) {
-    Angle3D eThetaSave = this->eTheta;
-    this->eTheta.theta1 = this->eTheta.theta2 = this->eTheta.theta3 = eTheta;
-    XYZ3D xyzCtr = calcXYZ(center);
-    XYZ3D xyzRim = calcXYZ(rim);
+    PH5TYPE dp = degreePulses();
+	StepCoord  ePulses = roundStep(eTheta * dp);
+	XYZ3D xyzCtr = calcXYZ(Step3D(
+		center.p1 - ePulses,
+		center.p2 - ePulses,
+		center.p3 - ePulses
+	));
+	XYZ3D xyzRim = calcXYZ(Step3D(
+		rim.p1 - ePulses,
+		rim.p2 - ePulses,
+		rim.p3 - ePulses
+	));
     PH5TYPE error = xyzRim.z - xyzCtr.z;
-    this->eTheta = eThetaSave;
     return error;
 }
 
 PH5TYPE DeltaCalculator::calcZBowlError(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eTheta) {
     XYZ3D xyzCtr(0,0,zCenter);
     XYZ3D xyzRim(radius, 0, zCenter);
-    Angle3D eThetaSave = this->eTheta;
-    this->eTheta.theta1 = this->eTheta.theta2 = this->eTheta.theta3 = 0;
     Step3D center = calcPulses(xyzCtr);
     Step3D rim = calcPulses(xyzRim);
-    this->eTheta = eThetaSave;
     return calcZBowlError(center, rim, eTheta);
 }
 
 PH5TYPE DeltaCalculator::calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE radius) {
-    XYZ3D xyzCtr(0,0,zCenter);
+    XYZ3D xyzCtr(0, 0, zCenter);
     XYZ3D xyzRim(radius, 0, zCenter);
     Step3D center = calcPulses(xyzCtr);
     Step3D rim = calcPulses(xyzRim);
-    PH5TYPE eThetaCur = (eTheta.theta1+eTheta.theta2+eTheta.theta3)/3.0;
+	PH5TYPE eThetaCur = homeAngle - getDefaultHomeAngle();
 
     // Newton Raphson: calculate slope@eTheta0 = ZBowl error/degree
     PH5TYPE eDegrees = eThetaCur;

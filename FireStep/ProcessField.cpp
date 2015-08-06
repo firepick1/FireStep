@@ -35,14 +35,23 @@ Status firestep::processProbeField(Machine& machine, MotorIndex iMotor, JsonComm
 }
 
 Status firestep::processHomeField(Machine& machine, AxisIndex iAxis, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
-    Status status = processField<StepCoord, int32_t>(jobj, key, machine.axis[iAxis].home);
     Axis &a = machine.axis[iAxis];
-    if (a.isEnabled() && a.pinMin != NOPIN) {
+	StepCoord value = machine.axis[iAxis].home;
+    Status status = processField<StepCoord, int32_t>(jobj, key, value);
+    if (a.isEnabled()) {
+		machine.axis[iAxis].home = value;
+		if (a.pinMin == NOPIN) {
+			jobj[key] = a.position = a.home = value;
+			a.homing = false;
+		} else {
+			jobj[key] = a.position = a.home = value;
+			a.homing = true;
+		}
+    } else if (value == machine.axis[iAxis].home){
         jobj[key] = a.home;
-        a.homing = true;
-    } else {
-        jobj[key] = a.position;
         a.homing = false;
+	} else {
+		return jcmd.setError(STATUS_AXIS_DISABLED, key);
     }
 
     return status;
