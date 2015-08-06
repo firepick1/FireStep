@@ -1467,6 +1467,26 @@ void test_MTO_FPD_mov() {
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
+    // movz out of range 
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+    Serial.push(JT("{'movz':-200}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_KINEMATIC_XYZ, mt.status);
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':-140,'r':{'movz':-200.000},'t':0.000}\n"),
+                 Serial.output().c_str());
+	test_loadDeltaCalculator( machine);
+    mt.loop();
+    ASSERTEQUAL(STATUS_KINEMATIC_XYZ, mt.status);
+
     cout << "TEST	: test_MTO_FPD_mov() OK " << endl;
 }
 

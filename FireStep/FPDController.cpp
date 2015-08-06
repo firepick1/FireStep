@@ -94,6 +94,10 @@ Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     Quad<StepCoord> dPos;
     XYZ3D xyz(destination.value[0], destination.value[1], destination.value[2]);
     Step3D pulses(machine.delta.calcPulses(xyz));
+	if (!pulses.isValid()) {
+		TESTCOUT3("FPDMoveTo STATUS_KINEMATIC_ERROR x:", xyz.x, " y:", xyz.y, " z:", xyz.z);
+		return STATUS_KINEMATIC_XYZ;
+	}
     dPos.value[0] = pulses.p1 - curPos.value[0];
     dPos.value[1] = pulses.p2 - curPos.value[1];
     dPos.value[2] = pulses.p3 - curPos.value[2];
