@@ -3617,6 +3617,30 @@ void test_DeltaCalculator() {
     cout << "TEST	: test_DeltaCalculator() OK " << endl;
 }
 
+void test_axis() {
+    cout << "TEST	: test_axis() =====" << endl;
+
+    MachineThread mt = test_MTO_FPD_setup();
+    Machine &machine(mt.machine);
+
+    Serial.push(JT("[{'x':''}]\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(LOW, arduino.getPin(PC2_X_ENABLE_PIN));
+    ASSERTEQUALS(JT("{'s':0,'r':{'x':"
+                    "{'dh':true,'en':true,'ho':-5600,'is':0,'lm':false,'ln':false,'mi':16,"
+                    "'pd':55,'pe':38,'pm':255,'pn':3,'po':0,'ps':54,'sa':1.800,'tm':32000,'tn':-32000,'ud':0}"
+                    "},'t':0.000}\n"), Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    cout << "TEST	: test_axis() OK " << endl;
+}
+
 void test_msg_cmt_idl() {
     cout << "TEST	: test_msg_cmt_idl() =====" << endl;
 
@@ -3734,6 +3758,7 @@ int main(int argc, char *argv[]) {
         test_autoSync();
         test_msg_cmt_idl();
         test_mpo();
+        test_axis();
         test_calibrate();
     }
 

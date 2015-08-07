@@ -322,7 +322,8 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
     } else if (strcmp("pd", key) == 0 || strcmp("pd", key + 1) == 0) {
         status = processPin(jobj, key, axis.pinDir, OUTPUT);
     } else if (strcmp("pe", key) == 0 || strcmp("pe", key + 1) == 0) {
-        status = processPin(jobj, key, axis.pinEnable, OUTPUT, HIGH);
+        status = processPin(jobj, key, axis.pinEnable, OUTPUT, 
+			axis.isEnabled() ? PIN_ENABLE : PIN_DISABLE);
     } else if (strcmp("pm", key) == 0 || strcmp("pm", key + 1) == 0) {
         status = processPin(jobj, key, axis.pinMax, INPUT);
     } else if (strcmp("pn", key) == 0 || strcmp("pn", key + 1) == 0) {
