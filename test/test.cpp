@@ -1972,7 +1972,7 @@ void test_mark() {
 		xpulses = arduino.pulses(PC2_X_STEP_PIN);
 		ypulses = arduino.pulses(PC2_Y_STEP_PIN);
 		zpulses = arduino.pulses(PC2_Z_STEP_PIN);
-		Serial.push(JT("{'movzm':3}\n"));
+		Serial.push(JT("{'mov':{'zm':3,'ym':2,'xm':1}}\n"));
 		mt.loop();
 		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 		mt.loop();
@@ -1981,7 +1981,7 @@ void test_mark() {
 		ASSERTEQUAL(230, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
 		ASSERTEQUAL(232, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
 		ASSERTEQUAL(231, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
-		ASSERTEQUALS(JT("{'s':0,'r':{'movzm':3},'t':0.225}\n"),
+		ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'zm':3,'ym':2,'xm':1}},'t':0.225}\n"),
 					 Serial.output().c_str());
 		test_loadDeltaCalculator( machine);
 		mt.loop();

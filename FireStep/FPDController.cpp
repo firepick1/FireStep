@@ -195,7 +195,7 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
             }
         }
         status = execute(jcmd, &kidObj);
-    } else if (strcmp("movzx",key) == 0 || strcmp("zx",key) == 0) {
+    } else if (strcmp("movxm",key) == 0 || strcmp("xm",key) == 0) {
 		int16_t iMark = ((int16_t)jobj[key]) - 1;
 		if (iMark < 0 || MARK_COUNT <= iMark) {
 			TESTCOUT1("mark index:", iMark);
@@ -203,7 +203,7 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
 		}
 		destination.value[0] = machine.marks[iMark];
 		status = execute(jcmd, NULL);
-    } else if (strcmp("movzy",key) == 0 || strcmp("zy",key) == 0) {
+    } else if (strcmp("movym",key) == 0 || strcmp("ym",key) == 0) {
 		int16_t iMark = ((int16_t)jobj[key]) - 1;
 		if (iMark < 0 || MARK_COUNT <= iMark) {
 			TESTCOUT1("mark index:", iMark);
