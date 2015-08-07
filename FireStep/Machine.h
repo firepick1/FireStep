@@ -75,6 +75,8 @@ typedef class Axis {
 
 private:
     bool		enabled; // true: stepper drivers are enabled and powered
+public:
+	char		id;		// a single character describing the axis
 
 public: // configuration
     StepCoord	home; // home position

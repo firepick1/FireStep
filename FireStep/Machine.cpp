@@ -79,8 +79,10 @@ char * firestep::saveConfigValue(const char *key, PH5TYPE value, char *out, uint
 
 Status Axis::enable(bool active) {
     if (pinEnable == NOPIN || pinStep == NOPIN || pinDir == NOPIN) {
+		TESTCOUT2("Axis::enable(", active, ") IGNORED axis:", id);
         return STATUS_NOPIN;
     }
+	TESTCOUT2("Axis::enable(", active, ") axis:", id);
     digitalWrite(pinEnable, active ? PIN_ENABLE : PIN_DISABLE);
     setAdvancing(true);
     enabled = active;
@@ -144,6 +146,13 @@ Machine::Machine()
     for (int16_t i=0; i<PROBE_DATA; i++) {
         op.probe.probeData[i] = 0;
     }
+
+	axis[0].id = 'x';
+	axis[1].id = 'y';
+	axis[2].id = 'z';
+	axis[3].id = 'a';
+	axis[4].id = 'b';
+	axis[5].id = 'c';
 }
 
 void Machine::setup(PinConfig cfg) {
@@ -691,21 +700,25 @@ void Machine::setMotorPosition(const Quad<StepCoord> &position) {
 
 char * Machine::saveSysConfig(char *out, size_t maxLen) {
     *out++ = '{';
+	// priority 1
+    out = saveConfigValue("ch", hash(), out);
+    out = saveConfigValue("pc", pinConfig, out);
+    out = saveConfigValue("to", topology, out);
+
+	// priority 2
     out = saveConfigValue("ah", autoHome, out);
     out = saveConfigValue("as", autoSync, out);
-    out = saveConfigValue("ch", hash(), out);
     out = saveConfigValue("db", debounce, out);
-    //out = saveConfigValue("eu", eeUser, out);
+    //out = saveConfigValue("eu", eeUser, out); // saved separately
     out = saveConfigValue("hp", homingPulses, out);
     out = saveConfigValue("jp", jsonPrettyPrint, out);
     out = saveConfigValue("lb", latchBackoff, out);
     out = saveConfigValue("lh", invertLim, out);
     out = saveConfigValue("mv", vMax, out);
     out = saveConfigValue("om", outputMode, out);
-    out = saveConfigValue("pc", pinConfig, out);
     out = saveConfigValue("pi", pinStatus, out);
-    out = saveConfigValue("to", topology, out);
     out = saveConfigValue("tv", tvMax, out);
+
     out--;
     *out++ = '}';
     *out = 0;

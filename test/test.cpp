@@ -230,8 +230,8 @@ void test_Machine() {
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveSysConfig(buf, sizeof(buf));
 #define HASH1 "-1118437401"
-	ASSERTEQUALS(JT("{'ah':0,'as':0,'ch':" HASH1 ",'db':0,'hp':3,'jp':0,'lb':200,'lh':0,"
-				 "'mv':12800,'om':0,'pc':2,'pi':11,'to':0,'tv':0.70}"), 
+	ASSERTEQUALS(JT("{'ch':" HASH1 ",'pc':2,'to':0,'ah':0,'as':0,'db':0,'hp':3,'jp':0,'lb':200,'lh':0,"
+				 "'mv':12800,'om':0,'pi':11,'tv':0.70}"), 
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveDimConfig(buf, sizeof(buf));
@@ -2286,8 +2286,8 @@ void test_autoSync() {
     mt.loop();
     string eeprom3 = eeprom_read_string(0);
     ASSERTEQUALS(JT( "["
-                     "{'sys':{'ah':1,'as':1,'ch':" HASH3 ",'db':0,'hp':3,'jp':0,"
-                     "'lb':200,'lh':0,'mv':12800,'om':3,'pc':2,'pi':11,'to':0,'tv':0.70}},"
+                     "{'sys':{'ch':" HASH3 ",'pc':2,'to':0,'ah':1,'as':1,'db':0,'hp':3,'jp':0,"
+                     "'lb':200,'lh':0,'mv':12800,'om':3,'pi':11,'tv':0.70}},"
                      "{'x':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'y':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'z':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
@@ -2323,8 +2323,8 @@ void test_autoSync() {
     ASSERTEQUAL(true, machine.autoSync);
     ASSERTEQUALS(eeprom3.c_str(), eeprom_read_string(0).c_str());
     ASSERTEQUALS(JT("{'s':0,'r':"
-                    "{'sys':{'ah':true,'as':true,'ch':" HASH3 ",'db':0,'hp':3,"
-                    "'jp':false,'lb':200,'lh':false,'mv':12800,'om':3,'pc':2,'pi':11,'to':0,'tv':0.700}},"
+                    "{'sys':{'ch':" HASH3 ",'pc':2,'to':0,'ah':true,'as':true,'db':0,'hp':3,"
+                    "'jp':false,'lb':200,'lh':false,'mv':12800,'om':3,'pi':11,'tv':0.700}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop(); // x
