@@ -39,9 +39,17 @@ protected:
     virtual Status processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status traverseStroke(JsonCommand &jcmd, JsonObject &stroke);
+    virtual Status processMark(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+    virtual Status processCalibrate(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+    virtual Status processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
+    virtual Status processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
+    virtual Status processProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
+    virtual Status processPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key)=0;
+    virtual Status processDimension(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
 
 public:
     JsonController(Machine& machine);
+    virtual void onTopologyChanged() {};
     void sendResponse(JsonCommand& jcmd, Status status);
     Status processObj(JsonCommand& jcmd, JsonObject&jobj);
     JsonController& operator=(JsonController& that);
@@ -49,13 +57,6 @@ public:
 
 public:
     virtual const char *name() = 0;
-    virtual void onTopologyChanged() {};
-    virtual Status processCalibrate(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-    virtual Status processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
-    virtual Status processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
-    virtual Status processProbe(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
-    virtual Status processPosition(JsonCommand &jcmd, JsonObject& jobj, const char* key)=0;
-    virtual Status processDimension(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
 } JsonController;
 
 

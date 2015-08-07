@@ -836,6 +836,11 @@ Status JsonController::processProbeData(JsonCommand& jcmd, JsonObject& jobj, con
     return status;
 }
 
+Status JsonController::processMark(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+	Status status = STATUS_OK;
+	return status;
+}
+
 Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("dpy", key) == 0) {
@@ -950,8 +955,12 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
             status = processDimension(jcmd, jobj, it->key);
         } else if (strncmp("cal", it->key, 3) == 0) {
             status = processCalibrate(jcmd, jobj, it->key);
+        } else if (strcmp("mrk", it->key) == 0) {
+            status = processMark(jcmd, jobj, it->key);
         } else if (strcmp("prbd", it->key) == 0) {
             status = processProbeData(jcmd, jobj, it->key);
+        } else if (strncmp("prb", it->key, 3) == 0) {
+            status = processProbe(jcmd, jobj, it->key);
         } else if (strncmp("prb", it->key, 3) == 0) {
             status = processProbe(jcmd, jobj, it->key);
         } else if (strcmp("idl", it->key) == 0) {
