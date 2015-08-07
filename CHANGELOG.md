@@ -1,6 +1,17 @@
 FireStep: change log
 ====================
 
+v0.2.2
+------
+* FIX: Jason's fix for mismatched delta configuration attributes
+* FIX: querying axis will no longer disable it
+* FIX: Saving MTO_FPD dimensions now saves proper values
+* FIX: eTheta implementation replaced with single, common home angle
+* FIX: reordered saved configuration for proper precedence on restore
+* FIX: home angle digitized properly so that home angle and home pulses are in sync
+* FIX: DeltaCalculator home now initialized properly from axis home
+* NEW: STATUS_WAIT_IDLE NeoPixel display shows; MTO_FPD/green, and MTO_RAW/white
+
 v0.2.1
 ------
 * NEW: User EEPROM JSON commands at EEPROM address 2000 will execute after system startup JSON
