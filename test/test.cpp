@@ -235,7 +235,7 @@ void test_Machine() {
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveDimConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'e':270.00,'f':90.00,'gr':9.375,'ha':-67.20,'mi':16,'re':131.64,'rf':190.53,'st':200}"),
+	ASSERTEQUALS(JT("{'e':131.64,'f':190.53,'gr':9.375,'ha':-67.20,'mi':16,'re':270.00,'rf':90.00,'st':200}"),
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 
@@ -3715,7 +3715,8 @@ int main(int argc, char *argv[]) {
     // test first
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
-        test_DeltaCalculator();
+        test_MTO_FPD_hom();
+        //test_DeltaCalculator();
         //test_MTO_FPD();
         //test_calibrate();
         //test_eep();

@@ -728,13 +728,13 @@ char * Machine::saveSysConfig(char *out, size_t maxLen) {
 char * Machine::saveDimConfig(char *out, size_t maxLen) {
     *out++ = '{';
 	// save these so that they will load first before angles
-    out = saveConfigValue("e", delta.getEffectorLength(), out);
-    out = saveConfigValue("f", delta.getBaseArmLength(), out);
+    out = saveConfigValue("e", delta.getEffectorTriangleSide(), out);
+    out = saveConfigValue("f", delta.getBaseTriangleSide(), out);
     out = saveConfigValue("gr", delta.getGearRatio(), out, 3);
     out = saveConfigValue("ha", delta.getHomeAngle(), out);
     out = saveConfigValue("mi", delta.getMicrosteps(), out);
-    out = saveConfigValue("re", delta.getEffectorTriangleSide(), out);
-    out = saveConfigValue("rf", delta.getBaseTriangleSide(), out);
+    out = saveConfigValue("re", delta.getEffectorLength(), out);
+    out = saveConfigValue("rf", delta.getBaseArmLength(), out);
     out = saveConfigValue("st", delta.getSteps360(), out);
     out--;
     *out++ = '}';
