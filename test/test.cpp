@@ -1964,7 +1964,27 @@ void test_mark() {
 		ASSERTEQUAL(231, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
 		ASSERTEQUALS(JT("{'s':0,'r':{'movz':-1.000},'t':0.225}\n"),
 					 Serial.output().c_str());
-		test_loadDeltaCalculator( machine);
+		mt.loop();
+		ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+		// mark waypoint 4
+		xpulses = arduino.pulses(PC2_X_STEP_PIN);
+		ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+		zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+		Serial.push(JT("{'mrkwp':4}\n"));
+		mt.loop();
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop();
+		ASSERTEQUAL(STATUS_OK, mt.status);
+		ASSERTQUAD(Quad<StepCoord>(104,6,50,0), machine.getMotorPosition());
+		ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+		ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+		ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+		ASSERTEQUALS(JT("{'s':0,'r':{'mrkwp':4},'t':0.000}\n"),
+					 Serial.output().c_str());
+		ASSERTEQUALT(1.11, machine.marks[3], 0.005);
+		ASSERTEQUALT(2.22, machine.marks[4], 0.005);
+		ASSERTEQUALT(-1.00, machine.marks[5], 0.005);
 		mt.loop();
 		ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -1983,7 +2003,24 @@ void test_mark() {
 		ASSERTEQUAL(231, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
 		ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'zm':3,'ym':2,'xm':1}},'t':0.225}\n"),
 					 Serial.output().c_str());
-		test_loadDeltaCalculator( machine);
+		mt.loop();
+		ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+		// return to waypoint 4
+		xpulses = arduino.pulses(PC2_X_STEP_PIN);
+		ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+		zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+		Serial.push(JT("{'movwp':4}\n"));
+		mt.loop();
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop();
+		ASSERTEQUAL(STATUS_OK, mt.status);
+		ASSERTQUAD(Quad<StepCoord>(104,6,50,0), machine.getMotorPosition());
+		ASSERTEQUAL(230, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+		ASSERTEQUAL(232, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+		ASSERTEQUAL(231, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+		ASSERTEQUALS(JT("{'s':0,'r':{'movwp':4},'t':0.225}\n"),
+					 Serial.output().c_str());
 		mt.loop();
 		ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 

@@ -15,7 +15,9 @@ v0.2.2
 * NEW: "mrk" gets/sets value of one of four mark registers
 * NEW: MTO_RAW "mrka1", "mrka2", "mrka3, "mrka4"" mark axis stepper position	
 * NEW: MTO_FPD "mrkax", "mrakay", "mrkaz" mark Cartesian axis position 
+* NEW: MTO_FPD "mrkwp" mark Cartesian 3-axis waypoint 
 * NEW: MTO_FPD "movxm", "movym", "movzm" move to marked Cartesian axis position 
+* NEW: MTO_FPD "movwp" move to marked Cartesian 3-axis waypoint 
 
 v0.2.1
 ------

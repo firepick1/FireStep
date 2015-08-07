@@ -27,7 +27,7 @@ namespace firestep {
 #define PROBE_DATA 9
 #define EEUSER 2000
 #define EEUSER_ENABLED (EEUSER-1)
-#define MARK_COUNT 4
+#define MARK_COUNT 9
 
 typedef int16_t DelayMics; // delay microseconds
 #ifdef TEST

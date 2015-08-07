@@ -159,6 +159,7 @@ Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
 
 Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
+	size_t keyLen = strlen(key);
     const char *s;
 
     if (strcmp("mov", key) == 0) {
@@ -195,38 +196,55 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
             }
         }
         status = execute(jcmd, &kidObj);
+    } else if (strcmp("movwp",key) == 0 || strcmp("wp",key) == 0) {
+		int16_t iMark = ((int16_t)jobj[key]) - 1;
+		if (iMark < 0 || MARK_COUNT <= iMark) {
+			return jcmd.setError(STATUS_MARK_INDEX, key);
+		}
+		destination.value[0] = machine.marks[iMark%MARK_COUNT];
+		iMark++;
+		destination.value[1] = machine.marks[iMark%MARK_COUNT];
+		iMark++;
+		destination.value[2] = machine.marks[iMark%MARK_COUNT];
+		iMark++;
+		if (keyLen > 2) {
+			status = execute(jcmd, NULL);
+		}
     } else if (strcmp("movxm",key) == 0 || strcmp("xm",key) == 0) {
 		int16_t iMark = ((int16_t)jobj[key]) - 1;
 		if (iMark < 0 || MARK_COUNT <= iMark) {
-			TESTCOUT1("mark index:", iMark);
 			return jcmd.setError(STATUS_MARK_INDEX, key);
 		}
 		destination.value[0] = machine.marks[iMark];
-		status = execute(jcmd, NULL);
+		if (keyLen > 2) {
+			status = execute(jcmd, NULL);
+		}
     } else if (strcmp("movym",key) == 0 || strcmp("ym",key) == 0) {
 		int16_t iMark = ((int16_t)jobj[key]) - 1;
 		if (iMark < 0 || MARK_COUNT <= iMark) {
-			TESTCOUT1("mark index:", iMark);
 			return jcmd.setError(STATUS_MARK_INDEX, key);
 		}
 		destination.value[1] = machine.marks[iMark];
-		status = execute(jcmd, NULL);
+		if (keyLen > 2) {
+			status = execute(jcmd, NULL);
+		}
     } else if (strcmp("movzm",key) == 0 || strcmp("zm",key) == 0) {
 		int16_t iMark = ((int16_t)jobj[key]) - 1;
 		if (iMark < 0 || MARK_COUNT <= iMark) {
-			TESTCOUT1("mark index:", iMark);
 			return jcmd.setError(STATUS_MARK_INDEX, key);
 		}
 		TESTCOUT2("z:", destination.value[2], " mark:", machine.marks[iMark]);
 		destination.value[2] = machine.marks[iMark];
-		status = execute(jcmd, NULL);
+		if (keyLen > 2) {
+			status = execute(jcmd, NULL);
+		}
     } else if (strcmp("movrx",key) == 0 || strcmp("rx",key) == 0) {
 		XYZ3D xyz = controller.getXYZ3D();
 		PH5TYPE x = 0;
 		status = processField<PH5TYPE, PH5TYPE>(jobj, key, x);
 		if (status == STATUS_OK) {
 			destination.value[0] = xyz.x + x;
-			if (strcmp("movrx",key) == 0) {
+			if (keyLen > 2) {
 				status = execute(jcmd, NULL);
 			}
 		}
@@ -236,7 +254,7 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
 		status = processField<PH5TYPE, PH5TYPE>(jobj, key, y);
 		if (status == STATUS_OK) {
 			destination.value[1] = xyz.y + y;
-			if (strcmp("movry",key) == 0) {
+			if (keyLen > 2) {
 				status = execute(jcmd, NULL);
 			}
 		}
@@ -246,7 +264,7 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
 		status = processField<PH5TYPE, PH5TYPE>(jobj, key, z);
 		if (status == STATUS_OK) {
 			destination.value[2] = xyz.z + z;
-			if (strcmp("movrz",key) == 0) {
+			if (keyLen > 2) {
 				status = execute(jcmd, NULL);
 			}
 		}
@@ -800,7 +818,25 @@ XYZ3D FPDController::getXYZ3D() {
 
 Status FPDController::processMark(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
 	Status status = STATUS_OK;
-    if (strcmp("ax", key) == 0 || strcmp("mrkax", key) == 0) {
+    if (strcmp("wp", key) == 0 || strcmp("mrkwp", key) == 0) {
+		int16_t iMark = ((int16_t)jobj[key]) - 1;
+		if (iMark < 0 || MARK_COUNT <= iMark) {
+			TESTCOUT1("mark index:", iMark);
+			return jcmd.setError(STATUS_MARK_INDEX, key);
+		}
+		machine.loadDeltaCalculator();
+		XYZ3D xyz = getXYZ3D();
+		if (!xyz.isValid()) {
+			return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+		}
+		TESTCOUT3("processMark x:", xyz.x, " y:", xyz.y, " z:", xyz.z);
+		machine.marks[iMark%MARK_COUNT] = xyz.x;
+		iMark++;
+		machine.marks[iMark%MARK_COUNT] = xyz.y;
+		iMark++;
+		machine.marks[iMark%MARK_COUNT] = xyz.z;
+		iMark++;
+    } else if (strcmp("ax", key) == 0 || strcmp("mrkax", key) == 0) {
 		int16_t iMark = ((int16_t)jobj[key]) - 1;
 		if (iMark < 0 || MARK_COUNT <= iMark) {
 			TESTCOUT1("mark index:", iMark);
