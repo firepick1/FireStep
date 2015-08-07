@@ -532,7 +532,6 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
             node["gr"] = "";
             node["ha"] = "";
             node["mi"] = "";
-            node["pd"] = "";
             node["re"] = "";
             node["rf"] = "";
             node["st"] = "";
@@ -574,15 +573,7 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         status = processField<int16_t, int16_t>(jobj, key, value);
         machine.delta.setMicrosteps(value);
     } else if (strcmp("pd", key) == 0 || strcmp("dimpd", key) == 0) {
-        const char *s;
-        if ((s = jobj[key]) && *s == 0) {
-            JsonArray &jarr = jobj.createNestedArray(key);
-            for (int16_t i=0; i<PROBE_DATA; i++) {
-                jarr.add(machine.op.probe.probeData[i]);
-            }
-        } else {
-            status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
-        }
+		status = processProbeData(jcmd, jobj, key);
     } else if (strcmp("re", key) == 0 || strcmp("dimre", key) == 0) {
         PH5TYPE value = machine.delta.getEffectorLength();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);

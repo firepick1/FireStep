@@ -11,6 +11,7 @@ v0.2.2
 * FIX: home angle digitized properly so that home angle and home pulses are in sync
 * FIX: DeltaCalculator home now initialized properly from axis home
 * NEW: STATUS_WAIT_IDLE NeoPixel display shows; MTO_FPD/green, and MTO_RAW/white
+* NEW: "prbd" returns last 9 probe data values, with most recent first
 
 v0.2.1
 ------

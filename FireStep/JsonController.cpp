@@ -822,6 +822,20 @@ Status JsonController::processCalibrate(JsonCommand& jcmd, JsonObject& jobj, con
 	return jcmd.setError(STATUS_TOPOLOGY_NAME, key);
 }
 
+Status JsonController::processProbeData(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = STATUS_OK;
+    const char *s;
+    if ((s = jobj[key]) && *s == 0) {
+        JsonArray &jarr = jobj.createNestedArray(key);
+        for (int16_t i=0; i<PROBE_DATA; i++) {
+            jarr.add(machine.op.probe.probeData[i]);
+        }
+    } else {
+        status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
+    }
+    return status;
+}
+
 Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     if (strcmp("dpy", key) == 0) {
@@ -936,6 +950,8 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
             status = processDimension(jcmd, jobj, it->key);
         } else if (strncmp("cal", it->key, 3) == 0) {
             status = processCalibrate(jcmd, jobj, it->key);
+        } else if (strcmp("prbd", it->key) == 0) {
+            status = processProbeData(jcmd, jobj, it->key);
         } else if (strncmp("prb", it->key, 3) == 0) {
             status = processProbe(jcmd, jobj, it->key);
         } else if (strcmp("idl", it->key) == 0) {

@@ -1591,14 +1591,14 @@ void test_MTO_FPD_prb() {
     test_ticks(1);	// tripped
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-    // dimpd should return probe data
+    // prbd should return probe data
     machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
-    Serial.push(JT("{'dimpd':''}\n"));
+    Serial.push(JT("{'prbd':''}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'dimpd':"
+    ASSERTEQUALS(JT("{'s':0,'r':{'prbd':"
                     "[-21.484,8.000,7.000,6.000,5.000,4.000,3.000,2.000,1.000]},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());

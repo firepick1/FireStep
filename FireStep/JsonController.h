@@ -25,6 +25,7 @@ protected:
     virtual Status initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear)=0;
     virtual Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
     virtual Status processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+    virtual Status processProbeData(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processIOPin(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj,
