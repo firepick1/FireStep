@@ -20,7 +20,7 @@ protected:
     Machine &machine;
 
 protected:
-    int axisOf(char c);
+    AxisIndex axisOf(char c);
     virtual Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);
     virtual Status initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear)=0;
     virtual Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);

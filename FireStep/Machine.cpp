@@ -79,10 +79,10 @@ char * firestep::saveConfigValue(const char *key, PH5TYPE value, char *out, uint
 
 Status Axis::enable(bool active) {
     if (pinEnable == NOPIN || pinStep == NOPIN || pinDir == NOPIN) {
-		TESTCOUT2("Axis::enable(", active, ") IGNORED axis:", id);
+		//TESTCOUT2("Axis::enable(", active, ") IGNORED axis:", id);
         return STATUS_NOPIN;
     }
-	TESTCOUT2("Axis::enable(", active, ") axis:", id);
+	//TESTCOUT2("Axis::enable(", active, ") axis:", id);
     digitalWrite(pinEnable, active ? PIN_ENABLE : PIN_DISABLE);
     setAdvancing(true);
     enabled = active;
@@ -146,6 +146,10 @@ Machine::Machine()
     for (int16_t i=0; i<PROBE_DATA; i++) {
         op.probe.probeData[i] = 0;
     }
+
+	for (int16_t i=0; i<MARK_COUNT; i++) {
+		marks[i] = 0;
+	}
 
 	axis[0].id = 'x';
 	axis[1].id = 'y';

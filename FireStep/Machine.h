@@ -27,6 +27,7 @@ namespace firestep {
 #define PROBE_DATA 9
 #define EEUSER 2000
 #define EEUSER_ENABLED (EEUSER-1)
+#define MARK_COUNT 4
 
 typedef int16_t DelayMics; // delay microseconds
 #ifdef TEST
@@ -240,6 +241,7 @@ public:
     DeltaCalculator delta;
     int32_t 	vMax; // maximum stroke velocity (pulses/second)
     PH5TYPE 	tvMax; // time to reach maximum velocity
+	PH5TYPE		marks[MARK_COUNT];
     int16_t		homingPulses;
     StepCoord	latchBackoff;
     DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)

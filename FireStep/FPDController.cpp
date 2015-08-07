@@ -195,60 +195,61 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
             }
         }
         status = execute(jcmd, &kidObj);
+    } else if (strcmp("movzx",key) == 0 || strcmp("zx",key) == 0) {
+		int16_t iMark = ((int16_t)jobj[key]) - 1;
+		if (iMark < 0 || MARK_COUNT <= iMark) {
+			TESTCOUT1("mark index:", iMark);
+			return jcmd.setError(STATUS_MARK_INDEX, key);
+		}
+		destination.value[0] = machine.marks[iMark];
+		status = execute(jcmd, NULL);
+    } else if (strcmp("movzy",key) == 0 || strcmp("zy",key) == 0) {
+		int16_t iMark = ((int16_t)jobj[key]) - 1;
+		if (iMark < 0 || MARK_COUNT <= iMark) {
+			TESTCOUT1("mark index:", iMark);
+			return jcmd.setError(STATUS_MARK_INDEX, key);
+		}
+		destination.value[1] = machine.marks[iMark];
+		status = execute(jcmd, NULL);
+    } else if (strcmp("movzm",key) == 0 || strcmp("zm",key) == 0) {
+		int16_t iMark = ((int16_t)jobj[key]) - 1;
+		if (iMark < 0 || MARK_COUNT <= iMark) {
+			TESTCOUT1("mark index:", iMark);
+			return jcmd.setError(STATUS_MARK_INDEX, key);
+		}
+		TESTCOUT2("z:", destination.value[2], " mark:", machine.marks[iMark]);
+		destination.value[2] = machine.marks[iMark];
+		status = execute(jcmd, NULL);
     } else if (strcmp("movrx",key) == 0 || strcmp("rx",key) == 0) {
-        // TODO: clean up mov implementation
-        switch (machine.topology) {
-        case MTO_FPD: {
-            XYZ3D xyz = controller.getXYZ3D();
-            PH5TYPE x = 0;
-            status = processField<PH5TYPE, PH5TYPE>(jobj, key, x);
-            if (status == STATUS_OK) {
-                destination.value[0] = xyz.x + x;
-                if (strcmp("movrx",key) == 0) {
-                    status = execute(jcmd, NULL);
-                }
-            }
-            break;
-        }
-        default:
-            return jcmd.setError(STATUS_MTO_FIELD, key);
-        }
+		XYZ3D xyz = controller.getXYZ3D();
+		PH5TYPE x = 0;
+		status = processField<PH5TYPE, PH5TYPE>(jobj, key, x);
+		if (status == STATUS_OK) {
+			destination.value[0] = xyz.x + x;
+			if (strcmp("movrx",key) == 0) {
+				status = execute(jcmd, NULL);
+			}
+		}
     } else if (strcmp("movry",key) == 0 || strcmp("ry",key) == 0) {
-        // TODO: clean up mov implementation
-        switch (machine.topology) {
-        case MTO_FPD: {
-            XYZ3D xyz = controller.getXYZ3D();
-            PH5TYPE y = 0;
-            status = processField<PH5TYPE, PH5TYPE>(jobj, key, y);
-            if (status == STATUS_OK) {
-                destination.value[1] = xyz.y + y;
-                if (strcmp("movry",key) == 0) {
-                    status = execute(jcmd, NULL);
-                }
-            }
-            break;
-        }
-        default:
-            return jcmd.setError(STATUS_MTO_FIELD, key);
-        }
+		XYZ3D xyz = controller.getXYZ3D();
+		PH5TYPE y = 0;
+		status = processField<PH5TYPE, PH5TYPE>(jobj, key, y);
+		if (status == STATUS_OK) {
+			destination.value[1] = xyz.y + y;
+			if (strcmp("movry",key) == 0) {
+				status = execute(jcmd, NULL);
+			}
+		}
     } else if (strcmp("movrz",key) == 0 || strcmp("rz",key) == 0) {
-        // TODO: clean up mov implementation
-        switch (machine.topology) {
-        case MTO_FPD: {
-            XYZ3D xyz = controller.getXYZ3D();
-            PH5TYPE z = 0;
-            status = processField<PH5TYPE, PH5TYPE>(jobj, key, z);
-            if (status == STATUS_OK) {
-                destination.value[2] = xyz.z + z;
-                if (strcmp("movrz",key) == 0) {
-                    status = execute(jcmd, NULL);
-                }
-            }
-            break;
-        }
-        default:
-            return jcmd.setError(STATUS_MTO_FIELD, key);
-        }
+		XYZ3D xyz = controller.getXYZ3D();
+		PH5TYPE z = 0;
+		status = processField<PH5TYPE, PH5TYPE>(jobj, key, z);
+		if (status == STATUS_OK) {
+			destination.value[2] = xyz.z + z;
+			if (strcmp("movrz",key) == 0) {
+				status = execute(jcmd, NULL);
+			}
+		}
     } else if (strncmp("mov", key, 3) == 0) { // short form
         // TODO: clean up mov implementation
         MotorIndex iMotor = machine.motorOfName(key + strlen(key) - 1);
@@ -795,5 +796,50 @@ XYZ3D FPDController::getXYZ3D() {
                                      machine.motorAxis[1]->position,
                                      machine.motorAxis[2]->position
                                  ));
+}
+
+Status FPDController::processMark(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+	Status status = STATUS_OK;
+    if (strcmp("ax", key) == 0 || strcmp("mrkax", key) == 0) {
+		int16_t iMark = ((int16_t)jobj[key]) - 1;
+		if (iMark < 0 || MARK_COUNT <= iMark) {
+			TESTCOUT1("mark index:", iMark);
+			return jcmd.setError(STATUS_MARK_INDEX, key);
+		}
+		machine.loadDeltaCalculator();
+		XYZ3D xyz = getXYZ3D();
+		if (!xyz.isValid()) {
+			return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+		}
+		TESTCOUT1("processMark x:", xyz.x);
+		machine.marks[iMark] = xyz.x;
+    } else if (strcmp("ay", key) == 0 || strcmp("mrkay", key) == 0) {
+		int16_t iMark = ((int16_t)jobj[key]) - 1;
+		if (iMark < 0 || MARK_COUNT <= iMark) {
+			TESTCOUT1("mark index:", iMark);
+			return jcmd.setError(STATUS_MARK_INDEX, key);
+		}
+		machine.loadDeltaCalculator();
+		XYZ3D xyz = getXYZ3D();
+		if (!xyz.isValid()) {
+			return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+		}
+		machine.marks[iMark] = xyz.y;
+    } else if (strcmp("az", key) == 0 || strcmp("mrkaz", key) == 0) {
+		int16_t iMark = ((int16_t)jobj[key]) - 1;
+		if (iMark < 0 || MARK_COUNT <= iMark) {
+			TESTCOUT1("mark index:", iMark);
+			return jcmd.setError(STATUS_MARK_INDEX, key);
+		}
+		machine.loadDeltaCalculator();
+		XYZ3D xyz = getXYZ3D();
+		if (!xyz.isValid()) {
+			return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+		}
+		machine.marks[iMark] = xyz.z;
+	} else {
+		return JsonController::processMark(jcmd, jobj, key);
+    }
+	return status;
 }
 

@@ -12,6 +12,10 @@ v0.2.2
 * FIX: DeltaCalculator home now initialized properly from axis home
 * NEW: STATUS_WAIT_IDLE NeoPixel display shows; MTO_FPD/green, and MTO_RAW/white
 * NEW: "prbd" returns last 9 probe data values, with most recent first
+* NEW: "mrk" gets/sets value of one of four mark registers
+* NEW: MTO_RAW "mrka1", "mrka2", "mrka3, "mrka4"" mark axis stepper position	
+* NEW: MTO_FPD "mrkax", "mrakay", "mrkaz" mark Cartesian axis position 
+* NEW: MTO_FPD "movxm", "movym", "movzm" move to marked Cartesian axis position 
 
 v0.2.1
 ------

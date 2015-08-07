@@ -18,10 +18,15 @@ JsonController& JsonController::operator=(JsonController& that) {
     return *this;
 }
 
-int JsonController::axisOf(char c) {
+AxisIndex JsonController::axisOf(char c) {
     switch (c) {
     default:
         return -1;
+	case '1':
+	case '2':
+	case '3':
+	case '4': 
+		return machine.motor[c-'1'];
     case 'x':
         return 0;
     case 'y':
@@ -838,6 +843,48 @@ Status JsonController::processProbeData(JsonCommand& jcmd, JsonObject& jobj, con
 
 Status JsonController::processMark(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
 	Status status = STATUS_OK;
+	size_t keyLen = strlen(key);
+    if (strcmp("mrk", key) == 0) {
+        const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+            node["m1"] = "";
+            node["m2"] = "";
+            node["m3"] = "";
+            node["m4"] = "";
+        }
+        JsonObject& kidObj = jobj[key];
+        if (kidObj.success()) {
+            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+                status = processMark(jcmd, kidObj, it->key);
+                if (status != STATUS_OK) {
+                    return status;
+                }
+            }
+        }
+    } else if (strcmp("m1", key) == 0 || strcmp("mrkm1", key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[0]);
+    } else if (strcmp("m2", key) == 0 || strcmp("mrkm2", key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[1]);
+    } else if (strcmp("m3", key) == 0 || strcmp("mrkm3", key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[2]);
+    } else if (strcmp("m4", key) == 0 || strcmp("mrkm4", key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[3]);
+    } else if (keyLen >= 2 && (strncmp("a",key,1) == 0 || strncmp("mrka",key,4) == 0)) {
+		AxisIndex iAxis = axisOf(key[keyLen-1]);
+		if (iAxis < 0) {
+			TESTCOUT1("axisOf:", key[keyLen-1]);
+			return jcmd.setError(STATUS_MARK_AXIS, key);
+		}
+		int16_t iMark = ((int16_t)jobj[key]) - 1;
+		if (iMark < 0 || MARK_COUNT <= iMark) {
+			TESTCOUT1("mark index:", iMark);
+			return jcmd.setError(STATUS_MARK_INDEX, key);
+		}
+		machine.marks[iMark] = machine.axis[iAxis].position;
+	} else {
+		return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+    }
 	return status;
 }
 
@@ -955,7 +1002,7 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
             status = processDimension(jcmd, jobj, it->key);
         } else if (strncmp("cal", it->key, 3) == 0) {
             status = processCalibrate(jcmd, jobj, it->key);
-        } else if (strcmp("mrk", it->key) == 0) {
+        } else if (strncmp("mrk", it->key, 3) == 0) {
             status = processMark(jcmd, jobj, it->key);
         } else if (strcmp("prbd", it->key) == 0) {
             status = processProbeData(jcmd, jobj, it->key);

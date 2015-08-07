@@ -1878,6 +1878,120 @@ void test_calibrate() {
     cout << "TEST	: test_calibrate() OK " << endl;
 }
 
+void test_mark() {
+    cout << "TEST	: test_mark() =====" << endl;
+
+	{ // MTO_RAW
+		MachineThread mt = test_setup();
+		Machine &machine = mt.machine;
+
+		machine.marks[0] = 10;
+		machine.marks[1] = 20;
+		machine.marks[2] = 30;
+		machine.marks[3] = 40;
+		machine.axis[0].position = 100;
+		machine.axis[1].position = 200;
+		machine.axis[2].position = 300;
+		machine.axis[3].position = 400;
+
+		// mrk: you can get/set a mark value
+		Serial.push(JT("{'mrk':''}\n"));
+		mt.loop();
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop();
+		ASSERTEQUAL(STATUS_OK, mt.status);
+		ASSERTEQUALS(JT("{'s':0,'r':"
+						"{'mrk':{'m1':10.000,'m2':20.000,'m3':30.000,'m4':40.000}"
+						"},'t':0.000}\n"),
+					 Serial.output().c_str());
+		mt.loop();
+		ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+		// mrk: you can set a mark value from an axis position
+		Serial.push(JT("{'mrka1':1,'mrka2':2,'mrkaz':3,'mrkm1':'','mrkm2':'','mrkm3':''}\n"));
+		mt.loop();
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop();
+		ASSERTEQUAL(STATUS_OK, mt.status);
+		ASSERTEQUALS(JT("{'s':0,'r':"
+						"{'mrka1':1,'mrka2':2,'mrkaz':3,'mrkm1':100.000,'mrkm2':200.000,'mrkm3':300.000}"
+						",'t':0.000}\n"),
+					 Serial.output().c_str());
+		mt.loop();
+		ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	}
+
+	{ // MTO_FPD
+		MachineThread mt = test_MTO_FPD_setup();
+		Machine &machine(mt.machine);
+		machine.marks[0] = 10;
+		machine.marks[1] = 20;
+		machine.marks[2] = 30;
+		machine.marks[3] = 40;
+		XYZ3D xyz(1.11,2.22,3.33);
+		machine.loadDeltaCalculator();
+		Step3D pulses = machine.delta.calcPulses(xyz);
+		machine.axis[0].position = pulses.p1;
+		machine.axis[1].position = pulses.p2;
+		machine.axis[2].position = pulses.p3;
+		ASSERTQUAD(Quad<StepCoord>(-126,-226,-181,0), machine.getMotorPosition());
+		
+		// mrk: you can set a mark value from a Cartesian position
+		Serial.push(JT("{'mrkax':1,'mrkay':2,'mrkaz':3,'mrkm1':'','mrkm2':'','mrkm3':''}\n"));
+		mt.loop();
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop();
+		ASSERTEQUAL(STATUS_OK, mt.status);
+		ASSERTEQUALS(JT("{'s':0,'r':"
+						"{'mrkax':1,'mrkay':2,'mrkaz':3,'mrkm1':1.116,'mrkm2':2.220,'mrkm3':3.334}"
+						",'t':0.000}\n"),
+					 Serial.output().c_str());
+		mt.loop();
+		ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+		
+		// move away from mark
+		int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
+		int32_t ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+		int32_t zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+		Serial.push(JT("{'movz':-1}\n"));
+		mt.loop();
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop();
+		ASSERTEQUAL(STATUS_OK, mt.status);
+		ASSERTQUAD(Quad<StepCoord>(104,6,50,0), machine.getMotorPosition());
+		ASSERTEQUAL(230, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+		ASSERTEQUAL(232, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+		ASSERTEQUAL(231, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+		ASSERTEQUALS(JT("{'s':0,'r':{'movz':-1.000},'t':0.225}\n"),
+					 Serial.output().c_str());
+		test_loadDeltaCalculator( machine);
+		mt.loop();
+		ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+		// return to mark
+		xpulses = arduino.pulses(PC2_X_STEP_PIN);
+		ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+		zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+		Serial.push(JT("{'movzm':3}\n"));
+		mt.loop();
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop();
+		ASSERTEQUAL(STATUS_OK, mt.status);
+		ASSERTQUAD(Quad<StepCoord>(-126,-226,-181,0), machine.getMotorPosition());
+		ASSERTEQUAL(230, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+		ASSERTEQUAL(232, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+		ASSERTEQUAL(231, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+		ASSERTEQUALS(JT("{'s':0,'r':{'movzm':3},'t':0.225}\n"),
+					 Serial.output().c_str());
+		test_loadDeltaCalculator( machine);
+		mt.loop();
+		ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	}
+
+    cout << "TEST	: test_mark() OK " << endl;
+}
+
 void test_stroke_endpos() {
     cout << "TEST	: test_stroke_endpos() =====" << endl;
 
@@ -3761,6 +3875,7 @@ int main(int argc, char *argv[]) {
         test_mpo();
         test_axis();
         test_calibrate();
+        test_mark();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;
