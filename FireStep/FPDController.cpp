@@ -531,9 +531,6 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
             node["f"] = "";
             node["gr"] = "";
             node["ha"] = "";
-            //node["ha1"] = "";
-            //node["ha2"] = "";
-            //node["ha3"] = "";
             node["mi"] = "";
             node["pd"] = "";
             node["re"] = "";
@@ -561,6 +558,13 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         PH5TYPE value = machine.delta.getGearRatio();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.delta.setGearRatio(value);
+    } else if (strcmp("ha1", key) == 0 || strcmp("dimha1", key) == 0 ||
+               strcmp("ha2", key) == 0 || strcmp("dimha2", key) == 0 ||
+               strcmp("ha3", key) == 0 || strcmp("dimha3", key) == 0) {
+		// deprecated
+        PH5TYPE homeAngle = machine.delta.getHomeAngle();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngle);
+        machine.delta.setHomeAngle(homeAngle);
     } else if (strcmp("ha", key) == 0 || strcmp("dimha", key) == 0) {
         PH5TYPE homeAngle = machine.delta.getHomeAngle();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngle);
@@ -602,7 +606,7 @@ Status FPDController::processMove(JsonCommand& jcmd, JsonObject& jobj, const cha
 }
 
 Status FPDController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
-                                      const char* key, bool clear)
+                                     const char* key, bool clear)
 {
     Status status = STATUS_OK;
     if (clear) {
@@ -640,21 +644,21 @@ Status FPDController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
 
 Status FPDController::finalizeHome() {
     Status status = STATUS_OK;
-	
-	// calculate distance to post-home destination
-	machine.loadDeltaCalculator();
+
+    // calculate distance to post-home destination
+    machine.loadDeltaCalculator();
     Quad<StepCoord> limit = machine.getMotorPosition();
-	XYZ3D xyzPostHome(0,0,0); // post-home destination
+    XYZ3D xyzPostHome(0,0,0); // post-home destination
     Step3D oPulses = machine.delta.calcPulses(xyzPostHome);
-	TESTCOUT3("finalizeHome x home:", machine.delta.getHomePulses(), " pos:", machine.axis[0].position, " dst:", oPulses.p1);
+    TESTCOUT3("finalizeHome x home:", machine.delta.getHomePulses(), " pos:", machine.axis[0].position, " dst:", oPulses.p1);
     machine.op.probe.setup(limit, Quad<StepCoord>(
                                oPulses.p1,
                                oPulses.p2,
                                oPulses.p3,
                                limit.value[3]
                            ));
-	
-	// move to post-home destination using probe
+
+    // move to post-home destination using probe
     status = STATUS_BUSY_CALIBRATING;
     do {
         // fast probe because we don't expect to hit anything
@@ -677,30 +681,30 @@ Status FPDController::processHome(JsonCommand& jcmd, JsonObject& jobj, const cha
     Status status = jcmd.getStatus();
     switch (status) {
     case STATUS_BUSY_PARSED:
-		machine.loadDeltaCalculator();
+        machine.loadDeltaCalculator();
         status = initializeHome(jcmd, jobj, key, true);
-		machine.loadDeltaCalculator();
+        machine.loadDeltaCalculator();
         break;
     case STATUS_BUSY_MOVING:
     case STATUS_BUSY_OK:
         status = machine.home(status);
         break;
     case STATUS_BUSY_CALIBRATING:
-		TESTCOUT4("processHome home 1:", machine.axis[0].home,
-			" 2:", machine.axis[1].home,
-			" 3:", machine.axis[2].home,
-			" 4:", machine.axis[3].home);
+        TESTCOUT4("processHome home 1:", machine.axis[0].home,
+                  " 2:", machine.axis[1].home,
+                  " 3:", machine.axis[2].home,
+                  " 4:", machine.axis[3].home);
         status = machine.home(status);
-		TESTCOUT4("processHome position 1:", machine.axis[0].position,
-			" 2:", machine.axis[1].position,
-			" 3:", machine.axis[2].position,
-			" 4:", machine.axis[3].position);
+        TESTCOUT4("processHome position 1:", machine.axis[0].position,
+                  " 2:", machine.axis[1].position,
+                  " 3:", machine.axis[2].position,
+                  " 4:", machine.axis[3].position);
         if (status == STATUS_OK) {
             status = finalizeHome();
-			TESTCOUT4("processHome finalize 1:", machine.axis[0].position,
-				" 2:", machine.axis[1].position,
-				" 3:", machine.axis[2].position,
-				" 4:", machine.axis[3].position);
+            TESTCOUT4("processHome finalize 1:", machine.axis[0].position,
+                      " 2:", machine.axis[1].position,
+                      " 3:", machine.axis[2].position,
+                      " 4:", machine.axis[3].position);
         }
         break;
     default:
@@ -712,12 +716,12 @@ Status FPDController::processHome(JsonCommand& jcmd, JsonObject& jobj, const cha
 }
 
 Status FPDController::processCalibrate(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
-	FPDCalibrateHome cal(machine);
-	Status status = cal.calibrate();
-	if (status != STATUS_OK) {
-		return status;
-	}
-	return processCalibrateCore(jcmd, jobj, key, cal);
+    FPDCalibrateHome cal(machine);
+    Status status = cal.calibrate();
+    if (status != STATUS_OK) {
+        return status;
+    }
+    return processCalibrateCore(jcmd, jobj, key, cal);
 }
 Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, const char* key, FPDCalibrateHome &cal) {
     Status status = jcmd.getStatus();
@@ -743,35 +747,35 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
             }
         }
     } else if (strcmp("calha",key) == 0 || strcmp("ha",key) == 0) {
-		PH5TYPE value = cal.homeAngle;
+        PH5TYPE value = cal.homeAngle;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-		if (value != cal.homeAngle) {
-			return jcmd.setError(STATUS_OUTPUT_FIELD, key);
-		}
+        if (value != cal.homeAngle) {
+            return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        }
     } else if (strcmp("calhe",key) == 0 || strcmp("he",key) == 0) {
-		PH5TYPE value = cal.eTheta;
+        PH5TYPE value = cal.eTheta;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-		if (value != cal.eTheta) {
-			return jcmd.setError(STATUS_OUTPUT_FIELD, key);
-		}
+        if (value != cal.eTheta) {
+            return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        }
     } else if (strcmp("calzc",key) == 0 || strcmp("zc",key) == 0) {
-		PH5TYPE value = cal.zCenter;
+        PH5TYPE value = cal.zCenter;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-		if (value != cal.zCenter) {
-			return jcmd.setError(STATUS_OUTPUT_FIELD, key);
-		}
+        if (value != cal.zCenter) {
+            return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        }
     } else if (strcmp("calzr",key) == 0 || strcmp("zr",key) == 0) {
-		PH5TYPE value = cal.zRim;
+        PH5TYPE value = cal.zRim;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-		if (value != cal.zRim) {
-			return jcmd.setError(STATUS_OUTPUT_FIELD, key);
-		}
+        if (value != cal.zRim) {
+            return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        }
     } else if (strcmp("calsv",key) == 0 || strcmp("sv",key) == 0) {
-		bool value = false;
+        bool value = false;
         status = processField<bool, bool>(jobj, key, value);
-		if (value) {
-			cal.save();
-		}
+        if (value) {
+            cal.save();
+        }
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }

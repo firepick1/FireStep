@@ -49,6 +49,10 @@ void NeoPixel::show() {
         bg = strip.Color(0, 0, 0);
         fg = strip.Color(intensity, intensity, intensity);
         break;
+    case DISPLAY_WAIT_IDLE_FPD:
+        bg = strip.Color(0, 0, 0);
+        fg = strip.Color(intensity/8, intensity, intensity/8);
+        break;
     case DISPLAY_EEPROM:
         bg = strip.Color(0, 0, intensity);
         fg = strip.Color(intensity, intensity, 0);
