@@ -1936,10 +1936,9 @@ void test_mark() {
 		MachineThread mt = test_setup();
 		Machine &machine = mt.machine;
 
-		machine.marks[0] = 10;
-		machine.marks[1] = 20;
-		machine.marks[2] = 30;
-		machine.marks[3] = 40;
+		for (int8_t i=0; i<MARK_COUNT; i++) {
+			machine.marks[i] = (i+1)*10;
+		}
 		machine.axis[0].position = 100;
 		machine.axis[1].position = 200;
 		machine.axis[2].position = 300;
@@ -1952,7 +1951,8 @@ void test_mark() {
 		mt.loop();
 		ASSERTEQUAL(STATUS_OK, mt.status);
 		ASSERTEQUALS(JT("{'s':0,'r':"
-						"{'mrk':{'m1':10.000,'m2':20.000,'m3':30.000,'m4':40.000}"
+						"{'mrk':{'m1':10.000,'m2':20.000,'m3':30.000,'m4':40.000,"
+						"'m5':50.000,'m6':60.000,'m7':70.000,'m8':80.000,'m9':90.000}"
 						"},'t':0.000}\n"),
 					 Serial.output().c_str());
 		mt.loop();

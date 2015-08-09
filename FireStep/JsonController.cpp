@@ -852,6 +852,11 @@ Status JsonController::processMark(JsonCommand& jcmd, JsonObject& jobj, const ch
             node["m2"] = "";
             node["m3"] = "";
             node["m4"] = "";
+            node["m5"] = "";
+            node["m6"] = "";
+            node["m7"] = "";
+            node["m8"] = "";
+            node["m9"] = "";
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -870,6 +875,16 @@ Status JsonController::processMark(JsonCommand& jcmd, JsonObject& jobj, const ch
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[2]);
     } else if (strcmp("m4", key) == 0 || strcmp("mrkm4", key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[3]);
+    } else if (strcmp("m5", key) == 0 || strcmp("mrkm5", key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[4]);
+    } else if (strcmp("m6", key) == 0 || strcmp("mrkm6", key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[5]);
+    } else if (strcmp("m7", key) == 0 || strcmp("mrkm7", key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[6]);
+    } else if (strcmp("m8", key) == 0 || strcmp("mrkm8", key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[7]);
+    } else if (strcmp("m9", key) == 0 || strcmp("mrkm9", key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[8]);
     } else if (keyLen >= 2 && (strncmp("a",key,1) == 0 || strncmp("mrka",key,4) == 0)) {
 		AxisIndex iAxis = axisOf(key[keyLen-1]);
 		if (iAxis < 0) {
