@@ -152,6 +152,7 @@ public:
     PH5TYPE calcZBowlError(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eTheta);
     PH5TYPE calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE radius);
     int32_t hash();
+	static StepCoord roundStep(PH5TYPE value);
 } DeltaCalculator;
 
 } // firestep

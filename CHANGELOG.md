@@ -10,6 +10,7 @@ v0.2.2
 * FIX: reordered saved configuration for proper precedence on restore
 * FIX: home angle digitized properly so that home angle and home pulses are in sync
 * FIX: DeltaCalculator home now initialized properly from axis home
+* CHG: MTO_FPD "movrx" renamed to "movxr" for consistent naming (i.e. X-Relative). Ditty with y and z.
 * NEW: STATUS_WAIT_IDLE NeoPixel display shows; MTO_FPD/green, and MTO_RAW/white
 * NEW: "prbd" returns last 9 probe data values, with most recent first
 * NEW: "mrk" gets/sets value of one of four mark registers

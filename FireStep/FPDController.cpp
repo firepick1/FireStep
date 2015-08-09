@@ -11,43 +11,77 @@ using namespace firestep;
 
 //////////////// FPDCalibrateHome ///////////////
 
-FPDCalibrateHome::FPDCalibrateHome(Machine& machine) 
-	: machine(machine), status(STATUS_BUSY_CALIBRATING) {
+#define PI ((PH5TYPE) 3.14159265359)
+
+FPDCalibrateHome::FPDCalibrateHome(Machine& machine)
+    : machine(machine), status(STATUS_BUSY_CALIBRATING) {
 }
 
 Status FPDCalibrateHome::calibrate() {
-	if (status != STATUS_BUSY_CALIBRATING) {
-		return status;
-	}
-	OpProbe& probe = machine.op.probe;
-	zCenter = (probe.probeData[0]+probe.probeData[7])/2;
-	PH5TYPE zRim0 = (probe.probeData[1]+probe.probeData[4])/2;;
-	PH5TYPE zRim60 = (probe.probeData[2]+probe.probeData[5])/2;;
-	PH5TYPE zRim120 = (probe.probeData[3]+probe.probeData[6])/2;;
-	zRim = (zRim0+zRim60+zRim120)/3;
-	if (abs(zRim-zCenter) > 2) {
-		status = STATUS_CAL_HOME1;
-		return status;
-	}
-	PH5TYPE radius = 50;
-	eTheta = machine.delta.calcZBowlETheta(zCenter, zRim, radius);
-	homeAngle = machine.delta.getHomeAngle() + eTheta;
-	TESTCOUT4("CalibrateHome zCenter:", zCenter, " zRim:", zRim,
-			  " eTheta:", eTheta, " homeAngle:", homeAngle);
-	status = STATUS_OK;
-	return status;
+    if (status != STATUS_BUSY_CALIBRATING) {
+        return status;
+    }
+	machine.loadDeltaCalculator();
+    OpProbe& probe = machine.op.probe;
+    zCenter = (probe.probeData[0]+probe.probeData[7])/2;
+    PH5TYPE zRim0 = (probe.probeData[1]+probe.probeData[4])/2;;
+    PH5TYPE zRim60 = (probe.probeData[2]+probe.probeData[5])/2;;
+    PH5TYPE zRim120 = (probe.probeData[3]+probe.probeData[6])/2;;
+    zRim = (zRim0+zRim60+zRim120)/3;
+    if (abs(zRim-zCenter) > 2) {
+        return STATUS_CAL_HOME1;
+    }
+    PH5TYPE radius = 50;
+    eTheta = machine.delta.calcZBowlETheta(zCenter, zRim, radius);
+	PH5TYPE homeAngleCur = machine.delta.getHomeAngle();
+    homeAngle = homeAngleCur + eTheta;
+    TESTCOUT4("CalibrateHome zCenter:", zCenter, " zRim:", zRim,
+              " eTheta:", eTheta, " homeAngle:", homeAngle);
+	
+	Step3D pd[6];
+	for (int16_t i=0; i<6; i++) {
+		PH5TYPE a = i*60;
+        PH5TYPE radians = a * PI / 180.0;
+		pd[i] = machine.delta.calcPulses(XYZ3D(radius*cos(radians), radius*sin(radians), probe.probeData[1+i]));
+	};
+
+	machine.delta.setHomeAngle(homeAngle);
+    ZPlane zpl0;
+    if (!zpl0.initialize(
+				machine.delta.calcXYZ(pd[0]),
+				machine.delta.calcXYZ(pd[2]),
+				machine.delta.calcXYZ(pd[4])
+            )) {
+        return STATUS_CAL_BED;
+    }
+    TESTCOUT3("zpl0 a:", zpl0.a, " b:", zpl0.b, " c:", zpl0.c);
+    ZPlane zpl60;
+    if (!zpl60.initialize(
+				machine.delta.calcXYZ(pd[1]),
+				machine.delta.calcXYZ(pd[3]),
+				machine.delta.calcXYZ(pd[5])
+            )) {
+        return STATUS_CAL_BED;
+    }
+    TESTCOUT3("zpl60 a:", zpl60.a, " b:", zpl60.b, " c:", zpl60.c);
+    bed.a = (zpl0.a + zpl60.b) / 2;
+    bed.b = (zpl0.b + zpl60.b) / 2;
+    bed.c = (zpl0.c + zpl60.c) / 2;
+    TESTCOUT3("bed a:", bed.a, " b:", bed.b, " c:", bed.c);
+
+    return STATUS_OK;
 }
 
 Status FPDCalibrateHome::save() {
-	Status status = calibrate();
-	if (status == STATUS_OK) {
-		machine.delta.setHomeAngle(homeAngle);
-		StepCoord pulses = machine.delta.getHomePulses();
-		machine.axis[0].home = pulses;
-		machine.axis[1].home = pulses;
-		machine.axis[2].home = pulses;
-	}
-	return status;
+    Status status = calibrate();
+    if (status == STATUS_OK) {
+        machine.delta.setHomeAngle(homeAngle);
+        StepCoord pulses = machine.delta.getHomePulses();
+        machine.axis[0].home = pulses;
+        machine.axis[1].home = pulses;
+        machine.axis[2].home = pulses;
+    }
+    return status;
 }
 
 /////////////////////////// FPDMoveTo ///////////////
@@ -56,6 +90,7 @@ private:
     int32_t nLoops;
     Quad<PH5TYPE> destination;
     int16_t nSegs;
+	bool isZBed;
     Machine &machine;
     FPDController &controller;
 
@@ -68,13 +103,13 @@ public:
 } FPDMoveTo;
 
 FPDMoveTo::FPDMoveTo(FPDController &controller, Machine& machine)
-    : nLoops(0), nSegs(0), machine(machine), controller(controller)
+    : nLoops(0), nSegs(0), machine(machine), controller(controller), isZBed(false)
 {
-	machine.loadDeltaCalculator();
-	StepCoord pulses = machine.delta.getHomePulses();
-	ASSERTEQUAL(machine.axis[0].home, pulses);
-	ASSERTEQUAL(machine.axis[1].home, pulses);
-	ASSERTEQUAL(machine.axis[2].home, pulses);
+    machine.loadDeltaCalculator();
+    StepCoord pulses = machine.delta.getHomePulses();
+    ASSERTEQUAL(machine.axis[0].home, pulses);
+    ASSERTEQUAL(machine.axis[1].home, pulses);
+    ASSERTEQUAL(machine.axis[2].home, pulses);
 
     Quad<StepCoord> curPos = machine.getMotorPosition();
     for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
@@ -88,15 +123,22 @@ FPDMoveTo::FPDMoveTo(FPDController &controller, Machine& machine)
 }
 
 Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
+	PH5TYPE x = destination.value[0];
+	PH5TYPE y = destination.value[1];
+	PH5TYPE z = destination.value[2];
+	if (isZBed) {
+		PH5TYPE zb = machine.bed.calcZ(x,y);
+		z += zb;
+	}
     StrokeBuilder sb(machine.vMax, machine.tvMax);
     Quad<StepCoord> curPos = machine.getMotorPosition();
     Quad<StepCoord> dPos;
-    XYZ3D xyz(destination.value[0], destination.value[1], destination.value[2]);
+    XYZ3D xyz(x, y, z);
     Step3D pulses(machine.delta.calcPulses(xyz));
-	if (!pulses.isValid()) {
-		TESTCOUT3("FPDMoveTo STATUS_KINEMATIC_ERROR x:", xyz.x, " y:", xyz.y, " z:", xyz.z);
-		return STATUS_KINEMATIC_XYZ;
-	}
+    if (!pulses.isValid()) {
+        TESTCOUT3("FPDMoveTo STATUS_KINEMATIC_ERROR x:", xyz.x, " y:", xyz.y, " z:", xyz.z);
+        return STATUS_KINEMATIC_XYZ;
+    }
     dPos.value[0] = pulses.p1 - curPos.value[0];
     dPos.value[1] = pulses.p2 - curPos.value[1];
     dPos.value[2] = pulses.p3 - curPos.value[2];
@@ -159,7 +201,7 @@ Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
 
 Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
-	size_t keyLen = strlen(key);
+    size_t keyLen = strlen(key);
     const char *s;
 
     if (strcmp("mov", key) == 0) {
@@ -197,77 +239,93 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
         }
         status = execute(jcmd, &kidObj);
     } else if (strcmp("movwp",key) == 0 || strcmp("wp",key) == 0) {
-		int16_t iMark = ((int16_t)jobj[key]) - 1;
-		if (iMark < 0 || MARK_COUNT <= iMark) {
-			return jcmd.setError(STATUS_MARK_INDEX, key);
-		}
-		destination.value[0] = machine.marks[iMark%MARK_COUNT];
-		iMark++;
-		destination.value[1] = machine.marks[iMark%MARK_COUNT];
-		iMark++;
-		destination.value[2] = machine.marks[iMark%MARK_COUNT];
-		iMark++;
-		if (keyLen > 2) {
-			status = execute(jcmd, NULL);
-		}
+        int16_t iMark = ((int16_t)jobj[key]) - 1;
+        if (iMark < 0 || MARK_COUNT <= iMark) {
+            return jcmd.setError(STATUS_MARK_INDEX, key);
+        }
+        destination.value[0] = machine.marks[iMark%MARK_COUNT];
+        iMark++;
+        destination.value[1] = machine.marks[iMark%MARK_COUNT];
+        iMark++;
+        destination.value[2] = machine.marks[iMark%MARK_COUNT];
+        iMark++;
+        if (keyLen > 2) {
+            status = execute(jcmd, NULL);
+        }
     } else if (strcmp("movxm",key) == 0 || strcmp("xm",key) == 0) {
-		int16_t iMark = ((int16_t)jobj[key]) - 1;
-		if (iMark < 0 || MARK_COUNT <= iMark) {
-			return jcmd.setError(STATUS_MARK_INDEX, key);
-		}
-		destination.value[0] = machine.marks[iMark];
-		if (keyLen > 2) {
-			status = execute(jcmd, NULL);
-		}
+        int16_t iMark = ((int16_t)jobj[key]) - 1;
+        if (iMark < 0 || MARK_COUNT <= iMark) {
+            return jcmd.setError(STATUS_MARK_INDEX, key);
+        }
+        destination.value[0] = machine.marks[iMark];
+        if (keyLen > 2) {
+            status = execute(jcmd, NULL);
+        }
     } else if (strcmp("movym",key) == 0 || strcmp("ym",key) == 0) {
-		int16_t iMark = ((int16_t)jobj[key]) - 1;
-		if (iMark < 0 || MARK_COUNT <= iMark) {
-			return jcmd.setError(STATUS_MARK_INDEX, key);
-		}
-		destination.value[1] = machine.marks[iMark];
-		if (keyLen > 2) {
-			status = execute(jcmd, NULL);
-		}
+        int16_t iMark = ((int16_t)jobj[key]) - 1;
+        if (iMark < 0 || MARK_COUNT <= iMark) {
+            return jcmd.setError(STATUS_MARK_INDEX, key);
+        }
+        destination.value[1] = machine.marks[iMark];
+        if (keyLen > 2) {
+            status = execute(jcmd, NULL);
+        }
     } else if (strcmp("movzm",key) == 0 || strcmp("zm",key) == 0) {
-		int16_t iMark = ((int16_t)jobj[key]) - 1;
-		if (iMark < 0 || MARK_COUNT <= iMark) {
-			return jcmd.setError(STATUS_MARK_INDEX, key);
-		}
-		TESTCOUT2("z:", destination.value[2], " mark:", machine.marks[iMark]);
-		destination.value[2] = machine.marks[iMark];
-		if (keyLen > 2) {
+        int16_t iMark = ((int16_t)jobj[key]) - 1;
+        if (iMark < 0 || MARK_COUNT <= iMark) {
+            return jcmd.setError(STATUS_MARK_INDEX, key);
+        }
+        TESTCOUT2("z:", destination.value[2], " mark:", machine.marks[iMark]);
+        destination.value[2] = machine.marks[iMark];
+        if (keyLen > 2) {
+            status = execute(jcmd, NULL);
+        }
+    } else if (strcmp("movzb",key) == 0) {
+		XYZ3D xyz = controller.getXYZ3D();
+        PH5TYPE value = xyz.z - machine.bed.c;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        if (status == STATUS_OK) {
+			PH5TYPE zBed = machine.bed.calcZ(xyz.x,xyz.y);
+            destination.value[2] = zBed + value;
+			TESTCOUT3("movzb z:", destination.value[2], " zBed:", zBed, " value:", value);
 			status = execute(jcmd, NULL);
-		}
-    } else if (strcmp("movrx",key) == 0 || strcmp("rx",key) == 0) {
-		XYZ3D xyz = controller.getXYZ3D();
-		PH5TYPE x = 0;
-		status = processField<PH5TYPE, PH5TYPE>(jobj, key, x);
-		if (status == STATUS_OK) {
-			destination.value[0] = xyz.x + x;
-			if (keyLen > 2) {
-				status = execute(jcmd, NULL);
-			}
-		}
-    } else if (strcmp("movry",key) == 0 || strcmp("ry",key) == 0) {
-		XYZ3D xyz = controller.getXYZ3D();
-		PH5TYPE y = 0;
-		status = processField<PH5TYPE, PH5TYPE>(jobj, key, y);
-		if (status == STATUS_OK) {
-			destination.value[1] = xyz.y + y;
-			if (keyLen > 2) {
-				status = execute(jcmd, NULL);
-			}
-		}
-    } else if (strcmp("movrz",key) == 0 || strcmp("rz",key) == 0) {
-		XYZ3D xyz = controller.getXYZ3D();
-		PH5TYPE z = 0;
-		status = processField<PH5TYPE, PH5TYPE>(jobj, key, z);
-		if (status == STATUS_OK) {
-			destination.value[2] = xyz.z + z;
-			if (keyLen > 2) {
-				status = execute(jcmd, NULL);
-			}
-		}
+        }
+    } else if (strcmp("zb",key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, destination.value[2]);
+        if (status == STATUS_OK) {
+			isZBed = true;
+			TESTCOUT1("mov zb:", destination.value[2]);
+        }
+    } else if (strcmp("movxr",key) == 0 || strcmp("xr",key) == 0) {
+        XYZ3D xyz = controller.getXYZ3D();
+        PH5TYPE x = 0;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, x);
+        if (status == STATUS_OK) {
+            destination.value[0] = xyz.x + x;
+            if (keyLen > 2) {
+                status = execute(jcmd, NULL);
+            }
+        }
+    } else if (strcmp("movyr",key) == 0 || strcmp("yr",key) == 0) {
+        XYZ3D xyz = controller.getXYZ3D();
+        PH5TYPE y = 0;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, y);
+        if (status == STATUS_OK) {
+            destination.value[1] = xyz.y + y;
+            if (keyLen > 2) {
+                status = execute(jcmd, NULL);
+            }
+        }
+    } else if (strcmp("movzr",key) == 0 || strcmp("zr",key) == 0) {
+        XYZ3D xyz = controller.getXYZ3D();
+        PH5TYPE z = 0;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, z);
+        if (status == STATUS_OK) {
+            destination.value[2] = xyz.z + z;
+            if (keyLen > 2) {
+                status = execute(jcmd, NULL);
+            }
+        }
     } else if (strncmp("mov", key, 3) == 0) { // short form
         // TODO: clean up mov implementation
         MotorIndex iMotor = machine.motorOfName(key + strlen(key) - 1);
@@ -290,8 +348,7 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
         }
         PH5TYPE d = jobj["d"];
         PH5TYPE a = jobj["a"];
-        PH5TYPE pi = 3.14159265359;
-        PH5TYPE radians = a * pi / 180.0;
+        PH5TYPE radians = a * PI / 180.0;
         PH5TYPE y = d * sin(radians);
         PH5TYPE x = d * cos(radians);
         TESTCOUT2("x:", x, " y:", y);
@@ -491,7 +548,7 @@ Status FPDController::finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj,
     if (!xyz.isValid()) {
         return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
     }
-    if (strcmp("prbx",key) == 0 || strcmp("x",key) == 0) {
+    if (strcmp("prx",key) == 0 || strcmp("x",key) == 0) {
         jobj[key] = xyz.x;
     } else if (strcmp("prby",key) == 0 || strcmp("y",key) == 0) {
         jobj[key] = xyz.y;
@@ -546,6 +603,9 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
+            node["bx"] = "";
+            node["by"] = "";
+            node["bz"] = "";
             node["e"] = "";
             node["f"] = "";
             node["gr"] = "";
@@ -564,6 +624,18 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
                 }
             }
         }
+    } else if (strcmp("bx", key) == 0 || strcmp("dimbx", key) == 0) {
+        PH5TYPE value = machine.bed.a;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+		machine.bed.a = value;
+		jobj[key].set(value,4);
+    } else if (strcmp("by", key) == 0 || strcmp("dimby", key) == 0) {
+        PH5TYPE value = machine.bed.b;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+		machine.bed.b = value;
+		jobj[key].set(value,4);
+    } else if (strcmp("bz", key) == 0 || strcmp("dimbz", key) == 0) {
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.bed.c);
     } else if (strcmp("e", key) == 0 || strcmp("dime", key) == 0) {
         PH5TYPE value = machine.delta.getEffectorTriangleSide();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
@@ -579,7 +651,7 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
     } else if (strcmp("ha1", key) == 0 || strcmp("dimha1", key) == 0 ||
                strcmp("ha2", key) == 0 || strcmp("dimha2", key) == 0 ||
                strcmp("ha3", key) == 0 || strcmp("dimha3", key) == 0) {
-		// deprecated
+        // deprecated
         PH5TYPE homeAngle = machine.delta.getHomeAngle();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngle);
         machine.delta.setHomeAngle(homeAngle);
@@ -592,7 +664,7 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         status = processField<int16_t, int16_t>(jobj, key, value);
         machine.delta.setMicrosteps(value);
     } else if (strcmp("pd", key) == 0 || strcmp("dimpd", key) == 0) {
-		status = processProbeData(jcmd, jobj, key);
+        status = processProbeData(jcmd, jobj, key);
     } else if (strcmp("re", key) == 0 || strcmp("dimre", key) == 0) {
         PH5TYPE value = machine.delta.getEffectorLength();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
@@ -739,6 +811,9 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
     if (strcmp("cal", key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
+            node["bx"] = "";
+            node["by"] = "";
+            node["bz"] = "";
             node["ha"] = "";
             node["he"] = "";
             node["sv"] = "";
@@ -755,6 +830,26 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
                 TESTCOUT1("processCalibrate status:", status);
                 return status;
             }
+        }
+    } else if (strcmp("calbx",key) == 0 || strcmp("bx",key) == 0) {
+        PH5TYPE value = cal.bed.a;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        if (value != cal.bed.a) {
+            return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        }
+		jobj[key].set(value, 4);
+    } else if (strcmp("calby",key) == 0 || strcmp("by",key) == 0) {
+        PH5TYPE value = cal.bed.b;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        if (value != cal.bed.b) {
+            return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        }
+		jobj[key].set(value, 4);
+    } else if (strcmp("calbz",key) == 0 || strcmp("bz",key) == 0) {
+        PH5TYPE value = cal.bed.c;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        if (value != cal.bed.c) {
+            return jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
     } else if (strcmp("calha",key) == 0 || strcmp("ha",key) == 0) {
         PH5TYPE value = cal.homeAngle;
@@ -817,65 +912,65 @@ XYZ3D FPDController::getXYZ3D() {
 }
 
 Status FPDController::processMark(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-	Status status = STATUS_OK;
+    Status status = STATUS_OK;
     if (strcmp("wp", key) == 0 || strcmp("mrkwp", key) == 0) {
-		int16_t iMark = ((int16_t)jobj[key]) - 1;
-		if (iMark < 0 || MARK_COUNT <= iMark) {
-			TESTCOUT1("mark index:", iMark);
-			return jcmd.setError(STATUS_MARK_INDEX, key);
-		}
-		machine.loadDeltaCalculator();
-		XYZ3D xyz = getXYZ3D();
-		if (!xyz.isValid()) {
-			return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
-		}
-		TESTCOUT3("processMark x:", xyz.x, " y:", xyz.y, " z:", xyz.z);
-		machine.marks[iMark%MARK_COUNT] = xyz.x;
-		iMark++;
-		machine.marks[iMark%MARK_COUNT] = xyz.y;
-		iMark++;
-		machine.marks[iMark%MARK_COUNT] = xyz.z;
-		iMark++;
+        int16_t iMark = ((int16_t)jobj[key]) - 1;
+        if (iMark < 0 || MARK_COUNT <= iMark) {
+            TESTCOUT1("mark index:", iMark);
+            return jcmd.setError(STATUS_MARK_INDEX, key);
+        }
+        machine.loadDeltaCalculator();
+        XYZ3D xyz = getXYZ3D();
+        if (!xyz.isValid()) {
+            return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+        }
+        TESTCOUT3("processMark x:", xyz.x, " y:", xyz.y, " z:", xyz.z);
+        machine.marks[iMark%MARK_COUNT] = xyz.x;
+        iMark++;
+        machine.marks[iMark%MARK_COUNT] = xyz.y;
+        iMark++;
+        machine.marks[iMark%MARK_COUNT] = xyz.z;
+        iMark++;
     } else if (strcmp("ax", key) == 0 || strcmp("mrkax", key) == 0) {
-		int16_t iMark = ((int16_t)jobj[key]) - 1;
-		if (iMark < 0 || MARK_COUNT <= iMark) {
-			TESTCOUT1("mark index:", iMark);
-			return jcmd.setError(STATUS_MARK_INDEX, key);
-		}
-		machine.loadDeltaCalculator();
-		XYZ3D xyz = getXYZ3D();
-		if (!xyz.isValid()) {
-			return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
-		}
-		TESTCOUT1("processMark x:", xyz.x);
-		machine.marks[iMark] = xyz.x;
+        int16_t iMark = ((int16_t)jobj[key]) - 1;
+        if (iMark < 0 || MARK_COUNT <= iMark) {
+            TESTCOUT1("mark index:", iMark);
+            return jcmd.setError(STATUS_MARK_INDEX, key);
+        }
+        machine.loadDeltaCalculator();
+        XYZ3D xyz = getXYZ3D();
+        if (!xyz.isValid()) {
+            return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+        }
+        TESTCOUT1("processMark x:", xyz.x);
+        machine.marks[iMark] = xyz.x;
     } else if (strcmp("ay", key) == 0 || strcmp("mrkay", key) == 0) {
-		int16_t iMark = ((int16_t)jobj[key]) - 1;
-		if (iMark < 0 || MARK_COUNT <= iMark) {
-			TESTCOUT1("mark index:", iMark);
-			return jcmd.setError(STATUS_MARK_INDEX, key);
-		}
-		machine.loadDeltaCalculator();
-		XYZ3D xyz = getXYZ3D();
-		if (!xyz.isValid()) {
-			return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
-		}
-		machine.marks[iMark] = xyz.y;
+        int16_t iMark = ((int16_t)jobj[key]) - 1;
+        if (iMark < 0 || MARK_COUNT <= iMark) {
+            TESTCOUT1("mark index:", iMark);
+            return jcmd.setError(STATUS_MARK_INDEX, key);
+        }
+        machine.loadDeltaCalculator();
+        XYZ3D xyz = getXYZ3D();
+        if (!xyz.isValid()) {
+            return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+        }
+        machine.marks[iMark] = xyz.y;
     } else if (strcmp("az", key) == 0 || strcmp("mrkaz", key) == 0) {
-		int16_t iMark = ((int16_t)jobj[key]) - 1;
-		if (iMark < 0 || MARK_COUNT <= iMark) {
-			TESTCOUT1("mark index:", iMark);
-			return jcmd.setError(STATUS_MARK_INDEX, key);
-		}
-		machine.loadDeltaCalculator();
-		XYZ3D xyz = getXYZ3D();
-		if (!xyz.isValid()) {
-			return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
-		}
-		machine.marks[iMark] = xyz.z;
-	} else {
-		return JsonController::processMark(jcmd, jobj, key);
+        int16_t iMark = ((int16_t)jobj[key]) - 1;
+        if (iMark < 0 || MARK_COUNT <= iMark) {
+            TESTCOUT1("mark index:", iMark);
+            return jcmd.setError(STATUS_MARK_INDEX, key);
+        }
+        machine.loadDeltaCalculator();
+        XYZ3D xyz = getXYZ3D();
+        if (!xyz.isValid()) {
+            return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
+        }
+        machine.marks[iMark] = xyz.z;
+    } else {
+        return JsonController::processMark(jcmd, jobj, key);
     }
-	return status;
+    return status;
 }
 

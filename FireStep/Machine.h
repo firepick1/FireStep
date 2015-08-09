@@ -225,6 +225,22 @@ public:
     }
 } OpProbe;
 
+typedef class ZPlane {
+public:
+	PH5TYPE a;
+	PH5TYPE b;
+	PH5TYPE c;
+
+	ZPlane(PH5TYPE a=0, PH5TYPE b=0, PH5TYPE c=0) :a(a), b(b), c(c) {}
+	ZPlane& operator=(const ZPlane that) { a = that.a; b = that.b; c = that.c; return *this; } 
+	bool initialize(XYZ3D p1, XYZ3D p2, XYZ3D p3);
+	PH5TYPE calcZ(PH5TYPE x, PH5TYPE y) { return a*x + b*y + c; }
+	inline PH5TYPE getXScale() { return a; }
+	inline PH5TYPE getYScale() { return b; }
+	inline PH5TYPE getZOffset() { return c; }
+	inline void setZOffset(PH5TYPE value) { c = value; }
+} ZPlane;
+
 typedef class Machine : public QuadStepper {
     friend void ::test_Home();
 
@@ -252,6 +268,7 @@ public:
         OpProbe		probe;
     } op;
     int32_t		syncHash;
+	ZPlane		bed;
 
 public:
     Axis 		axis[AXIS_COUNT];

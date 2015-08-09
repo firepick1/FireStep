@@ -22,7 +22,7 @@ PH5TYPE DeltaCalculator::tan30_half = tan30 / 2.0;
 PH5TYPE DeltaCalculator::pi = 3.14159265359;
 PH5TYPE DeltaCalculator::dtr = pi / 180.0;
 
-StepCoord roundStep(PH5TYPE value) {
+StepCoord DeltaCalculator::roundStep(PH5TYPE value) {
     return (StepCoord)(value + (value < 0 ? -0.5 : +0.5));
 }
 

@@ -150,12 +150,10 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
     if (tStart <= 0) {
         return STATUS_STROKE_START;
     }
-#ifdef TEST
-    Ticks endTicks = tCurrent - (tStart + dtTotal);
-    if (endTicks > -5) {
-        TESTCOUT2("traverse(", endTicks, ") ", dGoal.toString());
-    }
-#endif
+    //Ticks endTicks = tCurrent - (tStart + dtTotal);
+    //if (endTicks > -5) {
+        //TESTCOUT2("traverse(", endTicks, ") ", dGoal.toString());
+    //}
 
     Status status = STATUS_BUSY_MOVING;
     Quad<StepDV> pulse;
@@ -190,7 +188,7 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
         }
     }
     if (tCurrent >= tStart + dtTotal) {
-        TESTCOUT3("Stroke::traverse() tCurrent:", tCurrent, " tStart:", tStart, " dtTotal:", dtTotal);
+        //TESTCOUT3("Stroke::traverse() tCurrent:", tCurrent, " tStart:", tStart, " dtTotal:", dtTotal);
         return STATUS_OK;
     }
     return STATUS_BUSY_MOVING;
@@ -229,7 +227,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     // Determine scale K for each Quad dimension
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         K[i] = relPos.value[i] / 6400.0;
-        TESTCOUT2("K[", i, "]:", K[i]);
+        //TESTCOUT2("K[", i, "]:", K[i]);
         Ksqrt[i] = sqrt(abs(K[i]));
         if (pulses < abs(relPos.value[i])) {
             pulses = abs(relPos.value[i]);
@@ -238,7 +236,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     }
 
     // Generate scaled PH5Curve coefficients
-    TESTCOUT1("buildLine:", relPos.toString());
+    //TESTCOUT1("buildLine:", relPos.toString());
 #define Z6400 56.568542495
     PHVECTOR<Complex<PH5TYPE> > z[QUAD_ELEMENTS];
     PHVECTOR<Complex<PH5TYPE> > q[QUAD_ELEMENTS];
@@ -268,10 +266,10 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     if (minSegs == 0) {
         minSegs = 5; // minimum number of acceleration segments
         minSegs = (float)minSegs * (float)abs(pulses) / (vMax * vMaxSeconds);
-        TESTCOUT4("pulses:", pulses, " minSegs:", minSegs, " vMax:", vMax, " vMaxSeconds:", vMaxSeconds);
+        //TESTCOUT4("pulses:", pulses, " minSegs:", minSegs, " vMax:", vMax, " vMaxSeconds:", vMaxSeconds);
         int16_t minSegsK = abs(pulses) / 200.0;
         if (minSegs < minSegsK) {
-            TESTCOUT1("minSegsK:", minSegsK);
+            //TESTCOUT1("minSegsK:", minSegsK);
             minSegs = minSegsK;
         }
         minSegs = max((int16_t)16, min((int16_t)(STROKE_SEGMENTS - 1), minSegs));
@@ -301,7 +299,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
             PH5TYPE pos = ph.r(E[iSeg]).Re();
             if (iSeg == N) {
                 stroke.dEndPos.value[i] = pos < 0 ? pos - 0.5 : pos + 0.5;
-                TESTCOUT2("dEndPos.value[", (int) i, "] ", stroke.dEndPos.value[i]);
+                //TESTCOUT2("dEndPos.value[", (int) i, "] ", stroke.dEndPos.value[i]);
             }
             pos /= SCALE;
             StepCoord sNew = pos < 0 ? pos - 0.5 : pos + 0.5;
@@ -310,7 +308,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
             StepCoord dv = vNew - v;
             //TESTCOUT4("iSeg:", iSeg, " sNew:", sNew, " vNew:", vNew, " dv:", dv);
             if (dv < (StepCoord) - 127 || (StepCoord) 127 < dv) {
-                TESTCOUT3(" STATUS_STROKE_SEGPULSES pulses:", dv, " i:", (int)i, " N:", (int)N);
+                //TESTCOUT3(" STATUS_STROKE_SEGPULSES pulses:", dv, " i:", (int)i, " N:", (int)N);
                 return STATUS_STROKE_SEGPULSES;
             }
             stroke.seg[iSeg - 1].value[i] = dv;
@@ -321,7 +319,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
 
     leastFreeRam = min(leastFreeRam, freeRam());
 
-    TESTCOUT3(" N:", N, " tS:", tS, " dEndPos:", stroke.dEndPos.toString());
+    //TESTCOUT3(" N:", N, " tS:", tS, " dEndPos:", stroke.dEndPos.toString());
 
     return STATUS_OK;
 }

@@ -14,6 +14,7 @@ public:
     PH5TYPE zRim;
     PH5TYPE eTheta;
     PH5TYPE homeAngle;
+    ZPlane bed;
 
 public:
 	FPDCalibrateHome(Machine& machine);

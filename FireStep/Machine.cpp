@@ -41,11 +41,28 @@ char * firestep::saveConfigValue(const char *key, PH5TYPE value, char *out, uint
         value = -value;
     }
     int32_t ivalue = value;
-    out = saveConfigValue(key,minus ? -ivalue : ivalue, out);
+	TESTCOUT3("key:", key, " value:", value, " ivalue:", ivalue);
+	if (minus) {
+		sprintf(out, "\"%s\":-%ld,", key, (long) ivalue);
+	} else {
+		sprintf(out, "\"%s\":%ld,", key, (long) ivalue);
+	}
+    out += strlen(out);
     out--;
     *out++ = '.';
     value -= ivalue;
     switch (places) {
+    case 4:
+        ivalue = value * 10000 + 0.5;
+        out[3] = '0' + (ivalue % 10);
+        ivalue /= 10;
+        out[2] = '0' + (ivalue % 10);
+        ivalue /= 10;
+        out[1] = '0' + (ivalue % 10);
+        ivalue /= 10;
+        out[0] = '0' + (ivalue % 10);
+        out += 4;
+        break;
     case 3:
         ivalue = value * 1000 + 0.5;
         out[2] = '0' + (ivalue % 10);
@@ -126,6 +143,55 @@ char * Axis::saveConfig(char *out, size_t maxLen) {
     return out;
 }
 
+////////////////////// ZPlane /////////////////////////
+
+bool ZPlane::initialize(XYZ3D p1, XYZ3D p2, XYZ3D p3) {
+	//z1 = a*x1 + b*y1 + c
+	//z2 = a*x2 + b*y2 + c
+	//z3 = a*x3 + b*y3 + c
+
+	//z1-z2 = a*(x1-x2) + b*(y1-y2);
+	//z1-z3 = a*(x1-x3) + b*(y1-y3);
+
+	//[(z1-z2) - b*(y1-y2)] / (x1-x2) = a
+	//[(z1-z3) - b*(y1-y3)] / (x1-x3) = a
+
+	//(x1-x3)*[(z1-z2) - b*(y1-y2)]  = (x1-x2)*[(z1-z3) - b*(y1-y3)] 
+
+	//(x1-x3)(z1-z2) - b*(y1-y2)*(x1-x3)  = (x1-x2)*(z1-z3) - b*(y1-y3)*(x1-x2) 
+
+	//(x1-x3)(z1-z2) - b*(y1-y2)*(x1-x3)  = (x1-x2)*(z1-z3) - b*(y1-y3)*(x1-x2) 
+
+	PH5TYPE x12 = p1.x-p2.x;
+	PH5TYPE x13 = p1.x-p3.x;
+	PH5TYPE y12 = p1.y-p2.y;
+	PH5TYPE y13 = p1.y-p3.y;
+	PH5TYPE z12 = p1.z-p2.z;
+	PH5TYPE z13 = p1.z-p3.z;
+
+	PH5TYPE det23 = y13*x12-y12*x13;
+	if (det23 == 0) {
+		TESTCOUT4("det23 y13:", y13, " x12:", x12, " y12:", y12, " x13:", x13);
+		return false;
+	}
+	//x13*z12 - b*y12*x13  = x12*z13 - b*y13*x12 
+	//b*y13*x12 - b*y12*x13  = x12*z13 - x13*z12 
+	b  = (x12*z13 - x13*z12) / det23;
+	
+	if (x12) {
+		a = (z12-b*y12)/x12;
+		c = p1.z - a*p1.x - b*p1.y;
+	} else if (x13) {
+		a = (z13-b*y13)/x13;
+		c = p1.z - a*p1.x - b*p1.y;
+	} else {
+		TESTCOUT3("p1.x:", p1.x, " p2.x:", p2.x, " p3.x:", p3.x);
+		return false;
+	}
+
+	return true;
+}
+
 ////////////////////// Machine /////////////////////////
 
 Machine::Machine()
@@ -185,6 +251,9 @@ int32_t Machine::hash() {
                      ^ (latchBackoff)
                      ^ (searchDelay)
                      ^ (pinStatus)
+					 ^ (*(uint32_t *)(void*)&bed.a)
+					 ^ (*(uint32_t *)(void*)&bed.b)
+					 ^ (*(uint32_t *)(void*)&bed.c)
                      //^ (eeUser)
                      ;
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
@@ -732,6 +801,9 @@ char * Machine::saveSysConfig(char *out, size_t maxLen) {
 char * Machine::saveDimConfig(char *out, size_t maxLen) {
     *out++ = '{';
 	// save these so that they will load first before angles
+    out = saveConfigValue("bx", bed.getXScale(), out, 4);
+    out = saveConfigValue("by", bed.getYScale(), out, 4);
+    out = saveConfigValue("bz", bed.getZOffset(), out);
     out = saveConfigValue("e", delta.getEffectorTriangleSide(), out);
     out = saveConfigValue("f", delta.getBaseTriangleSide(), out);
     out = saveConfigValue("gr", delta.getGearRatio(), out, 3);
