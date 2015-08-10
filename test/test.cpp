@@ -1875,7 +1875,31 @@ void test_calibrate() {
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     Serial.clear();
 
-    // dataset #1
+	// dataset #1
+    machine.op.probe.probeData[0] = -62.259;
+    machine.op.probe.probeData[1] = -61.701;
+    machine.op.probe.probeData[2] = -61.556;
+    machine.op.probe.probeData[3] = -61.465;
+    machine.op.probe.probeData[4] = -61.495;
+    machine.op.probe.probeData[5] = -61.695;
+    machine.op.probe.probeData[6] = -61.761;
+    machine.op.probe.probeData[7] = -62.259;
+    Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','ha':'','sv':false}}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{"
+                    "'cal':{'bx':0.0004,'by':0.0025,'bz':-61.613,'ha':-77.722,'sv':false}},"
+                    "'t':0.000}\n"),
+                 Serial.output().c_str());
+    ASSERTEQUAL(-5600, machine.axis[0].home);
+    ASSERTEQUAL(-5600, machine.axis[1].home);
+    ASSERTEQUAL(-5600, machine.axis[2].home);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // dataset #2
     machine.op.probe.probeData[0] = -62.202;
     machine.op.probe.probeData[1] = -61.646;
     machine.op.probe.probeData[2] = -61.519;
@@ -1894,36 +1918,12 @@ void test_calibrate() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{"
                     "'cal':{'bx':0.0002,'by':0.0021,'bz':-61.565,'ha':-77.638,"
-					"'he':-10.438,'sv':false,'zc':-62.202,'zr':-61.562}},"
+					"'he':-10.438,'sv':true,'zc':-62.202,'zr':-61.562}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
-    ASSERTEQUAL(-5600, machine.axis[0].home);
-    ASSERTEQUAL(-5600, machine.axis[1].home);
-    ASSERTEQUAL(-5600, machine.axis[2].home);
-    mt.loop();
-    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-
-    // dataset #2
-    machine.op.probe.probeData[0] = -62.259;
-    machine.op.probe.probeData[1] = -61.701;
-    machine.op.probe.probeData[2] = -61.556;
-    machine.op.probe.probeData[3] = -61.465;
-    machine.op.probe.probeData[4] = -61.495;
-    machine.op.probe.probeData[5] = -61.695;
-    machine.op.probe.probeData[6] = -61.761;
-    machine.op.probe.probeData[7] = -62.259;
-    Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','ha':'','sv':true}}\n"));
-    mt.loop();
-    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    mt.loop();
-    ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{"
-                    "'cal':{'bx':0.0004,'by':0.0025,'bz':-61.613,'ha':-77.722,'sv':true}},"
-                    "'t':0.000}\n"),
-                 Serial.output().c_str());
-    ASSERTEQUAL(-6477, machine.axis[0].home);
-    ASSERTEQUAL(-6477, machine.axis[1].home);
-    ASSERTEQUAL(-6477, machine.axis[2].home);
+    ASSERTEQUAL(-6470, machine.axis[0].home);
+    ASSERTEQUAL(-6470, machine.axis[1].home);
+    ASSERTEQUAL(-6470, machine.axis[2].home);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 

@@ -50,13 +50,7 @@ const char * JsonCommand::getError() {
     return error;
 }
 
-#include <sys/types.h>
-#include <unistd.h>
-#include <signal.h>
 Status JsonCommand::setError(Status status, const char *err) {
-if(status == STATUS_UNRECOGNIZED_NAME) {
-		kill(getpid(), SIGABRT);
-}
     snprintf(error, sizeof(error), "%s", err);
     jResponseRoot["s"] = status;
     jResponseRoot["e"] = error;

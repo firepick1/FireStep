@@ -816,7 +816,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
             node["bz"] = "";
             node["ha"] = "";
             node["he"] = "";
-            node["sv"] = true;
+            node["sv"] = "";
             node["zc"] = "";
             node["zr"] = "";
         }
@@ -876,7 +876,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
             return jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
     } else if (strcmp("calsv",key) == 0 || strcmp("sv",key) == 0) {
-        bool value = false;
+        bool value = true;
         status = processField<bool, bool>(jobj, key, value);
         if (value) {
             cal.save();
