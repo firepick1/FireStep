@@ -10,6 +10,7 @@
 #include "MachineThread.h"
 #include "Display.h"
 #include "DeltaCalculator.h"
+#include "ProgMem.h"
 
 byte lastByte;
 
@@ -3905,6 +3906,47 @@ void test_msg_cmt_idl() {
     cout << "TEST	: test_msg_cmt_idl() OK " << endl;
 }
 
+void test_pgm() {
+    cout << "TEST	: test_pgm() =====" << endl;
+
+	// ProgMem.cpp test
+	ASSERTEQUALS(JT("[{'msg':'test A'},{'msg':'test B'}]"), prog_src("test"));
+
+	// pgmd: dump program
+    MachineThread mt = test_MTO_FPD_setup();
+    Serial.push(JT("{'pgmd':'test'}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("[{'msg':'test A'},{'msg':'test B'}]\n"
+					"{'s':0,'r':{'pgmd':'test'}"
+					",'t':0.000}\n"), 
+					Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	// pgmx: execute program
+    Serial.push(JT("{'pgmx':'test2'}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // program
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // program
+    ASSERTEQUALS(JT("test A\n"), Serial.output().c_str());
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // program
+    ASSERTEQUALS(JT("test B\n"), Serial.output().c_str());
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // program end
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'msg':'test B'}"
+					",'t':0.000}\n"), 
+					Serial.output().c_str());
+
+    cout << "TEST	: test_pgm() OK " << endl;
+}
+
 void test_ZPlane() {
     cout << "TEST	: test_ZPlane() =====" << endl;
 
@@ -3944,7 +3986,8 @@ int main(int argc, char *argv[]) {
     // test first
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
-        test_MTO_FPD_hom();
+		test_pgm();
+        //test_MTO_FPD_hom();
         //test_DeltaCalculator();
         //test_MTO_FPD();
         //test_calibrate();
@@ -3992,6 +4035,7 @@ int main(int argc, char *argv[]) {
         test_calibrate();
         test_mark();
         test_ZPlane();
+		test_pgm();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;

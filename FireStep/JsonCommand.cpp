@@ -36,6 +36,7 @@ size_t JsonCommand::requestAvailable() {
 }
 
 void JsonCommand::clear() {
+	TESTCOUT1("JsonCommand::", "clear");
     parsed = false;
     cmdIndex = 0;
     memset(json, 0, sizeof(json));
@@ -49,7 +50,13 @@ const char * JsonCommand::getError() {
     return error;
 }
 
+#include <sys/types.h>
+#include <unistd.h>
+#include <signal.h>
 Status JsonCommand::setError(Status status, const char *err) {
+if(status == STATUS_UNRECOGNIZED_NAME) {
+		kill(getpid(), SIGABRT);
+}
     snprintf(error, sizeof(error), "%s", err);
     jResponseRoot["s"] = status;
     jResponseRoot["e"] = error;
@@ -76,6 +83,7 @@ Status JsonCommand::parseCore() {
         }
         jRequestRoot = jobj;
         jResponseRoot["r"] = jRequestRoot;
+		TESTCOUT1("parseCore:", "object");
     } else {
         JsonArray &jarr = jbRequest.parseArray(json);
         if (!jarr.success()) {
@@ -88,6 +96,7 @@ Status JsonCommand::parseCore() {
         }
         jRequestRoot = jarr;
         jResponseRoot["r"] = jarr[0];
+		TESTCOUT1("parseCore:", "array");
     }
     jResponseRoot["s"] = STATUS_BUSY_PARSED;
 

@@ -55,6 +55,8 @@ enum Status {
 	STATUS_MARK_INDEX = -143,		// Invalid mark index. Expected [1,MARK_COUNT]
 	STATUS_MARK_AXIS = -144,		// Invalid mark axis. Expected: 1,2,3,4,x,y,z,a,b, or c
 	STATUS_CAL_BED = -145,			// Calibration probe data insufficient for bed plane calculation
+	STATUS_UNKNOWN_PROGRAM = -146,	// Unknown prg identifier
+	STATUS_PROGRAM_SIZE = -147,		// Program to large to execute
 
     // stroke
     STATUS_STROKE_SEGPULSES = -200,	// Stroke has too many pulses per segment [-127,127]

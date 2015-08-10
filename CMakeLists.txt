@@ -76,6 +76,7 @@ link_directories(
 add_executable(test 
 	FireStep/DeltaCalculator.cpp
 	FireStep/ProcessField.cpp
+	FireStep/ProgMem.cpp
 	FireStep/JsonCommand.cpp
 	FireStep/JsonController.cpp
 	FireStep/FPDController.cpp

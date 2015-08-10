@@ -816,7 +816,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
             node["bz"] = "";
             node["ha"] = "";
             node["he"] = "";
-            node["sv"] = "";
+            node["sv"] = true;
             node["zc"] = "";
             node["zr"] = "";
         }

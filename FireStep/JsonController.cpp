@@ -6,6 +6,7 @@
 #include "version.h"
 #include "JsonController.h"
 #include "ProcessField.h"
+#include "ProgMem.h"
 
 using namespace firestep;
 
@@ -748,7 +749,7 @@ Status JsonController::processEEPROM(JsonCommand& jcmd, JsonObject& jobj, const 
     } else if (strncmp("eep",key,3) == 0) {
         status = processEEPROMValue(jcmd, jobj, key, key+3);
     } else {
-        status = STATUS_UNRECOGNIZED_NAME;
+        return jcmd.setError(status, key);
     }
     if (status < 0) {
         return jcmd.setError(status, key);
@@ -801,6 +802,28 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
         }
     }
     return STATUS_OK;
+}
+
+Status JsonController::processProgram(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = STATUS_NOT_IMPLEMENTED;
+    if (strcmp("pgm", key) == 0) {
+        JsonObject& kidObj = jobj[key];
+        if (!kidObj.success()) {
+			status = prog_dump("help");
+        }
+        for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+            status = processProgram(jcmd, kidObj, it->key);
+        }
+    } else if (strcmp("r",key)==0 || strcmp("pgmd",key)==0) {
+		const char * name = jobj[key];
+		status = prog_dump(name);
+    } else if (strcmp("x",key)==0 || strcmp("pgmx",key)==0) {
+		const char * name = jobj[key];
+		status = prog_load_cmd(name, jcmd);
+    } else {
+        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+    }
+    return status;
 }
 
 Status JsonController::processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
@@ -993,8 +1016,10 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
     JsonVariant node;
     node = jobj;
     Status status = STATUS_OK;
+	TESTCOUT1("processObj:", "in");
 
     for (JsonObject::iterator it = jobj.begin(); status >= 0 && it != jobj.end(); ++it) {
+		TESTCOUT1("processObj key:", it->key);
         if (strcmp("dvs", it->key) == 0) {
             status = processStroke(jcmd, jobj, it->key);
         } else if (strncmp("mov", it->key, 3) == 0) {
@@ -1038,6 +1063,10 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
             const char *s = it->value;
             Serial.println(s);
             status = STATUS_OK;
+			TESTCOUT1("msg:", s);
+        } else if (strncmp("pgm", it->key, 3) == 0) {
+            status = processProgram(jcmd, jobj, it->key);
+			break; // This critically interrupts processing	to allow new program to run
         } else {
             switch (it->key[0]) {
             case '1':
@@ -1061,6 +1090,7 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
         }
     }
 
+	TESTCOUT1("processObj:", "out");
     return status;
 }
 
