@@ -299,10 +299,11 @@ Status firestep::prog_dump(const char *name) {
 }
 
 Status firestep::prog_load_cmd(const char *name, JsonCommand &jcmd) {
-	string key(name); // name is volatile
+	char nameBuf[32];
+	snprintf(nameBuf, sizeof(nameBuf), "%s", name); // name is volatile
 	Status status = STATUS_OK;
-    const char *src = prog_src(key.c_str());
-	TESTCOUT2("prog_load:", key.c_str(), " src:", src);
+    const char *src = prog_src(nameBuf);
+	TESTCOUT2("prog_load:", nameBuf, " src:", src);
 
     size_t len = strlen_P(src);
 	if (len <= 0 || MAX_JSON <= len+1) {
@@ -322,7 +323,7 @@ Status firestep::prog_load_cmd(const char *name, JsonCommand &jcmd) {
 		ASSERT(' ' <= buf[i] && buf[i] <= '~');
     }
 	buf[len] = 0;
-	TESTCOUT3("prog_load_cmd:", key.c_str(), " buf:", buf, " status:", status);
+	TESTCOUT3("prog_load_cmd:", nameBuf, " buf:", buf, " status:", status);
 	if (status != STATUS_OK) {
 		TESTCOUT1("prog_load_cmd:", status);
 		return status;
@@ -330,9 +331,9 @@ Status firestep::prog_load_cmd(const char *name, JsonCommand &jcmd) {
 
 	status = jcmd.parse(buf, STATUS_WAIT_IDLE);
 	if (status < 0) {
-		TESTCOUT2("prog_load_cmd:", key.c_str(), " parse error:", status); // should never happen
+		TESTCOUT2("prog_load_cmd:", nameBuf, " parse error:", status); // should never happen
 	} else {
-		TESTCOUT2("prog_load_cmd:", key.c_str(), " parse status:", status); // STATUS_BUSY_PARSED 10
+		TESTCOUT2("prog_load_cmd:", nameBuf, " parse status:", status); // STATUS_BUSY_PARSED 10
 	}
 
 	return status;
