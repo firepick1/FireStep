@@ -152,7 +152,7 @@ Status Stroke::traverse(Ticks tCurrent, QuadStepper &stepper) {
     }
     //Ticks endTicks = tCurrent - (tStart + dtTotal);
     //if (endTicks > -5) {
-        //TESTCOUT2("traverse(", endTicks, ") ", dGoal.toString());
+    //TESTCOUT2("traverse(", endTicks, ") ", dGoal.toString());
     //}
 
     Status status = STATUS_BUSY_MOVING;

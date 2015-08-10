@@ -31,13 +31,13 @@ DeltaCalculator::DeltaCalculator()
       f(190.526), // base equilateral triangle side (mm)
       re(270.000), // effector arm length (mm)
       rf(90.000), // base arm length (mm)
-	  acr(24.15), // arm clearance radius (mm)
+      acr(24.15), // arm clearance radius (mm)
       steps360(200),
       microsteps(16),
       gearRatio(150/16.0),
       dz(0)
 {
-	homeAngle = getDefaultHomeAngle();
+    homeAngle = getDefaultHomeAngle();
 }
 
 void DeltaCalculator::setup() {
@@ -51,28 +51,28 @@ void DeltaCalculator::setup() {
 }
 
 PH5TYPE DeltaCalculator::getMinDegrees() {
-	return getDefaultHomeAngle();
+    return getDefaultHomeAngle();
 }
 
 PH5TYPE DeltaCalculator::getDefaultHomeAngle() {
-	PH5TYPE armsParallel = 180*asin((f-e)/(re*sqrt3))/pi - 90;
-	PH5TYPE clearanceAngle = 180*asin(acr/rf)/pi;
+    PH5TYPE armsParallel = 180*asin((f-e)/(re*sqrt3))/pi - 90;
+    PH5TYPE clearanceAngle = 180*asin(acr/rf)/pi;
     PH5TYPE rawDegrees =  armsParallel + clearanceAngle;
     PH5TYPE dp = degreePulses();
-	StepCoord minPulses = rawDegrees * dp;
-	PH5TYPE degrees =  minPulses/dp;	// digitize min degrees to stepper pulses
-	//TESTCOUT2("getDefaultHomeAngle:", degrees, " raw:", rawDegrees);
-	return degrees;
+    StepCoord minPulses = rawDegrees * dp;
+    PH5TYPE degrees =  minPulses/dp;	// digitize min degrees to stepper pulses
+    //TESTCOUT2("getDefaultHomeAngle:", degrees, " raw:", rawDegrees);
+    return degrees;
 }
 
 StepCoord DeltaCalculator::getHomePulses() {
     PH5TYPE dp = degreePulses();
-	return roundStep(homeAngle*dp);
+    return roundStep(homeAngle*dp);
 }
 
 void DeltaCalculator::setHomePulses(StepCoord pulses) {
     PH5TYPE dp = degreePulses();
-	setHomeAngle(pulses/dp);
+    setHomeAngle(pulses/dp);
 }
 
 PH5TYPE DeltaCalculator::calcAngleYZ(PH5TYPE X, PH5TYPE Y, PH5TYPE Z) {
@@ -224,17 +224,17 @@ int32_t DeltaCalculator::hash() {
 
 PH5TYPE DeltaCalculator::calcZBowlError(Step3D center, Step3D rim, PH5TYPE eTheta) {
     PH5TYPE dp = degreePulses();
-	StepCoord  ePulses = roundStep(eTheta * dp);
-	XYZ3D xyzCtr = calcXYZ(Step3D(
-		center.p1 - ePulses,
-		center.p2 - ePulses,
-		center.p3 - ePulses
-	));
-	XYZ3D xyzRim = calcXYZ(Step3D(
-		rim.p1 - ePulses,
-		rim.p2 - ePulses,
-		rim.p3 - ePulses
-	));
+    StepCoord  ePulses = roundStep(eTheta * dp);
+    XYZ3D xyzCtr = calcXYZ(Step3D(
+                               center.p1 - ePulses,
+                               center.p2 - ePulses,
+                               center.p3 - ePulses
+                           ));
+    XYZ3D xyzRim = calcXYZ(Step3D(
+                               rim.p1 - ePulses,
+                               rim.p2 - ePulses,
+                               rim.p3 - ePulses
+                           ));
     PH5TYPE error = xyzRim.z - xyzCtr.z;
     return error;
 }
@@ -252,7 +252,7 @@ PH5TYPE DeltaCalculator::calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE 
     XYZ3D xyzRim(radius, 0, zCenter);
     Step3D center = calcPulses(xyzCtr);
     Step3D rim = calcPulses(xyzRim);
-	PH5TYPE eThetaCur = homeAngle - getDefaultHomeAngle();
+    PH5TYPE eThetaCur = homeAngle - getDefaultHomeAngle();
 
     // Newton Raphson: calculate slope@eTheta0 = ZBowl error/degree
     PH5TYPE eDegrees = eThetaCur;

@@ -77,7 +77,7 @@ typedef class Axis {
 private:
     bool		enabled; // true: stepper drivers are enabled and powered
 public:
-	char		id;		// a single character describing the axis
+    char		id;		// a single character describing the axis
 
 public: // configuration
     StepCoord	home; // home position
@@ -227,18 +227,33 @@ public:
 
 typedef class ZPlane {
 public:
-	PH5TYPE a;
-	PH5TYPE b;
-	PH5TYPE c;
+    PH5TYPE a;
+    PH5TYPE b;
+    PH5TYPE c;
 
-	ZPlane(PH5TYPE a=0, PH5TYPE b=0, PH5TYPE c=0) :a(a), b(b), c(c) {}
-	ZPlane& operator=(const ZPlane that) { a = that.a; b = that.b; c = that.c; return *this; } 
-	bool initialize(XYZ3D p1, XYZ3D p2, XYZ3D p3);
-	PH5TYPE calcZ(PH5TYPE x, PH5TYPE y) { return a*x + b*y + c; }
-	inline PH5TYPE getXScale() { return a; }
-	inline PH5TYPE getYScale() { return b; }
-	inline PH5TYPE getZOffset() { return c; }
-	inline void setZOffset(PH5TYPE value) { c = value; }
+    ZPlane(PH5TYPE a=0, PH5TYPE b=0, PH5TYPE c=0) :a(a), b(b), c(c) {}
+    ZPlane& operator=(const ZPlane that) {
+        a = that.a;
+        b = that.b;
+        c = that.c;
+        return *this;
+    }
+    bool initialize(XYZ3D p1, XYZ3D p2, XYZ3D p3);
+    PH5TYPE calcZ(PH5TYPE x, PH5TYPE y) {
+        return a*x + b*y + c;
+    }
+    inline PH5TYPE getXScale() {
+        return a;
+    }
+    inline PH5TYPE getYScale() {
+        return b;
+    }
+    inline PH5TYPE getZOffset() {
+        return c;
+    }
+    inline void setZOffset(PH5TYPE value) {
+        c = value;
+    }
 } ZPlane;
 
 typedef class Machine : public QuadStepper {
@@ -257,7 +272,7 @@ public:
     DeltaCalculator delta;
     int32_t 	vMax; // maximum stroke velocity (pulses/second)
     PH5TYPE 	tvMax; // time to reach maximum velocity
-	PH5TYPE		marks[MARK_COUNT];
+    PH5TYPE		marks[MARK_COUNT];
     int16_t		homingPulses;
     StepCoord	latchBackoff;
     DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
@@ -268,7 +283,7 @@ public:
         OpProbe		probe;
     } op;
     int32_t		syncHash;
-	ZPlane		bed;
+    ZPlane		bed;
 
 public:
     Axis 		axis[AXIS_COUNT];
@@ -368,7 +383,7 @@ public:
     Status sync(Status status);
     void enableEEUser(bool enable);
     bool isEEUserEnabled();
-	void loadDeltaCalculator(); // initialize from raw axis
+    void loadDeltaCalculator(); // initialize from raw axis
 } Machine;
 
 #ifdef TEST

@@ -220,48 +220,48 @@ const char OP_zm[] PROGMEM = { "zm" };
 const char OP_zr[] PROGMEM = { "zr" };
 
 const char src_help[] PROGMEM = {
-	"["
-	"{\"msg\":\"Program names are:\"},"
-	"{\"msg\":\"  help  print this help text\"},"
-	"{\"msg\":\"  test  print test message\"},"
-	"{\"msg\":\"  cal   calibrate Z-bowl error and Z-bed plane\"}"
-	"]"
+    "["
+    "{\"msg\":\"Program names are:\"},"
+    "{\"msg\":\"  help  print this help text\"},"
+    "{\"msg\":\"  test  print test message\"},"
+    "{\"msg\":\"  cal   calibrate Z-bowl error and Z-bed plane\"}"
+    "]"
 };
 
 const char src_test1[] PROGMEM = {
-	"{\"msg\":\"test A\"}"
+    "{\"msg\":\"test A\"}"
 };
 
 const char src_test2[] PROGMEM = {
-	"["
-	"{\"msg\":\"test A\"},"
-	"{\"msg\":\"test B\"}"
-	"]"
+    "["
+    "{\"msg\":\"test A\"},"
+    "{\"msg\":\"test B\"}"
+    "]"
 };
 
 const char src_calibrate[] PROGMEM = {
-	"["
-	"{\"hom\":\"\"},"
-	"{\"prbz\":\"\"},"
-	"{\"movzr\":10},"
-	"{\"mrkwp\":1},"
-	"{\"mov\":{ \"zm\":3,\"a\":0,\"d\":50}},"
-	"{\"prbz\":\"\"},"
-	"{\"mov\":{\"zm\":3,\"a\":60,\"d\":50}},"
-	"{\"prbz\":\"\"},"
-	"{\"mov\":{\"zm\":3,\"a\":120,\"d\":50}},"
-	"{\"prbz\":\"\"},"
-	"{\"mov\":{\"zm\":3,\"a\":180,\"d\":50}},"
-	"{\"prbz\":\"\"},"
-	"{\"mov\":{\"zm\":3,\"a\":240,\"d\":50}},"
-	"{\"prbz\":\"\"},"
-	"{\"mov\":{\"zm\":3,\"a\":300,\"d\":50}},"
-	"{\"prbz\":\"\"},"
-	"{\"mov\":{\"zm\":3,\"x\":0,\"y\":0}},"
-	"{\"prbz\":\"\"},"
-	"{\"movwp\":1},"
-	"{\"prbd\":\"\",\"cal\":\"\"}"
-	"]" 
+    "["
+    "{\"hom\":\"\"},"
+    "{\"prbz\":\"\"},"
+    "{\"movzr\":10},"
+    "{\"mrkwp\":1},"
+    "{\"mov\":{ \"zm\":3,\"a\":0,\"d\":50}},"
+    "{\"prbz\":\"\"},"
+    "{\"mov\":{\"zm\":3,\"a\":60,\"d\":50}},"
+    "{\"prbz\":\"\"},"
+    "{\"mov\":{\"zm\":3,\"a\":120,\"d\":50}},"
+    "{\"prbz\":\"\"},"
+    "{\"mov\":{\"zm\":3,\"a\":180,\"d\":50}},"
+    "{\"prbz\":\"\"},"
+    "{\"mov\":{\"zm\":3,\"a\":240,\"d\":50}},"
+    "{\"prbz\":\"\"},"
+    "{\"mov\":{\"zm\":3,\"a\":300,\"d\":50}},"
+    "{\"prbz\":\"\"},"
+    "{\"mov\":{\"zm\":3,\"x\":0,\"y\":0}},"
+    "{\"prbz\":\"\"},"
+    "{\"movwp\":1},"
+    "{\"prbd\":\"\",\"cal\":\"\"}"
+    "]"
 };
 
 const char *firestep::prog_src(const char *name) {
@@ -277,65 +277,65 @@ const char *firestep::prog_src(const char *name) {
         return src_calibrate;
     }
 
-	return src_help;
+    return src_help;
 }
 
 Status firestep::prog_dump(const char *name) {
-	const char *src = prog_src(name);
-	TESTCOUT2("prog_dump:", name, " src:", src);
+    const char *src = prog_src(name);
+    TESTCOUT2("prog_dump:", name, " src:", src);
 
     for (size_t i = 0; i<MAX_JSON; i++) {
         char c = pgm_read_byte_near(src + i);
-		ASSERT(c == 0 || ' ' <= c && c <= '~');
-		if (c) {
-			Serial.print(c);
-		} else {
-			Serial.println();
-			break;
-		}
+        ASSERT(c == 0 || ' ' <= c && c <= '~');
+        if (c) {
+            Serial.print(c);
+        } else {
+            Serial.println();
+            break;
+        }
     }
 
-	return STATUS_OK;
+    return STATUS_OK;
 }
 
 Status firestep::prog_load_cmd(const char *name, JsonCommand &jcmd) {
-	char nameBuf[32];
-	snprintf(nameBuf, sizeof(nameBuf), "%s", name); // name is volatile
-	Status status = STATUS_OK;
+    char nameBuf[32];
+    snprintf(nameBuf, sizeof(nameBuf), "%s", name); // name is volatile
+    Status status = STATUS_OK;
     const char *src = prog_src(nameBuf);
-	TESTCOUT2("prog_load:", nameBuf, " src:", src);
+    TESTCOUT2("prog_load:", nameBuf, " src:", src);
 
     size_t len = strlen_P(src);
-	if (len <= 0 || MAX_JSON <= len+1) {
-		return STATUS_PROGRAM_SIZE;
-	}
+    if (len <= 0 || MAX_JSON <= len+1) {
+        return STATUS_PROGRAM_SIZE;
+    }
 
-	///////// DANGER /////////
-	// We will replace the currently running command with the program
-	// name will no longer be valid
-	jcmd.clear();
-	///////// DANGER /////////
-	
-	char *buf = jcmd.allocate(len+1);
-	ASSERT(buf);
+    ///////// DANGER /////////
+    // We will replace the currently running command with the program
+    // name will no longer be valid
+    jcmd.clear();
+    ///////// DANGER /////////
+
+    char *buf = jcmd.allocate(len+1);
+    ASSERT(buf);
     for (size_t i = 0; i < len; i++) {
         buf[i] = pgm_read_byte_near(src + i);
-		ASSERT(' ' <= buf[i] && buf[i] <= '~');
+        ASSERT(' ' <= buf[i] && buf[i] <= '~');
     }
-	buf[len] = 0;
-	TESTCOUT3("prog_load_cmd:", nameBuf, " buf:", buf, " status:", status);
-	if (status != STATUS_OK) {
-		TESTCOUT1("prog_load_cmd:", status);
-		return status;
-	}
+    buf[len] = 0;
+    TESTCOUT3("prog_load_cmd:", nameBuf, " buf:", buf, " status:", status);
+    if (status != STATUS_OK) {
+        TESTCOUT1("prog_load_cmd:", status);
+        return status;
+    }
 
-	status = jcmd.parse(buf, STATUS_WAIT_IDLE);
-	if (status < 0) {
-		TESTCOUT2("prog_load_cmd:", nameBuf, " parse error:", status); // should never happen
-	} else {
-		TESTCOUT2("prog_load_cmd:", nameBuf, " parse status:", status); // STATUS_BUSY_PARSED 10
-	}
+    status = jcmd.parse(buf, STATUS_WAIT_IDLE);
+    if (status < 0) {
+        TESTCOUT2("prog_load_cmd:", nameBuf, " parse error:", status); // should never happen
+    } else {
+        TESTCOUT2("prog_load_cmd:", nameBuf, " parse status:", status); // STATUS_BUSY_PARSED 10
+    }
 
-	return status;
+    return status;
 }
 

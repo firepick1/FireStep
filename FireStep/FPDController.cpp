@@ -21,7 +21,7 @@ Status FPDCalibrateHome::calibrate() {
     if (status != STATUS_BUSY_CALIBRATING) {
         return status;
     }
-	machine.loadDeltaCalculator();
+    machine.loadDeltaCalculator();
     OpProbe& probe = machine.op.probe;
     zCenter = (probe.probeData[0]+probe.probeData[7])/2;
     PH5TYPE zRim0 = (probe.probeData[1]+probe.probeData[4])/2;;
@@ -33,33 +33,33 @@ Status FPDCalibrateHome::calibrate() {
     }
     PH5TYPE radius = 50;
     eTheta = machine.delta.calcZBowlETheta(zCenter, zRim, radius);
-	PH5TYPE homeAngleCur = machine.delta.getHomeAngle();
+    PH5TYPE homeAngleCur = machine.delta.getHomeAngle();
     homeAngle = homeAngleCur + eTheta;
     TESTCOUT4("CalibrateHome zCenter:", zCenter, " zRim:", zRim,
               " eTheta:", eTheta, " homeAngle:", homeAngle);
-	
-	Step3D pd[6];
-	for (int16_t i=0; i<6; i++) {
-		PH5TYPE a = i*60;
-        PH5TYPE radians = a * PI / 180.0;
-		pd[i] = machine.delta.calcPulses(XYZ3D(radius*cos(radians), radius*sin(radians), probe.probeData[1+i]));
-	};
 
-	machine.delta.setHomeAngle(homeAngle);
+    Step3D pd[6];
+    for (int16_t i=0; i<6; i++) {
+        PH5TYPE a = i*60;
+        PH5TYPE radians = a * PI / 180.0;
+        pd[i] = machine.delta.calcPulses(XYZ3D(radius*cos(radians), radius*sin(radians), probe.probeData[1+i]));
+    };
+
+    machine.delta.setHomeAngle(homeAngle);
     ZPlane zpl0;
     if (!zpl0.initialize(
-				machine.delta.calcXYZ(pd[0]),
-				machine.delta.calcXYZ(pd[2]),
-				machine.delta.calcXYZ(pd[4])
+                machine.delta.calcXYZ(pd[0]),
+                machine.delta.calcXYZ(pd[2]),
+                machine.delta.calcXYZ(pd[4])
             )) {
         return STATUS_CAL_BED;
     }
     TESTCOUT3("zpl0 a:", zpl0.a, " b:", zpl0.b, " c:", zpl0.c);
     ZPlane zpl60;
     if (!zpl60.initialize(
-				machine.delta.calcXYZ(pd[1]),
-				machine.delta.calcXYZ(pd[3]),
-				machine.delta.calcXYZ(pd[5])
+                machine.delta.calcXYZ(pd[1]),
+                machine.delta.calcXYZ(pd[3]),
+                machine.delta.calcXYZ(pd[5])
             )) {
         return STATUS_CAL_BED;
     }
@@ -90,7 +90,7 @@ private:
     int32_t nLoops;
     Quad<PH5TYPE> destination;
     int16_t nSegs;
-	bool isZBed;
+    bool isZBed;
     Machine &machine;
     FPDController &controller;
 
@@ -123,13 +123,13 @@ FPDMoveTo::FPDMoveTo(FPDController &controller, Machine& machine)
 }
 
 Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
-	PH5TYPE x = destination.value[0];
-	PH5TYPE y = destination.value[1];
-	PH5TYPE z = destination.value[2];
-	if (isZBed) {
-		PH5TYPE zb = machine.bed.calcZ(x,y);
-		z += zb;
-	}
+    PH5TYPE x = destination.value[0];
+    PH5TYPE y = destination.value[1];
+    PH5TYPE z = destination.value[2];
+    if (isZBed) {
+        PH5TYPE zb = machine.bed.calcZ(x,y);
+        z += zb;
+    }
     StrokeBuilder sb(machine.vMax, machine.tvMax);
     Quad<StepCoord> curPos = machine.getMotorPosition();
     Quad<StepCoord> dPos;
@@ -281,20 +281,20 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
             status = execute(jcmd, NULL);
         }
     } else if (strcmp("movzb",key) == 0) {
-		XYZ3D xyz = controller.getXYZ3D();
+        XYZ3D xyz = controller.getXYZ3D();
         PH5TYPE value = xyz.z - machine.bed.c;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         if (status == STATUS_OK) {
-			PH5TYPE zBed = machine.bed.calcZ(xyz.x,xyz.y);
+            PH5TYPE zBed = machine.bed.calcZ(xyz.x,xyz.y);
             destination.value[2] = zBed + value;
-			TESTCOUT3("movzb z:", destination.value[2], " zBed:", zBed, " value:", value);
-			status = execute(jcmd, NULL);
+            TESTCOUT3("movzb z:", destination.value[2], " zBed:", zBed, " value:", value);
+            status = execute(jcmd, NULL);
         }
     } else if (strcmp("zb",key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, destination.value[2]);
         if (status == STATUS_OK) {
-			isZBed = true;
-			TESTCOUT1("mov zb:", destination.value[2]);
+            isZBed = true;
+            TESTCOUT1("mov zb:", destination.value[2]);
         }
     } else if (strcmp("movxr",key) == 0 || strcmp("xr",key) == 0) {
         XYZ3D xyz = controller.getXYZ3D();
@@ -627,13 +627,13 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
     } else if (strcmp("bx", key) == 0 || strcmp("dimbx", key) == 0) {
         PH5TYPE value = machine.bed.a;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-		machine.bed.a = value;
-		jobj[key].set(value,4);
+        machine.bed.a = value;
+        jobj[key].set(value,4);
     } else if (strcmp("by", key) == 0 || strcmp("dimby", key) == 0) {
         PH5TYPE value = machine.bed.b;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-		machine.bed.b = value;
-		jobj[key].set(value,4);
+        machine.bed.b = value;
+        jobj[key].set(value,4);
     } else if (strcmp("bz", key) == 0 || strcmp("dimbz", key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.bed.c);
     } else if (strcmp("e", key) == 0 || strcmp("dime", key) == 0) {
@@ -837,14 +837,14 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
         if (value != cal.bed.a) {
             return jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
-		jobj[key].set(value, 4);
+        jobj[key].set(value, 4);
     } else if (strcmp("calby",key) == 0 || strcmp("by",key) == 0) {
         PH5TYPE value = cal.bed.b;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         if (value != cal.bed.b) {
             return jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
-		jobj[key].set(value, 4);
+        jobj[key].set(value, 4);
     } else if (strcmp("calbz",key) == 0 || strcmp("bz",key) == 0) {
         PH5TYPE value = cal.bed.c;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);

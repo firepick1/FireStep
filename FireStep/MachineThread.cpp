@@ -33,14 +33,14 @@ void MachineThread::displayStatus() {
     switch (status) {
     case STATUS_OK:
     case STATUS_WAIT_IDLE:
-		switch (machine.topology) {
-		case MTO_FPD:
-			machine.pDisplay->setStatus(DISPLAY_WAIT_IDLE_FPD);
-			break;
-		default:
-			machine.pDisplay->setStatus(DISPLAY_WAIT_IDLE);
-			break;
-		}
+        switch (machine.topology) {
+        case MTO_FPD:
+            machine.pDisplay->setStatus(DISPLAY_WAIT_IDLE_FPD);
+            break;
+        default:
+            machine.pDisplay->setStatus(DISPLAY_WAIT_IDLE);
+            break;
+        }
         break;
     case STATUS_WAIT_EOL:
         machine.pDisplay->setStatus(DISPLAY_WAIT_EOL);

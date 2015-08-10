@@ -332,7 +332,7 @@ Status RawController::processMove(JsonCommand& jcmd, JsonObject& jobj, const cha
 }
 
 Status RawController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
-                                      const char* key, bool clear)
+                                     const char* key, bool clear)
 {
     Status status = STATUS_OK;
     if (clear) {

@@ -51,12 +51,12 @@ enum Status {
     STATUS_PROBE_PIN = -139,		// No probe pin specified
     STATUS_KINEMATIC_XYZ = -140,	// Could not solve XYZ cartesian kinematics
     STATUS_USER_EEPROM = -141,		// user EEPROM address out of range [2000,EEPROM_END)
-	STATUS_CAL_HOME1 = -142,		// Home calibration probe data invalid: zCenter/zRim too far apart
-	STATUS_MARK_INDEX = -143,		// Invalid mark index. Expected [1,MARK_COUNT]
-	STATUS_MARK_AXIS = -144,		// Invalid mark axis. Expected: 1,2,3,4,x,y,z,a,b, or c
-	STATUS_CAL_BED = -145,			// Calibration probe data insufficient for bed plane calculation
-	STATUS_UNKNOWN_PROGRAM = -146,	// Unknown prg identifier
-	STATUS_PROGRAM_SIZE = -147,		// Program to large to execute
+    STATUS_CAL_HOME1 = -142,		// Home calibration probe data invalid: zCenter/zRim too far apart
+    STATUS_MARK_INDEX = -143,		// Invalid mark index. Expected [1,MARK_COUNT]
+    STATUS_MARK_AXIS = -144,		// Invalid mark axis. Expected: 1,2,3,4,x,y,z,a,b, or c
+    STATUS_CAL_BED = -145,			// Calibration probe data insufficient for bed plane calculation
+    STATUS_UNKNOWN_PROGRAM = -146,	// Unknown prg identifier
+    STATUS_PROGRAM_SIZE = -147,		// Program to large to execute
 
     // stroke
     STATUS_STROKE_SEGPULSES = -200,	// Stroke has too many pulses per segment [-127,127]

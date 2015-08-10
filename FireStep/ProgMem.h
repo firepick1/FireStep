@@ -11,7 +11,7 @@
 
 namespace firestep {
 
-const char *prog_src(const char *name);	
+const char *prog_src(const char *name);
 Status prog_dump(const char *name);
 Status prog_load_cmd(const char *name, JsonCommand &jcmd);
 

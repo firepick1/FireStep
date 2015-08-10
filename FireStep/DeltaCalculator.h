@@ -62,12 +62,12 @@ protected:
     PH5TYPE e;
     PH5TYPE rf;
     PH5TYPE re;
-	PH5TYPE acr; // arm clearance radius at pulley
+    PH5TYPE acr; // arm clearance radius at pulley
     int16_t steps360;
     int16_t microsteps;
     PH5TYPE gearRatio;
     PH5TYPE dz;
-	PH5TYPE homeAngle;
+    PH5TYPE homeAngle;
     static PH5TYPE sqrt3;
     static PH5TYPE sin120;
     static PH5TYPE cos120;
@@ -104,12 +104,12 @@ public:
     inline void setEffectorLength(PH5TYPE value) {
         re = value;
     }
-	inline PH5TYPE getArmClearanceRadius() {
-		return acr;
-	}
-	inline void setArmClearanceRadius(PH5TYPE value) {
-		acr = value;
-	}
+    inline PH5TYPE getArmClearanceRadius() {
+        return acr;
+    }
+    inline void setArmClearanceRadius(PH5TYPE value) {
+        acr = value;
+    }
     inline int16_t getSteps360() {
         return steps360;
     }
@@ -137,10 +137,12 @@ public:
     PH5TYPE getMinZ(PH5TYPE x=0, PH5TYPE y=0);  // lowest possible point at given XY
     PH5TYPE getMinDegrees(); // base/effector arms are colinear here (which is usually bad mechanically)
     PH5TYPE getDefaultHomeAngle(); // calculated using arm clearance radius
-	inline PH5TYPE getHomeAngle() { return homeAngle; }
-	inline void setHomeAngle(PH5TYPE value) {
-		homeAngle = value;
-	}
+    inline PH5TYPE getHomeAngle() {
+        return homeAngle;
+    }
+    inline void setHomeAngle(PH5TYPE value) {
+        homeAngle = value;
+    }
     StepCoord getHomePulses();
     void setHomePulses(StepCoord value);
     Step3D calcPulses(XYZ3D xyz);
@@ -152,7 +154,7 @@ public:
     PH5TYPE calcZBowlError(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eTheta);
     PH5TYPE calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE radius);
     int32_t hash();
-	static StepCoord roundStep(PH5TYPE value);
+    static StepCoord roundStep(PH5TYPE value);
 } DeltaCalculator;
 
 } // firestep

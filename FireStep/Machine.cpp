@@ -41,12 +41,12 @@ char * firestep::saveConfigValue(const char *key, PH5TYPE value, char *out, uint
         value = -value;
     }
     int32_t ivalue = value;
-	TESTCOUT3("key:", key, " value:", value, " ivalue:", ivalue);
-	if (minus) {
-		sprintf(out, "\"%s\":-%ld,", key, (long) ivalue);
-	} else {
-		sprintf(out, "\"%s\":%ld,", key, (long) ivalue);
-	}
+    TESTCOUT3("key:", key, " value:", value, " ivalue:", ivalue);
+    if (minus) {
+        sprintf(out, "\"%s\":-%ld,", key, (long) ivalue);
+    } else {
+        sprintf(out, "\"%s\":%ld,", key, (long) ivalue);
+    }
     out += strlen(out);
     out--;
     *out++ = '.';
@@ -96,10 +96,10 @@ char * firestep::saveConfigValue(const char *key, PH5TYPE value, char *out, uint
 
 Status Axis::enable(bool active) {
     if (pinEnable == NOPIN || pinStep == NOPIN || pinDir == NOPIN) {
-		//TESTCOUT2("Axis::enable(", active, ") IGNORED axis:", id);
+        //TESTCOUT2("Axis::enable(", active, ") IGNORED axis:", id);
         return STATUS_NOPIN;
     }
-	//TESTCOUT2("Axis::enable(", active, ") axis:", id);
+    //TESTCOUT2("Axis::enable(", active, ") axis:", id);
     digitalWrite(pinEnable, active ? PIN_ENABLE : PIN_DISABLE);
     setAdvancing(true);
     enabled = active;
@@ -146,50 +146,50 @@ char * Axis::saveConfig(char *out, size_t maxLen) {
 ////////////////////// ZPlane /////////////////////////
 
 bool ZPlane::initialize(XYZ3D p1, XYZ3D p2, XYZ3D p3) {
-	//z1 = a*x1 + b*y1 + c
-	//z2 = a*x2 + b*y2 + c
-	//z3 = a*x3 + b*y3 + c
+    //z1 = a*x1 + b*y1 + c
+    //z2 = a*x2 + b*y2 + c
+    //z3 = a*x3 + b*y3 + c
 
-	//z1-z2 = a*(x1-x2) + b*(y1-y2);
-	//z1-z3 = a*(x1-x3) + b*(y1-y3);
+    //z1-z2 = a*(x1-x2) + b*(y1-y2);
+    //z1-z3 = a*(x1-x3) + b*(y1-y3);
 
-	//[(z1-z2) - b*(y1-y2)] / (x1-x2) = a
-	//[(z1-z3) - b*(y1-y3)] / (x1-x3) = a
+    //[(z1-z2) - b*(y1-y2)] / (x1-x2) = a
+    //[(z1-z3) - b*(y1-y3)] / (x1-x3) = a
 
-	//(x1-x3)*[(z1-z2) - b*(y1-y2)]  = (x1-x2)*[(z1-z3) - b*(y1-y3)] 
+    //(x1-x3)*[(z1-z2) - b*(y1-y2)]  = (x1-x2)*[(z1-z3) - b*(y1-y3)]
 
-	//(x1-x3)(z1-z2) - b*(y1-y2)*(x1-x3)  = (x1-x2)*(z1-z3) - b*(y1-y3)*(x1-x2) 
+    //(x1-x3)(z1-z2) - b*(y1-y2)*(x1-x3)  = (x1-x2)*(z1-z3) - b*(y1-y3)*(x1-x2)
 
-	//(x1-x3)(z1-z2) - b*(y1-y2)*(x1-x3)  = (x1-x2)*(z1-z3) - b*(y1-y3)*(x1-x2) 
+    //(x1-x3)(z1-z2) - b*(y1-y2)*(x1-x3)  = (x1-x2)*(z1-z3) - b*(y1-y3)*(x1-x2)
 
-	PH5TYPE x12 = p1.x-p2.x;
-	PH5TYPE x13 = p1.x-p3.x;
-	PH5TYPE y12 = p1.y-p2.y;
-	PH5TYPE y13 = p1.y-p3.y;
-	PH5TYPE z12 = p1.z-p2.z;
-	PH5TYPE z13 = p1.z-p3.z;
+    PH5TYPE x12 = p1.x-p2.x;
+    PH5TYPE x13 = p1.x-p3.x;
+    PH5TYPE y12 = p1.y-p2.y;
+    PH5TYPE y13 = p1.y-p3.y;
+    PH5TYPE z12 = p1.z-p2.z;
+    PH5TYPE z13 = p1.z-p3.z;
 
-	PH5TYPE det23 = y13*x12-y12*x13;
-	if (det23 == 0) {
-		TESTCOUT4("det23 y13:", y13, " x12:", x12, " y12:", y12, " x13:", x13);
-		return false;
-	}
-	//x13*z12 - b*y12*x13  = x12*z13 - b*y13*x12 
-	//b*y13*x12 - b*y12*x13  = x12*z13 - x13*z12 
-	b  = (x12*z13 - x13*z12) / det23;
-	
-	if (x12) {
-		a = (z12-b*y12)/x12;
-		c = p1.z - a*p1.x - b*p1.y;
-	} else if (x13) {
-		a = (z13-b*y13)/x13;
-		c = p1.z - a*p1.x - b*p1.y;
-	} else {
-		TESTCOUT3("p1.x:", p1.x, " p2.x:", p2.x, " p3.x:", p3.x);
-		return false;
-	}
+    PH5TYPE det23 = y13*x12-y12*x13;
+    if (det23 == 0) {
+        TESTCOUT4("det23 y13:", y13, " x12:", x12, " y12:", y12, " x13:", x13);
+        return false;
+    }
+    //x13*z12 - b*y12*x13  = x12*z13 - b*y13*x12
+    //b*y13*x12 - b*y12*x13  = x12*z13 - x13*z12
+    b  = (x12*z13 - x13*z12) / det23;
 
-	return true;
+    if (x12) {
+        a = (z12-b*y12)/x12;
+        c = p1.z - a*p1.x - b*p1.y;
+    } else if (x13) {
+        a = (z13-b*y13)/x13;
+        c = p1.z - a*p1.x - b*p1.y;
+    } else {
+        TESTCOUT3("p1.x:", p1.x, " p2.x:", p2.x, " p3.x:", p3.x);
+        return false;
+    }
+
+    return true;
 }
 
 ////////////////////// Machine /////////////////////////
@@ -213,16 +213,16 @@ Machine::Machine()
         op.probe.probeData[i] = 0;
     }
 
-	for (int16_t i=0; i<MARK_COUNT; i++) {
-		marks[i] = 0;
-	}
+    for (int16_t i=0; i<MARK_COUNT; i++) {
+        marks[i] = 0;
+    }
 
-	axis[0].id = 'x';
-	axis[1].id = 'y';
-	axis[2].id = 'z';
-	axis[3].id = 'a';
-	axis[4].id = 'b';
-	axis[5].id = 'c';
+    axis[0].id = 'x';
+    axis[1].id = 'y';
+    axis[2].id = 'z';
+    axis[3].id = 'a';
+    axis[4].id = 'b';
+    axis[5].id = 'c';
 }
 
 void Machine::setup(PinConfig cfg) {
@@ -251,9 +251,9 @@ int32_t Machine::hash() {
                      ^ (latchBackoff)
                      ^ (searchDelay)
                      ^ (pinStatus)
-					 ^ (*(uint32_t *)(void*)&bed.a)
-					 ^ (*(uint32_t *)(void*)&bed.b)
-					 ^ (*(uint32_t *)(void*)&bed.c)
+                     ^ (*(uint32_t *)(void*)&bed.a)
+                     ^ (*(uint32_t *)(void*)&bed.b)
+                     ^ (*(uint32_t *)(void*)&bed.c)
                      //^ (eeUser)
                      ;
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
@@ -773,12 +773,12 @@ void Machine::setMotorPosition(const Quad<StepCoord> &position) {
 
 char * Machine::saveSysConfig(char *out, size_t maxLen) {
     *out++ = '{';
-	// priority 1
+    // priority 1
     out = saveConfigValue("ch", hash(), out);
     out = saveConfigValue("pc", pinConfig, out);
     out = saveConfigValue("to", topology, out);
 
-	// priority 2
+    // priority 2
     out = saveConfigValue("ah", autoHome, out);
     out = saveConfigValue("as", autoSync, out);
     out = saveConfigValue("db", debounce, out);
@@ -800,7 +800,7 @@ char * Machine::saveSysConfig(char *out, size_t maxLen) {
 
 char * Machine::saveDimConfig(char *out, size_t maxLen) {
     *out++ = '{';
-	// save these so that they will load first before angles
+    // save these so that they will load first before angles
     out = saveConfigValue("bx", bed.getXScale(), out, 4);
     out = saveConfigValue("by", bed.getYScale(), out, 4);
     out = saveConfigValue("bz", bed.getZOffset(), out);
@@ -829,5 +829,5 @@ bool Machine::isEEUserEnabled() {
 }
 
 void Machine::loadDeltaCalculator() {
-	delta.setHomePulses((axis[0].home+axis[1].home+axis[2].home)/3);
+    delta.setHomePulses((axis[0].home+axis[1].home+axis[2].home)/3);
 }
