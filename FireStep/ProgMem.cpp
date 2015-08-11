@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #include "ProgMem.h"
 
 using namespace firestep;
@@ -260,15 +261,15 @@ const char src_calibrate[] PROGMEM = {
 };
 
 const char *firestep::prog_src(const char *name) {
-    if (strcmp_P(OP_test, name) == 0) {
+    if (strcmp_PS(OP_test, name) == 0) {
         return src_test2;
-    } else if (strcmp_P(OP_test1, name) == 0) {
+    } else if (strcmp_PS(OP_test1, name) == 0) {
         return src_test1;
-    } else if (strcmp_P(OP_test2, name) == 0) {
+    } else if (strcmp_PS(OP_test2, name) == 0) {
         return src_test2;
-    } else if (strcmp_P(OP_help, name) == 0) {
+    } else if (strcmp_PS(OP_help, name) == 0) {
         return src_help;
-    } else if (strcmp_P(OP_cal, name) == 0) {
+    } else if (strcmp_PS(OP_cal, name) == 0) {
         return src_calibrate;
     }
 

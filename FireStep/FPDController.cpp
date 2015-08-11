@@ -210,7 +210,7 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
     size_t keyLen = strlen(key);
     const char *s;
 
-    if (strcmp_P(OP_mov, key) == 0) {
+    if (strcmp_PS(OP_mov, key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
             node["lp"] = "";
@@ -244,7 +244,7 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
             }
         }
         status = execute(jcmd, &kidObj);
-    } else if (strcmp_P(OP_movwp,key) == 0 || strcmp_P(OP_wp,key) == 0) {
+    } else if (strcmp_PS(OP_movwp,key) == 0 || strcmp_PS(OP_wp,key) == 0) {
         int16_t iMark = ((int16_t)jobj[key]) - 1;
         if (iMark < 0 || MARK_COUNT <= iMark) {
             return jcmd.setError(STATUS_MARK_INDEX, key);
@@ -258,7 +258,7 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
         if (keyLen > 2) {
             status = execute(jcmd, NULL);
         }
-    } else if (strcmp_P(OP_movxm,key) == 0 || strcmp_P(OP_xm,key) == 0) {
+    } else if (strcmp_PS(OP_movxm,key) == 0 || strcmp_PS(OP_xm,key) == 0) {
         int16_t iMark = ((int16_t)jobj[key]) - 1;
         if (iMark < 0 || MARK_COUNT <= iMark) {
             return jcmd.setError(STATUS_MARK_INDEX, key);
@@ -267,7 +267,7 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
         if (keyLen > 2) {
             status = execute(jcmd, NULL);
         }
-    } else if (strcmp_P(OP_movym,key) == 0 || strcmp_P(OP_ym,key) == 0) {
+    } else if (strcmp_PS(OP_movym,key) == 0 || strcmp_PS(OP_ym,key) == 0) {
         int16_t iMark = ((int16_t)jobj[key]) - 1;
         if (iMark < 0 || MARK_COUNT <= iMark) {
             return jcmd.setError(STATUS_MARK_INDEX, key);
@@ -276,7 +276,7 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
         if (keyLen > 2) {
             status = execute(jcmd, NULL);
         }
-    } else if (strcmp_P(OP_movzm,key) == 0 || strcmp_P(OP_zm,key) == 0) {
+    } else if (strcmp_PS(OP_movzm,key) == 0 || strcmp_PS(OP_zm,key) == 0) {
         int16_t iMark = ((int16_t)jobj[key]) - 1;
         if (iMark < 0 || MARK_COUNT <= iMark) {
             return jcmd.setError(STATUS_MARK_INDEX, key);
@@ -286,7 +286,7 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
         if (keyLen > 2) {
             status = execute(jcmd, NULL);
         }
-    } else if (strcmp_P(OP_movzb,key) == 0) {
+    } else if (strcmp_PS(OP_movzb,key) == 0) {
         XYZ3D xyz = controller.getXYZ3D();
         PH5TYPE value = xyz.z - machine.bed.c;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
@@ -296,13 +296,13 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
             TESTCOUT3("movzb z:", destination.value[2], " zBed:", zBed, " value:", value);
             status = execute(jcmd, NULL);
         }
-    } else if (strcmp_P(OP_zb,key) == 0) {
+    } else if (strcmp_PS(OP_zb,key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, destination.value[2]);
         if (status == STATUS_OK) {
             isZBed = true;
             TESTCOUT1("mov zb:", destination.value[2]);
         }
-    } else if (strcmp_P(OP_movxr,key) == 0 || strcmp_P(OP_xr,key) == 0) {
+    } else if (strcmp_PS(OP_movxr,key) == 0 || strcmp_PS(OP_xr,key) == 0) {
         XYZ3D xyz = controller.getXYZ3D();
         PH5TYPE x = 0;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, x);
@@ -312,7 +312,7 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
                 status = execute(jcmd, NULL);
             }
         }
-    } else if (strcmp_P(OP_movyr,key) == 0 || strcmp_P(OP_yr,key) == 0) {
+    } else if (strcmp_PS(OP_movyr,key) == 0 || strcmp_PS(OP_yr,key) == 0) {
         XYZ3D xyz = controller.getXYZ3D();
         PH5TYPE y = 0;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, y);
@@ -322,7 +322,7 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
                 status = execute(jcmd, NULL);
             }
         }
-    } else if (strcmp_P(OP_movzr,key) == 0 || strcmp_P(OP_zr,key) == 0) {
+    } else if (strcmp_PS(OP_movzr,key) == 0 || strcmp_PS(OP_zr,key) == 0) {
         XYZ3D xyz = controller.getXYZ3D();
         PH5TYPE z = 0;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, z);
@@ -343,11 +343,11 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
         if (status == STATUS_OK) {
             status = execute(jcmd, NULL);
         }
-    } else if (strcmp_P(OP_d, key) == 0) {
+    } else if (strcmp_PS(OP_d, key) == 0) {
         if (!jobj.at("a").success()) {
             return jcmd.setError(STATUS_FIELD_REQUIRED,"a");
         }
-    } else if (strcmp_P(OP_a, key) == 0) {
+    } else if (strcmp_PS(OP_a, key) == 0) {
         // polar CCW from X-axis around X0Y0
         if (!jobj.at("d").success()) {
             return jcmd.setError(STATUS_FIELD_REQUIRED,"d");
@@ -360,19 +360,19 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
         TESTCOUT2("x:", x, " y:", y);
         destination.value[0] = x;
         destination.value[1] = y;
-    } else if (strcmp_P(OP_lp, key) == 0) {
+    } else if (strcmp_PS(OP_lp, key) == 0) {
         // output variable
-    } else if (strcmp_P(OP_mv, key) == 0) {
+    } else if (strcmp_PS(OP_mv, key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, machine.vMax);
-    } else if (strcmp_P(OP_pp, key) == 0) {
+    } else if (strcmp_PS(OP_pp, key) == 0) {
         // output variable
-    } else if (strcmp_P(OP_sg, key) == 0) {
+    } else if (strcmp_PS(OP_sg, key) == 0) {
         status = processField<int16_t, int32_t>(jobj, key, nSegs);
-    } else if (strcmp_P(OP_ts, key) == 0) {
+    } else if (strcmp_PS(OP_ts, key) == 0) {
         // output variable
-    } else if (strcmp_P(OP_tp, key) == 0) {
+    } else if (strcmp_PS(OP_tp, key) == 0) {
         // output variable
-    } else if (strcmp_P(OP_tv, key) == 0) {
+    } else if (strcmp_PS(OP_tv, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.tvMax);
     } else {
         MotorIndex iMotor = machine.motorOfName(key);
@@ -423,15 +423,15 @@ Status FPDController::processPosition(JsonCommand &jcmd, JsonObject& jobj, const
                 return status;
             }
         }
-    } else if (strcmp_P(OP_1, axisStr) == 0) {
+    } else if (strcmp_PS(OP_1, axisStr) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, machine.axis[0].position);
-    } else if (strcmp_P(OP_2, axisStr) == 0) {
+    } else if (strcmp_PS(OP_2, axisStr) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, machine.axis[1].position);
-    } else if (strcmp_P(OP_3, axisStr) == 0) {
+    } else if (strcmp_PS(OP_3, axisStr) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, machine.axis[2].position);
-    } else if (strcmp_P(OP_4, axisStr) == 0) {
+    } else if (strcmp_PS(OP_4, axisStr) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, machine.axis[3].position);
-    } else if (strcmp_P(OP_x, axisStr) == 0) {
+    } else if (strcmp_PS(OP_x, axisStr) == 0) {
         XYZ3D xyz(getXYZ3D());
         if (!xyz.isValid()) {
             return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
@@ -441,7 +441,7 @@ Status FPDController::processPosition(JsonCommand &jcmd, JsonObject& jobj, const
         if (value != xyz.x) {
             status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
-    } else if (strcmp_P(OP_y, axisStr) == 0) {
+    } else if (strcmp_PS(OP_y, axisStr) == 0) {
         XYZ3D xyz(getXYZ3D());
         if (!xyz.isValid()) {
             return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
@@ -451,7 +451,7 @@ Status FPDController::processPosition(JsonCommand &jcmd, JsonObject& jobj, const
         if (value != xyz.y) {
             status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
-    } else if (strcmp_P(OP_z, axisStr) == 0) {
+    } else if (strcmp_PS(OP_z, axisStr) == 0) {
         XYZ3D xyz(getXYZ3D());
         if (!xyz.isValid()) {
             return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
@@ -480,7 +480,7 @@ Status FPDController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& job
     Step3D probeEnd(probe.end.value[0], probe.end.value[1], probe.end.value[2]);
     XYZ3D xyzEnd = machine.delta.calcXYZ(probeEnd);
     const char *s;
-    if (strcmp_P(OP_prb, key) == 0) {
+    if (strcmp_PS(OP_prb, key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
             xyzEnd.z = machine.delta.getMinZ(xyzEnd.z, xyzEnd.y);
@@ -507,17 +507,17 @@ Status FPDController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& job
                 return jcmd.setError(STATUS_FIELD_REQUIRED, "pn");
             }
         }
-    } else if (strcmp_P(OP_prbip, key) == 0 || strcmp_P(OP_ip, key) == 0) {
+    } else if (strcmp_PS(OP_prbip, key) == 0 || strcmp_PS(OP_ip, key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.op.probe.invertProbe);
-    } else if (strcmp_P(OP_prbpn, key) == 0 || strcmp_P(OP_pn, key) == 0) {
+    } else if (strcmp_PS(OP_prbpn, key) == 0 || strcmp_PS(OP_pn, key) == 0) {
         status = processField<PinType, int32_t>(jobj, key, machine.op.probe.pinProbe);
-    } else if (strcmp_P(OP_prbsd, key) == 0 || strcmp_P(OP_sd, key) == 0) {
+    } else if (strcmp_PS(OP_prbsd, key) == 0 || strcmp_PS(OP_sd, key) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
-    } else if (strcmp_P(OP_prbx, key) == 0 || strcmp_P(OP_x, key) == 0) {
+    } else if (strcmp_PS(OP_prbx, key) == 0 || strcmp_PS(OP_x, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.x);
-    } else if (strcmp_P(OP_prby, key) == 0 || strcmp_P(OP_y, key) == 0) {
+    } else if (strcmp_PS(OP_prby, key) == 0 || strcmp_PS(OP_y, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.y);
-    } else if (strcmp_P(OP_prbz, key) == 0 || strcmp_P(OP_z, key) == 0) {
+    } else if (strcmp_PS(OP_prbz, key) == 0 || strcmp_PS(OP_z, key) == 0) {
         machine.op.probe.dataSource = PDS_Z;
         xyzEnd.z = machine.delta.getMinZ(xyzEnd.x, xyzEnd.y);
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.z);
@@ -554,19 +554,19 @@ Status FPDController::finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj,
     if (!xyz.isValid()) {
         return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
     }
-    if (strcmp_P(OP_prx,key) == 0 || strcmp_P(OP_x,key) == 0) {
+    if (strcmp_PS(OP_prx,key) == 0 || strcmp_PS(OP_x,key) == 0) {
         jobj[key] = xyz.x;
-    } else if (strcmp_P(OP_prby,key) == 0 || strcmp_P(OP_y,key) == 0) {
+    } else if (strcmp_PS(OP_prby,key) == 0 || strcmp_PS(OP_y,key) == 0) {
         jobj[key] = xyz.y;
-    } else if (strcmp_P(OP_prbz,key) == 0 || strcmp_P(OP_z,key) == 0) {
+    } else if (strcmp_PS(OP_prbz,key) == 0 || strcmp_PS(OP_z,key) == 0) {
         jobj[key] = xyz.z;
-    } else if (strcmp_P(OP_1,key) == 0) {
+    } else if (strcmp_PS(OP_1,key) == 0) {
         jobj[key] = machine.getMotorAxis(0).position;
-    } else if (strcmp_P(OP_2,key) == 0) {
+    } else if (strcmp_PS(OP_2,key) == 0) {
         jobj[key] = machine.getMotorAxis(1).position;
-    } else if (strcmp_P(OP_3,key) == 0) {
+    } else if (strcmp_PS(OP_3,key) == 0) {
         jobj[key] = machine.getMotorAxis(2).position;
-    } else if (strcmp_P(OP_4,key) == 0) {
+    } else if (strcmp_PS(OP_4,key) == 0) {
         jobj[key] = machine.getMotorAxis(3).position;
     }
     return STATUS_OK;
@@ -605,7 +605,7 @@ Status FPDController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const ch
 
 Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
-    if (strcmp_P(OP_dim, key) == 0) {
+    if (strcmp_PS(OP_dim, key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
@@ -630,48 +630,48 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
                 }
             }
         }
-    } else if (strcmp_P(OP_bx, key) == 0 || strcmp_P(OP_dimbx, key) == 0) {
+    } else if (strcmp_PS(OP_bx, key) == 0 || strcmp_PS(OP_dimbx, key) == 0) {
         PH5TYPE value = machine.bed.a;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.bed.a = value;
         jobj[key].set(value,4);
-    } else if (strcmp_P(OP_by, key) == 0 || strcmp_P(OP_dimby, key) == 0) {
+    } else if (strcmp_PS(OP_by, key) == 0 || strcmp_PS(OP_dimby, key) == 0) {
         PH5TYPE value = machine.bed.b;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.bed.b = value;
         jobj[key].set(value,4);
-    } else if (strcmp_P(OP_bz, key) == 0 || strcmp_P(OP_dimbz, key) == 0) {
+    } else if (strcmp_PS(OP_bz, key) == 0 || strcmp_PS(OP_dimbz, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.bed.c);
-    } else if (strcmp_P(OP_e, key) == 0 || strcmp_P(OP_dime, key) == 0) {
+    } else if (strcmp_PS(OP_e, key) == 0 || strcmp_PS(OP_dime, key) == 0) {
         PH5TYPE value = machine.delta.getEffectorTriangleSide();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.delta.setEffectorTriangleSide(value);
-    } else if (strcmp_P(OP_f, key) == 0 || strcmp_P(OP_dimf, key) == 0) {
+    } else if (strcmp_PS(OP_f, key) == 0 || strcmp_PS(OP_dimf, key) == 0) {
         PH5TYPE value = machine.delta.getBaseTriangleSide();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.delta.setBaseTriangleSide(value);
-    } else if (strcmp_P(OP_gr, key) == 0 || strcmp_P(OP_dimgr, key) == 0) {
+    } else if (strcmp_PS(OP_gr, key) == 0 || strcmp_PS(OP_dimgr, key) == 0) {
         PH5TYPE value = machine.delta.getGearRatio();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.delta.setGearRatio(value);
-    } else if (strcmp_P(OP_ha, key) == 0 || strcmp_P(OP_dimha, key) == 0) {
+    } else if (strcmp_PS(OP_ha, key) == 0 || strcmp_PS(OP_dimha, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.homeAngle);
         machine.delta.setHomeAngle(machine.homeAngle);
-    } else if (strcmp_P(OP_mi, key) == 0 || strcmp_P(OP_dimmi, key) == 0) {
+    } else if (strcmp_PS(OP_mi, key) == 0 || strcmp_PS(OP_dimmi, key) == 0) {
         int16_t value = machine.delta.getMicrosteps();
         status = processField<int16_t, int16_t>(jobj, key, value);
         machine.delta.setMicrosteps(value);
-    } else if (strcmp_P(OP_pd, key) == 0 || strcmp_P(OP_dimpd, key) == 0) {
+    } else if (strcmp_PS(OP_pd, key) == 0 || strcmp_PS(OP_dimpd, key) == 0) {
         status = processProbeData(jcmd, jobj, key);
-    } else if (strcmp_P(OP_re, key) == 0 || strcmp_P(OP_dimre, key) == 0) {
+    } else if (strcmp_PS(OP_re, key) == 0 || strcmp_PS(OP_dimre, key) == 0) {
         PH5TYPE value = machine.delta.getEffectorLength();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.delta.setEffectorLength(value);
-    } else if (strcmp_P(OP_rf, key) == 0 || strcmp_P(OP_dimrf, key) == 0) {
+    } else if (strcmp_PS(OP_rf, key) == 0 || strcmp_PS(OP_dimrf, key) == 0) {
         PH5TYPE value = machine.delta.getBaseArmLength();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.delta.setBaseArmLength(value);
-    } else if (strcmp_P(OP_st, key) == 0 || strcmp_P(OP_dimst, key) == 0) {
+    } else if (strcmp_PS(OP_st, key) == 0 || strcmp_PS(OP_dimst, key) == 0) {
         int16_t value = machine.delta.getSteps360();
         status = processField<int16_t, int16_t>(jobj, key, value);
         machine.delta.setSteps360(value);
@@ -694,7 +694,7 @@ Status FPDController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
             machine.getMotorAxis(i).homing = false;
         }
     }
-    if (strcmp_P(OP_hom, key) == 0) {
+    if (strcmp_PS(OP_hom, key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
@@ -806,7 +806,7 @@ Status FPDController::processCalibrate(JsonCommand &jcmd, JsonObject& jobj, cons
 Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, const char* key, FPDCalibrateHome &cal) {
     Status status = jcmd.getStatus();
     const char *s;
-    if (strcmp_P(OP_cal, key) == 0) {
+    if (strcmp_PS(OP_cal, key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
             node["bx"] = "";
@@ -829,51 +829,51 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
                 return status;
             }
         }
-    } else if (strcmp_P(OP_calbx,key) == 0 || strcmp_P(OP_bx,key) == 0) {
+    } else if (strcmp_PS(OP_calbx,key) == 0 || strcmp_PS(OP_bx,key) == 0) {
         PH5TYPE value = cal.bed.a;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         if (value != cal.bed.a) {
             return jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
         jobj[key].set(value, 4);
-    } else if (strcmp_P(OP_calby,key) == 0 || strcmp_P(OP_by,key) == 0) {
+    } else if (strcmp_PS(OP_calby,key) == 0 || strcmp_PS(OP_by,key) == 0) {
         PH5TYPE value = cal.bed.b;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         if (value != cal.bed.b) {
             return jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
         jobj[key].set(value, 4);
-    } else if (strcmp_P(OP_calbz,key) == 0 || strcmp_P(OP_bz,key) == 0) {
+    } else if (strcmp_PS(OP_calbz,key) == 0 || strcmp_PS(OP_bz,key) == 0) {
         PH5TYPE value = cal.bed.c;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         if (value != cal.bed.c) {
             return jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
-    } else if (strcmp_P(OP_calha,key) == 0 || strcmp_P(OP_ha,key) == 0) {
+    } else if (strcmp_PS(OP_calha,key) == 0 || strcmp_PS(OP_ha,key) == 0) {
         PH5TYPE value = cal.homeAngle;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         if (value != cal.homeAngle) {
             return jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
-    } else if (strcmp_P(OP_calhe,key) == 0 || strcmp_P(OP_he,key) == 0) {
+    } else if (strcmp_PS(OP_calhe,key) == 0 || strcmp_PS(OP_he,key) == 0) {
         PH5TYPE value = cal.eTheta;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         if (value != cal.eTheta) {
             return jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
-    } else if (strcmp_P(OP_calzc,key) == 0 || strcmp_P(OP_zc,key) == 0) {
+    } else if (strcmp_PS(OP_calzc,key) == 0 || strcmp_PS(OP_zc,key) == 0) {
         PH5TYPE value = cal.zCenter;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         if (value != cal.zCenter) {
             return jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
-    } else if (strcmp_P(OP_calzr,key) == 0 || strcmp_P(OP_zr,key) == 0) {
+    } else if (strcmp_PS(OP_calzr,key) == 0 || strcmp_PS(OP_zr,key) == 0) {
         PH5TYPE value = cal.zRim;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         if (value != cal.zRim) {
             return jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
-    } else if (strcmp_P(OP_calsv,key) == 0 || strcmp_P(OP_sv,key) == 0) {
+    } else if (strcmp_PS(OP_calsv,key) == 0 || strcmp_PS(OP_sv,key) == 0) {
 		PH5TYPE saveWeight = 0.3;
 		if (jobj.at(key).is<bool>()) {
 			bool save = true;
@@ -917,7 +917,7 @@ XYZ3D FPDController::getXYZ3D() {
 
 Status FPDController::processMark(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
-    if (strcmp_P(OP_wp, key) == 0 || strcmp_P(OP_mrkwp, key) == 0) {
+    if (strcmp_PS(OP_wp, key) == 0 || strcmp_PS(OP_mrkwp, key) == 0) {
         int16_t iMark = ((int16_t)jobj[key]) - 1;
         if (iMark < 0 || MARK_COUNT <= iMark) {
             TESTCOUT1("mark index:", iMark);
@@ -935,7 +935,7 @@ Status FPDController::processMark(JsonCommand& jcmd, JsonObject& jobj, const cha
         iMark++;
         machine.marks[iMark%MARK_COUNT] = xyz.z;
         iMark++;
-    } else if (strcmp_P(OP_ax, key) == 0 || strcmp_P(OP_mrkax, key) == 0) {
+    } else if (strcmp_PS(OP_ax, key) == 0 || strcmp_PS(OP_mrkax, key) == 0) {
         int16_t iMark = ((int16_t)jobj[key]) - 1;
         if (iMark < 0 || MARK_COUNT <= iMark) {
             TESTCOUT1("mark index:", iMark);
@@ -948,7 +948,7 @@ Status FPDController::processMark(JsonCommand& jcmd, JsonObject& jobj, const cha
         }
         TESTCOUT1("processMark x:", xyz.x);
         machine.marks[iMark] = xyz.x;
-    } else if (strcmp_P(OP_ay, key) == 0 || strcmp_P(OP_mrkay, key) == 0) {
+    } else if (strcmp_PS(OP_ay, key) == 0 || strcmp_PS(OP_mrkay, key) == 0) {
         int16_t iMark = ((int16_t)jobj[key]) - 1;
         if (iMark < 0 || MARK_COUNT <= iMark) {
             TESTCOUT1("mark index:", iMark);
@@ -960,7 +960,7 @@ Status FPDController::processMark(JsonCommand& jcmd, JsonObject& jobj, const cha
             return jcmd.setError(STATUS_KINEMATIC_XYZ, key);
         }
         machine.marks[iMark] = xyz.y;
-    } else if (strcmp_P(OP_az, key) == 0 || strcmp_P(OP_mrkaz, key) == 0) {
+    } else if (strcmp_PS(OP_az, key) == 0 || strcmp_PS(OP_mrkaz, key) == 0) {
         int16_t iMark = ((int16_t)jobj[key]) - 1;
         if (iMark < 0 || MARK_COUNT <= iMark) {
             TESTCOUT1("mark index:", iMark);

@@ -414,13 +414,13 @@ Status Machine::setAxisIndex(MotorIndex iMotor, AxisIndex iAxis) {
 
 MotorIndex Machine::motorOfName(const char *name) {
     // Motor reference
-    if (strcmp_P(OP_1, name) == 0) {
+    if (strcmp_PS(OP_1, name) == 0) {
         return 0;
-    } else if (strcmp_P(OP_2, name) == 0) {
+    } else if (strcmp_PS(OP_2, name) == 0) {
         return 1;
-    } else if (strcmp_P(OP_3, name) == 0) {
+    } else if (strcmp_PS(OP_3, name) == 0) {
         return 2;
-    } else if (strcmp_P(OP_4, name) == 0) {
+    } else if (strcmp_PS(OP_4, name) == 0) {
         return 3;
     }
 
@@ -439,28 +439,28 @@ MotorIndex Machine::motorOfName(const char *name) {
 AxisIndex Machine::axisOfName(const char *name) {
     // Axis reference
     AxisIndex iAxis;
-    if (strcmp_P(OP_x, name) == 0) {
+    if (strcmp_PS(OP_x, name) == 0) {
         return X_AXIS;
-    } else if (strcmp_P(OP_y, name) == 0) {
+    } else if (strcmp_PS(OP_y, name) == 0) {
         return Y_AXIS;
-    } else if (strcmp_P(OP_z, name) == 0) {
+    } else if (strcmp_PS(OP_z, name) == 0) {
         return Z_AXIS;
-    } else if (strcmp_P(OP_a, name) == 0) {
+    } else if (strcmp_PS(OP_a, name) == 0) {
         return A_AXIS;
-    } else if (strcmp_P(OP_b, name) == 0) {
+    } else if (strcmp_PS(OP_b, name) == 0) {
         return B_AXIS;
-    } else if (strcmp_P(OP_c, name) == 0) {
+    } else if (strcmp_PS(OP_c, name) == 0) {
         return C_AXIS;
     }
 
     // Motor reference
-    if (strcmp_P(OP_1, name) == 0) {
+    if (strcmp_PS(OP_1, name) == 0) {
         return motor[0];
-    } else if (strcmp_P(OP_2, name) == 0) {
+    } else if (strcmp_PS(OP_2, name) == 0) {
         return motor[1];
-    } else if (strcmp_P(OP_3, name) == 0) {
+    } else if (strcmp_PS(OP_3, name) == 0) {
         return motor[2];
-    } else if (strcmp_P(OP_4, name) == 0) {
+    } else if (strcmp_PS(OP_4, name) == 0) {
         return motor[3];
     }
 

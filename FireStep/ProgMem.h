@@ -6,10 +6,12 @@
 #include <cstdio>
 #endif
 
-#ifndef ARDUINO
+#ifdef ARDUINO
+#define strcmp_PS(a,b) strcmp_P(b,a)
+#else
 #define PROGMEM
 #define strlen_P(src) strlen(src)
-#define strcmp_P(a,b) strcmp(a,b)
+#define strcmp_PS(a,b) strcmp(a,b)
 #define pgm_read_byte_near(src) (*(const char *)(src))
 #endif
 
