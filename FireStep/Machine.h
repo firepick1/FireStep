@@ -272,8 +272,9 @@ public:
     DeltaCalculator delta;
     int32_t 	vMax; // maximum stroke velocity (pulses/second)
     PH5TYPE 	tvMax; // time to reach maximum velocity
+	PH5TYPE		homePulses;
     PH5TYPE		marks[MARK_COUNT];
-    int16_t		homingPulses;
+    int16_t		fastSearchPulses;
     StepCoord	latchBackoff;
     DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
     PinType		pinStatus;

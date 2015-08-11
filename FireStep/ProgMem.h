@@ -6,6 +6,13 @@
 #include <cstdio>
 #endif
 
+#ifndef ARDUINO
+#define PROGMEM
+#define strlen_P(src) strlen(src)
+#define strcmp_P(a,b) strcmp(a,b)
+#define pgm_read_byte_near(src) (*(const char *)(src))
+#endif
+
 #include "Status.h"
 #include "JsonCommand.h"
 
@@ -58,6 +65,7 @@ extern const char OP_dimha[];
 extern const char OP_dimha1[];
 extern const char OP_dimha2[];
 extern const char OP_dimha3[];
+extern const char OP_dimhp[];
 extern const char OP_dimmi[];
 extern const char OP_dimpd[];
 extern const char OP_dimre[];

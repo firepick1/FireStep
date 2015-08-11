@@ -7,6 +7,7 @@
 #include "Machine.h"
 #include "AnalogRead.h"
 #include "version.h"
+#include "ProgMem.h"
 
 using namespace firestep;
 
@@ -196,9 +197,9 @@ bool ZPlane::initialize(XYZ3D p1, XYZ3D p2, XYZ3D p3) {
 
 Machine::Machine()
     : autoHome(false),invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
-      tvMax(0.7), homingPulses(3), latchBackoff(LATCH_BACKOFF),
+      tvMax(0.7), fastSearchPulses(3), latchBackoff(LATCH_BACKOFF),
       searchDelay(800), pinStatus(NOPIN), topology(MTO_RAW),
-      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0)
+      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0), homePulses(0)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -247,7 +248,7 @@ int32_t Machine::hash() {
                      ^ (vMax)
                      ^ (*(uint32_t *)(void*)&tvMax)
                      ^ (debounce)
-                     ^ (homingPulses)
+                     ^ (fastSearchPulses)
                      ^ (latchBackoff)
                      ^ (searchDelay)
                      ^ (pinStatus)
@@ -412,13 +413,13 @@ Status Machine::setAxisIndex(MotorIndex iMotor, AxisIndex iAxis) {
 
 MotorIndex Machine::motorOfName(const char *name) {
     // Motor reference
-    if (strcmp("1", name) == 0) {
+    if (strcmp_P(OP_1, name) == 0) {
         return 0;
-    } else if (strcmp("2", name) == 0) {
+    } else if (strcmp_P(OP_2, name) == 0) {
         return 1;
-    } else if (strcmp("3", name) == 0) {
+    } else if (strcmp_P(OP_3, name) == 0) {
         return 2;
-    } else if (strcmp("4", name) == 0) {
+    } else if (strcmp_P(OP_4, name) == 0) {
         return 3;
     }
 
@@ -437,28 +438,28 @@ MotorIndex Machine::motorOfName(const char *name) {
 AxisIndex Machine::axisOfName(const char *name) {
     // Axis reference
     AxisIndex iAxis;
-    if (strcmp("x", name) == 0) {
+    if (strcmp_P(OP_x, name) == 0) {
         return X_AXIS;
-    } else if (strcmp("y", name) == 0) {
+    } else if (strcmp_P(OP_y, name) == 0) {
         return Y_AXIS;
-    } else if (strcmp("z", name) == 0) {
+    } else if (strcmp_P(OP_z, name) == 0) {
         return Z_AXIS;
-    } else if (strcmp("a", name) == 0) {
+    } else if (strcmp_P(OP_a, name) == 0) {
         return A_AXIS;
-    } else if (strcmp("b", name) == 0) {
+    } else if (strcmp_P(OP_b, name) == 0) {
         return B_AXIS;
-    } else if (strcmp("c", name) == 0) {
+    } else if (strcmp_P(OP_c, name) == 0) {
         return C_AXIS;
     }
 
     // Motor reference
-    if (strcmp("1", name) == 0) {
+    if (strcmp_P(OP_1, name) == 0) {
         return motor[0];
-    } else if (strcmp("2", name) == 0) {
+    } else if (strcmp_P(OP_2, name) == 0) {
         return motor[1];
-    } else if (strcmp("3", name) == 0) {
+    } else if (strcmp_P(OP_3, name) == 0) {
         return motor[2];
-    } else if (strcmp("4", name) == 0) {
+    } else if (strcmp_P(OP_4, name) == 0) {
         return motor[3];
     }
 
@@ -615,11 +616,11 @@ Status Machine::home(Status status) {
 
     switch (status) {
     default:
-        if (stepHome(homingPulses, searchDelay/5) > 0) {
-            //TESTCOUT1("home.A homingPulses:", homingPulses);
+        if (stepHome(fastSearchPulses, searchDelay/5) > 0) {
+            //TESTCOUT1("home.A fastSearchPulses:", fastSearchPulses);
             status = STATUS_BUSY_MOVING;
         } else {
-            //TESTCOUT1("home.B homingPulses:", homingPulses);
+            //TESTCOUT1("home.B fastSearchPulses:", fastSearchPulses);
             backoffHome(searchDelay);
             status = STATUS_BUSY_CALIBRATING;
         }
@@ -783,7 +784,7 @@ char * Machine::saveSysConfig(char *out, size_t maxLen) {
     out = saveConfigValue("as", autoSync, out);
     out = saveConfigValue("db", debounce, out);
     //out = saveConfigValue("eu", eeUser, out); // saved separately
-    out = saveConfigValue("hp", homingPulses, out);
+    out = saveConfigValue("hp", fastSearchPulses, out);
     out = saveConfigValue("jp", jsonPrettyPrint, out);
     out = saveConfigValue("lb", latchBackoff, out);
     out = saveConfigValue("lh", invertLim, out);
@@ -808,6 +809,7 @@ char * Machine::saveDimConfig(char *out, size_t maxLen) {
     out = saveConfigValue("f", delta.getBaseTriangleSide(), out);
     out = saveConfigValue("gr", delta.getGearRatio(), out, 3);
     out = saveConfigValue("ha", delta.getHomeAngle(), out);
+    out = saveConfigValue("hp", homePulses, out);
     out = saveConfigValue("mi", delta.getMicrosteps(), out);
     out = saveConfigValue("re", delta.getEffectorLength(), out);
     out = saveConfigValue("rf", delta.getBaseArmLength(), out);

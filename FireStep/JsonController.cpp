@@ -123,7 +123,7 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
     bool us_ok = false;
     machine.stroke.clear();
     for (JsonObject::iterator it = stroke.begin(); it != stroke.end(); ++it) {
-        if (strcmp("us", it->key) == 0) {
+        if (strcmp_P(OP_us, it->key) == 0) {
             int32_t planMicros;
             status = processField<int32_t, int32_t>(stroke, it->key, planMicros);
             if (status != STATUS_OK) {
@@ -132,7 +132,7 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
             float seconds = (float) planMicros / 1000000.0;
             machine.stroke.setTimePlanned(seconds);
             us_ok = true;
-        } else if (strcmp("dp", it->key) == 0) {
+        } else if (strcmp_P(OP_dp, it->key) == 0) {
             JsonArray &jarr = stroke[it->key];
             if (!jarr.success()) {
                 return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, it->key);
@@ -143,7 +143,7 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
             for (MotorIndex i = 0; i < 4 && jarr[i].success(); i++) {
                 machine.stroke.dEndPos.value[i] = jarr[i];
             }
-        } else if (strcmp("sc", it->key) == 0) {
+        } else if (strcmp_P(OP_sc, it->key) == 0) {
             status = processField<StepCoord, int32_t>(stroke, it->key, machine.stroke.scale);
             if (status != STATUS_OK) {
                 return jcmd.setError(status, it->key);
@@ -233,7 +233,7 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
                 }
             }
         }
-    } else if (strcmp("ma", key) == 0 || strcmp("ma", key + 1) == 0) {
+    } else if (strcmp_P(OP_ma, key) == 0 || strcmp_P(OP_ma, key + 1) == 0) {
         JsonVariant &jv = jobj[key];
         MotorIndex iMotor = group - '1';
         if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
@@ -294,57 +294,57 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
                 }
             }
         }
-    } else if (strcmp("en", key) == 0 || strcmp("en", key + 1) == 0) {
+    } else if (strcmp_P(OP_en, key) == 0 || strcmp_P(OP_en, key + 1) == 0) {
         bool active = axis.isEnabled();
         status = processField<bool, bool>(jobj, key, active);
         if (status == STATUS_OK) {
             axis.enable(active);
             status = (jobj[key] = axis.isEnabled()).success() ? status : STATUS_FIELD_ERROR;
         }
-    } else if (strcmp("dh", key) == 0 || strcmp("dh", key + 1) == 0) {
+    } else if (strcmp_P(OP_dh, key) == 0 || strcmp_P(OP_dh, key + 1) == 0) {
         status = processField<bool, bool>(jobj, key, axis.dirHIGH);
         if (axis.pinDir != NOPIN && status == STATUS_OK) {	// force setting of direction bit in case meaning changed
             axis.setAdvancing(false);
             axis.setAdvancing(true);
         }
-    } else if (strcmp("ho", key) == 0 || strcmp("ho", key + 1) == 0) {
+    } else if (strcmp_P(OP_ho, key) == 0 || strcmp_P(OP_ho, key + 1) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, axis.home);
-    } else if (strcmp("is", key) == 0 || strcmp("is", key + 1) == 0) {
+    } else if (strcmp_P(OP_is, key) == 0 || strcmp_P(OP_is, key + 1) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, axis.idleSnooze);
-    } else if (strcmp("lb", key) == 0 || strcmp("lb", key + 1) == 0) {
+    } else if (strcmp_P(OP_lb, key) == 0 || strcmp_P(OP_lb, key + 1) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, machine.latchBackoff);
-    } else if (strcmp("lm", key) == 0 || strcmp("lm", key + 1) == 0) {
+    } else if (strcmp_P(OP_lm, key) == 0 || strcmp_P(OP_lm, key + 1) == 0) {
         axis.readAtMax(machine.invertLim);
         status = processField<bool, bool>(jobj, key, axis.atMax);
-    } else if (strcmp("ln", key) == 0 || strcmp("ln", key + 1) == 0) {
+    } else if (strcmp_P(OP_ln, key) == 0 || strcmp_P(OP_ln, key + 1) == 0) {
         axis.readAtMin(machine.invertLim);
         status = processField<bool, bool>(jobj, key, axis.atMin);
-    } else if (strcmp("mi", key) == 0 || strcmp("mi", key + 1) == 0) {
+    } else if (strcmp_P(OP_mi, key) == 0 || strcmp_P(OP_mi, key + 1) == 0) {
         status = processField<uint8_t, int32_t>(jobj, key, axis.microsteps);
         if (axis.microsteps < 1) {
             axis.microsteps = 1;
             return STATUS_JSON_POSITIVE1;
         }
-    } else if (strcmp("pd", key) == 0 || strcmp("pd", key + 1) == 0) {
+    } else if (strcmp_P(OP_pd, key) == 0 || strcmp_P(OP_pd, key + 1) == 0) {
         status = processPin(jobj, key, axis.pinDir, OUTPUT);
-    } else if (strcmp("pe", key) == 0 || strcmp("pe", key + 1) == 0) {
+    } else if (strcmp_P(OP_pe, key) == 0 || strcmp_P(OP_pe, key + 1) == 0) {
         status = processPin(jobj, key, axis.pinEnable, OUTPUT,
                             axis.isEnabled() ? PIN_ENABLE : PIN_DISABLE);
-    } else if (strcmp("pm", key) == 0 || strcmp("pm", key + 1) == 0) {
+    } else if (strcmp_P(OP_pm, key) == 0 || strcmp_P(OP_pm, key + 1) == 0) {
         status = processPin(jobj, key, axis.pinMax, INPUT);
-    } else if (strcmp("pn", key) == 0 || strcmp("pn", key + 1) == 0) {
+    } else if (strcmp_P(OP_pn, key) == 0 || strcmp_P(OP_pn, key + 1) == 0) {
         status = processPin(jobj, key, axis.pinMin, INPUT);
-    } else if (strcmp("po", key) == 0 || strcmp("po", key + 1) == 0) {
+    } else if (strcmp_P(OP_po, key) == 0 || strcmp_P(OP_po, key + 1) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, axis.position);
-    } else if (strcmp("ps", key) == 0 || strcmp("ps", key + 1) == 0) {
+    } else if (strcmp_P(OP_ps, key) == 0 || strcmp_P(OP_ps, key + 1) == 0) {
         status = processPin(jobj, key, axis.pinStep, OUTPUT);
-    } else if (strcmp("sa", key) == 0 || strcmp("sa", key + 1) == 0) {
+    } else if (strcmp_P(OP_sa, key) == 0 || strcmp_P(OP_sa, key + 1) == 0) {
         status = processField<float, double>(jobj, key, axis.stepAngle);
-    } else if (strcmp("tm", key) == 0 || strcmp("tm", key + 1) == 0) {
+    } else if (strcmp_P(OP_tm, key) == 0 || strcmp_P(OP_tm, key + 1) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, axis.travelMax);
-    } else if (strcmp("tn", key) == 0 || strcmp("tn", key + 1) == 0) {
+    } else if (strcmp_P(OP_tn, key) == 0 || strcmp_P(OP_tn, key + 1) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, axis.travelMin);
-    } else if (strcmp("ud", key) == 0 || strcmp("ud", key + 1) == 0) {
+    } else if (strcmp_P(OP_ud, key) == 0 || strcmp_P(OP_ud, key + 1) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, axis.usDelay);
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
@@ -446,7 +446,7 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
     Status status = STATUS_OK;
     const char *s;
 
-    if (strcmp("tstph", key) == 0) {
+    if (strcmp_P(OP_tstph, key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
             node["lp"] = "";
@@ -476,21 +476,21 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
             pulses = -pulses; //reverse direction
             status = execute(jcmd, kidObj);
         }
-    } else if (strcmp("lp", key) == 0) {
+    } else if (strcmp_P(OP_lp, key) == 0) {
         // output variable
-    } else if (strcmp("mv", key) == 0) {
+    } else if (strcmp_P(OP_mv, key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, machine.vMax);
-    } else if (strcmp("pp", key) == 0) {
+    } else if (strcmp_P(OP_pp, key) == 0) {
         // output variable
-    } else if (strcmp("pu", key) == 0) {
+    } else if (strcmp_P(OP_pu, key) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, pulses);
-    } else if (strcmp("sg", key) == 0) {
+    } else if (strcmp_P(OP_sg, key) == 0) {
         status = processField<int16_t, int32_t>(jobj, key, nSegs);
-    } else if (strcmp("ts", key) == 0) {
+    } else if (strcmp_P(OP_ts, key) == 0) {
         // output variable
-    } else if (strcmp("tp", key) == 0) {
+    } else if (strcmp_P(OP_tp, key) == 0) {
         // output variable
-    } else if (strcmp("tv", key) == 0) {
+    } else if (strcmp_P(OP_tv, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.tvMax);
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
@@ -504,7 +504,7 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
     switch (status) {
     case STATUS_BUSY_PARSED:
     case STATUS_BUSY_MOVING:
-        if (strcmp("tst", key) == 0) {
+        if (strcmp_P(OP_tst, key) == 0) {
             JsonObject& tst = jobj[key];
             if (!tst.success()) {
                 return jcmd.setError(STATUS_JSON_OBJECT, key);
@@ -512,7 +512,7 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
             for (JsonObject::iterator it = tst.begin(); it != tst.end(); ++it) {
                 status = processTest(jcmd, tst, it->key);
             }
-        } else if (strcmp("rv", key) == 0 || strcmp("tstrv", key) == 0) { // revolution steps
+        } else if (strcmp_P(OP_rv, key) == 0 || strcmp_P(OP_tstrv, key) == 0) { // revolution steps
             JsonArray &jarr = jobj[key];
             if (!jarr.success()) {
                 return jcmd.setError(STATUS_FIELD_ARRAY_ERROR, key);
@@ -539,7 +539,7 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
             if (status == STATUS_OK) {
                 status = STATUS_BUSY_MOVING;
             }
-        } else if (strcmp("sp", key) == 0 || strcmp("tstsp", key) == 0) {
+        } else if (strcmp_P(OP_sp, key) == 0 || strcmp_P(OP_tstsp, key) == 0) {
             // step pulses
             JsonArray &jarr = jobj[key];
             if (!jarr.success()) {
@@ -552,7 +552,7 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
                 }
             }
             status = machine.pulse(steps);
-        } else if (strcmp("ph", key) == 0 || strcmp("tstph", key) == 0) {
+        } else if (strcmp_P(OP_ph, key) == 0 || strcmp_P(OP_tstph, key) == 0) {
             return PHSelfTest(machine).process(jcmd, jobj, key);
         } else {
             return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
@@ -564,7 +564,7 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
 
 Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
-    if (strcmp("sys", key) == 0) {
+    if (strcmp_P(OP_sys, key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
@@ -597,11 +597,11 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
                 }
             }
         }
-    } else if (strcmp("ah", key) == 0 || strcmp("sysah", key) == 0) {
+    } else if (strcmp_P(OP_ah, key) == 0 || strcmp_P(OP_sysah, key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.autoHome);
-    } else if (strcmp("as", key) == 0 || strcmp("sysas", key) == 0) {
+    } else if (strcmp_P(OP_as, key) == 0 || strcmp_P(OP_sysas, key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.autoSync);
-    } else if (strcmp("ch", key) == 0 || strcmp("sysch", key) == 0) {
+    } else if (strcmp_P(OP_ch, key) == 0 || strcmp_P(OP_sysch, key) == 0) {
         int32_t curHash = machine.hash();
         int32_t jsonHash = curHash;
         //TESTCOUT3("A curHash:", curHash, " jsonHash:", jsonHash, " jobj[key]:", (int32_t) jobj[key]);
@@ -610,33 +610,33 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         if (jsonHash != curHash) {
             machine.syncHash = jsonHash;
         }
-    } else if (strcmp("eu", key) == 0 || strcmp("syseu", key) == 0) {
+    } else if (strcmp_P(OP_eu, key) == 0 || strcmp_P(OP_syseu, key) == 0) {
         bool euExisting = machine.isEEUserEnabled();
         bool euNew = euExisting;
         status = processField<bool, bool>(jobj, key, euNew);
         if (euNew != euExisting) {
             machine.enableEEUser(euNew);
         }
-    } else if (strcmp("db", key) == 0 || strcmp("sysdb", key) == 0) {
+    } else if (strcmp_P(OP_db, key) == 0 || strcmp_P(OP_sysdb, key) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.debounce);
-    } else if (strcmp("fr", key) == 0 || strcmp("sysfr", key) == 0) {
+    } else if (strcmp_P(OP_fr, key) == 0 || strcmp_P(OP_sysfr, key) == 0) {
         leastFreeRam = min(leastFreeRam, freeRam());
         jobj[key] = leastFreeRam;
-    } else if (strcmp("hp", key) == 0 || strcmp("syshp", key) == 0) {
-        status = processField<int16_t, long>(jobj, key, machine.homingPulses);
-    } else if (strcmp("jp", key) == 0 || strcmp("sysjp", key) == 0) {
+    } else if (strcmp_P(OP_hp, key) == 0 || strcmp_P(OP_syshp, key) == 0) {
+        status = processField<int16_t, long>(jobj, key, machine.fastSearchPulses);
+    } else if (strcmp_P(OP_jp, key) == 0 || strcmp_P(OP_sysjp, key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.jsonPrettyPrint);
-    } else if (strcmp("lb", key) == 0 || strcmp("lb", key + 1) == 0) {
+    } else if (strcmp_P(OP_lb, key) == 0 || strcmp_P(OP_lb, key + 1) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, machine.latchBackoff);
-    } else if (strcmp("lh", key) == 0 || strcmp("syslh", key) == 0) {
+    } else if (strcmp_P(OP_lh, key) == 0 || strcmp_P(OP_syslh, key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.invertLim);
-    } else if (strcmp("lp", key) == 0 || strcmp("syslp", key) == 0) {
+    } else if (strcmp_P(OP_lp, key) == 0 || strcmp_P(OP_syslp, key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, nLoops);
-    } else if (strcmp("mv", key) == 0 || strcmp("sysmv", key) == 0) {
+    } else if (strcmp_P(OP_mv, key) == 0 || strcmp_P(OP_sysmv, key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, machine.vMax);
-    } else if (strcmp("om", key) == 0 || strcmp("sysom", key) == 0) {
+    } else if (strcmp_P(OP_om, key) == 0 || strcmp_P(OP_sysom, key) == 0) {
         status = processField<OutputMode, int32_t>(jobj, key, machine.outputMode);
-    } else if (strcmp("pc", key) == 0 || strcmp("syspc", key) == 0) {
+    } else if (strcmp_P(OP_pc, key) == 0 || strcmp_P(OP_syspc, key) == 0) {
         PinConfig pc = machine.getPinConfig();
         status = processField<PinConfig, int32_t>(jobj, key, pc);
         const char *s;
@@ -645,22 +645,22 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         } else {
             machine.setPinConfig(pc);
         }
-    } else if (strcmp("pi", key) == 0 || strcmp("syspi", key) == 0) {
+    } else if (strcmp_P(OP_pi, key) == 0 || strcmp_P(OP_syspi, key) == 0) {
         PinType pinStatus = machine.pinStatus;
         status = processField<PinType, int32_t>(jobj, key, pinStatus);
         if (pinStatus != machine.pinStatus) {
             machine.pinStatus = pinStatus;
             machine.pDisplay->setup(pinStatus);
         }
-    } else if (strcmp("sd", key) == 0 || strcmp("syssd", key) == 0) {
+    } else if (strcmp_P(OP_sd, key) == 0 || strcmp_P(OP_syssd, key) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
-    } else if (strcmp("to", key) == 0 || strcmp("systo", key) == 0) {
+    } else if (strcmp_P(OP_to, key) == 0 || strcmp_P(OP_systo, key) == 0) {
         status = processField<Topology, int32_t>(jobj, key, machine.topology);
-    } else if (strcmp("tc", key) == 0 || strcmp("systc", key) == 0) {
+    } else if (strcmp_P(OP_tc, key) == 0 || strcmp_P(OP_systc, key) == 0) {
         jobj[key] = threadClock.ticks;
-    } else if (strcmp("tv", key) == 0 || strcmp("systv", key) == 0) {
+    } else if (strcmp_P(OP_tv, key) == 0 || strcmp_P(OP_systv, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.tvMax);
-    } else if (strcmp("v", key) == 0 || strcmp("sysv", key) == 0) {
+    } else if (strcmp_P(OP_v, key) == 0 || strcmp_P(OP_sysv, key) == 0) {
         jobj[key] = VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0;
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
@@ -738,7 +738,7 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
 
 Status JsonController::processEEPROM(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
-    if (strcmp("eep", key) == 0) {
+    if (strcmp_P(OP_eep, key) == 0) {
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {
             return jcmd.setError(STATUS_JSON_OBJECT, key);
@@ -806,7 +806,7 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
 
 Status JsonController::processProgram(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_NOT_IMPLEMENTED;
-    if (strcmp("pgm", key) == 0) {
+    if (strcmp_P(OP_pgm, key) == 0) {
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {
             status = prog_dump("help");
@@ -814,10 +814,10 @@ Status JsonController::processProgram(JsonCommand& jcmd, JsonObject& jobj, const
         for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
             status = processProgram(jcmd, kidObj, it->key);
         }
-    } else if (strcmp("r",key)==0 || strcmp("pgmd",key)==0) {
+    } else if (strcmp_P(OP_r,key)==0 || strcmp_P(OP_pgmd,key)==0) {
         const char * name = jobj[key];
         status = prog_dump(name);
-    } else if (strcmp("x",key)==0 || strcmp("pgmx",key)==0) {
+    } else if (strcmp_P(OP_x,key)==0 || strcmp_P(OP_pgmx,key)==0) {
         const char * name = jobj[key];
         status = prog_load_cmd(name, jcmd);
     } else {
@@ -828,7 +828,7 @@ Status JsonController::processProgram(JsonCommand& jcmd, JsonObject& jobj, const
 
 Status JsonController::processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_NOT_IMPLEMENTED;
-    if (strcmp("io", key) == 0) {
+    if (strcmp_P(OP_io, key) == 0) {
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {
             return jcmd.setError(STATUS_JSON_OBJECT, key);
@@ -867,7 +867,7 @@ Status JsonController::processProbeData(JsonCommand& jcmd, JsonObject& jobj, con
 Status JsonController::processMark(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     size_t keyLen = strlen(key);
-    if (strcmp("mrk", key) == 0) {
+    if (strcmp_P(OP_mrk, key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
@@ -890,23 +890,23 @@ Status JsonController::processMark(JsonCommand& jcmd, JsonObject& jobj, const ch
                 }
             }
         }
-    } else if (strcmp("m1", key) == 0 || strcmp("mrkm1", key) == 0) {
+    } else if (strcmp_P(OP_m1, key) == 0 || strcmp_P(OP_mrkm1, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[0]);
-    } else if (strcmp("m2", key) == 0 || strcmp("mrkm2", key) == 0) {
+    } else if (strcmp_P(OP_m2, key) == 0 || strcmp_P(OP_mrkm2, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[1]);
-    } else if (strcmp("m3", key) == 0 || strcmp("mrkm3", key) == 0) {
+    } else if (strcmp_P(OP_m3, key) == 0 || strcmp_P(OP_mrkm3, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[2]);
-    } else if (strcmp("m4", key) == 0 || strcmp("mrkm4", key) == 0) {
+    } else if (strcmp_P(OP_m4, key) == 0 || strcmp_P(OP_mrkm4, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[3]);
-    } else if (strcmp("m5", key) == 0 || strcmp("mrkm5", key) == 0) {
+    } else if (strcmp_P(OP_m5, key) == 0 || strcmp_P(OP_mrkm5, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[4]);
-    } else if (strcmp("m6", key) == 0 || strcmp("mrkm6", key) == 0) {
+    } else if (strcmp_P(OP_m6, key) == 0 || strcmp_P(OP_mrkm6, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[5]);
-    } else if (strcmp("m7", key) == 0 || strcmp("mrkm7", key) == 0) {
+    } else if (strcmp_P(OP_m7, key) == 0 || strcmp_P(OP_mrkm7, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[6]);
-    } else if (strcmp("m8", key) == 0 || strcmp("mrkm8", key) == 0) {
+    } else if (strcmp_P(OP_m8, key) == 0 || strcmp_P(OP_mrkm8, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[7]);
-    } else if (strcmp("m9", key) == 0 || strcmp("mrkm9", key) == 0) {
+    } else if (strcmp_P(OP_m9, key) == 0 || strcmp_P(OP_mrkm9, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.marks[8]);
     } else if (keyLen >= 2 && (strncmp("a",key,1) == 0 || strncmp("mrka",key,4) == 0)) {
         AxisIndex iAxis = axisOf(key[keyLen-1]);
@@ -928,7 +928,7 @@ Status JsonController::processMark(JsonCommand& jcmd, JsonObject& jobj, const ch
 
 Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
-    if (strcmp("dpy", key) == 0) {
+    if (strcmp_P(OP_dpy, key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
@@ -947,15 +947,15 @@ Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const
                 }
             }
         }
-    } else if (strcmp("cb", key) == 0 || strcmp("dpycb", key) == 0) {
+    } else if (strcmp_P(OP_cb, key) == 0 || strcmp_P(OP_dpycb, key) == 0) {
         status = processField<uint8_t, int32_t>(jobj, key, machine.pDisplay->cameraB);
-    } else if (strcmp("cg", key) == 0 || strcmp("dpycg", key) == 0) {
+    } else if (strcmp_P(OP_cg, key) == 0 || strcmp_P(OP_dpycg, key) == 0) {
         status = processField<uint8_t, int32_t>(jobj, key, machine.pDisplay->cameraG);
-    } else if (strcmp("cr", key) == 0 || strcmp("dpycr", key) == 0) {
+    } else if (strcmp_P(OP_cr, key) == 0 || strcmp_P(OP_dpycr, key) == 0) {
         status = processField<uint8_t, int32_t>(jobj, key, machine.pDisplay->cameraR);
-    } else if (strcmp("dl", key) == 0 || strcmp("dpydl", key) == 0) {
+    } else if (strcmp_P(OP_dl, key) == 0 || strcmp_P(OP_dpydl, key) == 0) {
         status = processField<uint8_t, int32_t>(jobj, key, machine.pDisplay->level);
-    } else if (strcmp("ds", key) == 0 || strcmp("dpyds", key) == 0) {
+    } else if (strcmp_P(OP_ds, key) == 0 || strcmp_P(OP_dpyds, key) == 0) {
         const char *s;
         bool isAssignment = (!(s = jobj[key]) || *s != 0);
         status = processField<uint8_t, int32_t>(jobj, key, machine.pDisplay->status);
@@ -1020,7 +1020,7 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
 
     for (JsonObject::iterator it = jobj.begin(); status >= 0 && it != jobj.end(); ++it) {
         TESTCOUT1("processObj key:", it->key);
-        if (strcmp("dvs", it->key) == 0) {
+        if (strcmp_P(OP_dvs, it->key) == 0) {
             status = processStroke(jcmd, jobj, it->key);
         } else if (strncmp("mov", it->key, 3) == 0) {
             status = processMove(jcmd, jobj, it->key);
@@ -1044,22 +1044,22 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
             status = processCalibrate(jcmd, jobj, it->key);
         } else if (strncmp("mrk", it->key, 3) == 0) {
             status = processMark(jcmd, jobj, it->key);
-        } else if (strcmp("prbd", it->key) == 0) {
+        } else if (strcmp_P(OP_prbd, it->key) == 0) {
             status = processProbeData(jcmd, jobj, it->key);
         } else if (strncmp("prb", it->key, 3) == 0) {
             status = processProbe(jcmd, jobj, it->key);
         } else if (strncmp("prb", it->key, 3) == 0) {
             status = processProbe(jcmd, jobj, it->key);
-        } else if (strcmp("idl", it->key) == 0) {
+        } else if (strcmp_P(OP_idl, it->key) == 0) {
             int16_t ms = it->value;
             delay(ms);
-        } else if (strcmp("cmt", it->key) == 0) {
+        } else if (strcmp_P(OP_cmt, it->key) == 0) {
             if (OUTPUT_CMT==(machine.outputMode&OUTPUT_CMT)) {
                 const char *s = it->value;
                 Serial.println(s);
             }
             status = STATUS_OK;
-        } else if (strcmp("msg", it->key) == 0) {
+        } else if (strcmp_P(OP_msg, it->key) == 0) {
             const char *s = it->value;
             Serial.println(s);
             status = STATUS_OK;

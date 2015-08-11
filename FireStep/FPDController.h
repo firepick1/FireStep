@@ -19,7 +19,7 @@ public:
 public:
     FPDCalibrateHome(Machine& machine);
     Status calibrate();
-    Status save();
+    Status save(PH5TYPE saveWeight);
 } FPDCalibrateHome;
 
 typedef class FPDController : public JsonController {
