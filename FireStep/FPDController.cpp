@@ -76,11 +76,16 @@ Status FPDCalibrateHome::calibrate() {
 Status FPDCalibrateHome::save(PH5TYPE saveWeight) {
     Status status = calibrate();
     if (status == STATUS_OK) {
-        machine.delta.setHomeAngle(homeAngle);
+		machine.homeAngle = saveWeight * homeAngle + (1-saveWeight) * machine.homeAngle;
+        machine.delta.setHomeAngle(machine.homeAngle);
+		PH5TYPE dp = machine.delta.degreePulses();
         StepCoord pulses = machine.delta.getHomePulses();
         machine.axis[0].home = pulses;
         machine.axis[1].home = pulses;
         machine.axis[2].home = pulses;
+		machine.bed.a = saveWeight * bed.a + (1-saveWeight) * machine.bed.a;
+		machine.bed.b = saveWeight * bed.b + (1-saveWeight) * machine.bed.b;
+		machine.bed.c = saveWeight * bed.c + (1-saveWeight) * machine.bed.c;
     }
     return status;
 }
@@ -611,7 +616,6 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
             node["f"] = "";
             node["gr"] = "";
             node["ha"] = "";
-            node["hp"] = "";
             node["mi"] = "";
             node["re"] = "";
             node["rf"] = "";
@@ -650,19 +654,9 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         PH5TYPE value = machine.delta.getGearRatio();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.delta.setGearRatio(value);
-    } else if (strcmp_P(OP_ha1, key) == 0 || strcmp_P(OP_dimha1, key) == 0 ||
-               strcmp_P(OP_ha2, key) == 0 || strcmp_P(OP_dimha2, key) == 0 ||
-               strcmp_P(OP_ha3, key) == 0 || strcmp_P(OP_dimha3, key) == 0) {
-        // deprecated
-        PH5TYPE homeAngle = machine.delta.getHomeAngle();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngle);
-        machine.delta.setHomeAngle(homeAngle);
     } else if (strcmp_P(OP_ha, key) == 0 || strcmp_P(OP_dimha, key) == 0) {
-        PH5TYPE homeAngle = machine.delta.getHomeAngle();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngle);
-        machine.delta.setHomeAngle(homeAngle);
-    } else if (strcmp_P(OP_hp, key) == 0 || strcmp_P(OP_dimhp, key) == 0) {
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.homePulses);
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.homeAngle);
+        machine.delta.setHomeAngle(machine.homeAngle);
     } else if (strcmp_P(OP_mi, key) == 0 || strcmp_P(OP_dimmi, key) == 0) {
         int16_t value = machine.delta.getMicrosteps();
         status = processField<int16_t, int16_t>(jobj, key, value);
@@ -880,7 +874,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
             return jcmd.setError(STATUS_OUTPUT_FIELD, key);
         }
     } else if (strcmp_P(OP_calsv,key) == 0 || strcmp_P(OP_sv,key) == 0) {
-		PH5TYPE saveWeight = 0.8;
+		PH5TYPE saveWeight = 0.3;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, saveWeight);
         if (saveWeight) {
             cal.save(saveWeight);

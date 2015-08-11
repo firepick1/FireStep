@@ -239,7 +239,7 @@ void test_Machine() {
 	machine.bed.b = -0.00025;
 	out = machine.saveDimConfig(buf, sizeof(buf));
 	ASSERTEQUALS(JT("{'bx':0.0002,'by':-0.0003,'bz':0.00,"
-				 "'e':131.64,'f':190.53,'gr':9.375,'ha':-67.20,'hp':0.00,'mi':16,'re':270.00,'rf':90.00,'st':200}"),
+				 "'e':131.64,'f':190.53,'gr':9.375,'ha':-67.20,'mi':16,'re':270.00,'rf':90.00,'st':200}"),
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 
@@ -1659,7 +1659,7 @@ void test_MTO_FPD_dim() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
 					"'bx':0.0000,'by':0.0000,'bz':0.000,'e':131.636,'f':190.526,'gr':9.375,"
-				    "'ha':-67.200,'hp':0.000,'mi':16,'re':270.000,'rf':90.000,'st':200}"
+				    "'ha':-67.200,'mi':16,'re':270.000,'rf':90.000,'st':200}"
                     "},'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1668,7 +1668,7 @@ void test_MTO_FPD_dim() {
     // dim set
     machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
     Serial.push(JT("{'dim':{'bx':0.0010,'by':0.0020,'bz':0.003,'e':131.636,'f':190.526,'gr':9.371,"
-                   "'hp':-5600.5,'mi':32,'re':270.000,'rf':90.000,'st':400,"
+                   "'mi':32,'re':270.000,'rf':90.000,'st':400,"
 				   "'ha':-67.3}}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -1676,7 +1676,7 @@ void test_MTO_FPD_dim() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
 					"'bx':0.0010,'by':0.0020,'bz':0.003,'e':131.636,'f':190.526,'gr':9.371,"
-                    "'hp':-5600.500,'mi':32,'re':270.000,'rf':90.000,'st':400,"
+                    "'mi':32,'re':270.000,'rf':90.000,'st':400,"
 				    "'ha':-67.300}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
@@ -1688,7 +1688,7 @@ void test_MTO_FPD_dim() {
 	ASSERTEQUALT(190.526, dc.getBaseTriangleSide(), 0.001);
 	ASSERTEQUALT(9.371, dc.getGearRatio(), 0.001);
 	ASSERTEQUALT(-67.3, dc.getHomeAngle(), 0.001);
-	ASSERTEQUALT(-5600.5, machine.homePulses, 0.001);
+	ASSERTEQUALT(-67.3, machine.homeAngle, 0.001);
 	ASSERTEQUALT(32, dc.getMicrosteps(), 0.001);
 	ASSERTEQUALT(270.000, dc.getEffectorLength(), 0.001);
 	ASSERTEQUALT(90.000, dc.getBaseArmLength(), 0.001);
@@ -1919,15 +1919,44 @@ void test_calibrate() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{"
                     "'cal':{'bx':0.0002,'by':0.0021,'bz':-61.565,'ha':-77.638,"
-					"'he':-10.438,'sv':0.800,'zc':-62.202,'zr':-61.562}},"
+					"'he':-10.438,'sv':0.300,'zc':-62.202,'zr':-61.562}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
-    ASSERTEQUAL(-6470, machine.axis[0].home);
-    ASSERTEQUAL(-6470, machine.axis[1].home);
-    ASSERTEQUAL(-6470, machine.axis[2].home);
+    ASSERTEQUAL(-5861, machine.axis[0].home);
+    ASSERTEQUAL(-5861, machine.axis[1].home);
+    ASSERTEQUAL(-5861, machine.axis[2].home);
+    ASSERTEQUALT(-70.331, machine.homeAngle, 0.001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
+    // adaptive
+	PH5TYPE bz = -61.566;
+    machine.op.probe.probeData[0] = bz;
+	TESTCOUT1("probeData[1]:", machine.op.probe.probeData[1]);
+    machine.op.probe.probeData[1] = bz + (machine.op.probe.probeData[1]-bz)/2; // "closer"
+	TESTCOUT1("probeData[1] closer:", machine.op.probe.probeData[1]);
+    machine.op.probe.probeData[2] = bz + (machine.op.probe.probeData[2]-bz)/2; // "closer"
+    machine.op.probe.probeData[3] = bz + (machine.op.probe.probeData[3]-bz)/2; // "closer"
+    machine.op.probe.probeData[4] = bz + (machine.op.probe.probeData[4]-bz)/2; // "closer"
+    machine.op.probe.probeData[5] = bz + (machine.op.probe.probeData[5]-bz)/2; // "closer"
+    machine.op.probe.probeData[7] = bz + (machine.op.probe.probeData[7]-bz)/2; // "closer"
+    machine.op.probe.probeData[7] = bz;
+    Serial.push(JT("{'cal':''}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{"
+                    "'cal':{'bx':0.0005,'by':0.0015,'bz':-61.577,'ha':-70.228,"
+					"'he':0.104,'sv':0.300,'zc':-61.566,'zr':-61.576}},"
+                    "'t':0.000}\n"),
+                 Serial.output().c_str());
+    ASSERTEQUAL(-5858, machine.axis[0].home);
+    ASSERTEQUAL(-5858, machine.axis[1].home);
+    ASSERTEQUAL(-5858, machine.axis[2].home);
+    ASSERTEQUALT(-70.300, machine.homeAngle, 0.001);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     cout << "TEST	: test_calibrate() OK " << endl;
 }
 

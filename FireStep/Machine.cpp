@@ -199,7 +199,7 @@ Machine::Machine()
     : autoHome(false),invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
       tvMax(0.7), fastSearchPulses(3), latchBackoff(LATCH_BACKOFF),
       searchDelay(800), pinStatus(NOPIN), topology(MTO_RAW),
-      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0), homePulses(0)
+      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -224,6 +224,7 @@ Machine::Machine()
     axis[3].id = 'a';
     axis[4].id = 'b';
     axis[5].id = 'c';
+	homeAngle = delta.getHomeAngle();
 }
 
 void Machine::setup(PinConfig cfg) {
@@ -808,8 +809,7 @@ char * Machine::saveDimConfig(char *out, size_t maxLen) {
     out = saveConfigValue("e", delta.getEffectorTriangleSide(), out);
     out = saveConfigValue("f", delta.getBaseTriangleSide(), out);
     out = saveConfigValue("gr", delta.getGearRatio(), out, 3);
-    out = saveConfigValue("ha", delta.getHomeAngle(), out);
-    out = saveConfigValue("hp", homePulses, out);
+    out = saveConfigValue("ha", homeAngle, out);
     out = saveConfigValue("mi", delta.getMicrosteps(), out);
     out = saveConfigValue("re", delta.getEffectorLength(), out);
     out = saveConfigValue("rf", delta.getBaseArmLength(), out);
@@ -831,5 +831,6 @@ bool Machine::isEEUserEnabled() {
 }
 
 void Machine::loadDeltaCalculator() {
+	delta.setHomeAngle(homeAngle);
     delta.setHomePulses((axis[0].home+axis[1].home+axis[2].home)/3);
 }
