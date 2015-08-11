@@ -5,6 +5,7 @@ v0.2.3
 ------
 * FIX: "movrx" is now identified as a bad command (the correct command is "movxr")
 * NEW: "calsv" provides adaptive calibration via exponential smoothing
+* FIX: static strings now stored in PROGMEM to free up SRAM
 
 v0.2.2
 ------
