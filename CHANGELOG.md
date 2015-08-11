@@ -1,6 +1,11 @@
 FireStep: change log
 ====================
 
+v0.2.3
+------
+* FIX: "movrx" is now identified as a bad command (the correct command is "movxr")
+* NEW: "calsv" provides adaptive calibration via exponential smoothing
+
 v0.2.2
 ------
 * FIX: Jason's fix for mismatched delta configuration attributes

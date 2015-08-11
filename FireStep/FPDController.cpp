@@ -332,7 +332,7 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
                 status = execute(jcmd, NULL);
             }
         }
-    } else if (strncmp("mov", key, 3) == 0) { // short form
+    } else if (strlen(key)==4 && strncmp("mov", key, 3) == 0) { // short form
         // TODO: clean up mov implementation
         MotorIndex iMotor = machine.motorOfName(key + strlen(key) - 1);
         if (iMotor == INDEX_NONE) {
@@ -875,7 +875,13 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
         }
     } else if (strcmp_P(OP_calsv,key) == 0 || strcmp_P(OP_sv,key) == 0) {
 		PH5TYPE saveWeight = 0.3;
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, saveWeight);
+		if (jobj.at(key).is<bool>()) {
+			bool save = true;
+			status = processField<bool, bool>(jobj, key, save);
+			saveWeight = save ? saveWeight : 0;
+		} else {
+			status = processField<PH5TYPE, PH5TYPE>(jobj, key, saveWeight);
+		}
         if (saveWeight) {
             cal.save(saveWeight);
         }

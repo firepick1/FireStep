@@ -10,7 +10,7 @@ extern "C" {
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 2
-#define VERSION_PATCH 2
+#define VERSION_PATCH 3
 
 //////////// GENERATED FILE (from version.h.in) /////////////////
 //////////// GENERATED FILE (from version.h.in) /////////////////
