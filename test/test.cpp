@@ -3817,11 +3817,17 @@ void test_DeltaCalculator() {
     PH5TYPE e = 0.015;
     PH5TYPE zCenter = -60.5;
     PH5TYPE radius = 50;
-    ASSERTEQUALT(0.601, dc.calcZBowlError(zCenter, radius, -10), e);
-    ASSERTEQUALT(0.291, dc.calcZBowlError(zCenter, radius, -5), e);
-    ASSERTEQUALT(0, dc.calcZBowlError(zCenter, radius, 0), e);
-    ASSERTEQUALT(-0.284, dc.calcZBowlError(zCenter, radius, 5), e);
-    ASSERTEQUALT(-0.534, dc.calcZBowlError(zCenter, radius, 10), e);
+    ASSERTEQUALT(0.601, dc.calcZBowlErrorFromTheta(zCenter, radius, -10), e);
+    ASSERTEQUALT(0.291, dc.calcZBowlErrorFromTheta(zCenter, radius, -5), e);
+    ASSERTEQUALT(0, dc.calcZBowlErrorFromTheta(zCenter, radius, 0), e);
+    ASSERTEQUALT(-0.284, dc.calcZBowlErrorFromTheta(zCenter, radius, 5), e);
+    ASSERTEQUALT(-0.534, dc.calcZBowlErrorFromTheta(zCenter, radius, 10), e);
+	PH5TYPE gearRatio = 9.375;
+    ASSERTEQUALT(0.141, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio - 0.2), e);
+    ASSERTEQUALT(0.065, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio - 0.1), e);
+    ASSERTEQUALT(0, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio), e);
+    ASSERTEQUALT(-0.076, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio + 0.1), e);
+    ASSERTEQUALT(-0.142, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio + 0.2), e);
 
     // ZBowlETheta (initial calibration)
     PH5TYPE zRim = -61; // 0.5mm bowl error

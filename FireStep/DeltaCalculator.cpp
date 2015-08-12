@@ -222,7 +222,7 @@ int32_t DeltaCalculator::hash() {
     return result;
 }
 
-PH5TYPE DeltaCalculator::calcZBowlError(Step3D center, Step3D rim, PH5TYPE eTheta) {
+PH5TYPE DeltaCalculator::calcZBowlErrorFromTheta(Step3D center, Step3D rim, PH5TYPE eTheta) {
     PH5TYPE dp = degreePulses();
     StepCoord  ePulses = roundStep(eTheta * dp);
     XYZ3D xyzCtr = calcXYZ(Step3D(
@@ -239,12 +239,12 @@ PH5TYPE DeltaCalculator::calcZBowlError(Step3D center, Step3D rim, PH5TYPE eThet
     return error;
 }
 
-PH5TYPE DeltaCalculator::calcZBowlError(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eTheta) {
+PH5TYPE DeltaCalculator::calcZBowlErrorFromTheta(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eTheta) {
     XYZ3D xyzCtr(0,0,zCenter);
     XYZ3D xyzRim(radius, 0, zCenter);
     Step3D center = calcPulses(xyzCtr);
     Step3D rim = calcPulses(xyzRim);
-    return calcZBowlError(center, rim, eTheta);
+    return calcZBowlErrorFromTheta(center, rim, eTheta);
 }
 
 PH5TYPE DeltaCalculator::calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE radius) {
@@ -261,13 +261,55 @@ PH5TYPE DeltaCalculator::calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE 
     PH5TYPE dzError = zErrorNext - zError0;
     PH5TYPE dTheta = 1;
     for (int16_t i=0; dzError && i<6; i++) {
-        PH5TYPE slope = (calcZBowlError(center, rim, eDegrees+dTheta)-zErrorNext)/dTheta;
+        PH5TYPE slope = (calcZBowlErrorFromTheta(center, rim, eDegrees+dTheta)-zErrorNext)/dTheta;
         TESTCOUT3("eDegrees:", eDegrees, " dzError:", dzError, " slope:", slope);
         eDegrees -= dzError / slope;
-        zErrorNext = calcZBowlError(center, rim, eDegrees);
+        zErrorNext = calcZBowlErrorFromTheta(center, rim, eDegrees);
         dzError = zErrorNext - zError0;
         dTheta /= 2;
     }
 
     return eDegrees;
+}
+
+PH5TYPE DeltaCalculator::calcZBowlErrorFromGearRatio(Step3D center, Step3D rim, PH5TYPE newRatio) {
+	PH5TYPE saveGearRatio = gearRatio;
+	gearRatio = newRatio;
+    XYZ3D xyzCtr = calcXYZ(Step3D(center.p1, center.p2, center.p3));
+    XYZ3D xyzRim = calcXYZ(Step3D(rim.p1, rim.p2, rim.p3));
+	gearRatio = saveGearRatio;
+    PH5TYPE error = xyzRim.z - xyzCtr.z;
+    return error;
+}
+
+PH5TYPE DeltaCalculator::calcZBowlErrorFromGearRatio(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE newRatio) {
+    XYZ3D xyzCtr(0,0,zCenter);
+    XYZ3D xyzRim(radius, 0, zCenter);
+    Step3D center = calcPulses(xyzCtr);
+    Step3D rim = calcPulses(xyzRim);
+    return calcZBowlErrorFromGearRatio(center, rim, newRatio);
+}
+
+PH5TYPE DeltaCalculator::calcZBowlGearRatio(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE radius) {
+    XYZ3D xyzCtr(0, 0, zCenter);
+    XYZ3D xyzRim(radius, 0, zCenter);
+    Step3D center = calcPulses(xyzCtr);
+    Step3D rim = calcPulses(xyzRim);
+
+    // Newton Raphson: calculate slope
+    PH5TYPE newRatio = gearRatio;
+    PH5TYPE zError0 = zRim - zCenter;
+    PH5TYPE zErrorNext = 0;
+    PH5TYPE dzError = zErrorNext - zError0;
+    PH5TYPE dRatio = 0.1;
+    for (int16_t i=0; dzError && i<6; i++) {
+        PH5TYPE slope = (calcZBowlErrorFromGearRatio(center, rim, newRatio+dRatio)-zErrorNext)/dRatio;
+        TESTCOUT3("newRatio:", newRatio, " dzError:", dzError, " slope:", slope);
+        newRatio -= dzError / slope;
+        zErrorNext = calcZBowlErrorFromGearRatio(center, rim, newRatio);
+        dzError = zErrorNext - zError0;
+        dRatio /= 2;
+    }
+
+    return newRatio;
 }
