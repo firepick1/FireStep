@@ -1997,6 +1997,33 @@ void test_calibrate() {
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
 
+    {   // gearRatio: reversing error should solve for gear ratio
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+		machine.op.probe.probeData[0] = -53.953;
+		machine.op.probe.probeData[1] = -53.520;
+		machine.op.probe.probeData[2] = -53.520;
+		machine.op.probe.probeData[3] = -53.520;
+		machine.op.probe.probeData[4] = -53.520;
+		machine.op.probe.probeData[5] = -53.520;
+		machine.op.probe.probeData[6] = -53.520;
+		machine.op.probe.probeData[7] = -53.953;
+        Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','gr':'','ge':'','sv':'','zc':'','zr':''}}\n"));
+        mt.loop();
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop();
+        ASSERTEQUAL(STATUS_OK, mt.status);
+        ASSERTEQUALS(JT("{'s':0,'r':{"
+                        "'cal':{'bx':0.0000,'by':0.0000,'bz':-56.424,'gr':8.813,'ge':-0.562,'sv':1.000,'zc':-53.953,'zr':-53.520}},"
+                        "'t':0.000}\n"),
+                     Serial.output().c_str());
+        ASSERTEQUAL(-5600, machine.axis[0].home);
+        ASSERTEQUAL(-5600, machine.axis[1].home);
+        ASSERTEQUAL(-5600, machine.axis[2].home);
+        mt.loop();
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    }
+
     {   // bed Z-plane: with default sv (1) we get full non-adaptive adjustment
         MachineThread mt = test_setup_FPD();
         Machine& machine = mt.machine;
@@ -4096,7 +4123,6 @@ void test_pgm_parse(const char *pgm) {
 	ASSERTEQUALS("", Serial.output().c_str());
     ASSERTEQUAL(STATUS_OK, prog_dump(pgm));
 	s = Serial.output().c_str();
-	TESTCOUT2("pgm:", pgm, " s:", s);
 	ASSERTEQUAL(true, (strncmp("[{\"msg\":", s, 8) != 0));
     ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(s));
 }

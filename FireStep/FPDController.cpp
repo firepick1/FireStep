@@ -54,7 +54,7 @@ Status FPDCalibrateHome::calibrate() {
 		eTheta = machine.delta.calcZBowlETheta(zCenter, zRim_homeAngle, radius);
 		PH5TYPE homeAngleCur = machine.delta.getHomeAngle();
 		homeAngle = saveWeight*(homeAngleCur+eTheta) + (1-saveWeight)*machine.getHomeAngle();
-		TESTCOUT4("CalibrateHome zCenter:", zCenter, " zRim_homeAngle:", zRim_homeAngle,
+		TESTCOUT4("CalibrateHome calHome zCenter:", zCenter, " zRim_homeAngle:", zRim_homeAngle,
 				  " eTheta:", eTheta, " homeAngle:", homeAngle);
 		machine.setHomeAngle(homeAngle);
 	}
@@ -64,7 +64,7 @@ Status FPDCalibrateHome::calibrate() {
 		eGear = gearRatio - curGearRatio; 
 		gearRatio = saveWeight * gearRatio + (1-saveWeight) * curGearRatio;
 		machine.delta.setGearRatio(gearRatio);
-		TESTCOUT4("CalibrateHome zCenter:", zCenter, " zRim_gearRatio:", zRim_gearRatio,
+		TESTCOUT4("CalibrateHome calGear zCenter:", zCenter, " zRim_gearRatio:", zRim_gearRatio,
 				  " eGear:", eGear, " gearRatio:", gearRatio);
 	}
 
