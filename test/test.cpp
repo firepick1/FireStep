@@ -3916,7 +3916,7 @@ void test_DeltaCalculator() {
     DeltaCalculator dc;
     PH5TYPE zErrTiny = 0.01; // 10 microns
 
-    dc.setup();
+    dc.useEffectorOrigin();
 
     PH5TYPE ha1 = dc.getHomeAngle();
     dc.setHomePulses(dc.getHomePulses());
@@ -4027,6 +4027,43 @@ void test_DeltaCalculator() {
     // subsequent calibration with almost undetectable error
     PH5TYPE gearRatio3 = dc2.calcZBowlGearRatio(zCenter, zCenter+zErrTiny, radius);
     ASSERTEQUALT(10.212, gearRatio3, 0.001);
+
+	{ // verify internal constraints
+		DeltaCalculator dc3;
+		ASSERTEQUALT(9.375, dc3.getGearRatio(), 0.001);
+		ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001);
+		ASSERTEQUALT(83.333, dc3.degreePulses(), 0.001);
+		ASSERTEQUAL(-5600, dc3.getHomePulses());
+		ASSERTEQUAL(0, dc3.getZOffset());
+
+		dc3.useEffectorOrigin();
+		ASSERTEQUALT(9.375, dc3.getGearRatio(), 0.001);
+		ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001);
+		ASSERTEQUALT(83.333, dc3.degreePulses(), 0.001);
+		ASSERTEQUAL(-5600, dc3.getHomePulses());
+		ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001); 	// CHANGED
+
+		dc3.setGearRatio(9.5);
+		ASSERTEQUALT(9.5, dc3.getGearRatio(), 0.001); 		// CHANGED
+		ASSERTEQUALT(-66.316, dc3.getHomeAngle(), 0.001); 	// CHANGED
+		ASSERTEQUALT(84.444, dc3.degreePulses(), 0.001); 	// CHANGED
+		ASSERTEQUAL(-5600, dc3.getHomePulses());
+		ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001); 
+
+		dc3.setGearRatio(9.375);
+		ASSERTEQUALT(9.375, dc3.getGearRatio(), 0.001); 	// CHANGED
+		ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001); 	// CHANGED
+		ASSERTEQUALT(83.333, dc3.degreePulses(), 0.001); 	// CHANGED
+		ASSERTEQUAL(-5600, dc3.getHomePulses());
+		ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001); 
+
+		dc3.setHomeAngle(-66);
+		ASSERTEQUALT(9.375, dc3.getGearRatio(), 0.001);
+		ASSERTEQUALT(-66, dc3.getHomeAngle(), 0.001); 		// CHANGED
+		ASSERTEQUALT(83.333, dc3.degreePulses(), 0.001);
+		ASSERTEQUAL(-5500, dc3.getHomePulses()); 			// CHANGED
+		ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001); 
+	}
 
     cout << "TEST	: test_DeltaCalculator() OK " << endl;
 }

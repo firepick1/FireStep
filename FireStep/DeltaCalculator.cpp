@@ -40,7 +40,8 @@ DeltaCalculator::DeltaCalculator()
     homeAngle = getDefaultHomeAngle();
 }
 
-void DeltaCalculator::setup() {
+void DeltaCalculator::useEffectorOrigin() {
+	dz = 0;
     XYZ3D xyz = calcXYZ(Angle3D());
     ASSERT(xyz.isValid());
 
@@ -52,6 +53,13 @@ void DeltaCalculator::setup() {
 
 PH5TYPE DeltaCalculator::getMinDegrees() {
     return getDefaultHomeAngle();
+}
+
+void DeltaCalculator::setGearRatio(PH5TYPE value) {
+	StepCoord pulses = getHomePulses();
+	gearRatio = value; // changing the gear ratio changes the home angle
+	setHomePulses(pulses);
+	TESTCOUT3("setGearRatio:", gearRatio, " home pulses:", getHomePulses(), " angle:", getHomeAngle());
 }
 
 PH5TYPE DeltaCalculator::getDefaultHomeAngle() {
@@ -274,10 +282,11 @@ PH5TYPE DeltaCalculator::calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE 
 
 PH5TYPE DeltaCalculator::calcZBowlErrorFromGearRatio(Step3D center, Step3D rim, PH5TYPE newRatio) {
 	PH5TYPE saveGearRatio = gearRatio;
+	setGearRatio(newRatio);
 	gearRatio = newRatio;
     XYZ3D xyzCtr = calcXYZ(Step3D(center.p1, center.p2, center.p3));
     XYZ3D xyzRim = calcXYZ(Step3D(rim.p1, rim.p2, rim.p3));
-	gearRatio = saveGearRatio;
+	setGearRatio(saveGearRatio);
     PH5TYPE error = xyzRim.z - xyzCtr.z;
     return error;
 }

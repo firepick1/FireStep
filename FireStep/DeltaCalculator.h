@@ -79,7 +79,7 @@ protected:
     static PH5TYPE dtr;
 public:
     DeltaCalculator();
-    void setup();
+    void useEffectorOrigin();
     inline PH5TYPE getBaseTriangleSide() {
         return f;
     }
@@ -125,13 +125,13 @@ public:
     inline PH5TYPE getGearRatio() {
         return gearRatio;
     }
-    inline void setGearRatio(PH5TYPE value) {
-        gearRatio = value;
-    }
+    void setGearRatio(PH5TYPE value);
     inline PH5TYPE degreePulses() {
         return steps360 * microsteps * gearRatio / 360.0;
     }
-    inline PH5TYPE getZOffset() { // Z distance from base to effector with arms level (0 degrees)
+    inline PH5TYPE getZOffset() { 
+		// Z distance from base to effector with arms level (0 degrees)
+		// DEPENDENCIES: ZOffset(e,f,re,rf)
         return dz;
     }
     PH5TYPE getMinZ(PH5TYPE x=0, PH5TYPE y=0);  // lowest possible point at given XY

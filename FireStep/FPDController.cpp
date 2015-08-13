@@ -946,7 +946,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
 
 void FPDController::onTopologyChanged() {
 	machine.setHomeAngle(machine.getHomeAngle()); // sync axes to homeAngle
-    machine.delta.setup();
+    machine.delta.useEffectorOrigin();
     if (machine.axis[0].home >= 0 &&
             machine.axis[1].home >= 0 &&
             machine.axis[2].home >= 0) {
