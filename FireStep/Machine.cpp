@@ -224,7 +224,20 @@ Machine::Machine()
     axis[3].id = 'a';
     axis[4].id = 'b';
     axis[5].id = 'c';
-	homeAngle = delta.getHomeAngle();
+	setHomeAngle(delta.getHomeAngle());
+	axis[0].home = 0; // MTO_FPD
+	axis[1].home = 0; // MTO_FPD
+	axis[2].home = 0; // MTO_FPD
+}
+
+StepCoord Machine::setHomeAngle(PH5TYPE degrees) {
+	delta.setHomeAngle(degrees);
+	homeAngle = degrees;
+	StepCoord pulses = delta.getHomePulses();
+	axis[0].home = pulses;
+	axis[1].home = pulses;
+	axis[2].home = pulses;
+	return pulses;
 }
 
 void Machine::setup(PinConfig cfg) {

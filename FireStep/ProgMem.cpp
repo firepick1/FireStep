@@ -19,9 +19,19 @@ const char firestep::OP_by[] PROGMEM = { "by" };
 const char firestep::OP_bz[] PROGMEM = { "bz" };
 const char firestep::OP_c[] PROGMEM = { "c" };
 const char firestep::OP_cal[] PROGMEM = { "cal" };
+const char firestep::OP_cal_coarse[] PROGMEM = { "cal_coarse" };
+const char firestep::OP_cal_fine[] PROGMEM = { "cal_fine" };
+const char firestep::OP_cal_gear[] PROGMEM = { "cal-gearfine" };
+const char firestep::OP_cal_gear_coarse[] PROGMEM = { "cal-gear-coarse" };
+const char firestep::OP_cal_gear_fine[] PROGMEM = { "cal-gear-fine" };
+const char firestep::OP_cal_home[] PROGMEM = { "cal-home" };
+const char firestep::OP_cal_home_coarse[] PROGMEM = { "cal-home-coarse" };
+const char firestep::OP_cal_home_fine[] PROGMEM = { "cal-home-fine" };
 const char firestep::OP_calbx[] PROGMEM = { "calbx" };
 const char firestep::OP_calby[] PROGMEM = { "calby" };
 const char firestep::OP_calbz[] PROGMEM = { "calbz" };
+const char firestep::OP_calge[] PROGMEM = { "calge" };
+const char firestep::OP_calgr[] PROGMEM = { "calgr" };
 const char firestep::OP_calha[] PROGMEM = { "calha" };
 const char firestep::OP_calhe[] PROGMEM = { "calhe" };
 const char firestep::OP_calsv[] PROGMEM = { "calsv" };
@@ -42,10 +52,10 @@ const char firestep::OP_dimbz[] PROGMEM = { "dimbz" };
 const char firestep::OP_dime[] PROGMEM = { "dime" };
 const char firestep::OP_dimf[] PROGMEM = { "dimf" };
 const char firestep::OP_dimgr[] PROGMEM = { "dimgr" };
-const char firestep::OP_dimha[] PROGMEM = { "dimha" };
 const char firestep::OP_dimha1[] PROGMEM = { "dimha1" };
 const char firestep::OP_dimha2[] PROGMEM = { "dimha2" };
 const char firestep::OP_dimha3[] PROGMEM = { "dimha3" };
+const char firestep::OP_dimha[] PROGMEM = { "dimha" };
 const char firestep::OP_dimhp[] PROGMEM = { "dimhp" };
 const char firestep::OP_dimmi[] PROGMEM = { "dimmi" };
 const char firestep::OP_dimpd[] PROGMEM = { "dimpd" };
@@ -68,13 +78,15 @@ const char firestep::OP_en[] PROGMEM = { "en" };
 const char firestep::OP_eu[] PROGMEM = { "eu" };
 const char firestep::OP_f[] PROGMEM = { "f" };
 const char firestep::OP_fr[] PROGMEM = { "fr" };
+const char firestep::OP_ge[] PROGMEM = { "ge" };
 const char firestep::OP_gr[] PROGMEM = { "gr" };
-const char firestep::OP_ha[] PROGMEM = { "ha" };
 const char firestep::OP_ha1[] PROGMEM = { "ha1" };
 const char firestep::OP_ha2[] PROGMEM = { "ha2" };
 const char firestep::OP_ha3[] PROGMEM = { "ha3" };
+const char firestep::OP_ha[] PROGMEM = { "ha" };
 const char firestep::OP_he[] PROGMEM = { "he" };
 const char firestep::OP_help[] PROGMEM = { "help" };
+const char firestep::OP_hex_probe[] PROGMEM = { "hex_probe" };
 const char firestep::OP_ho[] PROGMEM = { "ho" };
 const char firestep::OP_hom[] PROGMEM = { "hom" };
 const char firestep::OP_hp[] PROGMEM = { "hp" };
@@ -186,9 +198,9 @@ const char firestep::OP_systo[] PROGMEM = { "systo" };
 const char firestep::OP_systv[] PROGMEM = { "systv" };
 const char firestep::OP_sysv[] PROGMEM = { "sysv" };
 const char firestep::OP_tc[] PROGMEM = { "tc" };
-const char firestep::OP_test[] PROGMEM = { "test" };
 const char firestep::OP_test1[] PROGMEM = { "test1" };
 const char firestep::OP_test2[] PROGMEM = { "test2" };
+const char firestep::OP_test[] PROGMEM = { "test" };
 const char firestep::OP_tm[] PROGMEM = { "tm" };
 const char firestep::OP_tn[] PROGMEM = { "tn" };
 const char firestep::OP_to[] PROGMEM = { "to" };
@@ -235,29 +247,82 @@ const char src_test2[] PROGMEM = {
     "]"
 };
 
+#define HEX_PROBE \
+    "{\"hom\":\"\"},"\
+    "{\"prbz\":\"\"},"\
+    "{\"movzr\":10},"\
+    "{\"mrkwp\":1},"\
+    "{\"mov\":{ \"zm\":3,\"a\":0,\"d\":50}},"\
+    "{\"prbz\":\"\"},"\
+    "{\"mov\":{\"zm\":3,\"a\":60,\"d\":50}},"\
+    "{\"prbz\":\"\"},"\
+    "{\"mov\":{\"zm\":3,\"a\":120,\"d\":50}},"\
+    "{\"prbz\":\"\"},"\
+    "{\"mov\":{\"zm\":3,\"a\":180,\"d\":50}},"\
+    "{\"prbz\":\"\"},"\
+    "{\"mov\":{\"zm\":3,\"a\":240,\"d\":50}},"\
+    "{\"prbz\":\"\"},"\
+    "{\"mov\":{\"zm\":3,\"a\":300,\"d\":50}},"\
+    "{\"prbz\":\"\"},"\
+    "{\"mov\":{\"zm\":3,\"x\":0,\"y\":0}},"\
+    "{\"prbz\":\"\"},"\
+    "{\"movwp\":1},"\
+	"{\"prbd\":\"\"}"
+
 const char src_calibrate[] PROGMEM = {
-    "["
-    "{\"hom\":\"\"},"
-    "{\"prbz\":\"\"},"
-    "{\"movzr\":10},"
-    "{\"mrkwp\":1},"
-    "{\"mov\":{ \"zm\":3,\"a\":0,\"d\":50}},"
-    "{\"prbz\":\"\"},"
-    "{\"mov\":{\"zm\":3,\"a\":60,\"d\":50}},"
-    "{\"prbz\":\"\"},"
-    "{\"mov\":{\"zm\":3,\"a\":120,\"d\":50}},"
-    "{\"prbz\":\"\"},"
-    "{\"mov\":{\"zm\":3,\"a\":180,\"d\":50}},"
-    "{\"prbz\":\"\"},"
-    "{\"mov\":{\"zm\":3,\"a\":240,\"d\":50}},"
-    "{\"prbz\":\"\"},"
-    "{\"mov\":{\"zm\":3,\"a\":300,\"d\":50}},"
-    "{\"prbz\":\"\"},"
-    "{\"mov\":{\"zm\":3,\"x\":0,\"y\":0}},"
-    "{\"prbz\":\"\"},"
-    "{\"movwp\":1},"
-    "{\"prbd\":\"\",\"cal\":\"\"}"
+    "[" HEX_PROBE ",{\"cal\":\"\"}]"
+};
+
+const char src_cal_fine[] PROGMEM = {
+    "[" HEX_PROBE ","
+    "{\"cal\":{\"gr\":\"\",\"ge\":"",\"ha\":\"\",\"he\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
+};
+
+const char src_cal_coarse[] PROGMEM = {
+    "[" HEX_PROBE ","
+    "{\"cal\":{\"gr\":\"\",\"ge\":"",\"ha\":\"\",\"he\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
+    "]"
+};
+
+const char src_cal_home[] PROGMEM = {
+    "[" HEX_PROBE ","
+    "{\"cal\":{\"ha\":\"\",\"he\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}"
+    "]"
+};
+
+const char src_cal_home_coarse[] PROGMEM = {
+    "[" HEX_PROBE ","
+    "{\"cal\":{\"ha\":\"\",\"he\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
+    "]"
+};
+
+const char src_cal_home_fine[] PROGMEM = {
+    "[" HEX_PROBE ","
+    "{\"cal\":{\"ha\":\"\",\"he\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
+    "]"
+};
+
+const char src_cal_gear[] PROGMEM = {
+    "[" HEX_PROBE ","
+    "{\"cal\":{\"gr\":\"\",\"ge\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}"
+    "]"
+};
+
+const char src_cal_gear_coarse[] PROGMEM = {
+    "[" HEX_PROBE ","
+    "{\"cal\":{\"gr\":\"\",\"ge\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
+    "]"
+};
+
+const char src_cal_gear_fine[] PROGMEM = {
+    "[" HEX_PROBE ","
+    "{\"cal\":{\"gr\":\"\",\"ge\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
+    "]"
+};
+
+const char src_hex_probe[] PROGMEM = {
+    "[" HEX_PROBE "]"
 };
 
 const char *firestep::prog_src(const char *name) {
@@ -269,8 +334,26 @@ const char *firestep::prog_src(const char *name) {
         return src_test2;
     } else if (strcmp_PS(OP_help, name) == 0) {
         return src_help;
+    } else if (strcmp_PS(OP_hex_probe, name) == 0) {
+        return src_hex_probe;
     } else if (strcmp_PS(OP_cal, name) == 0) {
         return src_calibrate;
+    } else if (strcmp_PS(OP_cal_coarse, name) == 0) {
+        return src_cal_coarse;
+    } else if (strcmp_PS(OP_cal_fine, name) == 0) {
+        return src_cal_fine;
+    } else if (strcmp_PS(OP_cal_home, name) == 0) {
+        return src_cal_home;
+    } else if (strcmp_PS(OP_cal_home_coarse, name) == 0) {
+        return src_cal_home_coarse;
+    } else if (strcmp_PS(OP_cal_home_fine, name) == 0) {
+        return src_cal_home_fine;
+    } else if (strcmp_PS(OP_cal_gear, name) == 0) {
+        return src_cal_gear;
+    } else if (strcmp_PS(OP_cal_gear_coarse, name) == 0) {
+        return src_cal_gear_coarse;
+    } else if (strcmp_PS(OP_cal_gear_fine, name) == 0) {
+        return src_cal_gear_fine;
     }
 
     return src_help;

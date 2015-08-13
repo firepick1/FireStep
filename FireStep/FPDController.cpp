@@ -15,13 +15,10 @@ using namespace firestep;
 #define PI ((PH5TYPE) 3.14159265359)
 
 FPDCalibrateHome::FPDCalibrateHome(Machine& machine)
-    : machine(machine), status(STATUS_BUSY_CALIBRATING) {
+    : machine(machine), calGear(false), calHome(false), saveWeight(1) {
 }
 
 Status FPDCalibrateHome::calibrate() {
-    if (status != STATUS_BUSY_CALIBRATING) {
-        return status;
-    }
     machine.loadDeltaCalculator();
     OpProbe& probe = machine.op.probe;
     zCenter = (probe.probeData[0]+probe.probeData[7])/2;
@@ -33,20 +30,42 @@ Status FPDCalibrateHome::calibrate() {
         return STATUS_CAL_HOME1;
     }
     PH5TYPE radius = 50;
-    eTheta = machine.delta.calcZBowlETheta(zCenter, zRim, radius);
-    PH5TYPE homeAngleCur = machine.delta.getHomeAngle();
-    homeAngle = homeAngleCur + eTheta;
-    TESTCOUT4("CalibrateHome zCenter:", zCenter, " zRim:", zRim,
-              " eTheta:", eTheta, " homeAngle:", homeAngle);
+	PH5TYPE zError = zRim - zCenter;
+	PH5TYPE zRim_gearRatio = zRim; // assume all error is due to gear ratio
+	PH5TYPE zRim_homeAngle = zRim; // assume all error is due to home angle
+	if (calHome && calGear) {
+		PH5TYPE hgr = 4; // SWAG at ratio of homeAngleError / gearRatioError
+		PH5TYPE g = sqrt(zError*zError /(1+hgr*hgr));
+		PH5TYPE h = hgr * g;
+		zRim_gearRatio = zCenter + (zError > 0 ? g : -g); // gear ratio error split
+		zRim_homeAngle = zCenter + (zError > 0 ? h : -h); // homeAngle error split
+	}
+	TESTCOUT1("saveWeight:", saveWeight);
+	if (calHome) {
+		eTheta = machine.delta.calcZBowlETheta(zCenter, zRim_homeAngle, radius);
+		PH5TYPE homeAngleCur = machine.delta.getHomeAngle();
+		homeAngle = saveWeight*(homeAngleCur+eTheta) + (1-saveWeight)*machine.getHomeAngle();
+		TESTCOUT4("CalibrateHome zCenter:", zCenter, " zRim_homeAngle:", zRim_homeAngle,
+				  " eTheta:", eTheta, " homeAngle:", homeAngle);
+		machine.setHomeAngle(homeAngle);
+	}
+	if (calGear) {
+		gearRatio = machine.delta.calcZBowlGearRatio(zCenter, zRim_gearRatio, radius);
+		PH5TYPE curGearRatio = machine.delta.getGearRatio();
+		eGear = gearRatio - curGearRatio; 
+		gearRatio = saveWeight * gearRatio + (1-saveWeight) * curGearRatio;
+		machine.delta.setGearRatio(gearRatio);
+		TESTCOUT4("CalibrateHome zCenter:", zCenter, " zRim_gearRatio:", zRim_gearRatio,
+				  " eGear:", eGear, " gearRatio:", gearRatio);
+	}
 
-    Step3D pd[6];
-    for (int16_t i=0; i<6; i++) {
-        PH5TYPE a = i*60;
-        PH5TYPE radians = a * PI / 180.0;
-        pd[i] = machine.delta.calcPulses(XYZ3D(radius*cos(radians), radius*sin(radians), probe.probeData[1+i]));
-    };
-
-    machine.delta.setHomeAngle(homeAngle);
+	// Calculate bed ZPlane
+	Step3D pd[6];
+	for (int16_t i=0; i<6; i++) {
+		PH5TYPE a = i*60;
+		PH5TYPE radians = a * PI / 180.0;
+		pd[i] = machine.delta.calcPulses(XYZ3D(radius*cos(radians), radius*sin(radians), probe.probeData[1+i]));
+	};
     ZPlane zpl0;
     if (!zpl0.initialize(
                 machine.delta.calcXYZ(pd[0]),
@@ -62,32 +81,19 @@ Status FPDCalibrateHome::calibrate() {
                 machine.delta.calcXYZ(pd[3]),
                 machine.delta.calcXYZ(pd[5])
             )) {
-        return STATUS_CAL_BED;
+		return STATUS_CAL_BED;
     }
     TESTCOUT3("zpl60 a:", zpl60.a, " b:", zpl60.b, " c:", zpl60.c);
     bed.a = (zpl0.a + zpl60.b) / 2;
     bed.b = (zpl0.b + zpl60.b) / 2;
     bed.c = (zpl0.c + zpl60.c) / 2;
     TESTCOUT3("bed a:", bed.a, " b:", bed.b, " c:", bed.c);
+	machine.bed.a = bed.a = saveWeight*bed.a + (1-saveWeight) * machine.bed.a;
+	machine.bed.b = bed.b = saveWeight*bed.b + (1-saveWeight) * machine.bed.b;
+	machine.bed.c = bed.c = saveWeight*bed.c + (1-saveWeight) * machine.bed.c;
+    TESTCOUT3("machine.bed a:", machine.bed.a, " b:", machine.bed.b, " c:", machine.bed.c);
 
     return STATUS_OK;
-}
-
-Status FPDCalibrateHome::save(PH5TYPE saveWeight) {
-    Status status = calibrate();
-    if (status == STATUS_OK) {
-		machine.homeAngle = saveWeight * homeAngle + (1-saveWeight) * machine.homeAngle;
-        machine.delta.setHomeAngle(machine.homeAngle);
-		PH5TYPE dp = machine.delta.degreePulses();
-        StepCoord pulses = machine.delta.getHomePulses();
-        machine.axis[0].home = pulses;
-        machine.axis[1].home = pulses;
-        machine.axis[2].home = pulses;
-		machine.bed.a = saveWeight * bed.a + (1-saveWeight) * machine.bed.a;
-		machine.bed.b = saveWeight * bed.b + (1-saveWeight) * machine.bed.b;
-		machine.bed.c = saveWeight * bed.c + (1-saveWeight) * machine.bed.c;
-    }
-    return status;
 }
 
 /////////////////////////// FPDMoveTo ///////////////
@@ -655,8 +661,9 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.delta.setGearRatio(value);
     } else if (strcmp_PS(OP_ha, key) == 0 || strcmp_PS(OP_dimha, key) == 0) {
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.homeAngle);
-        machine.delta.setHomeAngle(machine.homeAngle);
+		PH5TYPE homeAngle = machine.getHomeAngle();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngle);
+        machine.setHomeAngle(homeAngle);
     } else if (strcmp_PS(OP_mi, key) == 0 || strcmp_PS(OP_dimmi, key) == 0) {
         int16_t value = machine.delta.getMicrosteps();
         status = processField<int16_t, int16_t>(jobj, key, value);
@@ -797,14 +804,20 @@ Status FPDController::processHome(JsonCommand& jcmd, JsonObject& jobj, const cha
 
 Status FPDController::processCalibrate(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
     FPDCalibrateHome cal(machine);
-    Status status = cal.calibrate();
-    if (status != STATUS_OK) {
-        return status;
+    Status status = processCalibrateCore(jcmd, jobj, key, cal, false); // get saveWeight
+    if (status == STATUS_OK) {
+		status = cal.calibrate();
     }
-    return processCalibrateCore(jcmd, jobj, key, cal);
+	if (status == STATUS_OK) {
+		status = processCalibrateCore(jcmd, jobj, key, cal, true); // save results
+	}
+    return status;
 }
-Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, const char* key, FPDCalibrateHome &cal) {
-    Status status = jcmd.getStatus();
+
+Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, const char* key,
+        FPDCalibrateHome &cal, bool output)
+{
+    Status status = STATUS_OK;
     const char *s;
     if (strcmp_PS(OP_cal, key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
@@ -812,6 +825,8 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
             node["bx"] = "";
             node["by"] = "";
             node["bz"] = "";
+            node["gr"] = "";
+            node["ge"] = "";
             node["ha"] = "";
             node["he"] = "";
             node["sv"] = "";
@@ -823,68 +838,98 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
             return jcmd.setError(STATUS_JSON_OBJECT, key);
         }
         for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-            status = processCalibrateCore(jcmd, kidObj, it->key, cal);
+            status = processCalibrateCore(jcmd, kidObj, it->key, cal, output);
             if (status != STATUS_OK) {
                 TESTCOUT1("processCalibrate status:", status);
                 return status;
             }
         }
     } else if (strcmp_PS(OP_calbx,key) == 0 || strcmp_PS(OP_bx,key) == 0) {
-        PH5TYPE value = cal.bed.a;
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        if (value != cal.bed.a) {
-            return jcmd.setError(STATUS_OUTPUT_FIELD, key);
-        }
-        jobj[key].set(value, 4);
+		if (output) {
+			PH5TYPE value = machine.bed.a;
+			status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+			if (value != cal.bed.a) {
+				return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+			}
+			jobj[key].set(value, 4);
+		}
     } else if (strcmp_PS(OP_calby,key) == 0 || strcmp_PS(OP_by,key) == 0) {
-        PH5TYPE value = cal.bed.b;
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        if (value != cal.bed.b) {
-            return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        if (output) {
+            PH5TYPE value = machine.bed.b;
+            status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+            if (value != cal.bed.b) {
+                return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+            }
+            jobj[key].set(value, 4);
         }
-        jobj[key].set(value, 4);
     } else if (strcmp_PS(OP_calbz,key) == 0 || strcmp_PS(OP_bz,key) == 0) {
-        PH5TYPE value = cal.bed.c;
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        if (value != cal.bed.c) {
-            return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        if (output) {
+            PH5TYPE value = machine.bed.c;
+            status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+            if (value != cal.bed.c) {
+                return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+            }
         }
+    } else if (strcmp_PS(OP_calgr,key) == 0 || strcmp_PS(OP_gr,key) == 0) {
+        if (output) {
+            PH5TYPE value = machine.delta.getGearRatio();
+            status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+            if (value != machine.delta.getGearRatio()) {
+                return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+            }
+        }
+		cal.calGear = true;
+    } else if (strcmp_PS(OP_calge,key) == 0 || strcmp_PS(OP_ge,key) == 0) {
+        if (output) {
+            PH5TYPE value = cal.eGear;
+            status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+            if (value != cal.eGear) {
+                return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+            }
+        }
+		cal.calGear = true;
     } else if (strcmp_PS(OP_calha,key) == 0 || strcmp_PS(OP_ha,key) == 0) {
-        PH5TYPE value = cal.homeAngle;
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        if (value != cal.homeAngle) {
-            return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        if (output) {
+            PH5TYPE value = machine.getHomeAngle();
+            status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+            if (value != machine.getHomeAngle()) {
+                return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+            }
         }
+		cal.calHome = true;
     } else if (strcmp_PS(OP_calhe,key) == 0 || strcmp_PS(OP_he,key) == 0) {
-        PH5TYPE value = cal.eTheta;
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        if (value != cal.eTheta) {
-            return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        if (output) {
+            PH5TYPE value = cal.eTheta;
+            status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+            if (value != cal.eTheta) {
+                return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+            }
         }
+		cal.calHome = true;
     } else if (strcmp_PS(OP_calzc,key) == 0 || strcmp_PS(OP_zc,key) == 0) {
-        PH5TYPE value = cal.zCenter;
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        if (value != cal.zCenter) {
-            return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        if (output) {
+            PH5TYPE value = cal.zCenter;
+            status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+            if (value != cal.zCenter) {
+                return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+            }
         }
     } else if (strcmp_PS(OP_calzr,key) == 0 || strcmp_PS(OP_zr,key) == 0) {
-        PH5TYPE value = cal.zRim;
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        if (value != cal.zRim) {
-            return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+        if (output) {
+            PH5TYPE value = cal.zRim;
+            status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+            if (value != cal.zRim) {
+                return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+            }
         }
     } else if (strcmp_PS(OP_calsv,key) == 0 || strcmp_PS(OP_sv,key) == 0) {
-		PH5TYPE saveWeight = 0.3;
 		if (jobj.at(key).is<bool>()) {
 			bool save = true;
 			status = processField<bool, bool>(jobj, key, save);
-			saveWeight = save ? saveWeight : 0;
+			cal.saveWeight = save ? 0.3 : 0;
 		} else {
-			status = processField<PH5TYPE, PH5TYPE>(jobj, key, saveWeight);
+			status = processField<PH5TYPE, PH5TYPE>(jobj, key, cal.saveWeight);
 		}
-        if (saveWeight) {
-            cal.save(saveWeight);
-        }
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }

@@ -259,6 +259,9 @@ public:
 typedef class Machine : public QuadStepper {
     friend void ::test_Home();
 
+private:
+	PH5TYPE		homeAngle; // recorded home angle
+
 public:
     PinConfig	pinConfig;
     bool		autoHome;
@@ -272,7 +275,6 @@ public:
     DeltaCalculator delta;
     int32_t 	vMax; // maximum stroke velocity (pulses/second)
     PH5TYPE 	tvMax; // time to reach maximum velocity
-	PH5TYPE		homeAngle; // recorded home angle
     PH5TYPE		marks[MARK_COUNT];
     int16_t		fastSearchPulses;
     StepCoord	latchBackoff; // high speed limit switch compensation
@@ -385,6 +387,8 @@ public:
     void enableEEUser(bool enable);
     bool isEEUserEnabled();
     void loadDeltaCalculator(); // initialize from raw axis
+	StepCoord setHomeAngle(PH5TYPE degrees);
+	PH5TYPE getHomeAngle() { return homeAngle; }
 } Machine;
 
 #ifdef TEST

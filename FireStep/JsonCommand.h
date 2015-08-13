@@ -51,7 +51,7 @@ public:
     inline JsonObject & response() {
         return jResponseRoot;
     }
-    Status parse(const char *jsonIn, Status status);
+    Status parse(const char *jsonIn, Status status=STATUS_WAIT_IDLE);
     bool isValid();
     inline Status getStatus() {
         return (Status) (int32_t) jResponseRoot["s"];
