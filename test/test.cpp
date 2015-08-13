@@ -250,6 +250,17 @@ void test_Machine() {
     lastClock = ticks();
     arduino.dump();
 
+	{
+		Machine mach;
+		mach.topology = MTO_FPD;
+		mach.delta.setGearRatio(9.5);
+		ASSERTEQUALT(-66.316, mach.setHomePulses(-5600), 0.001);
+		ASSERTEQUAL(mach.getHomePulses(), mach.axis[0].home);
+		mach.delta.setGearRatio(9.375);
+		ASSERTEQUALT(-67.2, mach.setHomePulses(-5600), 0.001);
+		ASSERTEQUAL(mach.getHomePulses(), mach.axis[0].home);
+	}
+
     cout << "TEST	: test_Machine() OK " << endl;
 }
 
@@ -1660,7 +1671,7 @@ void test_MTO_FPD_dim() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
 					"'bx':0.0000,'by':0.0000,'bz':0.000,'e':131.636,'f':190.526,'gr':9.375,"
-				    "'ha':-67.200,'mi':16,'re':270.000,'rf':90.000,'st':200}"
+				    "'ha':-67.200,'hp':-5600,'mi':16,'re':270.000,'rf':90.000,'st':200}"
                     "},'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();

@@ -236,18 +236,18 @@ const char src_help[] PROGMEM = {
     "{\"msg\":\"Program names are:\"},"
     "{\"msg\":\"  help             print this help text\"},"
     "{\"msg\":\"  test             print test message\"},"
-    "{\"msg\":\"  cal              Use Z-bowl error to calibrate home angle, gear ratio and Z-bed plane (non-adaptive)\"}"
-    "{\"msg\":\"  cal-coarse       Use Z-bowl error to calibrate home angle, gear ratio and Z-bed plane (adaptive coarse)\"}"
-    "{\"msg\":\"  cal-fine         Use Z-bowl error to calibrate home angle, gear ratio and Z-bed plane (adaptive fine)\"}"
-    "{\"msg\":\"  cal-gear         Use Z-bowl error to calibrate gear ratio and Z-bed plane (non-adaptive)\"}"
-    "{\"msg\":\"  cal-gear-coarse  Use Z-bowl error to calibrate gear ratio and Z-bed plane (adaptive coarse)\"}"
-    "{\"msg\":\"  cal-gear-fine    Use Z-bowl error to calibrate gear ratio and Z-bed plane (adaptive fine)\"}"
-    "{\"msg\":\"  cal-home         Use Z-bowl error to calibrate home angle and Z-bed plane (non-adaptive)\"}"
-    "{\"msg\":\"  cal-home-coarse  Use Z-bowl error to calibrate home angle and Z-bed plane (adaptive coarse)\"}"
-    "{\"msg\":\"  cal-home-fine    Use Z-bowl error to calibrate home angle and Z-bed plane (adaptive fine)\"}"
-    "{\"msg\":\"  cal-bed    	   Use Z-bowl error to calibrate Z-bed plane (non-adaptive)\"}"
-    "{\"msg\":\"  cal-bed-coarse   Use Z-bowl error to calibrate Z-bed plane (adaptive coarse)\"}"
-    "{\"msg\":\"  cal-bed-fine     Use Z-bowl error to calibrate Z-bed plane (adaptive fine)\"}"
+    "{\"msg\":\"  cal              Use hex probe to calibrate home angle, gear ratio and Z-bed plane (non-adaptive)\"}"
+    "{\"msg\":\"  cal-coarse       Use hex probe to calibrate home angle, gear ratio and Z-bed plane (adaptive coarse)\"}"
+    "{\"msg\":\"  cal-fine         Use hex probe to calibrate home angle, gear ratio and Z-bed plane (adaptive fine)\"}"
+    "{\"msg\":\"  cal-gear         Use hex probe to calibrate gear ratio and Z-bed plane (non-adaptive)\"}"
+    "{\"msg\":\"  cal-gear-coarse  Use hex probe to calibrate gear ratio and Z-bed plane (adaptive coarse)\"}"
+    "{\"msg\":\"  cal-gear-fine    Use hex probe to calibrate gear ratio and Z-bed plane (adaptive fine)\"}"
+    "{\"msg\":\"  cal-home         Use hex probe to calibrate home angle and Z-bed plane (non-adaptive)\"}"
+    "{\"msg\":\"  cal-home-coarse  Use hex probe to calibrate home angle and Z-bed plane (adaptive coarse)\"}"
+    "{\"msg\":\"  cal-home-fine    Use hex probe to calibrate home angle and Z-bed plane (adaptive fine)\"}"
+    "{\"msg\":\"  cal-bed    	   Use hex probe to calibrate Z-bed plane (non-adaptive)\"}"
+    "{\"msg\":\"  cal-bed-coarse   Use hex probe to calibrate Z-bed plane (adaptive coarse)\"}"
+    "{\"msg\":\"  cal-bed-fine     Use hex probe to calibrate Z-bed plane (adaptive fine)\"}"
     "]"
 };
 
@@ -286,73 +286,73 @@ const char src_test2[] PROGMEM = {
 
 const char src_calibrate[] PROGMEM = {
     "[" HEX_PROBE ","
-    "{\"cal\":{\"gr\":\"\",\"ge\":\"\",\"ha\":\"\",\"he\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}"
+    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"gr\":\"\",\"ge\":\"\",\"ha\":\"\",\"he\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
 const char src_cal_fine[] PROGMEM = {
     "[" HEX_PROBE ","
-    "{\"cal\":{\"gr\":\"\",\"ge\":\"\",\"ha\":\"\",\"he\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
+    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"gr\":\"\",\"ge\":\"\",\"ha\":\"\",\"he\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
 const char src_cal_coarse[] PROGMEM = {
     "[" HEX_PROBE ","
-    "{\"cal\":{\"gr\":\"\",\"ge\":\"\",\"ha\":\"\",\"he\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
+    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"gr\":\"\",\"ge\":\"\",\"ha\":\"\",\"he\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
 const char src_cal_bed[] PROGMEM = {
     "[" HEX_PROBE ","
-    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"he\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}"
+    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"he\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
 const char src_cal_bed_fine[] PROGMEM = {
     "[" HEX_PROBE ","
-    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"he\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
+    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"he\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
 const char src_cal_bed_coarse[] PROGMEM = {
     "[" HEX_PROBE ","
-    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"he\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
+    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"he\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
 const char src_cal_home[] PROGMEM = {
     "[" HEX_PROBE ","
-    "{\"cal\":{\"ha\":\"\",\"he\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}"
+    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"ha\":\"\",\"he\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
 const char src_cal_home_coarse[] PROGMEM = {
     "[" HEX_PROBE ","
-    "{\"cal\":{\"ha\":\"\",\"he\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
+    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"ha\":\"\",\"he\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
 const char src_cal_home_fine[] PROGMEM = {
     "[" HEX_PROBE ","
-    "{\"cal\":{\"ha\":\"\",\"he\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
+    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"ha\":\"\",\"he\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
 const char src_cal_gear[] PROGMEM = {
     "[" HEX_PROBE ","
-    "{\"cal\":{\"gr\":\"\",\"ge\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}"
+    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"gr\":\"\",\"ge\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
 const char src_cal_gear_coarse[] PROGMEM = {
     "[" HEX_PROBE ","
-    "{\"cal\":{\"gr\":\"\",\"ge\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
+    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"gr\":\"\",\"ge\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
 const char src_cal_gear_fine[] PROGMEM = {
     "[" HEX_PROBE ","
-    "{\"cal\":{\"gr\":\"\",\"ge\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
+    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"gr\":\"\",\"ge\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
@@ -362,7 +362,7 @@ const char src_hex_probe[] PROGMEM = {
 
 const char src_dim_fpd[] PROGMEM = {
     "[" 
-	"{\"dim\":{\"ha\":67.2,\"gr\":9.375}}"
+	"{\"dim\":{\"gr\":9.375,\"hp\":-5600}}"
 	"]"
 };
 

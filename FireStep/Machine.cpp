@@ -225,6 +225,7 @@ Machine::Machine()
     axis[4].id = 'b';
     axis[5].id = 'c';
 	homeAngle = delta.getHomeAngle(); 
+	homePulses = delta.getHomePulses();
 }
 
 StepCoord Machine::setHomeAngle(PH5TYPE degrees) {
@@ -254,6 +255,13 @@ void Machine::setup(PinConfig cfg) {
         axis[i].enable(false); // toggle
         axis[i].enable(true);
     }
+}
+
+PH5TYPE Machine::setHomePulses(StepCoord pulseCount) {
+	homePulses = pulseCount;
+	PH5TYPE degrees = homePulses/delta.degreePulses();
+	setHomeAngle(degrees);
+	return degrees;
 }
 
 int32_t Machine::hash() {

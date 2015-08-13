@@ -6,6 +6,7 @@ v0.2.3
 * FIX: "movrx" is now identified as a bad command (the correct command is "movxr")
 * NEW: "calsv" provides adaptive calibration via exponential smoothing
 * FIX: static strings now stored in PROGMEM to free up SRAM
+* NEW: "dimhp" user provided home pulses 
 * NEW: {"pgmx":"cal"}             Use hex probe to calibrate home angle, gear ratio and Z-bed plane (non-adaptive)
 * NEW: {"pgmx":"cal-coarse"}      Use hex probe to calibrate home angle, gear ratio and Z-bed plane (adaptive coarse)
 * NEW: {"pgmx":"cal-fine"}        Use hex probe to calibrate home angle, gear ratio and Z-bed plane (adaptive fine)

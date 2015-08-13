@@ -625,6 +625,7 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
             node["f"] = "";
             node["gr"] = "";
             node["ha"] = "";
+            node["hp"] = "";
             node["mi"] = "";
             node["re"] = "";
             node["rf"] = "";
@@ -667,6 +668,10 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
 		PH5TYPE homeAngle = machine.getHomeAngle();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngle);
         machine.setHomeAngle(homeAngle);
+    } else if (strcmp_PS(OP_hp, key) == 0 || strcmp_PS(OP_dimhp, key) == 0) {
+		StepCoord homePulses = machine.getHomePulses();
+        status = processField<StepCoord, StepCoord>(jobj, key, homePulses);
+        machine.setHomePulses(homePulses);
     } else if (strcmp_PS(OP_mi, key) == 0 || strcmp_PS(OP_dimmi, key) == 0) {
         int16_t value = machine.delta.getMicrosteps();
         status = processField<int16_t, int16_t>(jobj, key, value);
