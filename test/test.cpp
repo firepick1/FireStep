@@ -1976,7 +1976,7 @@ void test_calibrate() {
         mt.loop();
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
-                        "'cal':{'bx':0.0036,'by':0.0059,'bz':-53.951,'gr':10.145,'ge':0.770,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
+                        "'cal':{'bx':0.0038,'by':0.0061,'bz':-50.332,'gr':10.145,'ge':0.770,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
         ASSERTEQUAL(-5600, machine.axis[0].home);
@@ -1986,7 +1986,67 @@ void test_calibrate() {
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
 
-    {   // cal should split error by default
+    {   // bed Z-plane: with default sv (1) we get full non-adaptive adjustment
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+		machine.op.probe.probeData[0] = -53.510;
+		machine.op.probe.probeData[1] = -53.900;
+		machine.op.probe.probeData[2] = -53.654;
+		machine.op.probe.probeData[3] = -53.734;
+		machine.op.probe.probeData[4] = -54.011;
+		machine.op.probe.probeData[5] = -54.208;
+		machine.op.probe.probeData[6] = -54.208;
+		machine.op.probe.probeData[7] = -53.529;
+        Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','sv':'','zc':'','zr':''}}\n"));
+        mt.loop();
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop();
+        ASSERTEQUAL(STATUS_OK, mt.status);
+        ASSERTEQUALS(JT("{'s':0,'r':{"
+                        "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.954,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
+                        "'t':0.000}\n"),
+                     Serial.output().c_str());
+        ASSERTEQUAL(-5600, machine.axis[0].home);
+        ASSERTEQUAL(-5600, machine.axis[1].home);
+        ASSERTEQUAL(-5600, machine.axis[2].home);
+        ASSERTEQUAL(9.375, machine.delta.getGearRatio());
+        mt.loop();
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    }
+
+    {   // gearRatio and homeAngle: should split error 
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+		machine.op.probe.probeData[0] = -53.510;
+		machine.op.probe.probeData[1] = -53.900;
+		machine.op.probe.probeData[2] = -53.654;
+		machine.op.probe.probeData[3] = -53.734;
+		machine.op.probe.probeData[4] = -54.011;
+		machine.op.probe.probeData[5] = -54.208;
+		machine.op.probe.probeData[6] = -54.208;
+		machine.op.probe.probeData[7] = -53.529;
+        ASSERTEQUAL(-5600, machine.axis[0].home);
+        ASSERTEQUAL(-5600, machine.axis[1].home);
+        ASSERTEQUAL(-5600, machine.axis[2].home);
+        Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','gr':'','ge':'','ha':'','he':'','sv':'','zc':'','zr':''}}\n"));
+        mt.loop();
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop();
+        ASSERTEQUAL(STATUS_OK, mt.status);
+        ASSERTEQUALS(JT("{'s':0,'r':{"
+                        "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.140,'gr':9.540,'ge':0.165,"
+						"'ha':-58.568,'he':8.632,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
+                        "'t':0.000}\n"),
+                     Serial.output().c_str());
+        ASSERTEQUAL(-4881, machine.axis[0].home);
+        ASSERTEQUAL(-4881, machine.axis[1].home);
+        ASSERTEQUAL(-4881, machine.axis[2].home);
+        ASSERTEQUALT(-58.568, machine.getHomeAngle(), 0.001);
+        mt.loop();
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    }
+
+    {   // cal should be same as specifying all attributes
         MachineThread mt = test_setup_FPD();
         Machine& machine = mt.machine;
 		machine.op.probe.probeData[0] = -53.510;
@@ -2006,7 +2066,7 @@ void test_calibrate() {
         mt.loop();
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
-                        "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.954,'gr':9.540,'ge':0.165,"
+                        "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.140,'gr':9.540,'ge':0.165,"
 						"'ha':-58.568,'he':8.632,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
@@ -4059,11 +4119,15 @@ void test_pgm() {
 
     // check syntax of pgm sources
     JsonCommand jc;
+	const char *s;
+	ASSERTEQUALS("", Serial.output().c_str());
     ASSERTEQUAL(STATUS_OK, prog_dump("cal"));
+	s = Serial.output().c_str();
+	TESTCOUT1("cal:", s);
+    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(s));
     ASSERTEQUAL(STATUS_OK, prog_dump("cal-coarse"));
     ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
     ASSERTEQUAL(STATUS_OK, prog_dump("cal-fine"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
     ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
     ASSERTEQUAL(STATUS_OK, prog_dump("hex-probe"));
     ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
@@ -4072,6 +4136,12 @@ void test_pgm() {
     ASSERTEQUAL(STATUS_OK, prog_dump("cal-gear-coarse"));
     ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
     ASSERTEQUAL(STATUS_OK, prog_dump("cal-gear-fine"));
+    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
+    ASSERTEQUAL(STATUS_OK, prog_dump("cal-bed"));
+    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
+    ASSERTEQUAL(STATUS_OK, prog_dump("cal-bed-coarse"));
+    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
+    ASSERTEQUAL(STATUS_OK, prog_dump("cal-bed-fine"));
     ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
     ASSERTEQUAL(STATUS_OK, prog_dump("cal-home"));
     ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));

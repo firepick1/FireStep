@@ -33,6 +33,15 @@ Status FPDCalibrateHome::calibrate() {
 	PH5TYPE zError = zRim - zCenter;
 	PH5TYPE zRim_gearRatio = zRim; // assume all error is due to gear ratio
 	PH5TYPE zRim_homeAngle = zRim; // assume all error is due to home angle
+
+	// convert probe data to stepper coordinates
+	Step3D pd[6];
+	for (int16_t i=0; i<6; i++) {
+		PH5TYPE a = i*60;
+		PH5TYPE radians = a * PI / 180.0;
+		pd[i] = machine.delta.calcPulses(XYZ3D(radius*cos(radians), radius*sin(radians), probe.probeData[1+i]));
+	};
+
 	if (calHome && calGear) {
 		PH5TYPE hgr = 4; // SWAG at ratio of homeAngleError / gearRatioError
 		PH5TYPE g = sqrt(zError*zError /(1+hgr*hgr));
@@ -60,12 +69,6 @@ Status FPDCalibrateHome::calibrate() {
 	}
 
 	// Calculate bed ZPlane
-	Step3D pd[6];
-	for (int16_t i=0; i<6; i++) {
-		PH5TYPE a = i*60;
-		PH5TYPE radians = a * PI / 180.0;
-		pd[i] = machine.delta.calcPulses(XYZ3D(radius*cos(radians), radius*sin(radians), probe.probeData[1+i]));
-	};
     ZPlane zpl0;
     if (!zpl0.initialize(
                 machine.delta.calcXYZ(pd[0]),
@@ -937,6 +940,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
 }
 
 void FPDController::onTopologyChanged() {
+	machine.setHomeAngle(machine.getHomeAngle()); // sync axes to homeAngle
     machine.delta.setup();
     if (machine.axis[0].home >= 0 &&
             machine.axis[1].home >= 0 &&

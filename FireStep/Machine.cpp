@@ -224,19 +224,27 @@ Machine::Machine()
     axis[3].id = 'a';
     axis[4].id = 'b';
     axis[5].id = 'c';
-	setHomeAngle(delta.getHomeAngle());
-	axis[0].home = 0; // MTO_FPD
-	axis[1].home = 0; // MTO_FPD
-	axis[2].home = 0; // MTO_FPD
+	homeAngle = delta.getHomeAngle(); 
 }
 
 StepCoord Machine::setHomeAngle(PH5TYPE degrees) {
 	delta.setHomeAngle(degrees);
 	homeAngle = degrees;
 	StepCoord pulses = delta.getHomePulses();
-	axis[0].home = pulses;
-	axis[1].home = pulses;
-	axis[2].home = pulses;
+	StepCoord dHome = pulses - axis[0].home;
+	switch (topology) {
+	case MTO_FPD:
+		axis[0].home += dHome;
+		axis[1].home += dHome;
+		axis[2].home += dHome;
+		axis[0].position += dHome;
+		axis[1].position += dHome;
+		axis[2].position += dHome;
+		break;
+	default:
+		break;
+	}
+	TESTCOUT3("setHomeAngle degrees:", degrees, " pulses:", pulses, " home:", axis[0].home);
 	return pulses;
 }
 
