@@ -4090,6 +4090,17 @@ void test_msg_cmt_idl() {
     cout << "TEST	: test_msg_cmt_idl() OK " << endl;
 }
 
+void test_pgm_parse(const char *pgm) {
+    JsonCommand jc;
+	const char *s;
+	ASSERTEQUALS("", Serial.output().c_str());
+    ASSERTEQUAL(STATUS_OK, prog_dump(pgm));
+	s = Serial.output().c_str();
+	TESTCOUT2("pgm:", pgm, " s:", s);
+	ASSERTEQUAL(true, (strncmp("[{\"msg\":", s, 8) != 0));
+    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(s));
+}
+
 void test_pgm() {
     cout << "TEST	: test_pgm() =====" << endl;
 
@@ -4129,37 +4140,21 @@ void test_pgm() {
                  Serial.output().c_str());
 
     // check syntax of pgm sources
-    JsonCommand jc;
-	const char *s;
-	ASSERTEQUALS("", Serial.output().c_str());
-    ASSERTEQUAL(STATUS_OK, prog_dump("cal"));
-	s = Serial.output().c_str();
-	TESTCOUT1("cal:", s);
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(s));
-    ASSERTEQUAL(STATUS_OK, prog_dump("cal-coarse"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
-    ASSERTEQUAL(STATUS_OK, prog_dump("cal-fine"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
-    ASSERTEQUAL(STATUS_OK, prog_dump("hex-probe"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
-    ASSERTEQUAL(STATUS_OK, prog_dump("cal-gear"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
-    ASSERTEQUAL(STATUS_OK, prog_dump("cal-gear-coarse"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
-    ASSERTEQUAL(STATUS_OK, prog_dump("cal-gear-fine"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
-    ASSERTEQUAL(STATUS_OK, prog_dump("cal-bed"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
-    ASSERTEQUAL(STATUS_OK, prog_dump("cal-bed-coarse"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
-    ASSERTEQUAL(STATUS_OK, prog_dump("cal-bed-fine"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
-    ASSERTEQUAL(STATUS_OK, prog_dump("cal-home"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
-    ASSERTEQUAL(STATUS_OK, prog_dump("cal-home-coarse"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
-    ASSERTEQUAL(STATUS_OK, prog_dump("cal-home-fine"));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(Serial.output().c_str()));
+
+	test_pgm_parse("cal");
+	test_pgm_parse("cal-coarse");
+	test_pgm_parse("cal-fine");
+    test_pgm_parse("cal-bed");
+    test_pgm_parse("cal-bed-coarse");
+    test_pgm_parse("cal-bed-fine");
+    test_pgm_parse("cal-gear");
+    test_pgm_parse("cal-gear-coarse");
+    test_pgm_parse("cal-gear-fine");
+    test_pgm_parse("cal-home");
+    test_pgm_parse("cal-home-coarse");
+    test_pgm_parse("cal-home-fine");
+    test_pgm_parse("dim-fpd");
+    test_pgm_parse("hex-probe");
 
     cout << "TEST	: test_pgm() OK " << endl;
 }

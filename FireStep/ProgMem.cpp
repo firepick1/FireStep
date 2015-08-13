@@ -22,9 +22,9 @@ const char firestep::OP_cal[] PROGMEM = { "cal" };
 const char firestep::OP_cal_bed[] PROGMEM = { "cal-bed" };
 const char firestep::OP_cal_bed_coarse[] PROGMEM = { "cal-bed-coarse" };
 const char firestep::OP_cal_bed_fine[] PROGMEM = { "cal-bed-fine" };
-const char firestep::OP_cal_coarse[] PROGMEM = { "cal_coarse" };
-const char firestep::OP_cal_fine[] PROGMEM = { "cal_fine" };
-const char firestep::OP_cal_gear[] PROGMEM = { "cal-gearfine" };
+const char firestep::OP_cal_coarse[] PROGMEM = { "cal-coarse" };
+const char firestep::OP_cal_fine[] PROGMEM = { "cal-fine" };
+const char firestep::OP_cal_gear[] PROGMEM = { "cal-gear" };
 const char firestep::OP_cal_gear_coarse[] PROGMEM = { "cal-gear-coarse" };
 const char firestep::OP_cal_gear_fine[] PROGMEM = { "cal-gear-fine" };
 const char firestep::OP_cal_home[] PROGMEM = { "cal-home" };
@@ -49,7 +49,7 @@ const char firestep::OP_d[] PROGMEM = { "d" };
 const char firestep::OP_db[] PROGMEM = { "db" };
 const char firestep::OP_dh[] PROGMEM = { "dh" };
 const char firestep::OP_dim[] PROGMEM = { "dim" };
-const char firestep::OP_dim_fpd[] PROGMEM = { "dim_fpd" };
+const char firestep::OP_dim_fpd[] PROGMEM = { "dim-fpd" };
 const char firestep::OP_dimbx[] PROGMEM = { "dimbx" };
 const char firestep::OP_dimby[] PROGMEM = { "dimby" };
 const char firestep::OP_dimbz[] PROGMEM = { "dimbz" };
@@ -90,7 +90,7 @@ const char firestep::OP_ha3[] PROGMEM = { "ha3" };
 const char firestep::OP_ha[] PROGMEM = { "ha" };
 const char firestep::OP_he[] PROGMEM = { "he" };
 const char firestep::OP_help[] PROGMEM = { "help" };
-const char firestep::OP_hex_probe[] PROGMEM = { "hex_probe" };
+const char firestep::OP_hex_probe[] PROGMEM = { "hex-probe" };
 const char firestep::OP_ho[] PROGMEM = { "ho" };
 const char firestep::OP_hom[] PROGMEM = { "hom" };
 const char firestep::OP_hp[] PROGMEM = { "hp" };
@@ -248,6 +248,7 @@ const char src_help[] PROGMEM = {
     "{\"msg\":\"  cal-bed    	   Use hex probe to calibrate Z-bed plane (non-adaptive)\"}"
     "{\"msg\":\"  cal-bed-coarse   Use hex probe to calibrate Z-bed plane (adaptive coarse)\"}"
     "{\"msg\":\"  cal-bed-fine     Use hex probe to calibrate Z-bed plane (adaptive fine)\"}"
+    "{\"msg\":\"  hex-probe        Perform hex probe and return probe Z-data\"}"
     "]"
 };
 
@@ -367,42 +368,27 @@ const char src_dim_fpd[] PROGMEM = {
 };
 
 const char *firestep::prog_src(const char *name) {
-    if (strcmp_PS(OP_test, name) == 0) {
-        return src_test2;
-    } else if (strcmp_PS(OP_test1, name) == 0) {
-        return src_test1;
-    } else if (strcmp_PS(OP_test2, name) == 0) {
-        return src_test2;
-    } else if (strcmp_PS(OP_help, name) == 0) {
-        return src_help;
-    } else if (strcmp_PS(OP_dim_fpd, name) == 0) {
-        return src_dim_fpd;
-    } else if (strcmp_PS(OP_hex_probe, name) == 0) {
-        return src_hex_probe;
-    } else if (strcmp_PS(OP_cal, name) == 0) {
-        return src_calibrate;
-    } else if (strcmp_PS(OP_cal_coarse, name) == 0) {
-        return src_cal_coarse;
-    } else if (strcmp_PS(OP_cal_fine, name) == 0) {
-        return src_cal_fine;
-    } else if (strcmp_PS(OP_cal_bed, name) == 0) {
-        return src_cal_bed;
-    } else if (strcmp_PS(OP_cal_bed_coarse, name) == 0) {
-        return src_cal_bed_coarse;
-    } else if (strcmp_PS(OP_cal_bed_fine, name) == 0) {
-        return src_cal_bed_fine;
-    } else if (strcmp_PS(OP_cal_home, name) == 0) {
-        return src_cal_home;
-    } else if (strcmp_PS(OP_cal_home_coarse, name) == 0) {
-        return src_cal_home_coarse;
-    } else if (strcmp_PS(OP_cal_home_fine, name) == 0) {
-        return src_cal_home_fine;
-    } else if (strcmp_PS(OP_cal_gear, name) == 0) {
-        return src_cal_gear;
-    } else if (strcmp_PS(OP_cal_gear_coarse, name) == 0) {
-        return src_cal_gear_coarse;
-    } else if (strcmp_PS(OP_cal_gear_fine, name) == 0) {
-        return src_cal_gear_fine;
+	if (false) { // must be sorted reverse alphabetical
+
+    } else if (strcmp_PS(OP_test2, name) == 0) { return src_test2;
+    } else if (strcmp_PS(OP_test1, name) == 0) { return src_test1;
+    } else if (strcmp_PS(OP_hex_probe, name) == 0) { return src_hex_probe;
+    } else if (strcmp_PS(OP_help, name) == 0) { return src_help;
+    } else if (strcmp_PS(OP_dim_fpd, name) == 0) { return src_dim_fpd;
+    } else if (strcmp_PS(OP_cal_home_fine, name) == 0) { return src_cal_home_fine;
+    } else if (strcmp_PS(OP_cal_home_coarse, name) == 0) { return src_cal_home_coarse;
+    } else if (strcmp_PS(OP_cal_home, name) == 0) { return src_cal_home;
+    } else if (strcmp_PS(OP_cal_gear_fine, name) == 0) { return src_cal_gear_fine;
+    } else if (strcmp_PS(OP_cal_gear_coarse, name) == 0) { return src_cal_gear_coarse;
+    } else if (strcmp_PS(OP_cal_gear, name) == 0) { return src_cal_gear;
+    } else if (strcmp_PS(OP_cal_fine, name) == 0) { return src_cal_fine;
+    } else if (strcmp_PS(OP_cal_coarse, name) == 0) { return src_cal_coarse;
+    } else if (strcmp_PS(OP_cal_bed_fine, name) == 0) { return src_cal_bed_fine;
+    } else if (strcmp_PS(OP_cal_bed_coarse, name) == 0) { return src_cal_bed_coarse;
+    } else if (strcmp_PS(OP_cal_bed, name) == 0) { return src_cal_bed;
+    } else if (strcmp_PS(OP_cal, name) == 0) { return src_calibrate;
+	} else if (strcmp_PS(OP_test, name) == 0) { return src_test2; 
+
     }
 
     return src_help;
