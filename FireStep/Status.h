@@ -57,6 +57,7 @@ enum Status {
     STATUS_CAL_BED = -145,			// Calibration probe data insufficient for bed plane calculation
     STATUS_UNKNOWN_PROGRAM = -146,	// Unknown prg identifier
     STATUS_PROGRAM_SIZE = -147,		// Program to large to execute
+    STATUS_ZBOWL_GEAR = -148,		// Z-bowl error exceeds amount allowed for gear ratio error
 
     // stroke
     STATUS_STROKE_SEGPULSES = -200,	// Stroke has too many pulses per segment [-127,127]

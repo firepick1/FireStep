@@ -18,6 +18,8 @@ FPDCalibrateHome::FPDCalibrateHome(Machine& machine)
     : machine(machine), calGear(false), calHome(false), saveWeight(1) {
 }
 
+#define MAX_GEAR_ZBOWL_ERROR 0.3
+
 Status FPDCalibrateHome::calibrate() {
     machine.loadDeltaCalculator();
     OpProbe& probe = machine.op.probe;
@@ -59,6 +61,9 @@ Status FPDCalibrateHome::calibrate() {
 		machine.setHomeAngle(homeAngle);
 	}
 	if (calGear) {
+		if (MAX_GEAR_ZBOWL_ERROR < abs(zRim_gearRatio - zCenter)) {
+			return STATUS_ZBOWL_GEAR;
+		}
 		gearRatio = machine.delta.calcZBowlGearRatio(zCenter, zRim_gearRatio, radius);
 		PH5TYPE curGearRatio = machine.delta.getGearRatio();
 		eGear = gearRatio - curGearRatio; 

@@ -1970,6 +1970,7 @@ void test_calibrate() {
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
 
+#ifdef LEGACY
     {   // gearRatio: with default sv (1) we get full non-adaptive adjustment
         MachineThread mt = test_setup_FPD();
         Machine& machine = mt.machine;
@@ -1996,6 +1997,7 @@ void test_calibrate() {
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
+#endif
 
     {   // gearRatio: upward facing bowl
         MachineThread mt = test_setup_FPD();
@@ -2048,6 +2050,36 @@ void test_calibrate() {
                         "'cal':{'bx':0.0000,'by':0.0000,'bz':-52.342,'gr':9.531,'ge':0.156,'sv':1.000,'zc':-53.000,'zr':-53.100}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
+        ASSERTEQUAL(-5600, machine.axis[0].home);
+        ASSERTEQUAL(-5600, machine.axis[1].home);
+        ASSERTEQUAL(-5600, machine.axis[2].home);
+        mt.loop();
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    }
+
+    {   // gearRatio: downward facing bowl
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+		PH5TYPE zCenter = -53;
+		PH5TYPE zRim = zCenter - 0.5; // excessive z-bowl error
+        machine.op.probe.probeData[0] = zCenter;
+        machine.op.probe.probeData[1] = 
+        machine.op.probe.probeData[2] = 
+        machine.op.probe.probeData[3] =
+        machine.op.probe.probeData[4] =
+        machine.op.probe.probeData[5] =
+        machine.op.probe.probeData[6] = zRim;
+        machine.op.probe.probeData[7] = zCenter;
+        Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','gr':'','ge':'','sv':'','zc':'','zr':''}}\n"));
+        mt.loop();
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop();
+        ASSERTEQUAL(STATUS_ZBOWL_GEAR, mt.status);
+        ASSERTEQUALS(JT("{'s':-148,'r':{"
+                        "'cal':{'bx':'','by':'','bz':'','gr':'','ge':'','sv':1.000,'zc':'','zr':''}},"
+                        "'t':0.000}\n"),
+                     Serial.output().c_str());
+		mt.status = STATUS_WAIT_IDLE;
         ASSERTEQUAL(-5600, machine.axis[0].home);
         ASSERTEQUAL(-5600, machine.axis[1].home);
         ASSERTEQUAL(-5600, machine.axis[2].home);
