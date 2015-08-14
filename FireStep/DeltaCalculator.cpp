@@ -59,7 +59,7 @@ void DeltaCalculator::setGearRatio(PH5TYPE value) {
 	StepCoord pulses = getHomePulses();
 	gearRatio = value; // changing the gear ratio changes the home angle
 	setHomePulses(pulses);
-	TESTCOUT3("setGearRatio:", gearRatio, " home pulses:", getHomePulses(), " angle:", getHomeAngle());
+	//TESTCOUT3("setGearRatio:", gearRatio, " home pulses:", getHomePulses(), " angle:", getHomeAngle());
 }
 
 PH5TYPE DeltaCalculator::getDefaultHomeAngle() {
@@ -305,20 +305,30 @@ PH5TYPE DeltaCalculator::calcZBowlGearRatio(PH5TYPE zCenter, PH5TYPE zRim, PH5TY
     Step3D center = calcPulses(xyzCtr);
     Step3D rim = calcPulses(xyzRim);
 
-    // Newton Raphson: calculate slope
-    PH5TYPE newRatio = gearRatio;
-    PH5TYPE zError0 = zRim - zCenter;
-    PH5TYPE zErrorNext = 0;
-    PH5TYPE dzError = zErrorNext - zError0;
-    PH5TYPE dRatio = 0.1;
-    for (int16_t i=0; dzError && i<6; i++) {
-        PH5TYPE slope = (calcZBowlErrorFromGearRatio(center, rim, newRatio+dRatio)-zErrorNext)/dRatio;
-        TESTCOUT3("newRatio:", newRatio, " dzError:", dzError, " slope:", slope);
-        newRatio -= dzError / slope;
-        zErrorNext = calcZBowlErrorFromGearRatio(center, rim, newRatio);
-        dzError = zErrorNext - zError0;
-        dRatio /= 2;
-    }
+    PH5TYPE eGearCur = 0; // gearRatio - 9.375;
 
-    return newRatio;
+    // Newton Raphson: calculate slope@eTheta0 = ZBowl error/degree
+    PH5TYPE eGear = eGearCur;
+    PH5TYPE goalZError = zRim - zCenter;
+    PH5TYPE dGear = 0.01;
+	PH5TYPE newGearRatio = gearRatio;
+	PH5TYPE bestGearRatio = newGearRatio;
+	PH5TYPE best_dGoal = abs(goalZError);
+
+    for (int16_t i=0; i<25; i++) {
+        PH5TYPE zError = calcZBowlErrorFromGearRatio(center, rim, newGearRatio);
+        PH5TYPE zErrorDelta = calcZBowlErrorFromGearRatio(center, rim, newGearRatio+dGear);
+        PH5TYPE slope = (zErrorDelta-zError)/dGear;
+		PH5TYPE dGoal = zError - goalZError;
+		if (abs(dGoal) < best_dGoal) {
+			bestGearRatio = newGearRatio;
+			best_dGoal = abs(dGoal);
+			TESTCOUT2("bestGearRatio:", bestGearRatio, " best_dGoal:", best_dGoal);
+		}
+		eGear -= dGoal / slope;
+        TESTCOUT4("dGoal:", dGoal, " newGearRatio:", newGearRatio, " slope:", slope, " zError:", zError);
+		newGearRatio = newGearRatio + eGear;
+		//dGear /= 2;
+    }
+	return bestGearRatio;
 }

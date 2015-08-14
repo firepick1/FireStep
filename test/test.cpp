@@ -1919,14 +1919,14 @@ void test_calibrate() {
     {   // with default sv (0.7) we get coarse adjustment
         MachineThread mt = test_setup_FPD();
         Machine& machine = mt.machine;
-		machine.op.probe.probeData[0] = -53.510;
-		machine.op.probe.probeData[1] = -53.900;
-		machine.op.probe.probeData[2] = -53.654;
-		machine.op.probe.probeData[3] = -53.734;
-		machine.op.probe.probeData[4] = -54.011;
-		machine.op.probe.probeData[5] = -54.208;
-		machine.op.probe.probeData[6] = -54.208;
-		machine.op.probe.probeData[7] = -53.529;
+        machine.op.probe.probeData[0] = -53.510;
+        machine.op.probe.probeData[1] = -53.900;
+        machine.op.probe.probeData[2] = -53.654;
+        machine.op.probe.probeData[3] = -53.734;
+        machine.op.probe.probeData[4] = -54.011;
+        machine.op.probe.probeData[5] = -54.208;
+        machine.op.probe.probeData[6] = -54.208;
+        machine.op.probe.probeData[7] = -53.529;
         Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','ha':'','he':'','sv':''}}\n"));
         mt.loop();
         ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -1946,14 +1946,14 @@ void test_calibrate() {
     {   // homeAngle: with default sv (1) we get full non-adaptive adjustment
         MachineThread mt = test_setup_FPD();
         Machine& machine = mt.machine;
-		machine.op.probe.probeData[0] = -53.510;
-		machine.op.probe.probeData[1] = -53.900;
-		machine.op.probe.probeData[2] = -53.654;
-		machine.op.probe.probeData[3] = -53.734;
-		machine.op.probe.probeData[4] = -54.011;
-		machine.op.probe.probeData[5] = -54.208;
-		machine.op.probe.probeData[6] = -54.208;
-		machine.op.probe.probeData[7] = -53.529;
+        machine.op.probe.probeData[0] = -53.510;
+        machine.op.probe.probeData[1] = -53.900;
+        machine.op.probe.probeData[2] = -53.654;
+        machine.op.probe.probeData[3] = -53.734;
+        machine.op.probe.probeData[4] = -54.011;
+        machine.op.probe.probeData[5] = -54.208;
+        machine.op.probe.probeData[6] = -54.208;
+        machine.op.probe.probeData[7] = -53.529;
         Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','ha':'','he':'','sv':'','zc':'','zr':''}}\n"));
         mt.loop();
         ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -1973,21 +1973,21 @@ void test_calibrate() {
     {   // gearRatio: with default sv (1) we get full non-adaptive adjustment
         MachineThread mt = test_setup_FPD();
         Machine& machine = mt.machine;
-		machine.op.probe.probeData[0] = -53.510;
-		machine.op.probe.probeData[1] = -53.900;
-		machine.op.probe.probeData[2] = -53.654;
-		machine.op.probe.probeData[3] = -53.734;
-		machine.op.probe.probeData[4] = -54.011;
-		machine.op.probe.probeData[5] = -54.208;
-		machine.op.probe.probeData[6] = -54.208;
-		machine.op.probe.probeData[7] = -53.529;
+        machine.op.probe.probeData[0] = -53.510;
+        machine.op.probe.probeData[1] = -53.900;
+        machine.op.probe.probeData[2] = -53.654;
+        machine.op.probe.probeData[3] = -53.734;
+        machine.op.probe.probeData[4] = -54.011;
+        machine.op.probe.probeData[5] = -54.208;
+        machine.op.probe.probeData[6] = -54.208;
+        machine.op.probe.probeData[7] = -53.529;
         Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','gr':'','ge':'','sv':'','zc':'','zr':''}}\n"));
         mt.loop();
         ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
         mt.loop();
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
-                        "'cal':{'bx':0.0038,'by':0.0061,'bz':-50.332,'gr':10.145,'ge':0.770,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
+                        "'cal':{'bx':0.0038,'by':0.0061,'bz':-50.500,'gr':10.107,'ge':0.732,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
         ASSERTEQUAL(-5600, machine.axis[0].home);
@@ -1997,24 +1997,26 @@ void test_calibrate() {
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
 
-    {   // gearRatio: reversing error should solve for gear ratio
+    {   // gearRatio: upward facing bowl
         MachineThread mt = test_setup_FPD();
         Machine& machine = mt.machine;
-		machine.op.probe.probeData[0] = -53.953;
-		machine.op.probe.probeData[1] = -53.520;
-		machine.op.probe.probeData[2] = -53.520;
-		machine.op.probe.probeData[3] = -53.520;
-		machine.op.probe.probeData[4] = -53.520;
-		machine.op.probe.probeData[5] = -53.520;
-		machine.op.probe.probeData[6] = -53.520;
-		machine.op.probe.probeData[7] = -53.953;
+		PH5TYPE zCenter = -53;
+		PH5TYPE zRim = zCenter + 0.1; // about 0.15 gear ratio error
+        machine.op.probe.probeData[0] = zCenter;
+        machine.op.probe.probeData[1] = 
+        machine.op.probe.probeData[2] = 
+        machine.op.probe.probeData[3] =
+        machine.op.probe.probeData[4] =
+        machine.op.probe.probeData[5] =
+        machine.op.probe.probeData[6] = zRim;
+        machine.op.probe.probeData[7] = zCenter;
         Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','gr':'','ge':'','sv':'','zc':'','zr':''}}\n"));
         mt.loop();
         ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
         mt.loop();
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
-                        "'cal':{'bx':0.0000,'by':0.0000,'bz':-56.424,'gr':8.813,'ge':-0.562,'sv':1.000,'zc':-53.953,'zr':-53.520}},"
+                        "'cal':{'bx':0.0000,'by':0.0000,'bz':-53.593,'gr':9.235,'ge':-0.140,'sv':1.000,'zc':-53.000,'zr':-52.900}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
         ASSERTEQUAL(-5600, machine.axis[0].home);
@@ -2023,18 +2025,105 @@ void test_calibrate() {
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
+
+    {   // gearRatio: downward facing bowl
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+		PH5TYPE zCenter = -53;
+		PH5TYPE zRim = zCenter - 0.1; // about 0.15 gear ratio error
+        machine.op.probe.probeData[0] = zCenter;
+        machine.op.probe.probeData[1] = 
+        machine.op.probe.probeData[2] = 
+        machine.op.probe.probeData[3] =
+        machine.op.probe.probeData[4] =
+        machine.op.probe.probeData[5] =
+        machine.op.probe.probeData[6] = zRim;
+        machine.op.probe.probeData[7] = zCenter;
+        Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','gr':'','ge':'','sv':'','zc':'','zr':''}}\n"));
+        mt.loop();
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop();
+        ASSERTEQUAL(STATUS_OK, mt.status);
+        ASSERTEQUALS(JT("{'s':0,'r':{"
+                        "'cal':{'bx':0.0000,'by':0.0000,'bz':-52.342,'gr':9.531,'ge':0.156,'sv':1.000,'zc':-53.000,'zr':-53.100}},"
+                        "'t':0.000}\n"),
+                     Serial.output().c_str());
+        ASSERTEQUAL(-5600, machine.axis[0].home);
+        ASSERTEQUAL(-5600, machine.axis[1].home);
+        ASSERTEQUAL(-5600, machine.axis[2].home);
+        mt.loop();
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    }
+
+#ifdef DISCARD
+    {   // gearRatio: reversing error should solve for gear ratio
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        machine.setHomePulses(-5058);
+        machine.delta.setGearRatio(9.363);
+        machine.op.probe.probeData[0] = -65.172;
+        machine.op.probe.probeData[1] = -64.793;
+        machine.op.probe.probeData[2] = -64.668;
+        machine.op.probe.probeData[3] = -64.888;
+        machine.op.probe.probeData[4] = -65.161;
+        machine.op.probe.probeData[5] = -65.196;
+        machine.op.probe.probeData[6] = -65.143;
+        machine.op.probe.probeData[7] = -65.190;
+        Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','gr':'','ge':'','sv':'','zc':'','zr':''}}\n"));
+        mt.loop();
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop();
+        ASSERTEQUAL(STATUS_OK, mt.status);
+        ASSERTEQUALS(JT("{'s':0,'r':{"
+                        "'cal':{'bx':0.0043,'by':0.0044,'bz':-66.520,'gr':9.101,'ge':-0.262,'sv':1.000,'zc':-65.181,'zr':-64.975}},"
+                        "'t':0.000}\n"),
+                     Serial.output().c_str());
+        ASSERTEQUALT(9.101, machine.delta.getGearRatio(),0.001);
+        ASSERTEQUAL(-5058, machine.axis[0].home);
+        ASSERTEQUAL(-5058, machine.axis[1].home);
+        ASSERTEQUAL(-5058, machine.axis[2].home);
+        mt.loop();
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+		
+		// Second data
+        machine.op.probe.probeData[0] = -66.945;
+        machine.op.probe.probeData[1] = -66.405;
+        machine.op.probe.probeData[2] = -66.308;
+        machine.op.probe.probeData[3] = -66.447;
+        machine.op.probe.probeData[4] = -66.797;
+        machine.op.probe.probeData[5] = -66.821;
+        machine.op.probe.probeData[6] = -66.688;
+        machine.op.probe.probeData[7] = -67.002;
+        Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','gr':'','ge':'','sv':'','zc':'','zr':''}}\n"));
+        mt.loop();
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop();
+        ASSERTEQUAL(STATUS_OK, mt.status);
+        ASSERTEQUALS(JT("{'s':0,'r':{"
+                        "'cal':{'bx':0.0037,'by':0.0042,'bz':-69.429,'gr':8.645,'ge':-0.456,'sv':1.000,'zc':-66.973,'zr':-66.578}},"
+                        "'t':1.000}\n"),
+                     Serial.output().c_str());
+        ASSERTEQUAL(-5058, machine.axis[0].home);
+        ASSERTEQUAL(-5058, machine.axis[1].home);
+        ASSERTEQUAL(-5058, machine.axis[2].home);
+        mt.loop();
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+
+    }
+#endif // DISCARD
 
     {   // bed Z-plane: with default sv (1) we get full non-adaptive adjustment
         MachineThread mt = test_setup_FPD();
         Machine& machine = mt.machine;
-		machine.op.probe.probeData[0] = -53.510;
-		machine.op.probe.probeData[1] = -53.900;
-		machine.op.probe.probeData[2] = -53.654;
-		machine.op.probe.probeData[3] = -53.734;
-		machine.op.probe.probeData[4] = -54.011;
-		machine.op.probe.probeData[5] = -54.208;
-		machine.op.probe.probeData[6] = -54.208;
-		machine.op.probe.probeData[7] = -53.529;
+        machine.op.probe.probeData[0] = -53.510;
+        machine.op.probe.probeData[1] = -53.900;
+        machine.op.probe.probeData[2] = -53.654;
+        machine.op.probe.probeData[3] = -53.734;
+        machine.op.probe.probeData[4] = -54.011;
+        machine.op.probe.probeData[5] = -54.208;
+        machine.op.probe.probeData[6] = -54.208;
+        machine.op.probe.probeData[7] = -53.529;
         Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','sv':'','zc':'','zr':''}}\n"));
         mt.loop();
         ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -2052,17 +2141,17 @@ void test_calibrate() {
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
 
-    {   // gearRatio and homeAngle: should split error 
+    {   // gearRatio and homeAngle: should split error
         MachineThread mt = test_setup_FPD();
         Machine& machine = mt.machine;
-		machine.op.probe.probeData[0] = -53.510;
-		machine.op.probe.probeData[1] = -53.900;
-		machine.op.probe.probeData[2] = -53.654;
-		machine.op.probe.probeData[3] = -53.734;
-		machine.op.probe.probeData[4] = -54.011;
-		machine.op.probe.probeData[5] = -54.208;
-		machine.op.probe.probeData[6] = -54.208;
-		machine.op.probe.probeData[7] = -53.529;
+        machine.op.probe.probeData[0] = -53.510;
+        machine.op.probe.probeData[1] = -53.900;
+        machine.op.probe.probeData[2] = -53.654;
+        machine.op.probe.probeData[3] = -53.734;
+        machine.op.probe.probeData[4] = -54.011;
+        machine.op.probe.probeData[5] = -54.208;
+        machine.op.probe.probeData[6] = -54.208;
+        machine.op.probe.probeData[7] = -53.529;
         ASSERTEQUAL(-5600, machine.axis[0].home);
         ASSERTEQUAL(-5600, machine.axis[1].home);
         ASSERTEQUAL(-5600, machine.axis[2].home);
@@ -2072,8 +2161,8 @@ void test_calibrate() {
         mt.loop();
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
-                        "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.140,'gr':9.540,'ge':0.165,"
-						"'ha':-58.568,'he':8.632,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
+                        "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.153,'gr':9.538,'ge':0.163,"
+                        "'ha':-58.568,'he':8.632,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
         ASSERTEQUAL(-4881, machine.axis[0].home);
@@ -2087,14 +2176,14 @@ void test_calibrate() {
     {   // cal should be same as specifying all attributes
         MachineThread mt = test_setup_FPD();
         Machine& machine = mt.machine;
-		machine.op.probe.probeData[0] = -53.510;
-		machine.op.probe.probeData[1] = -53.900;
-		machine.op.probe.probeData[2] = -53.654;
-		machine.op.probe.probeData[3] = -53.734;
-		machine.op.probe.probeData[4] = -54.011;
-		machine.op.probe.probeData[5] = -54.208;
-		machine.op.probe.probeData[6] = -54.208;
-		machine.op.probe.probeData[7] = -53.529;
+        machine.op.probe.probeData[0] = -53.510;
+        machine.op.probe.probeData[1] = -53.900;
+        machine.op.probe.probeData[2] = -53.654;
+        machine.op.probe.probeData[3] = -53.734;
+        machine.op.probe.probeData[4] = -54.011;
+        machine.op.probe.probeData[5] = -54.208;
+        machine.op.probe.probeData[6] = -54.208;
+        machine.op.probe.probeData[7] = -53.529;
         ASSERTEQUAL(-5600, machine.axis[0].home);
         ASSERTEQUAL(-5600, machine.axis[1].home);
         ASSERTEQUAL(-5600, machine.axis[2].home);
@@ -2104,8 +2193,8 @@ void test_calibrate() {
         mt.loop();
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
-                        "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.140,'gr':9.540,'ge':0.165,"
-						"'ha':-58.568,'he':8.632,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
+                        "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.153,'gr':9.538,'ge':0.163,"
+                        "'ha':-58.568,'he':8.632,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
         ASSERTEQUAL(-4881, machine.axis[0].home);
@@ -3913,16 +4002,15 @@ void test_command_array() {
 
 void test_DeltaCalculator() {
     cout << "TEST	: test_DeltaCalculator() =====" << endl;
-    DeltaCalculator dc;
+
     PH5TYPE zErrTiny = 0.01; // 10 microns
 
+    DeltaCalculator dc;
     dc.useEffectorOrigin();
-
     PH5TYPE ha1 = dc.getHomeAngle();
     dc.setHomePulses(dc.getHomePulses());
     PH5TYPE ha2 = dc.getHomeAngle();
     ASSERTEQUALT(ha1, ha2, 0.00001);
-
     StepCoord homePulses = dc.getHomePulses();
     ASSERTEQUALT(131.636, dc.getEffectorTriangleSide(), 0.0001);
     ASSERTEQUALT(190.526, dc.getBaseTriangleSide(), 0.0001);
@@ -3939,7 +4027,6 @@ void test_DeltaCalculator() {
     ASSERTEQUAL(-5600, homePulses);
     PH5TYPE homeAngle = dc.getHomeAngle();
     ASSERTEQUALT(-67.2, homeAngle, 0.001);
-
     XYZ3D xyz = dc.calcXYZ(Angle3D());
     ASSERT(xyz.isValid());
     ASSERTEQUALT(0, xyz.x, 0.00001);
@@ -3964,7 +4051,6 @@ void test_DeltaCalculator() {
     ASSERTEQUALT(3, xyz.z, 0.01);
     PH5TYPE dz = dc.getZOffset();
     ASSERTEQUALT(247.893, dz, 0.001);
-
     Step3D pulses4(
         pulses.p1+4,
         pulses.p2+4,
@@ -3989,81 +4075,85 @@ void test_DeltaCalculator() {
     ASSERTEQUALT(-0.076, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio + 0.1), e);
     ASSERTEQUALT(-0.142, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio + 0.2), e);
 
-    // ZBowlETheta (initial calibration)
-    PH5TYPE zRim = -61; // 0.5mm bowl error
-#ifdef NEIL
-    zCenter = -10.808;
-    zRim = -10.468;
-#endif
-    DeltaCalculator dc1(dc);
-    PH5TYPE eTheta1 = dc1.calcZBowlETheta(zCenter, zRim, radius);
-    ASSERTEQUALT(-67.2, dc1.getHomeAngle(),0.001); // default
-    dc1.setHomeAngle(dc1.getDefaultHomeAngle()+eTheta1);
-    TESTCOUT2("Homing angle:", dc1.getHomeAngle(), " error:", eTheta1);
-    ASSERTEQUALT(-57.907, dc1.getHomeAngle(), 0.001); // corrected
-    ASSERTEQUALT(9.29296, eTheta1, 0.00001);
-    ASSERTEQUAL(-4826, dc1.getHomePulses());
-    // subsequent calibration with no error
-    PH5TYPE eTheta2 = dc1.calcZBowlETheta(zCenter, zCenter, radius);
-    ASSERTEQUALT(9.29296, eTheta2, 0.00001);
-    // subsequent calibration with almost undetectable error
-    PH5TYPE eTheta3 = dc1.calcZBowlETheta(zCenter, zCenter+zErrTiny, radius);
-    ASSERTEQUALT(-0.300, eTheta3, 0.001);
-    dc1.setHomeAngle(dc1.getDefaultHomeAngle()+eTheta3);
-    ASSERTEQUALT(-67.500, dc1.getHomeAngle(),0.001); // corrected
-    ASSERTEQUAL(-5625, dc1.getHomePulses());
+    {   // ZBowlETheta (initial calibration)
+        PH5TYPE zRim = zCenter - 0.5; // 0.5mm bowl error
+        DeltaCalculator dc1(dc);
+        PH5TYPE eTheta1 = dc1.calcZBowlETheta(zCenter, zRim, radius);
+        ASSERTEQUALT(-67.2, dc1.getHomeAngle(),0.001); // default
+        dc1.setHomeAngle(dc1.getDefaultHomeAngle()+eTheta1);
+        TESTCOUT2("Homing angle:", dc1.getHomeAngle(), " error:", eTheta1);
+        ASSERTEQUALT(-57.907, dc1.getHomeAngle(), 0.001); // corrected
+        ASSERTEQUALT(9.29296, eTheta1, 0.00001);
+        ASSERTEQUAL(-4826, dc1.getHomePulses());
+        // subsequent calibration with no error
+        PH5TYPE eTheta2 = dc1.calcZBowlETheta(zCenter, zCenter, radius);
+        ASSERTEQUALT(9.29296, eTheta2, 0.00001);
+        // subsequent calibration with almost undetectable error
+        PH5TYPE eTheta3 = dc1.calcZBowlETheta(zCenter, zCenter+zErrTiny, radius);
+        ASSERTEQUALT(-0.300, eTheta3, 0.001);
+        dc1.setHomeAngle(dc1.getDefaultHomeAngle()+eTheta3);
+        ASSERTEQUALT(-67.500, dc1.getHomeAngle(),0.001); // corrected
+        ASSERTEQUAL(-5625, dc1.getHomePulses());
+    }
 
-    // ZBowlGearRatio
-    DeltaCalculator dc2(dc);
-    ASSERTEQUALT(9.375, dc2.getGearRatio(), 0.001);
-    PH5TYPE gearRatio1 = dc2.calcZBowlGearRatio(zCenter, zRim, radius);
-    PH5TYPE eGear = gearRatio1 - dc2.getGearRatio();
-    TESTCOUT2("gearRatio1:", gearRatio1, " eGear:", eGear);
-    dc2.setGearRatio(gearRatio1);
-    ASSERTEQUALT(10.219, dc2.getGearRatio(), 0.001);
-    // subsequent calibration with no error
-    PH5TYPE gearRatio2 = dc2.calcZBowlGearRatio(zCenter, zCenter, radius);
-    ASSERTEQUALT(10.219, gearRatio2, 0.001);
-    // subsequent calibration with almost undetectable error
-    PH5TYPE gearRatio3 = dc2.calcZBowlGearRatio(zCenter, zCenter+zErrTiny, radius);
-    ASSERTEQUALT(10.212, gearRatio3, 0.001);
+    {   // ZBowlGearRatio (initial calibration)
+        PH5TYPE zRim = zCenter - 0.1; // 0.1mm bowl error
+        PH5TYPE zError = zRim - zCenter;
+        ASSERTEQUALT(-0.1, zError, 0.001);
+        DeltaCalculator dc2(dc);
+        ASSERTEQUALT(9.375, dc2.getGearRatio(), 0.001);
+        ASSERTEQUALT(-0.076, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio + 0.1), e);
+        PH5TYPE gearRatio1 = dc2.calcZBowlGearRatio(zCenter, zRim, radius);
+        ASSERTEQUALT(9.511, gearRatio1, 0.001);
+        PH5TYPE eGear = gearRatio1 - dc2.getGearRatio();
+        ASSERTEQUALT(0.136, eGear, 0.001);
+        TESTCOUT2("gearRatio1:", gearRatio1, " eGear:", eGear);
+        dc2.setGearRatio(gearRatio1);
+        ASSERTEQUALT(9.511, dc2.getGearRatio(), 0.001);
+        // subsequent calibration with no error
+        PH5TYPE gearRatio2 = dc2.calcZBowlGearRatio(zCenter, zCenter, radius);
+        ASSERTEQUALT(9.511, gearRatio2, 0.001);
+        // subsequent calibration with almost undetectable error
+        PH5TYPE gearRatio3 = dc2.calcZBowlGearRatio(zCenter, zCenter+zErrTiny, radius);
+        ASSERTEQUALT(9.481, gearRatio3, 0.001);
+    }
 
-	{ // verify internal constraints
-		DeltaCalculator dc3;
-		ASSERTEQUALT(9.375, dc3.getGearRatio(), 0.001);
-		ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001);
-		ASSERTEQUALT(83.333, dc3.degreePulses(), 0.001);
-		ASSERTEQUAL(-5600, dc3.getHomePulses());
-		ASSERTEQUAL(0, dc3.getZOffset());
+    {   // verify internal constraints
+        DeltaCalculator dc3;
+        ASSERTEQUALT(9.375, dc3.getGearRatio(), 0.001);
+        ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001);
+        ASSERTEQUALT(83.333, dc3.degreePulses(), 0.001);
+        ASSERTEQUAL(-5600, dc3.getHomePulses());
+        ASSERTEQUAL(0, dc3.getZOffset());
 
-		dc3.useEffectorOrigin();
-		ASSERTEQUALT(9.375, dc3.getGearRatio(), 0.001);
-		ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001);
-		ASSERTEQUALT(83.333, dc3.degreePulses(), 0.001);
-		ASSERTEQUAL(-5600, dc3.getHomePulses());
-		ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001); 	// CHANGED
+        dc3.useEffectorOrigin();
+        ASSERTEQUALT(9.375, dc3.getGearRatio(), 0.001);
+        ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001);
+        ASSERTEQUALT(83.333, dc3.degreePulses(), 0.001);
+        ASSERTEQUAL(-5600, dc3.getHomePulses());
+        ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001); 	// CHANGED
 
-		dc3.setGearRatio(9.5);
-		ASSERTEQUALT(9.5, dc3.getGearRatio(), 0.001); 		// CHANGED
-		ASSERTEQUALT(-66.316, dc3.getHomeAngle(), 0.001); 	// CHANGED
-		ASSERTEQUALT(84.444, dc3.degreePulses(), 0.001); 	// CHANGED
-		ASSERTEQUAL(-5600, dc3.getHomePulses());
-		ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001); 
+        dc3.setGearRatio(9.5);
+        ASSERTEQUALT(9.5, dc3.getGearRatio(), 0.001); 		// CHANGED
+        ASSERTEQUALT(-66.316, dc3.getHomeAngle(), 0.001); 	// CHANGED
+        ASSERTEQUALT(84.444, dc3.degreePulses(), 0.001); 	// CHANGED
+        ASSERTEQUAL(-5600, dc3.getHomePulses());
+        ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
 
-		dc3.setGearRatio(9.375);
-		ASSERTEQUALT(9.375, dc3.getGearRatio(), 0.001); 	// CHANGED
-		ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001); 	// CHANGED
-		ASSERTEQUALT(83.333, dc3.degreePulses(), 0.001); 	// CHANGED
-		ASSERTEQUAL(-5600, dc3.getHomePulses());
-		ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001); 
+        dc3.setGearRatio(9.375);
+        ASSERTEQUALT(9.375, dc3.getGearRatio(), 0.001); 	// CHANGED
+        ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001); 	// CHANGED
+        ASSERTEQUALT(83.333, dc3.degreePulses(), 0.001); 	// CHANGED
+        ASSERTEQUAL(-5600, dc3.getHomePulses());
+        ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
 
-		dc3.setHomeAngle(-66);
-		ASSERTEQUALT(9.375, dc3.getGearRatio(), 0.001);
-		ASSERTEQUALT(-66, dc3.getHomeAngle(), 0.001); 		// CHANGED
-		ASSERTEQUALT(83.333, dc3.degreePulses(), 0.001);
-		ASSERTEQUAL(-5500, dc3.getHomePulses()); 			// CHANGED
-		ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001); 
-	}
+        dc3.setHomeAngle(-66);
+        ASSERTEQUALT(9.375, dc3.getGearRatio(), 0.001);
+        ASSERTEQUALT(-66, dc3.getHomeAngle(), 0.001); 		// CHANGED
+        ASSERTEQUALT(83.333, dc3.degreePulses(), 0.001);
+        ASSERTEQUAL(-5500, dc3.getHomePulses()); 			// CHANGED
+        ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
+    }
 
     cout << "TEST	: test_DeltaCalculator() OK " << endl;
 }
@@ -4156,11 +4246,11 @@ void test_msg_cmt_idl() {
 
 void test_pgm_parse(const char *pgm) {
     JsonCommand jc;
-	const char *s;
-	ASSERTEQUALS("", Serial.output().c_str());
+    const char *s;
+    ASSERTEQUALS("", Serial.output().c_str());
     ASSERTEQUAL(STATUS_OK, prog_dump(pgm));
-	s = Serial.output().c_str();
-	ASSERTEQUAL(true, (strncmp("[{\"msg\":", s, 8) != 0));
+    s = Serial.output().c_str();
+    ASSERTEQUAL(true, (strncmp("[{\"msg\":", s, 8) != 0));
     ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(s));
 }
 
@@ -4204,9 +4294,9 @@ void test_pgm() {
 
     // check syntax of pgm sources
 
-	test_pgm_parse("cal");
-	test_pgm_parse("cal-coarse");
-	test_pgm_parse("cal-fine");
+    test_pgm_parse("cal");
+    test_pgm_parse("cal-coarse");
+    test_pgm_parse("cal-fine");
     test_pgm_parse("cal-bed");
     test_pgm_parse("cal-bed-coarse");
     test_pgm_parse("cal-bed-fine");
@@ -4261,9 +4351,9 @@ int main(int argc, char *argv[]) {
     // test first
 
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
-        test_pgm();
+        //test_pgm();
         //test_MTO_FPD_hom();
-        //test_DeltaCalculator();
+        test_DeltaCalculator();
         //test_MTO_FPD();
         //test_calibrate();
         //test_eep();
