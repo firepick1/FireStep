@@ -34,7 +34,7 @@ DeltaCalculator::DeltaCalculator()
       acr(24.15), // arm clearance radius (mm)
       steps360(200),
       microsteps(16),
-      gearRatio(150/16.0),
+      gearRatio(9.522262155637),
       dz(0)
 {
     homeAngle = getDefaultHomeAngle();
@@ -313,7 +313,7 @@ PH5TYPE DeltaCalculator::calcZBowlGearRatio(PH5TYPE zCenter, PH5TYPE zRim, PH5TY
     Step3D center = calcPulses(xyzCtr);
     Step3D rim = calcPulses(xyzRim);
 
-    PH5TYPE eGearCur = 0; // gearRatio - 9.375;
+    PH5TYPE eGearCur = 0; // gear ratio error
 
     // Newton Raphson: calculate slope@eTheta0 = ZBowl error/degree
     PH5TYPE eGear = eGearCur;
