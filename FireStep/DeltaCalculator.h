@@ -153,8 +153,8 @@ public:
     PH5TYPE calcZBowlErrorFromGearRatio(Step3D center, Step3D rim, PH5TYPE gearRatio);
     PH5TYPE calcZBowlErrorFromGearRatio(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE gearRatio);
     PH5TYPE calcZBowlGearRatio(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE radius);
-    PH5TYPE calcZBowlErrorFromTheta(Step3D center, Step3D rim, PH5TYPE eTheta);
-    PH5TYPE calcZBowlErrorFromTheta(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eTheta);
+    PH5TYPE calcZBowlErrorFromETheta(Step3D center, Step3D rim, PH5TYPE eTheta);
+    PH5TYPE calcZBowlErrorFromETheta(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eTheta);
     PH5TYPE calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE radius);
     int32_t hash();
     static StepCoord roundStep(PH5TYPE value);

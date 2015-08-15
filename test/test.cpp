@@ -1933,7 +1933,7 @@ void test_calibrate() {
         mt.loop();
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
-                        "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.954,'ha':-58.277,'he':8.923,'sv':1.000}},"
+                        "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.954,'ha':-58.268,'he':8.932,'sv':1.000}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
         ASSERTEQUAL(-4856, machine.axis[0].home);
@@ -1960,7 +1960,7 @@ void test_calibrate() {
         mt.loop();
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
-                        "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.954,'ha':-58.277,'he':8.923,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
+                        "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.954,'ha':-58.268,'he':8.932,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
         ASSERTEQUAL(-4856, machine.axis[0].home);
@@ -2194,13 +2194,13 @@ void test_calibrate() {
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
                         "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.153,'gr':9.538,'ge':0.163,"
-                        "'ha':-58.568,'he':8.632,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
+                        "'ha':-58.578,'he':8.622,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
         ASSERTEQUAL(-4881, machine.axis[0].home);
         ASSERTEQUAL(-4881, machine.axis[1].home);
         ASSERTEQUAL(-4881, machine.axis[2].home);
-        ASSERTEQUALT(-58.568, machine.getHomeAngle(), 0.001);
+        ASSERTEQUALT(-58.578, machine.getHomeAngle(), 0.001);
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
@@ -2226,13 +2226,13 @@ void test_calibrate() {
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
                         "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.153,'gr':9.538,'ge':0.163,"
-                        "'ha':-58.568,'he':8.632,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
+                        "'ha':-58.578,'he':8.622,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
         ASSERTEQUAL(-4881, machine.axis[0].home);
         ASSERTEQUAL(-4881, machine.axis[1].home);
         ASSERTEQUAL(-4881, machine.axis[2].home);
-        ASSERTEQUALT(-58.568, machine.getHomeAngle(), 0.001);
+        ASSERTEQUALT(-58.578, machine.getHomeAngle(), 0.001);
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
@@ -4035,8 +4035,6 @@ void test_command_array() {
 void test_DeltaCalculator() {
     cout << "TEST	: test_DeltaCalculator() =====" << endl;
 
-    PH5TYPE zErrTiny = 0.01; // 10 microns
-
     DeltaCalculator dc;
     dc.useEffectorOrigin();
     PH5TYPE ha1 = dc.getHomeAngle();
@@ -4092,43 +4090,50 @@ void test_DeltaCalculator() {
     ASSERTEQUALT(0.0742645, xyz.z - xyz4.z, 0.00001);
 
     // ZBowlError
-    PH5TYPE e = 0.015;
+    PH5TYPE e = 0.001;
     PH5TYPE zCenter = -60.5;
     PH5TYPE radius = 50;
-    ASSERTEQUALT(0.601, dc.calcZBowlErrorFromTheta(zCenter, radius, -10), e);
-    ASSERTEQUALT(0.291, dc.calcZBowlErrorFromTheta(zCenter, radius, -5), e);
-    ASSERTEQUALT(0, dc.calcZBowlErrorFromTheta(zCenter, radius, 0), e);
-    ASSERTEQUALT(-0.284, dc.calcZBowlErrorFromTheta(zCenter, radius, 5), e);
-    ASSERTEQUALT(-0.534, dc.calcZBowlErrorFromTheta(zCenter, radius, 10), e);
+    ASSERTEQUALT(0.910, dc.calcZBowlErrorFromETheta(zCenter, radius, -15), e);
+    ASSERTEQUALT(0.600, dc.calcZBowlErrorFromETheta(zCenter, radius, -10), e);
+    ASSERTEQUALT(0.427, dc.calcZBowlErrorFromETheta(zCenter, radius, -360 * 0.02), e);
+    ASSERTEQUALT(0.292, dc.calcZBowlErrorFromETheta(zCenter, radius, -5), e);
+    ASSERTEQUALT(0.206, dc.calcZBowlErrorFromETheta(zCenter, radius, -360 * 0.01), e);
+    ASSERTEQUALT(-0.007, dc.calcZBowlErrorFromETheta(zCenter, radius, 0), e);
+    ASSERTEQUALT(-0.209, dc.calcZBowlErrorFromETheta(zCenter, radius, 360 * 0.01), e);
+    ASSERTEQUALT(-0.285, dc.calcZBowlErrorFromETheta(zCenter, radius, 5), e);
+    ASSERTEQUALT(-0.398, dc.calcZBowlErrorFromETheta(zCenter, radius, 360 * 0.02), e);
+    ASSERTEQUALT(-0.533, dc.calcZBowlErrorFromETheta(zCenter, radius, 10), e);
+    ASSERTEQUALT(-0.749, dc.calcZBowlErrorFromETheta(zCenter, radius, 15), e);
     PH5TYPE gearRatio = 9.375;
-    ASSERTEQUALT(0.141, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio - 0.2), e);
-    ASSERTEQUALT(0.065, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio - 0.1), e);
-    ASSERTEQUALT(0, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio), e);
-    ASSERTEQUALT(-0.076, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio + 0.1), e);
-    ASSERTEQUALT(-0.142, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio + 0.2), e);
+    ASSERTEQUALT(0.131, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio * 0.98), e);
+    ASSERTEQUALT(0.061, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio * 0.99), e);
+    ASSERTEQUALT(-0.007, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio), e);
+    ASSERTEQUALT(-0.072, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio * 1.01), e);
+    ASSERTEQUALT(-0.134, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio * 1.02), e);
 
-    {   // ZBowlETheta (initial calibration)
+	{	TESTCOUT1("TEST	: ", "ZBowl home angle (initial calibration)");
         PH5TYPE zRim = zCenter - 0.5; // 0.5mm bowl error
         DeltaCalculator dc1(dc);
         PH5TYPE eTheta1 = dc1.calcZBowlETheta(zCenter, zRim, radius);
         ASSERTEQUALT(-67.2, dc1.getHomeAngle(),0.001); // default
-        dc1.setHomeAngle(dc1.getDefaultHomeAngle()+eTheta1);
+        dc1.setHomeAngle(dc1.getHomeAngle()+eTheta1);
         TESTCOUT2("Homing angle:", dc1.getHomeAngle(), " error:", eTheta1);
-        ASSERTEQUALT(-57.907, dc1.getHomeAngle(), 0.001); // corrected
-        ASSERTEQUALT(9.29296, eTheta1, 0.00001);
+        ASSERTEQUALT(-57.915, dc1.getHomeAngle(), 0.001); // corrected
+        ASSERTEQUALT(9.28546, eTheta1, 0.00001);
         ASSERTEQUAL(-4826, dc1.getHomePulses());
         // subsequent calibration with no error
         PH5TYPE eTheta2 = dc1.calcZBowlETheta(zCenter, zCenter, radius);
-        ASSERTEQUALT(9.29296, eTheta2, 0.00001);
+        ASSERTEQUALT(0, eTheta2, 0.00001);
         // subsequent calibration with almost undetectable error
+		PH5TYPE zErrTiny = 0.01; // 10 microns
         PH5TYPE eTheta3 = dc1.calcZBowlETheta(zCenter, zCenter+zErrTiny, radius);
-        ASSERTEQUALT(-0.300, eTheta3, 0.001);
-        dc1.setHomeAngle(dc1.getDefaultHomeAngle()+eTheta3);
-        ASSERTEQUALT(-67.500, dc1.getHomeAngle(),0.001); // corrected
-        ASSERTEQUAL(-5625, dc1.getHomePulses());
+        ASSERTEQUALT(-0.29731, eTheta3, 0.00001);
+        dc1.setHomeAngle(dc1.getHomeAngle()+eTheta3);
+        ASSERTEQUALT(-58.212, dc1.getHomeAngle(),0.001); // corrected
+        ASSERTEQUAL(-4851, dc1.getHomePulses());
     }
 
-    {   // ZBowlGearRatio (initial calibration)
+	{	TESTCOUT1("TEST	: ", "ZBowl gear ratio (initial calibration)");
         PH5TYPE zRim = zCenter - 0.1; // 0.1mm bowl error
         PH5TYPE zError = zRim - zCenter;
         ASSERTEQUALT(-0.1, zError, 0.001);
@@ -4146,8 +4151,9 @@ void test_DeltaCalculator() {
         PH5TYPE gearRatio2 = dc2.calcZBowlGearRatio(zCenter, zCenter, radius);
         ASSERTEQUALT(9.511, gearRatio2, 0.001);
         // subsequent calibration with almost undetectable error
+		PH5TYPE zErrTiny = 0.1; 
         PH5TYPE gearRatio3 = dc2.calcZBowlGearRatio(zCenter, zCenter+zErrTiny, radius);
-        ASSERTEQUALT(9.481, gearRatio3, 0.001);
+        ASSERTEQUALT(9.357, gearRatio3, 0.001);
     }
 
     {   // verify internal constraints
@@ -4294,6 +4300,7 @@ void test_pgm() {
 
     // pgmd: dump program
     MachineThread mt = test_MTO_FPD_setup();
+	Machine& machine = mt.machine;
     Serial.push(JT("{'pgmd':'test'}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -4323,9 +4330,10 @@ void test_pgm() {
     ASSERTEQUALS(JT("{'s':0,'r':{'msg':'test B'}"
                     ",'t':0.000}\n"),
                  Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     // check syntax of pgm sources
-
     test_pgm_parse("cal");
     test_pgm_parse("cal-coarse");
     test_pgm_parse("cal-fine");
@@ -4340,6 +4348,38 @@ void test_pgm() {
     test_pgm_parse("cal-home-fine");
     test_pgm_parse("dim-fpd");
     test_pgm_parse("hex-probe");
+
+    // pgmx: dim-fpd
+	machine.delta.setGearRatio(9); // wrong value
+    machine.delta.setBaseTriangleSide(180); // wrong value
+    machine.delta.setEffectorTriangleSide(123); // wrong value
+    machine.delta.setBaseArmLength(80); // wrong value
+    machine.delta.setEffectorLength(230);
+    machine.delta.setHomeAngle(66); // wrong value
+    Serial.push(JT("{'pgmx':'dim-fpd'}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // program
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // program
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // program
+    ASSERTEQUAL(STATUS_OK, mt.status);
+	double pi = 3.14159265359;
+	double GT2_pitch_length_offset = 0.75;
+	double gearRatioFPD = (300/pi+2*GT2_pitch_length_offset)*pi/2/16;
+	printf("%.12lf", gearRatioFPD);
+	ASSERTEQUALT(gearRatioFPD, machine.delta.getGearRatio(), 0.000001);
+	ASSERTEQUALT(131.636, machine.delta.getEffectorTriangleSide(), 0.001);
+	ASSERTEQUALT(190.526, machine.delta.getBaseTriangleSide(), 0.001);
+	ASSERTEQUALT(270.000, machine.delta.getEffectorLength(), 0.001);
+	ASSERTEQUALT(90.000, machine.delta.getBaseArmLength(), 0.001);
+    ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
+					"{'gr':9.522,'hp':-5600,'e':131.636,'f':190.526,'re':270.000,'rf':90.000}}"
+                    ",'t':0.000}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     cout << "TEST	: test_pgm() OK " << endl;
 }
