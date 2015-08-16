@@ -55,16 +55,32 @@ PH5TYPE DeltaCalculator::getMinDegrees() {
     return getDefaultHomeAngle();
 }
 
+void DeltaCalculator::setMicrosteps(int16_t value) {
+	PH5TYPE scale = ((PH5TYPE)microsteps)/value;
+	microsteps = value;
+	degreesPerPulse[0] *= scale;
+	degreesPerPulse[1] *= scale;
+	degreesPerPulse[2] *= scale;
+}
+
+void DeltaCalculator::setSteps360(int16_t value) {
+	PH5TYPE scale = ((PH5TYPE)steps360)/value;
+	steps360 = value;
+	degreesPerPulse[0] *= scale;
+	degreesPerPulse[1] *= scale;
+	degreesPerPulse[2] *= scale;
+}
+
 void DeltaCalculator::setGearRatio(PH5TYPE value, DeltaAxis axis) {
-	StepCoord pulses = getHomePulses();
 	setDegreesPerPulse(360/(microsteps*steps360*value), axis);
+	StepCoord pulses = getHomePulses();
 	if (axis == DELTA_AXIS_ALL) {
 		gRatio[0] = gRatio[1] = gRatio[2] = value;
 	} else {
 		gRatio[axis] = value;
 	}
 	setHomePulses(pulses);
-	//TESTCOUT3("setGearRatio:", gearRatio, " home pulses:", getHomePulses(), " angle:", getHomeAngle());
+	//TESTCOUT4("setGearRatio:", value, " getGearRatio:", getGearRatio(axis),  " home pulses:", getHomePulses(), " angle:", getHomeAngle());
 }
 
 void DeltaCalculator::setDegreesPerPulse(PH5TYPE value, DeltaAxis axis) {
@@ -77,6 +93,7 @@ void DeltaCalculator::setDegreesPerPulse(PH5TYPE value, DeltaAxis axis) {
 		degreesPerPulse[axis] = value;
 	}
 	setHomePulses(pulses);
+	//TESTCOUT2("setDegreesPerPulse:", value, " axis:", axis);
 }
 
 PH5TYPE DeltaCalculator::getDefaultHomeAngle() {

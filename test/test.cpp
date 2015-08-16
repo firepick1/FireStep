@@ -1658,6 +1658,7 @@ void test_MTO_FPD_dim() {
 
     MachineThread mt = test_MTO_FPD_setup();
     Machine &machine = mt.machine;
+	DeltaCalculator& dc = machine.delta;
     int32_t xpulses;
     int32_t ypulses;
     int32_t zpulses;
@@ -1674,6 +1675,7 @@ void test_MTO_FPD_dim() {
 				    "'ha':-67.200,'hp':-5688,'mi':16,'re':270.000,'rf':90.000,'st':200}"
                     "},'t':0.000}\n"),
                  Serial.output().c_str());
+	ASSERTEQUALT(9.522, dc.getGearRatio(), 0.001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -1692,7 +1694,6 @@ void test_MTO_FPD_dim() {
 				    "'ha':-67.300}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
-	DeltaCalculator& dc = machine.delta;
 	ASSERTEQUALT(0.0010, machine.bed.a, 0.0001);
 	ASSERTEQUALT(0.0020, machine.bed.b, 0.0001);
 	ASSERTEQUALT(0.003, machine.bed.c, 0.001);
@@ -2018,7 +2019,7 @@ void test_calibrate() {
         mt.loop();
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
-                        "'cal':{'bx':0.0000,'by':0.0000,'bz':-53.679,'gr':9.364,'ge':-0.158,'sv':1.000,'zc':-53.000,'zr':-52.900}},"
+                        "'cal':{'bx':0.0000,'by':0.0000,'bz':-53.689,'gr':9.362,'ge':-0.160,'sv':1.000,'zc':-53.000,'zr':-52.900}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
         ASSERTEQUAL(-5688, machine.axis[0].home);
@@ -2047,7 +2048,7 @@ void test_calibrate() {
         mt.loop();
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
-                        "'cal':{'bx':-0.0000,'by':-0.0000,'bz':-52.408,'gr':9.665,'ge':0.143,'sv':1.000,'zc':-53.000,'zr':-53.100}},"
+                        "'cal':{'bx':-0.0000,'by':-0.0000,'bz':-52.398,'gr':9.668,'ge':0.145,'sv':1.000,'zc':-53.000,'zr':-53.100}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
         ASSERTEQUAL(-5688, machine.axis[0].home);
@@ -2193,7 +2194,7 @@ void test_calibrate() {
         mt.loop();
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
-                        "'cal':{'bx':0.0038,'by':0.0060,'bz':-53.181,'gr':9.681,'ge':0.159,"
+                        "'cal':{'bx':0.0038,'by':0.0060,'bz':-53.176,'gr':9.682,'ge':0.160,"
                         "'ha':-58.636,'he':8.564,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
@@ -2225,7 +2226,7 @@ void test_calibrate() {
         mt.loop();
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
-                        "'cal':{'bx':0.0038,'by':0.0060,'bz':-53.181,'gr':9.681,'ge':0.159,"
+                        "'cal':{'bx':0.0038,'by':0.0060,'bz':-53.176,'gr':9.682,'ge':0.160,"
                         "'ha':-58.636,'he':8.564,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
@@ -4148,8 +4149,8 @@ void test_DeltaCalculator() {
         ASSERTEQUALT(-67.2, dc1.getHomeAngle(),0.001); // default
         dc1.setHomeAngle(dc1.getHomeAngle()+eTheta1);
         TESTCOUT2("Homing angle:", dc1.getHomeAngle(), " error:", eTheta1);
-        ASSERTEQUALT(-57.8805, dc1.getHomeAngle(), 0.001); // corrected
-        ASSERTEQUALT(9.31989, eTheta1, 0.00001);
+        ASSERTEQUALT(-57.883, dc1.getHomeAngle(), 0.001); // corrected
+        ASSERTEQUALT(9.318, eTheta1, 0.001);
         ASSERTEQUAL(-4899, dc1.getHomePulses());
         // subsequent calibration with no error
         PH5TYPE eTheta2 = dc1.calcZBowlETheta(zCenter, zCenter, radius);
@@ -4157,9 +4158,9 @@ void test_DeltaCalculator() {
         // subsequent calibration with almost undetectable error
 		PH5TYPE zErrTiny = 0.01; // 10 microns
         PH5TYPE eTheta3 = dc1.calcZBowlETheta(zCenter, zCenter+zErrTiny, radius);
-        ASSERTEQUALT(-0.273499, eTheta3, 0.00001);
+        ASSERTEQUALT(-0.268, eTheta3, 0.001);
         dc1.setHomeAngle(dc1.getHomeAngle()+eTheta3);
-        ASSERTEQUALT(-58.154, dc1.getHomeAngle(),0.001); // corrected
+        ASSERTEQUALT(-58.150, dc1.getHomeAngle(),0.001); // corrected
         ASSERTEQUAL(-4922, dc1.getHomePulses());
     }
 
@@ -4171,15 +4172,15 @@ void test_DeltaCalculator() {
         ASSERTEQUALT(9.522262, dc2.getGearRatio(), 0.00001);
         ASSERTEQUALT(-0.074, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio + 0.1), e);
         PH5TYPE gearRatio1 = dc2.calcZBowlGearRatio(zCenter, zRim, radius);
-        ASSERTEQUALT(9.65905, gearRatio1, 0.00001);
+        ASSERTEQUALT(9.663, gearRatio1, 0.001);
         PH5TYPE eGear = gearRatio1 - dc2.getGearRatio();
-        ASSERTEQUALT(0.136, eGear, 0.001);
+        ASSERTEQUALT(0.141, eGear, 0.001);
         TESTCOUT2("gearRatio1:", gearRatio1, " eGear:", eGear);
         dc2.setGearRatio(gearRatio1);
-        ASSERTEQUALT(9.65905, dc2.getGearRatio(), 0.00001);
+        ASSERTEQUALT(9.663, dc2.getGearRatio(), 0.001);
         // subsequent calibration with no error
         PH5TYPE gearRatio2 = dc2.calcZBowlGearRatio(zCenter, zCenter, radius);
-        ASSERTEQUALT(9.65905, gearRatio2, 0.001);
+        ASSERTEQUALT(9.663, gearRatio2, 0.001);
         // subsequent calibration with almost undetectable error
 		PH5TYPE zErrTiny = 0.01; 
         PH5TYPE gearRatio3 = dc2.calcZBowlGearRatio(zCenter, zCenter+zErrTiny, radius);
@@ -4219,6 +4220,20 @@ void test_DeltaCalculator() {
         ASSERTEQUALT(9.522262, dc3.getGearRatio(), 0.00001);
         ASSERTEQUALT(-66, dc3.getHomeAngle(), 0.001); 		// CHANGED
         ASSERTEQUALT(84.6423, dc3.degreePulses(), 0.001);
+        ASSERTEQUAL(-5586, dc3.getHomePulses()); 			// CHANGED
+        ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
+
+        dc3.setMicrosteps(32);
+        ASSERTEQUALT(9.522262, dc3.getGearRatio(), 0.00001);
+        ASSERTEQUALT(-66, dc3.getHomeAngle(), 0.001); 		
+        ASSERTEQUALT(169.285, dc3.degreePulses(), 0.001);	// CHANGED
+        ASSERTEQUAL(-11173, dc3.getHomePulses()); 			// CHANGED
+        ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
+
+        dc3.setSteps360(100);
+        ASSERTEQUALT(9.522262, dc3.getGearRatio(), 0.00001);
+        ASSERTEQUALT(-66, dc3.getHomeAngle(), 0.001); 		
+        ASSERTEQUALT(84.6423, dc3.degreePulses(), 0.001);	// CHANGED
         ASSERTEQUAL(-5586, dc3.getHomePulses()); 			// CHANGED
         ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
     }

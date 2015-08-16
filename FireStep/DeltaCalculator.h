@@ -126,30 +126,37 @@ public:
     inline int16_t getSteps360() {
         return steps360;
     }
-    inline void setSteps360(int16_t value) {
-        steps360 = value;
-    }
+    void setSteps360(int16_t value);
     inline int16_t getMicrosteps() {
         return microsteps;
     }
-    inline void setMicrosteps(int16_t value) {
-        microsteps = value;
-    }
+    void setMicrosteps(int16_t value);
     inline PH5TYPE getDegreesPerPulse(DeltaAxis axis=DELTA_AXIS_ALL) {
+		PH5TYPE dpp;
 		if (axis == DELTA_AXIS_ALL) {
-			return (degreesPerPulse[0]+degreesPerPulse[1]+degreesPerPulse[2])/3;
+			dpp = (degreesPerPulse[0]+degreesPerPulse[1]+degreesPerPulse[2])/3;
 		} else {
-			return degreesPerPulse[axis];
+			dpp = degreesPerPulse[axis];
 		}
+
+		//TESTCOUT2("getDegreesPerPulse:", dpp, " axis:", axis);
+		return dpp;
     }
     void setDegreesPerPulse(PH5TYPE value, DeltaAxis axis=DELTA_AXIS_ALL);
     inline PH5TYPE getGearRatio(DeltaAxis axis=DELTA_AXIS_ALL) {
 		PH5TYPE gearRatio = 360/(microsteps*steps360*getDegreesPerPulse(axis));
-		//TESTCOUT4("diff:", gearRatio-gRatio[axis], "gearRatio:", gearRatio, " gRatio:", gRatio[axis], " axis:", axis);
-		//return gearRatio;
 		if (axis == DELTA_AXIS_ALL) {
-			return (gRatio[0]+gRatio[1]+gRatio[2])/3;
+			PH5TYPE avgRatio = (gRatio[0]+gRatio[1]+gRatio[2])/3;
+			PH5TYPE gearRatio = ( getGearRatio(DELTA_AXIS_1)+
+				getGearRatio(DELTA_AXIS_2)+
+				getGearRatio(DELTA_AXIS_3))/3;
+			//TESTCOUT4("getGearRatio diff:", gearRatio-avgRatio, " gearRatio:", gearRatio, " gRatio:", avgRatio, " axis:", axis);
+			return gearRatio;
+			return avgRatio;
 		} else {
+			PH5TYPE gearRatio = 360/(microsteps*steps360*getDegreesPerPulse(axis));
+			//TESTCOUT4("getGearRatio diff:", gearRatio-gRatio[axis], " gearRatio:", gearRatio, " gRatio:", gRatio[axis], " axis:", axis);
+			return gearRatio;
 			return gRatio[axis];
 		}
     }
