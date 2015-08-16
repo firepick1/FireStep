@@ -55,19 +55,13 @@ PH5TYPE DeltaCalculator::getMinDegrees() {
     return getDefaultHomeAngle();
 }
 
-void DeltaCalculator::setGearRatio(PH5TYPE value) {
+void DeltaCalculator::setGearRatio(PH5TYPE value, DeltaAxis axis) {
 	StepCoord pulses = getHomePulses();
-	gRatio[0] = gRatio[1] = gRatio[2] = value;
-	setHomePulses(pulses);
-	//TESTCOUT3("setGearRatio:", gearRatio, " home pulses:", getHomePulses(), " angle:", getHomeAngle());
-}
-
-void DeltaCalculator::setGearRatio(PH5TYPE val1, PH5TYPE val2, PH5TYPE val3) {
-	StepCoord pulses = getHomePulses();
-	gRatio[0] = val1;
-	gRatio[1] = val2;
-	gRatio[2] = val3;
-	// changing the gear ratio changes the home angle
+	if (axis == DELTA_AXIS_ALL) {
+		gRatio[0] = gRatio[1] = gRatio[2] = value;
+	} else {
+		gRatio[axis] = value;
+	}
 	setHomePulses(pulses);
 	//TESTCOUT3("setGearRatio:", gearRatio, " home pulses:", getHomePulses(), " angle:", getHomeAngle());
 }
@@ -304,18 +298,14 @@ PH5TYPE DeltaCalculator::calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE 
 PH5TYPE DeltaCalculator::calcZBowlErrorFromGearRatio(Step3D center, Step3D rim, PH5TYPE newRatio) {
 	PH5TYPE saveGearRatio = getGearRatio();
 	PH5TYPE dGearRatio = newRatio - saveGearRatio;
-	setGearRatio(
-		gRatio[0]+dGearRatio,
-		gRatio[1]+dGearRatio,
-		gRatio[2]+dGearRatio
-	);
+	setGearRatio(gRatio[DELTA_AXIS_1]+dGearRatio, DELTA_AXIS_1);
+	setGearRatio(gRatio[DELTA_AXIS_2]+dGearRatio, DELTA_AXIS_2);
+	setGearRatio(gRatio[DELTA_AXIS_3]+dGearRatio, DELTA_AXIS_3);
     XYZ3D xyzCtr = calcXYZ(Step3D(center.p1, center.p2, center.p3));
     XYZ3D xyzRim = calcXYZ(Step3D(rim.p1, rim.p2, rim.p3));
-	setGearRatio(
-		gRatio[0]-dGearRatio,
-		gRatio[1]-dGearRatio,
-		gRatio[2]-dGearRatio
-	);
+	setGearRatio(gRatio[DELTA_AXIS_1]-dGearRatio, DELTA_AXIS_1);
+	setGearRatio(gRatio[DELTA_AXIS_2]-dGearRatio, DELTA_AXIS_2);
+	setGearRatio(gRatio[DELTA_AXIS_3]-dGearRatio, DELTA_AXIS_3);
     PH5TYPE error = xyzRim.z - xyzCtr.z;
     return error;
 }

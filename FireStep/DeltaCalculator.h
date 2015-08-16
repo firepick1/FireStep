@@ -141,8 +141,7 @@ public:
 			return gRatio[axis];
 		}
     }
-    void setGearRatio(PH5TYPE value);
-    void setGearRatio(PH5TYPE val1, PH5TYPE val2, PH5TYPE val3);
+    void setGearRatio(PH5TYPE value, DeltaAxis axis=DELTA_AXIS_ALL);
     inline PH5TYPE degreePulses() {
         return steps360 * microsteps * getGearRatio() / 360.0;
     }
