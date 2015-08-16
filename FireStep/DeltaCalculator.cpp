@@ -34,7 +34,6 @@ DeltaCalculator::DeltaCalculator()
       acr(24.15), // arm clearance radius (mm)
       steps360(200),
       microsteps(16),
-      gearRatio(9.522262155637),
       dz(0)
 {
 	gRatio[0] = gRatio[1] = gRatio[2] = 9.522262155637;
@@ -59,7 +58,6 @@ PH5TYPE DeltaCalculator::getMinDegrees() {
 void DeltaCalculator::setGearRatio(PH5TYPE value) {
 	StepCoord pulses = getHomePulses();
 	gRatio[0] = gRatio[1] = gRatio[2] = value;
-	gearRatio = value;
 	setHomePulses(pulses);
 	//TESTCOUT3("setGearRatio:", gearRatio, " home pulses:", getHomePulses(), " angle:", getHomeAngle());
 }
@@ -69,7 +67,6 @@ void DeltaCalculator::setGearRatio(PH5TYPE val1, PH5TYPE val2, PH5TYPE val3) {
 	gRatio[0] = val1;
 	gRatio[1] = val2;
 	gRatio[2] = val3;
-	gearRatio = (val1+val2+val3)/3; 
 	// changing the gear ratio changes the home angle
 	setHomePulses(pulses);
 	//TESTCOUT3("setGearRatio:", gearRatio, " home pulses:", getHomePulses(), " angle:", getHomeAngle());
@@ -236,7 +233,10 @@ int32_t DeltaCalculator::hash() {
                      ^ (*(uint32_t *)(void*)& re)
                      ^ ((int32_t)steps360 << 0)
                      ^ ((int32_t)microsteps << 1)
-                     ^ (*(uint32_t *)(void*)& gearRatio)
+                     //^ (*(uint32_t *)(void*)& gearRatio)
+                     ^ (*(uint32_t *)(void*)& gRatio[0])
+                     ^ (*(uint32_t *)(void*)& gRatio[1])
+                     ^ (*(uint32_t *)(void*)& gRatio[2])
                      ^ (*(uint32_t *)(void*)& dz)
                      ^ (*(uint32_t *)(void*)& homeAngle)
                      ;
@@ -309,7 +309,6 @@ PH5TYPE DeltaCalculator::calcZBowlErrorFromGearRatio(Step3D center, Step3D rim, 
 		gRatio[1]+dGearRatio,
 		gRatio[2]+dGearRatio
 	);
-	gearRatio = newRatio;
     XYZ3D xyzCtr = calcXYZ(Step3D(center.p1, center.p2, center.p3));
     XYZ3D xyzRim = calcXYZ(Step3D(rim.p1, rim.p2, rim.p3));
 	setGearRatio(
@@ -341,7 +340,7 @@ PH5TYPE DeltaCalculator::calcZBowlGearRatio(PH5TYPE zCenter, PH5TYPE zRim, PH5TY
     PH5TYPE eGear = eGearCur;
     PH5TYPE goalZError = zRim - zCenter;
     PH5TYPE dGear = 0.01;
-	PH5TYPE newGearRatio = gearRatio;
+	PH5TYPE newGearRatio = getGearRatio();
 	PH5TYPE bestGearRatio = newGearRatio;
 	PH5TYPE best_dGoal = abs(goalZError);
 

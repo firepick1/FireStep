@@ -8,10 +8,10 @@ namespace firestep {
 #define NO_SOLUTION ((PH5TYPE)1E20)
 
 enum DeltaAxis {
-	DELTA_AXIS_ALL = 0,
-	DELTA_AXIS_1 = 1,
-	DELTA_AXIS_2 = 2,
-	DELTA_AXIS_3 = 3
+	DELTA_AXIS_ALL = -1,
+	DELTA_AXIS_1 = 0,
+	DELTA_AXIS_2 = 1,
+	DELTA_AXIS_3 = 2
 };
 
 typedef class Step3D {
@@ -72,7 +72,6 @@ protected:
     PH5TYPE acr; // arm clearance radius at pulley
     int16_t steps360;
     int16_t microsteps;
-    PH5TYPE gearRatio;
     PH5TYPE gRatio[3];
     PH5TYPE dz;
     PH5TYPE homeAngle;
@@ -136,22 +135,16 @@ public:
         microsteps = value;
     }
     inline PH5TYPE getGearRatio(DeltaAxis axis=DELTA_AXIS_ALL) {
-		switch (axis) {
-		case DELTA_AXIS_1:
-			return gRatio[0];
-		case DELTA_AXIS_2:
-			return gRatio[1];
-		case DELTA_AXIS_3:
-			return gRatio[2];
-		default:
+		if (axis == DELTA_AXIS_ALL) {
 			return (gRatio[0]+gRatio[1]+gRatio[2])/3;
+		} else {
+			return gRatio[axis];
 		}
-        return gearRatio;
     }
     void setGearRatio(PH5TYPE value);
     void setGearRatio(PH5TYPE val1, PH5TYPE val2, PH5TYPE val3);
     inline PH5TYPE degreePulses() {
-        return steps360 * microsteps * gearRatio / 360.0;
+        return steps360 * microsteps * getGearRatio() / 360.0;
     }
     inline PH5TYPE getZOffset() { 
 		// Z distance from base to effector with arms level (0 degrees)
