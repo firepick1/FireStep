@@ -36,7 +36,7 @@ DeltaCalculator::DeltaCalculator()
       microsteps(16),
       dz(0)
 {
-	gRatio[0] = gRatio[1] = gRatio[2] = 9.522262155637;
+	setGearRatio(9.522262155637);
     homeAngle = getDefaultHomeAngle();
 }
 
@@ -57,6 +57,7 @@ PH5TYPE DeltaCalculator::getMinDegrees() {
 
 void DeltaCalculator::setGearRatio(PH5TYPE value, DeltaAxis axis) {
 	StepCoord pulses = getHomePulses();
+	setDegreesPerPulse(360/(microsteps*steps360*value), axis);
 	if (axis == DELTA_AXIS_ALL) {
 		gRatio[0] = gRatio[1] = gRatio[2] = value;
 	} else {
@@ -310,14 +311,14 @@ PH5TYPE DeltaCalculator::calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE 
 PH5TYPE DeltaCalculator::calcZBowlErrorFromGearRatio(Step3D center, Step3D rim, PH5TYPE newRatio) {
 	PH5TYPE saveGearRatio = getGearRatio();
 	PH5TYPE dGearRatio = newRatio - saveGearRatio;
-	setGearRatio(gRatio[DELTA_AXIS_1]+dGearRatio, DELTA_AXIS_1);
-	setGearRatio(gRatio[DELTA_AXIS_2]+dGearRatio, DELTA_AXIS_2);
-	setGearRatio(gRatio[DELTA_AXIS_3]+dGearRatio, DELTA_AXIS_3);
+	setGearRatio(getGearRatio(DELTA_AXIS_1)+dGearRatio, DELTA_AXIS_1);
+	setGearRatio(getGearRatio(DELTA_AXIS_2)+dGearRatio, DELTA_AXIS_2);
+	setGearRatio(getGearRatio(DELTA_AXIS_3)+dGearRatio, DELTA_AXIS_3);
     XYZ3D xyzCtr = calcXYZ(Step3D(center.p1, center.p2, center.p3));
     XYZ3D xyzRim = calcXYZ(Step3D(rim.p1, rim.p2, rim.p3));
-	setGearRatio(gRatio[DELTA_AXIS_1]-dGearRatio, DELTA_AXIS_1);
-	setGearRatio(gRatio[DELTA_AXIS_2]-dGearRatio, DELTA_AXIS_2);
-	setGearRatio(gRatio[DELTA_AXIS_3]-dGearRatio, DELTA_AXIS_3);
+	setGearRatio(getGearRatio(DELTA_AXIS_1)-dGearRatio, DELTA_AXIS_1);
+	setGearRatio(getGearRatio(DELTA_AXIS_2)-dGearRatio, DELTA_AXIS_2);
+	setGearRatio(getGearRatio(DELTA_AXIS_3)-dGearRatio, DELTA_AXIS_3);
     PH5TYPE error = xyzRim.z - xyzCtr.z;
     return error;
 }

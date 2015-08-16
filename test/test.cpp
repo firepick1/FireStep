@@ -4049,6 +4049,7 @@ void test_DeltaCalculator() {
     ASSERTEQUALT(200, dc.getSteps360(), 0.000001);
     ASSERTEQUALT(16, dc.getMicrosteps(), 0.000001);
     ASSERTEQUALT(9.522262155637, dc.getGearRatio(), 0.000001);
+    ASSERTEQUALT(9.522262155637, 360/(16*200*dc.getDegreesPerPulse()), 0.000001);
     ASSERTEQUALT(-111.571, dc.getMinZ(), 0.001);
     ASSERTEQUALT(-69.571, dc.getMinZ(100,100), 0.001);
     ASSERTEQUALT(-67.2, dc.getMinDegrees(), 0.001);
