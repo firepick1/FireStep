@@ -669,6 +669,18 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         PH5TYPE value = machine.delta.getGearRatio();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.delta.setGearRatio(value);
+    } else if (strcmp_PS(OP_gr1, key) == 0 || strcmp_PS(OP_dimgr1, key) == 0) {
+        PH5TYPE value = machine.delta.getGearRatio(DELTA_AXIS_1);
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        machine.delta.setGearRatio(value, DELTA_AXIS_1);
+    } else if (strcmp_PS(OP_gr2, key) == 0 || strcmp_PS(OP_dimgr2, key) == 0) {
+        PH5TYPE value = machine.delta.getGearRatio(DELTA_AXIS_2);
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        machine.delta.setGearRatio(value, DELTA_AXIS_2);
+    } else if (strcmp_PS(OP_gr3, key) == 0 || strcmp_PS(OP_dimgr3, key) == 0) {
+        PH5TYPE value = machine.delta.getGearRatio(DELTA_AXIS_3);
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        machine.delta.setGearRatio(value, DELTA_AXIS_3);
     } else if (strcmp_PS(OP_ha, key) == 0 || strcmp_PS(OP_dimha, key) == 0) {
 		PH5TYPE homeAngle = machine.getHomeAngle();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngle);

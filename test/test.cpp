@@ -1535,6 +1535,63 @@ void test_MTO_FPD_mov() {
     cout << "TEST	: test_MTO_FPD_mov() OK " << endl;
 }
 
+void test_gearRatio() {
+    cout << "TEST	: test_gearRatio() =====" << endl;
+
+    MachineThread mt = test_MTO_FPD_setup();
+    Machine &machine = mt.machine;
+    int32_t xpulses;
+    int32_t ypulses;
+    int32_t zpulses;
+
+	DeltaCalculator dc;
+    dc.useEffectorOrigin();
+	XYZ3D xyz10(0,0,-10);
+	Step3D pz10 = dc.calcPulses(xyz10);
+	ASSERTEQUAL(true, pz10.isValid());
+	ASSERTEQUAL(528, pz10.p1);
+	ASSERTEQUAL(528, pz10.p2);
+	ASSERTEQUAL(528, pz10.p3);
+	dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_1)*1.1, DELTA_AXIS_1);
+	pz10 = dc.calcPulses(xyz10);
+	ASSERTEQUAL(true, pz10.isValid());
+	ASSERTEQUAL(580, pz10.p1);
+	ASSERTEQUAL(528, pz10.p2);
+	ASSERTEQUAL(528, pz10.p3);
+	dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_2)*1.1, DELTA_AXIS_2);
+	pz10 = dc.calcPulses(xyz10);
+	ASSERTEQUAL(true, pz10.isValid());
+	ASSERTEQUAL(580, pz10.p1);
+	ASSERTEQUAL(580, pz10.p2);
+	ASSERTEQUAL(528, pz10.p3);
+	dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_3)*1.1, DELTA_AXIS_3);
+	pz10 = dc.calcPulses(xyz10);
+	ASSERTEQUAL(true, pz10.isValid());
+	ASSERTEQUAL(580, pz10.p1);
+	ASSERTEQUAL(580, pz10.p2);
+	ASSERTEQUAL(580, pz10.p3);
+	dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_1)*0.9091, DELTA_AXIS_1);
+	pz10 = dc.calcPulses(xyz10);
+	ASSERTEQUAL(true, pz10.isValid());
+	ASSERTEQUAL(528, pz10.p1);
+	ASSERTEQUAL(580, pz10.p2);
+	ASSERTEQUAL(580, pz10.p3);
+	dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_2)*0.9091, DELTA_AXIS_2);
+	pz10 = dc.calcPulses(xyz10);
+	ASSERTEQUAL(true, pz10.isValid());
+	ASSERTEQUAL(528, pz10.p1);
+	ASSERTEQUAL(528, pz10.p2);
+	ASSERTEQUAL(580, pz10.p3);
+	dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_3)*0.9091, DELTA_AXIS_3);
+	pz10 = dc.calcPulses(xyz10);
+	ASSERTEQUAL(true, pz10.isValid());
+	ASSERTEQUAL(528, pz10.p1);
+	ASSERTEQUAL(528, pz10.p2);
+	ASSERTEQUAL(528, pz10.p3);
+
+    cout << "TEST	: test_gearRatio() OK " << endl;
+}
+
 void test_MTO_FPD_prb() {
     cout << "TEST	: test_MTO_FPD_prb() =====" << endl;
 
@@ -4520,6 +4577,7 @@ int main(int argc, char *argv[]) {
         test_mark();
         test_ZPlane();
         test_pgm();
+		test_gearRatio();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;
