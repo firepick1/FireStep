@@ -7,6 +7,13 @@ namespace firestep {
 
 #define NO_SOLUTION ((PH5TYPE)1E20)
 
+enum DeltaAxis {
+	DELTA_AXIS_ALL = 0,
+	DELTA_AXIS_1 = 1,
+	DELTA_AXIS_2 = 2,
+	DELTA_AXIS_3 = 3
+};
+
 typedef class Step3D {
 private:
     bool valid;
@@ -66,6 +73,7 @@ protected:
     int16_t steps360;
     int16_t microsteps;
     PH5TYPE gearRatio;
+    PH5TYPE gRatio[3];
     PH5TYPE dz;
     PH5TYPE homeAngle;
     static PH5TYPE sqrt3;
@@ -77,6 +85,7 @@ protected:
     static PH5TYPE tan30_half;
     static PH5TYPE pi;
     static PH5TYPE dtr;
+
 protected:
 	PH5TYPE calcZBowlErrorFromEParam(Step3D center, Step3D rim, PH5TYPE eK, PH5TYPE &param);
 	PH5TYPE calcZBowlErrorFromEParam(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK, PH5TYPE &param);
@@ -126,10 +135,21 @@ public:
     inline void setMicrosteps(int16_t value) {
         microsteps = value;
     }
-    inline PH5TYPE getGearRatio() {
+    inline PH5TYPE getGearRatio(DeltaAxis axis=DELTA_AXIS_ALL) {
+		switch (axis) {
+		case DELTA_AXIS_1:
+			return gRatio[0];
+		case DELTA_AXIS_2:
+			return gRatio[1];
+		case DELTA_AXIS_3:
+			return gRatio[2];
+		default:
+			return (gRatio[0]+gRatio[1]+gRatio[2])/3;
+		}
         return gearRatio;
     }
     void setGearRatio(PH5TYPE value);
+    void setGearRatio(PH5TYPE val1, PH5TYPE val2, PH5TYPE val3);
     inline PH5TYPE degreePulses() {
         return steps360 * microsteps * gearRatio / 360.0;
     }
