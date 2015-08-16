@@ -259,7 +259,7 @@ void Machine::setup(PinConfig cfg) {
 
 PH5TYPE Machine::setHomePulses(StepCoord pulseCount) {
 	homePulses = pulseCount;
-	PH5TYPE degrees = homePulses/delta.degreePulses();
+	PH5TYPE degrees = homePulses*delta.getDegreesPerPulse();
 	setHomeAngle(degrees);
 	return degrees;
 }

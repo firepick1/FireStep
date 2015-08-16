@@ -48,7 +48,7 @@ void DeltaCalculator::useEffectorOrigin() {
     TESTCOUT1("xyz:", xyz.isValid());
     dz = -xyz.z; // use effector origin instead of base origin at zero degrees
     TESTCOUT3("DeltaCalculator.dx:", xyz.x, " dy:", xyz.y, " dz:", dz);
-    TESTCOUT2("DeltaCalculator.degreePulses:", degreePulses(), " minZ:", getMinZ());
+    TESTCOUT2("DeltaCalculator.pulseDegrees:", getDegreesPerPulse(), " minZ:", getMinZ());
 }
 
 PH5TYPE DeltaCalculator::getMinDegrees() {
@@ -74,11 +74,6 @@ void DeltaCalculator::setSteps360(int16_t value) {
 void DeltaCalculator::setGearRatio(PH5TYPE value, DeltaAxis axis) {
 	setDegreesPerPulse(360/(microsteps*steps360*value), axis);
 	StepCoord pulses = getHomePulses();
-	if (axis == DELTA_AXIS_ALL) {
-		gRatio[0] = gRatio[1] = gRatio[2] = value;
-	} else {
-		gRatio[axis] = value;
-	}
 	setHomePulses(pulses);
 	//TESTCOUT4("setGearRatio:", value, " getGearRatio:", getGearRatio(axis),  " home pulses:", getHomePulses(), " angle:", getHomeAngle());
 }
@@ -100,21 +95,19 @@ PH5TYPE DeltaCalculator::getDefaultHomeAngle() {
     PH5TYPE armsParallel = 180*asin((f-e)/(re*sqrt3))/pi - 90;
     PH5TYPE clearanceAngle = 180*asin(acr/rf)/pi;
     PH5TYPE rawDegrees =  armsParallel + clearanceAngle;
-    PH5TYPE dp = degreePulses();
-    StepCoord minPulses = rawDegrees * dp;
-    PH5TYPE degrees =  minPulses/dp;	// digitize min degrees to stepper pulses
+    PH5TYPE dpp = getDegreesPerPulse();
+    StepCoord minPulses = rawDegrees / dpp;
+    PH5TYPE degrees =  minPulses*dpp;	// digitize min degrees to stepper pulses
     //TESTCOUT2("getDefaultHomeAngle:", degrees, " raw:", rawDegrees);
     return degrees;
 }
 
 StepCoord DeltaCalculator::getHomePulses() {
-    PH5TYPE dp = degreePulses();
-    return roundStep(homeAngle*dp);
+    return roundStep(homeAngle/getDegreesPerPulse());
 }
 
 void DeltaCalculator::setHomePulses(StepCoord pulses) {
-    PH5TYPE dp = degreePulses();
-    setHomeAngle(pulses/dp);
+    setHomeAngle(pulses*getDegreesPerPulse());
 }
 
 PH5TYPE DeltaCalculator::calcAngleYZ(PH5TYPE X, PH5TYPE Y, PH5TYPE Z) {
@@ -140,11 +133,10 @@ Step3D DeltaCalculator::calcPulses(XYZ3D xyz) {
     if (!angles.isValid()) {
         return Step3D(false, NO_SOLUTION);
     }
-    PH5TYPE dp = degreePulses();
     Step3D pulses(
-        roundStep(angles.theta1*dp),
-        roundStep(angles.theta2*dp),
-        roundStep(angles.theta3*dp)
+        roundStep(angles.theta1/getDegreesPerPulse(DELTA_AXIS_1)),
+        roundStep(angles.theta2/getDegreesPerPulse(DELTA_AXIS_2)),
+        roundStep(angles.theta3/getDegreesPerPulse(DELTA_AXIS_3))
     );
     return pulses;
 }
@@ -177,11 +169,10 @@ XYZ3D DeltaCalculator::calcXYZ(Step3D pulses) {
     if (!pulses.isValid()) {
         return XYZ3D(false, NO_SOLUTION);
     }
-    PH5TYPE dp = degreePulses();
     Angle3D angles(
-        pulses.p1/dp,
-        pulses.p2/dp,
-        pulses.p3/dp
+        pulses.p1 * getDegreesPerPulse(DELTA_AXIS_1),
+        pulses.p2 * getDegreesPerPulse(DELTA_AXIS_2),
+        pulses.p3 * getDegreesPerPulse(DELTA_AXIS_3)
     );
     return calcXYZ(angles);
 }
@@ -258,9 +249,9 @@ int32_t DeltaCalculator::hash() {
                      ^ ((int32_t)steps360 << 0)
                      ^ ((int32_t)microsteps << 1)
                      //^ (*(uint32_t *)(void*)& gearRatio)
-                     ^ (*(uint32_t *)(void*)& gRatio[0])
-                     ^ (*(uint32_t *)(void*)& gRatio[1])
-                     ^ (*(uint32_t *)(void*)& gRatio[2])
+                     ^ (*(uint32_t *)(void*)& degreesPerPulse[0])
+                     ^ (*(uint32_t *)(void*)& degreesPerPulse[1])
+                     ^ (*(uint32_t *)(void*)& degreesPerPulse[2])
                      ^ (*(uint32_t *)(void*)& dz)
                      ^ (*(uint32_t *)(void*)& homeAngle)
                      ;
@@ -268,8 +259,7 @@ int32_t DeltaCalculator::hash() {
 }
 
 PH5TYPE DeltaCalculator::calcZBowlErrorFromETheta(Step3D center, Step3D rim, PH5TYPE eTheta) {
-    PH5TYPE dp = degreePulses();
-    StepCoord  ePulses = roundStep(eTheta * dp);
+    StepCoord  ePulses = roundStep(eTheta / getDegreesPerPulse());
     XYZ3D xyzCtr = calcXYZ(Step3D(
                                center.p1 - ePulses,
                                center.p2 - ePulses,

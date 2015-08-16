@@ -72,7 +72,6 @@ protected:
     PH5TYPE acr; // arm clearance radius at pulley
     int16_t steps360;
     int16_t microsteps;
-    PH5TYPE gRatio[3];
 	PH5TYPE degreesPerPulse[3];
     PH5TYPE dz;
     PH5TYPE homeAngle;
@@ -146,24 +145,16 @@ public:
     inline PH5TYPE getGearRatio(DeltaAxis axis=DELTA_AXIS_ALL) {
 		PH5TYPE gearRatio = 360/(microsteps*steps360*getDegreesPerPulse(axis));
 		if (axis == DELTA_AXIS_ALL) {
-			PH5TYPE avgRatio = (gRatio[0]+gRatio[1]+gRatio[2])/3;
 			PH5TYPE gearRatio = ( getGearRatio(DELTA_AXIS_1)+
 				getGearRatio(DELTA_AXIS_2)+
 				getGearRatio(DELTA_AXIS_3))/3;
-			//TESTCOUT4("getGearRatio diff:", gearRatio-avgRatio, " gearRatio:", gearRatio, " gRatio:", avgRatio, " axis:", axis);
 			return gearRatio;
-			return avgRatio;
 		} else {
 			PH5TYPE gearRatio = 360/(microsteps*steps360*getDegreesPerPulse(axis));
-			//TESTCOUT4("getGearRatio diff:", gearRatio-gRatio[axis], " gearRatio:", gearRatio, " gRatio:", gRatio[axis], " axis:", axis);
 			return gearRatio;
-			return gRatio[axis];
 		}
     }
     void setGearRatio(PH5TYPE value, DeltaAxis axis=DELTA_AXIS_ALL);
-    inline PH5TYPE degreePulses() {
-        return steps360 * microsteps * getGearRatio() / 360.0;
-    }
     inline PH5TYPE getZOffset() { 
 		// Z distance from base to effector with arms level (0 degrees)
 		// DEPENDENCIES: ZOffset(e,f,re,rf)
