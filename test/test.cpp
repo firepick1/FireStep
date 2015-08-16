@@ -4104,6 +4104,7 @@ void test_DeltaCalculator() {
     ASSERTEQUALT(-0.396, dc.calcZBowlErrorFromETheta(zCenter, radius, 360 * 0.02), e);
     ASSERTEQUALT(-0.532, dc.calcZBowlErrorFromETheta(zCenter, radius, 10), e);
     ASSERTEQUALT(-0.747, dc.calcZBowlErrorFromETheta(zCenter, radius, 15), e);
+
     PH5TYPE gearRatio = 9.522622;
     ASSERTEQUALT(0.133, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio * 0.98), e);
     ASSERTEQUALT(0.062, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio * 0.99), e);
@@ -4118,12 +4119,12 @@ void test_DeltaCalculator() {
     ASSERTEQUALT(-0.059, dc.calcZBowlErrorFromE_f(zCenter, radius, 1.01), 0.001);
     ASSERTEQUALT(-0.111, dc.calcZBowlErrorFromE_f(zCenter, radius, 1.02), 0.001);
 
-	// base arm length error
-    ASSERTEQUALT(0.048, dc.calcZBowlErrorFromE_rf(zCenter, radius, 0.98), 0.001);
-    ASSERTEQUALT(0.021, dc.calcZBowlErrorFromE_rf(zCenter, radius, 0.99), 0.001);
-    ASSERTEQUALT(-0.005, dc.calcZBowlErrorFromE_rf(zCenter, radius, 1.0), 0.001);
-    ASSERTEQUALT(-0.033, dc.calcZBowlErrorFromE_rf(zCenter, radius, 1.01), 0.001);
-    ASSERTEQUALT(-0.060, dc.calcZBowlErrorFromE_rf(zCenter, radius, 1.02), 0.001);
+	// effector arm length error
+    ASSERTEQUALT(-0.092, dc.calcZBowlErrorFromE_re(zCenter, radius, 0.98), 0.001);
+    ASSERTEQUALT(-0.049, dc.calcZBowlErrorFromE_re(zCenter, radius, 0.99), 0.001);
+    ASSERTEQUALT(-0.005, dc.calcZBowlErrorFromE_re(zCenter, radius, 1.0), 0.001);
+    ASSERTEQUALT(0.038, dc.calcZBowlErrorFromE_re(zCenter, radius, 1.01), 0.001);
+    ASSERTEQUALT(0.081, dc.calcZBowlErrorFromE_re(zCenter, radius, 1.02), 0.001);
 
 	// effector triangle side error
     ASSERTEQUALT(-0.079, dc.calcZBowlErrorFromE_e(zCenter, radius, 0.98), 0.001);
@@ -4132,12 +4133,12 @@ void test_DeltaCalculator() {
     ASSERTEQUALT(0.032, dc.calcZBowlErrorFromE_e(zCenter, radius, 1.01), 0.001);
     ASSERTEQUALT(0.069, dc.calcZBowlErrorFromE_e(zCenter, radius, 1.02), 0.001);
 
-	// effector arm length error
-    ASSERTEQUALT(-0.092, dc.calcZBowlErrorFromE_re(zCenter, radius, 0.98), 0.001);
-    ASSERTEQUALT(-0.049, dc.calcZBowlErrorFromE_re(zCenter, radius, 0.99), 0.001);
-    ASSERTEQUALT(-0.005, dc.calcZBowlErrorFromE_re(zCenter, radius, 1.0), 0.001);
-    ASSERTEQUALT(0.038, dc.calcZBowlErrorFromE_re(zCenter, radius, 1.01), 0.001);
-    ASSERTEQUALT(0.081, dc.calcZBowlErrorFromE_re(zCenter, radius, 1.02), 0.001);
+	// base arm length error
+    ASSERTEQUALT(0.048, dc.calcZBowlErrorFromE_rf(zCenter, radius, 0.98), 0.001);
+    ASSERTEQUALT(0.021, dc.calcZBowlErrorFromE_rf(zCenter, radius, 0.99), 0.001);
+    ASSERTEQUALT(-0.005, dc.calcZBowlErrorFromE_rf(zCenter, radius, 1.0), 0.001);
+    ASSERTEQUALT(-0.033, dc.calcZBowlErrorFromE_rf(zCenter, radius, 1.01), 0.001);
+    ASSERTEQUALT(-0.060, dc.calcZBowlErrorFromE_rf(zCenter, radius, 1.02), 0.001);
 
 	{	TESTCOUT1("TEST	: ", "ZBowl home angle (initial calibration)");
         PH5TYPE zRim = zCenter - 0.5; // 0.5mm bowl error
