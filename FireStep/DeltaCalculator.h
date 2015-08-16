@@ -73,6 +73,7 @@ protected:
     int16_t steps360;
     int16_t microsteps;
     PH5TYPE gRatio[3];
+	PH5TYPE degreesPerPulse[3];
     PH5TYPE dz;
     PH5TYPE homeAngle;
     static PH5TYPE sqrt3;
@@ -134,6 +135,14 @@ public:
     inline void setMicrosteps(int16_t value) {
         microsteps = value;
     }
+    inline PH5TYPE getDegreesPerPulse(DeltaAxis axis=DELTA_AXIS_ALL) {
+		if (axis == DELTA_AXIS_ALL) {
+			return (degreesPerPulse[0]+degreesPerPulse[1]+degreesPerPulse[2])/3;
+		} else {
+			return degreesPerPulse[axis];
+		}
+    }
+    void setDegreesPerPulse(PH5TYPE value, DeltaAxis axis=DELTA_AXIS_ALL);
     inline PH5TYPE getGearRatio(DeltaAxis axis=DELTA_AXIS_ALL) {
 		if (axis == DELTA_AXIS_ALL) {
 			return (gRatio[0]+gRatio[1]+gRatio[2])/3;

@@ -66,6 +66,18 @@ void DeltaCalculator::setGearRatio(PH5TYPE value, DeltaAxis axis) {
 	//TESTCOUT3("setGearRatio:", gearRatio, " home pulses:", getHomePulses(), " angle:", getHomeAngle());
 }
 
+void DeltaCalculator::setDegreesPerPulse(PH5TYPE value, DeltaAxis axis) {
+	StepCoord pulses = getHomePulses();
+	if (axis == DELTA_AXIS_ALL) {
+		degreesPerPulse[0] = 
+		degreesPerPulse[1] = 
+		degreesPerPulse[2] = value;
+	} else {
+		degreesPerPulse[axis] = value;
+	}
+	setHomePulses(pulses);
+}
+
 PH5TYPE DeltaCalculator::getDefaultHomeAngle() {
     PH5TYPE armsParallel = 180*asin((f-e)/(re*sqrt3))/pi - 90;
     PH5TYPE clearanceAngle = 180*asin(acr/rf)/pi;
