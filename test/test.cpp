@@ -1538,12 +1538,6 @@ void test_MTO_FPD_mov() {
 void test_gearRatio() {
     cout << "TEST	: test_gearRatio() =====" << endl;
 
-    MachineThread mt = test_MTO_FPD_setup();
-    Machine &machine = mt.machine;
-    int32_t xpulses;
-    int32_t ypulses;
-    int32_t zpulses;
-
 	DeltaCalculator dc;
     dc.useEffectorOrigin();
 	XYZ3D xyz10(0,0,-10);
@@ -1555,6 +1549,7 @@ void test_gearRatio() {
 	dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_1)*1.1, DELTA_AXIS_1);
 	pz10 = dc.calcPulses(xyz10);
 	ASSERTEQUAL(true, pz10.isValid());
+	ASSERTEQUALT(10.4745, dc.getGearRatio(DELTA_AXIS_1), 0.0001);
 	ASSERTEQUAL(580, pz10.p1);
 	ASSERTEQUAL(528, pz10.p2);
 	ASSERTEQUAL(528, pz10.p3);
@@ -1588,6 +1583,54 @@ void test_gearRatio() {
 	ASSERTEQUAL(528, pz10.p1);
 	ASSERTEQUAL(528, pz10.p2);
 	ASSERTEQUAL(528, pz10.p3);
+
+    MachineThread mt = test_MTO_FPD_setup();
+    Machine &machine = mt.machine;
+    int32_t xpulses;
+    int32_t ypulses;
+    int32_t zpulses;
+
+	// change axis 1 and mov
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    Serial.push(JT("{'dim':{'gr1':10.4745},'movz':-30,'mpo':''}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(1694, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(1540, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(1540, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTQUAD(Quad<StepCoord>(1694, 1540, 1540, 0), mt.machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'dim':{'gr1':10.474},'movz':-30.000,"
+					"'mpo':{'1':1694,'2':1540,'3':1540,'4':0,'x':0.000,'y':-0.000,'z':-29.996}}"
+					",'t':0.609}\n"),
+                 Serial.output().c_str());
+	ASSERTEQUALT(10.4745, machine.delta.getGearRatio(DELTA_AXIS_1), 0.0001);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	// return to origin
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    Serial.push(JT("{'dimgr1':'', 'movz':0,'mpo':''}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(1694, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(1540, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(1540, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'dimgr1':10.474,'movz':0.000,"
+					"'mpo':{'1':0,'2':0,'3':0,'4':0,'x':0.000,'y':-0.000,'z':0.000}}"
+					",'t':0.609}\n"),
+                 Serial.output().c_str());
+	ASSERTEQUALT(10.4745, machine.delta.getGearRatio(DELTA_AXIS_1), 0.0001);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     cout << "TEST	: test_gearRatio() OK " << endl;
 }
