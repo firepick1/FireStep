@@ -77,6 +77,10 @@ protected:
     static PH5TYPE tan30_half;
     static PH5TYPE pi;
     static PH5TYPE dtr;
+protected:
+	PH5TYPE calcZBowlErrorFromEParam(Step3D center, Step3D rim, PH5TYPE eK, PH5TYPE &param);
+	PH5TYPE calcZBowlErrorFromEParam(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK, PH5TYPE &param);
+
 public:
     DeltaCalculator();
     void useEffectorOrigin();
@@ -158,6 +162,10 @@ public:
     PH5TYPE calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE radius);
     int32_t hash();
     static StepCoord roundStep(PH5TYPE value);
+	PH5TYPE calcZBowlErrorFromE_f(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK);
+	PH5TYPE calcZBowlErrorFromE_e(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK);
+	PH5TYPE calcZBowlErrorFromE_rf(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK);
+	PH5TYPE calcZBowlErrorFromE_re(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK);
 } DeltaCalculator;
 
 } // firestep

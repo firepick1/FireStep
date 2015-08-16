@@ -340,3 +340,36 @@ PH5TYPE DeltaCalculator::calcZBowlGearRatio(PH5TYPE zCenter, PH5TYPE zRim, PH5TY
     }
 	return bestGearRatio;
 }
+
+PH5TYPE DeltaCalculator::calcZBowlErrorFromEParam(Step3D center, Step3D rim, PH5TYPE eK, PH5TYPE &param) {
+	PH5TYPE saveParam = param;
+	param *= eK;
+    XYZ3D xyzCtr = calcXYZ(center);
+    XYZ3D xyzRim = calcXYZ(rim);
+	param = saveParam;
+    return xyzRim.z - xyzCtr.z;
+}
+
+PH5TYPE DeltaCalculator::calcZBowlErrorFromEParam(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK, PH5TYPE &param) {
+    XYZ3D xyzCtr(0,0,zCenter);
+    XYZ3D xyzRim(radius, 0, zCenter);
+    Step3D center = calcPulses(xyzCtr);
+    Step3D rim = calcPulses(xyzRim);
+    return calcZBowlErrorFromEParam(center, rim, eK, param);
+}
+
+PH5TYPE DeltaCalculator::calcZBowlErrorFromE_f(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK) {
+	return calcZBowlErrorFromEParam(zCenter, radius, eK, f);
+}
+
+PH5TYPE DeltaCalculator::calcZBowlErrorFromE_e(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK) {
+	return calcZBowlErrorFromEParam(zCenter, radius, eK, e);
+}
+
+PH5TYPE DeltaCalculator::calcZBowlErrorFromE_rf(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK) {
+	return calcZBowlErrorFromEParam(zCenter, radius, eK, rf);
+}
+
+PH5TYPE DeltaCalculator::calcZBowlErrorFromE_re(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK) {
+	return calcZBowlErrorFromEParam(zCenter, radius, eK, re);
+}
