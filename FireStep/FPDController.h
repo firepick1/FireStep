@@ -5,6 +5,16 @@
 
 namespace firestep {
 
+enum CalibrateMode {
+	CAL_NONE = 0,
+	CAL_HOME = 0x1,
+	CAL_BED = 0x2,
+	CAL_GEAR = 0x10,
+	CAL_GEAR1 = 0x20,
+	CAL_GEAR2 = 0x40,
+	CAL_GEAR3 = 0x80
+};
+
 typedef class FPDCalibrateHome {
 private:
     Machine& machine;
@@ -17,8 +27,7 @@ public:
 	PH5TYPE gearRatio;
 	PH5TYPE saveWeight;
     ZPlane bed;
-	bool calHome;
-	bool calGear;
+	CalibrateMode mode;
 
 public:
     FPDCalibrateHome(Machine& machine);

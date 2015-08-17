@@ -15,7 +15,7 @@ using namespace firestep;
 #define PI ((PH5TYPE) 3.14159265359)
 
 FPDCalibrateHome::FPDCalibrateHome(Machine& machine)
-    : machine(machine), calGear(false), calHome(false), saveWeight(1) {
+    : machine(machine), mode(CAL_NONE), saveWeight(1) {
 }
 
 #define MAX_GEAR_ZBOWL_ERROR 0.3
@@ -44,7 +44,7 @@ Status FPDCalibrateHome::calibrate() {
 		pd[i] = machine.delta.calcPulses(XYZ3D(radius*cos(radians), radius*sin(radians), probe.probeData[1+i]));
 	};
 
-	if (calHome && calGear) {
+	if ((mode&CAL_HOME) && (mode&CAL_GEAR)) {
 		PH5TYPE hgr = 4; // SWAG at ratio of homeAngleError / gearRatioError
 		PH5TYPE g = sqrt(zError*zError /(1+hgr*hgr));
 		PH5TYPE h = hgr * g;
@@ -52,15 +52,15 @@ Status FPDCalibrateHome::calibrate() {
 		zRim_homeAngle = zCenter + (zError > 0 ? h : -h); // homeAngle error split
 	}
 	TESTCOUT1("saveWeight:", saveWeight);
-	if (calHome) {
+	if (mode&CAL_HOME) {
 		eTheta = machine.delta.calcZBowlETheta(zCenter, zRim_homeAngle, radius);
 		PH5TYPE homeAngleCur = machine.delta.getHomeAngle();
 		homeAngle = saveWeight*(homeAngleCur+eTheta) + (1-saveWeight)*machine.getHomeAngle();
-		TESTCOUT4("CalibrateHome calHome zCenter:", zCenter, " zRim_homeAngle:", zRim_homeAngle,
+		TESTCOUT4("CalibrateHome CAL_HOME zCenter:", zCenter, " zRim_homeAngle:", zRim_homeAngle,
 				  " eTheta:", eTheta, " homeAngle:", homeAngle);
 		machine.setHomeAngle(homeAngle);
 	}
-	if (calGear) {
+	if (mode&CAL_GEAR) {
 		if (MAX_GEAR_ZBOWL_ERROR < abs(zRim_gearRatio - zCenter)) {
 			return STATUS_ZBOWL_GEAR;
 		}
@@ -69,7 +69,7 @@ Status FPDCalibrateHome::calibrate() {
 		eGear = gearRatio - curGearRatio; 
 		gearRatio = saveWeight * gearRatio + (1-saveWeight) * curGearRatio;
 		machine.delta.setGearRatio(gearRatio);
-		TESTCOUT4("CalibrateHome calGear zCenter:", zCenter, " zRim_gearRatio:", zRim_gearRatio,
+		TESTCOUT4("CalibrateHome CAL_GEAR zCenter:", zCenter, " zRim_gearRatio:", zRim_gearRatio,
 				  " eGear:", eGear, " gearRatio:", gearRatio);
 	}
 
@@ -903,7 +903,16 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
                 return jcmd.setError(STATUS_OUTPUT_FIELD, key);
             }
         }
-		cal.calGear = true;
+		cal.mode = (CalibrateMode)((cal.mode&CAL_HOME) | CAL_GEAR);
+    } else if (strcmp_PS(OP_calgr1,key) == 0 || strcmp_PS(OP_gr1,key) == 0) {
+        if (output) {
+            PH5TYPE value = machine.delta.getGearRatio();
+            status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+            if (value != machine.delta.getGearRatio()) {
+                return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+            }
+        }
+		cal.mode = (CalibrateMode)((cal.mode&CAL_HOME) | CAL_GEAR);
     } else if (strcmp_PS(OP_calge,key) == 0 || strcmp_PS(OP_ge,key) == 0) {
         if (output) {
             PH5TYPE value = cal.eGear;
@@ -912,7 +921,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
                 return jcmd.setError(STATUS_OUTPUT_FIELD, key);
             }
         }
-		cal.calGear = true;
+		cal.mode = (CalibrateMode)((cal.mode&CAL_HOME) | CAL_GEAR);
     } else if (strcmp_PS(OP_calha,key) == 0 || strcmp_PS(OP_ha,key) == 0) {
         if (output) {
             PH5TYPE value = machine.getHomeAngle();
@@ -921,7 +930,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
                 return jcmd.setError(STATUS_OUTPUT_FIELD, key);
             }
         }
-		cal.calHome = true;
+		cal.mode = (CalibrateMode)((cal.mode&CAL_GEAR) | CAL_HOME);
     } else if (strcmp_PS(OP_calhe,key) == 0 || strcmp_PS(OP_he,key) == 0) {
         if (output) {
             PH5TYPE value = cal.eTheta;
@@ -930,7 +939,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
                 return jcmd.setError(STATUS_OUTPUT_FIELD, key);
             }
         }
-		cal.calHome = true;
+		cal.mode = (CalibrateMode)((cal.mode&CAL_GEAR) | CAL_HOME);
     } else if (strcmp_PS(OP_calzc,key) == 0 || strcmp_PS(OP_zc,key) == 0) {
         if (output) {
             PH5TYPE value = cal.zCenter;
