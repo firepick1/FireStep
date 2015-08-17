@@ -265,6 +265,9 @@ PH5TYPE Machine::setHomePulses(StepCoord pulseCount) {
 }
 
 int32_t Machine::hash() {
+	 PH5TYPE gr1 = delta.getGearRatio(DELTA_AXIS_1);
+	 PH5TYPE gr2 = delta.getGearRatio(DELTA_AXIS_2);
+	 PH5TYPE gr3 = delta.getGearRatio(DELTA_AXIS_3);
     int32_t result = 0
                      ^ ((uint32_t) outputMode << 8)
                      ^ ((uint32_t) topology << 9)
@@ -285,6 +288,9 @@ int32_t Machine::hash() {
                      ^ (*(uint32_t *)(void*)&bed.a)
                      ^ (*(uint32_t *)(void*)&bed.b)
                      ^ (*(uint32_t *)(void*)&bed.c)
+                     ^ (*(uint32_t *)(void*)&gr1)
+                     ^ (*(uint32_t *)(void*)&gr2)
+                     ^ (*(uint32_t *)(void*)&gr3)
                      //^ (eeUser)
                      ;
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
@@ -837,7 +843,9 @@ char * Machine::saveDimConfig(char *out, size_t maxLen) {
     out = saveConfigValue("bz", bed.getZOffset(), out);
     out = saveConfigValue("e", delta.getEffectorTriangleSide(), out);
     out = saveConfigValue("f", delta.getBaseTriangleSide(), out);
-    out = saveConfigValue("gr", delta.getGearRatio(), out, 3);
+	out = saveConfigValue("gr1", delta.getGearRatio(DELTA_AXIS_1), out, 3);
+	out = saveConfigValue("gr2", delta.getGearRatio(DELTA_AXIS_2), out, 3);
+	out = saveConfigValue("gr3", delta.getGearRatio(DELTA_AXIS_3), out, 3);
     out = saveConfigValue("ha", homeAngle, out);
     out = saveConfigValue("mi", delta.getMicrosteps(), out);
     out = saveConfigValue("re", delta.getEffectorLength(), out);
