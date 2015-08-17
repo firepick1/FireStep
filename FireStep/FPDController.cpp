@@ -1006,6 +1006,27 @@ Status FPDController::processMark(JsonCommand& jcmd, JsonObject& jobj, const cha
         iMark++;
         machine.marks[iMark%MARK_COUNT] = xyz.z;
         iMark++;
+    } else if (strcmp_PS(OP_a1, key) == 0 || strcmp_PS(OP_mrka1, key) == 0) {
+        int16_t iMark = ((int16_t)jobj[key]) - 1;
+        if (iMark < 0 || MARK_COUNT <= iMark) {
+            TESTCOUT1("mark index:", iMark);
+            return jcmd.setError(STATUS_MARK_INDEX, key);
+        }
+        machine.marks[iMark] = machine.axis[0].position;
+    } else if (strcmp_PS(OP_a2, key) == 0 || strcmp_PS(OP_mrka2, key) == 0) {
+        int16_t iMark = ((int16_t)jobj[key]) - 1;
+        if (iMark < 0 || MARK_COUNT <= iMark) {
+            TESTCOUT1("mark index:", iMark);
+            return jcmd.setError(STATUS_MARK_INDEX, key);
+        }
+        machine.marks[iMark] = machine.axis[1].position;
+    } else if (strcmp_PS(OP_a3, key) == 0 || strcmp_PS(OP_mrka3, key) == 0) {
+        int16_t iMark = ((int16_t)jobj[key]) - 1;
+        if (iMark < 0 || MARK_COUNT <= iMark) {
+            TESTCOUT1("mark index:", iMark);
+            return jcmd.setError(STATUS_MARK_INDEX, key);
+        }
+        machine.marks[iMark] = machine.axis[2].position;
     } else if (strcmp_PS(OP_ax, key) == 0 || strcmp_PS(OP_mrkax, key) == 0) {
         int16_t iMark = ((int16_t)jobj[key]) - 1;
         if (iMark < 0 || MARK_COUNT <= iMark) {

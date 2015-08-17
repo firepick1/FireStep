@@ -2401,15 +2401,18 @@ void test_mark() {
         ASSERTQUAD(Quad<StepCoord>(-128,-229,-184,0), machine.getMotorPosition());
 
         // mrk: you can set a mark value from a Cartesian position
-        Serial.push(JT("{'mrkax':1,'mrkay':2,'mrkaz':3,'mrkm1':'','mrkm2':'','mrkm3':''}\n"));
+        Serial.push(JT("{'mrkax':1,'mrkay':2,'mrkaz':3,'mrkm1':'','mrkm2':'','mrkm3':'','mrka1':5,'mrka2':6,'mrka3':7}\n"));
         mt.loop();
         ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
         mt.loop();
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':"
-                        "{'mrkax':1,'mrkay':2,'mrkaz':3,'mrkm1':1.099,'mrkm2':2.214,'mrkm3':3.331}"
+                        "{'mrkax':1,'mrkay':2,'mrkaz':3,'mrkm1':1.099,'mrkm2':2.214,'mrkm3':3.331,'mrka1':5,'mrka2':6,'mrka3':7}"
                         ",'t':0.000}\n"),
                      Serial.output().c_str());
+        ASSERTEQUAL(-128, machine.marks[4]);
+        ASSERTEQUAL(-229, machine.marks[5]);
+        ASSERTEQUAL(-184, machine.marks[6]);
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
