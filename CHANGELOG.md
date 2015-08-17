@@ -5,6 +5,9 @@ v0.2.3
 ------
 * FIX: "movrx" is now identified as a bad command (the correct command is "movxr")
 * NEW: "calsv" provides adaptive calibration via exponential smoothing
+* NEW: "calgr1" calibrate gear ratio for arm 1 at given angle in degrees
+* NEW: "calgr2" calibrate gear ratio for arm 2 at given angle in degrees
+* NEW: "calgr3" calibrate gear ratio for arm 3 at given angle in degrees
 * FIX: static strings now stored in PROGMEM to free up SRAM
 * NEW: "dimhp" user provided home pulses 
 * NEW: {"pgmx":"cal"}             Use hex probe to calibrate home angle, gear ratio and Z-bed plane (non-adaptive)

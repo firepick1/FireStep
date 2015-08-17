@@ -4441,6 +4441,53 @@ void test_pgm_parse(const char *pgm) {
     ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(s));
 }
 
+void test_cal_arm() {
+    cout << "TEST	: test_cal_arm() =====" << endl;
+
+    MachineThread mt = test_MTO_FPD_setup();
+	Machine& machine = mt.machine;
+	DeltaCalculator& dc = machine.delta;
+	StepCoord armPos = 7800;
+
+    // calgr1: calibrate gear ratio for arm 1
+	machine.axis[0].position = armPos;
+    Serial.push(JT("{'calgr1':90}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUALT(90.0/armPos, dc.getDegreesPerPulse(DELTA_AXIS_1), 0.001);
+	ASSERTEQUALT(9.750, dc.getGearRatio(DELTA_AXIS_1), 0.001);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // calgr2: calibrate gear ratio for arm 2
+	machine.axis[1].position = armPos+10;
+    Serial.push(JT("{'cal':{'gr2':90}}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUALT(90.0/(armPos+10), dc.getDegreesPerPulse(DELTA_AXIS_2), 0.00001);
+	ASSERTEQUALT(9.7625, dc.getGearRatio(DELTA_AXIS_2), 0.00001);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // calgr3: calibrate gear ratio for arm 3
+	machine.axis[2].position = armPos-10;
+    Serial.push(JT("{'calgr3':90}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+	ASSERTEQUALT(90.0/(armPos-10), dc.getDegreesPerPulse(DELTA_AXIS_3), 0.00001);
+	ASSERTEQUALT(9.7375, dc.getGearRatio(DELTA_AXIS_3), 0.00001);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    cout << "TEST	: test_cal_arm() =====" << endl;
+}
+
 void test_pgm() {
     cout << "TEST	: test_pgm() =====" << endl;
 
@@ -4625,6 +4672,7 @@ int main(int argc, char *argv[]) {
         test_ZPlane();
         test_pgm();
 		test_gearRatio();
+		test_cal_arm();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;

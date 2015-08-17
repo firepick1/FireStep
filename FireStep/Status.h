@@ -58,6 +58,8 @@ enum Status {
     STATUS_UNKNOWN_PROGRAM = -146,	// Unknown prg identifier
     STATUS_PROGRAM_SIZE = -147,		// Program to large to execute
     STATUS_ZBOWL_GEAR = -148,		// Z-bowl error exceeds amount allowed for gear ratio error
+	STATUS_CAL_DEGREES = -149,		// Specify calibration angle from horizontal (down is positive degrees) 
+	STATUS_CAL_POSITION_0 = -150,	// Arm position cannot be 0 for arm gear ratio calibration
 
     // stroke
     STATUS_STROKE_SEGPULSES = -200,	// Stroke has too many pulses per segment [-127,127]

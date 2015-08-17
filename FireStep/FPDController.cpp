@@ -905,14 +905,41 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
         }
 		cal.mode = (CalibrateMode)((cal.mode&CAL_HOME) | CAL_GEAR);
     } else if (strcmp_PS(OP_calgr1,key) == 0 || strcmp_PS(OP_gr1,key) == 0) {
-        if (output) {
-            PH5TYPE value = machine.delta.getGearRatio();
-            status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-            if (value != machine.delta.getGearRatio()) {
-                return jcmd.setError(STATUS_OUTPUT_FIELD, key);
-            }
+		PH5TYPE degrees = 0;
+		status = processField<PH5TYPE, PH5TYPE>(jobj, key, degrees);
+		if (!degrees) {
+			return jcmd.setError(STATUS_CAL_DEGREES, key);
         }
-		cal.mode = (CalibrateMode)((cal.mode&CAL_HOME) | CAL_GEAR);
+		if (machine.axis[0].position == 0) {
+			return jcmd.setError(STATUS_CAL_POSITION_0, key);
+		}
+		PH5TYPE dpp = abs(degrees / machine.axis[0].position);
+		machine.delta.setDegreesPerPulse(dpp, DELTA_AXIS_1);
+		cal.mode = CAL_GEAR1;
+    } else if (strcmp_PS(OP_calgr2,key) == 0 || strcmp_PS(OP_gr2,key) == 0) {
+		PH5TYPE degrees = 0;
+		status = processField<PH5TYPE, PH5TYPE>(jobj, key, degrees);
+		if (!degrees) {
+			return jcmd.setError(STATUS_CAL_DEGREES, key);
+        }
+		if (machine.axis[1].position == 0) {
+			return jcmd.setError(STATUS_CAL_POSITION_0, key);
+		}
+		PH5TYPE dpp = abs(degrees / machine.axis[1].position);
+		machine.delta.setDegreesPerPulse(dpp, DELTA_AXIS_2);
+		cal.mode = CAL_GEAR2;
+    } else if (strcmp_PS(OP_calgr3,key) == 0 || strcmp_PS(OP_gr3,key) == 0) {
+		PH5TYPE degrees = 0;
+		status = processField<PH5TYPE, PH5TYPE>(jobj, key, degrees);
+		if (!degrees) {
+			return jcmd.setError(STATUS_CAL_DEGREES, key);
+        }
+		if (machine.axis[2].position == 0) {
+			return jcmd.setError(STATUS_CAL_POSITION_0, key);
+		}
+		PH5TYPE dpp = abs(degrees / machine.axis[2].position);
+		machine.delta.setDegreesPerPulse(dpp, DELTA_AXIS_3);
+		cal.mode = CAL_GEAR3;
     } else if (strcmp_PS(OP_calge,key) == 0 || strcmp_PS(OP_ge,key) == 0) {
         if (output) {
             PH5TYPE value = cal.eGear;
