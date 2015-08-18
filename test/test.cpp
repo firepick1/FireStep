@@ -1532,6 +1532,75 @@ void test_MTO_FPD_mov() {
 	test_loadDeltaCalculator( machine);
     mt.loop();
     ASSERTEQUAL(STATUS_KINEMATIC_XYZ, mt.status);
+	mt.status = STATUS_WAIT_IDLE;
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // mova1 move axis to angle
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+    Serial.push(JT("{'mova1':10}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    for (int i=0; mt.status == STATUS_BUSY_CALIBRATING && i<1000; i++) {
+        mt.loop();
+    }
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(846, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTQUAD(Quad<StepCoord>(846,0,0,0), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'mova1':10},'t':0.054}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // mova2 move axis to angle
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+    Serial.push(JT("{'mov':{'a2':-10}}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    for (int i=0; mt.status==STATUS_BUSY_CALIBRATING && i<1000; i++) {
+        mt.loop();
+    }
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(845, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTQUAD(Quad<StepCoord>(0,-845,0,0), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'a2':-10}},'t':0.054}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // mova3 move axis to angle
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+    Serial.push(JT("{'mov':{'a3':-10.0}}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    for (int i=0; mt.status==STATUS_BUSY_CALIBRATING && i<1000; i++) {
+        mt.loop();
+    }
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(845, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTQUAD(Quad<StepCoord>(0,0,-845,0), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'a3':-10.0}},'t':0.054}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     cout << "TEST	: test_MTO_FPD_mov() OK " << endl;
 }

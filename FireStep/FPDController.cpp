@@ -111,11 +111,13 @@ private:
     Quad<PH5TYPE> destination;
     int16_t nSegs;
     bool isZBed;
+	bool isRaw; // MTO_RAW movement requested
     Machine &machine;
     FPDController &controller;
 
 private:
     Status execute(JsonCommand& jcmd, JsonObject *pjobj);
+	Status movePulleyArmToAngle(DeltaAxis axis, PH5TYPE degrees);
 
 public:
     FPDMoveTo(FPDController &controller, Machine& machine);
@@ -143,6 +145,9 @@ FPDMoveTo::FPDMoveTo(FPDController &controller, Machine& machine)
 }
 
 Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
+	if (isRaw) {
+		return STATUS_OK;
+	}
     PH5TYPE x = destination.value[0];
     PH5TYPE y = destination.value[1];
     PH5TYPE z = destination.value[2];
@@ -219,6 +224,31 @@ Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     return status;
 }
 
+Status FPDMoveTo::movePulleyArmToAngle(DeltaAxis axis, PH5TYPE degrees) {
+	Quad<StepCoord> posStart = machine.getMotorPosition();
+	Quad<StepCoord> posEnd = posStart;
+	PH5TYPE dpp = machine.delta.getDegreesPerPulse(axis);
+	if (axis == DELTA_AXIS_ALL) {
+		return STATUS_AXIS_ERROR;
+	}
+	posEnd.value[axis] = machine.delta.roundStep(degrees / dpp);
+	machine.op.probe.pinProbe = machine.axis[axis].pinMin;
+	machine.op.probe.setup(posStart, posEnd);
+	Status status = STATUS_BUSY_CALIBRATING;
+	int32_t stopTicks = ticks() + MS_TICKS(20000); // stop after 20 seconds
+
+	while (ticks() < stopTicks && status == STATUS_BUSY_CALIBRATING) {
+		status = machine.probe(status, 0);
+	} 
+	if (status == STATUS_PROBE_FAILED) {
+		isRaw = true;
+		return STATUS_OK; // we're not really probing, so this is good
+	} else if (status == STATUS_OK) {
+		return STATUS_LIMIT_MIN; // uh oh
+	}
+	return status;
+}
+
 Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
     size_t keyLen = strlen(key);
@@ -272,6 +302,12 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
         if (keyLen > 2) {
             status = execute(jcmd, NULL);
         }
+    } else if (strcmp_PS(OP_mova1,key) == 0 || strcmp_PS(OP_a1,key) == 0) {
+		return movePulleyArmToAngle(DELTA_AXIS_1, (PH5TYPE) jobj[key]);
+    } else if (strcmp_PS(OP_mova2,key) == 0 || strcmp_PS(OP_a2,key) == 0) {
+		return movePulleyArmToAngle(DELTA_AXIS_2, (PH5TYPE) jobj[key]);
+    } else if (strcmp_PS(OP_mova3,key) == 0 || strcmp_PS(OP_a3,key) == 0) {
+		return movePulleyArmToAngle(DELTA_AXIS_3, (PH5TYPE) jobj[key]);
     } else if (strcmp_PS(OP_movxm,key) == 0 || strcmp_PS(OP_xm,key) == 0) {
         int16_t iMark = ((int16_t)jobj[key]) - 1;
         if (iMark < 0 || MARK_COUNT <= iMark) {

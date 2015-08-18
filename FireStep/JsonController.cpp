@@ -1016,10 +1016,10 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
     JsonVariant node;
     node = jobj;
     Status status = STATUS_OK;
-    TESTCOUT1("processObj:", "in");
+    //TESTCOUT1("processObj:", "in");
 
     for (JsonObject::iterator it = jobj.begin(); status >= 0 && it != jobj.end(); ++it) {
-        TESTCOUT1("processObj key:", it->key);
+        //TESTCOUT1("processObj key:", it->key);
         if (strcmp_PS(OP_dvs, it->key) == 0) {
             status = processStroke(jcmd, jobj, it->key);
         } else if (strncmp("mov", it->key, 3) == 0) {
@@ -1090,7 +1090,7 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
         }
     }
 
-    TESTCOUT1("processObj:", "out");
+    //TESTCOUT1("processObj:", "out");
     return status;
 }
 
