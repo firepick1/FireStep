@@ -3,6 +3,7 @@ FireStep: change log
 
 v0.2.3
 ------
+* CHG: MTO_FPD "mov:{a,d}" changed to "mov:{angle,d}" move in XY plane to polar coordinate `d` millimeters from X0Y0 at `angle` degrees CCW from x-axis.
 * FIX: "movrx" is now identified as a bad command (the correct command is "movxr")
 * NEW: "calsv" provides adaptive calibration via exponential smoothing
 * NEW: "calgr1" calibrate gear ratio for arm 1 at given angle in degrees
