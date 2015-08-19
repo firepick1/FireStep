@@ -10,6 +10,7 @@
 #define strcmp_PS(a,b) strcmp_P(b,a)
 #else
 #define PROGMEM
+#define strcpy_P(dst,src) strcpy(dst,src)
 #define strlen_P(src) strlen(src)
 #define strcmp_PS(a,b) strcmp(a,b)
 #define pgm_read_byte_near(src) (*(const char *)(src))
@@ -28,11 +29,12 @@ extern const char OP_1[];
 extern const char OP_2[];
 extern const char OP_3[];
 extern const char OP_4[];
-extern const char OP_a[];
 extern const char OP_a1[];
 extern const char OP_a2[];
 extern const char OP_a3[];
+extern const char OP_a[];
 extern const char OP_ah[];
+extern const char OP_angle[];
 extern const char OP_as[];
 extern const char OP_ax[];
 extern const char OP_ay[];
@@ -61,10 +63,10 @@ extern const char OP_calbx[];
 extern const char OP_calby[];
 extern const char OP_calbz[];
 extern const char OP_calge[];
-extern const char OP_calgr[];
 extern const char OP_calgr1[];
 extern const char OP_calgr2[];
 extern const char OP_calgr3[];
+extern const char OP_calgr[];
 extern const char OP_calha[];
 extern const char OP_calhe[];
 extern const char OP_calsv[];
@@ -85,10 +87,10 @@ extern const char OP_dimby[];
 extern const char OP_dimbz[];
 extern const char OP_dime[];
 extern const char OP_dimf[];
-extern const char OP_dimgr[];
 extern const char OP_dimgr1[];
 extern const char OP_dimgr2[];
 extern const char OP_dimgr3[];
+extern const char OP_dimgr[];
 extern const char OP_dimha1[];
 extern const char OP_dimha2[];
 extern const char OP_dimha3[];
@@ -116,10 +118,10 @@ extern const char OP_eu[];
 extern const char OP_f[];
 extern const char OP_fr[];
 extern const char OP_ge[];
-extern const char OP_gr[];
 extern const char OP_gr1[];
 extern const char OP_gr2[];
 extern const char OP_gr3[];
+extern const char OP_gr[];
 extern const char OP_ha1[];
 extern const char OP_ha2[];
 extern const char OP_ha3[];
@@ -155,6 +157,7 @@ extern const char OP_mov[];
 extern const char OP_mova1[];
 extern const char OP_mova2[];
 extern const char OP_mova3[];
+extern const char OP_movangle[];
 extern const char OP_movrx[];
 extern const char OP_movry[];
 extern const char OP_movrz[];

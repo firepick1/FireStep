@@ -1346,6 +1346,7 @@ void test_MTO_FPD_mov() {
     int32_t xpulses;
     int32_t ypulses;
     int32_t zpulses;
+	int32_t e0pulses;
 
     // movx short form
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -1467,13 +1468,13 @@ void test_MTO_FPD_mov() {
     arduino.setPin(PC2_Y_MIN_PIN, LOW);
     arduino.setPin(PC2_Z_MIN_PIN, LOW);
     machine.setMotorPosition(Quad<StepCoord>());
-    Serial.push(JT("{'mov':{'a':30,'d':10,'zr':-1}}\n"));
+    Serial.push(JT("{'mov':{'angle':30,'d':10,'zr':-1}}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
 	arduino.timer1(MS_TICKS(1000));
 	mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'a':30,'d':10,'zr':-1.000}},'t':1.199}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'angle':30,'d':10,'zr':-1.000}},'t':1.199}\n"),
                  Serial.output().c_str());
     ASSERTQUAD(Quad<StepCoord>(180,-167,180), machine.getMotorPosition());
 	xyz = mt.fpdController.getXYZ3D();
@@ -1598,6 +1599,54 @@ void test_MTO_FPD_mov() {
     ASSERTEQUAL(845, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTQUAD(Quad<StepCoord>(0,0,-845,0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'a3':-10.0}},'t':0.054}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // mova move fourth axis (nozzle)
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+	e0pulses = arduino.pulses(PC2_E0_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+    Serial.push(JT("{'mova':100}}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    for (int i=0; mt.status==STATUS_BUSY_CALIBRATING && i<1000; i++) {
+        mt.loop();
+    }
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(100, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
+    ASSERTQUAD(Quad<StepCoord>(0,0,0,100), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'mova':100.000},'t':0.148}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // mova move fourth axis (nozzle)
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+	e0pulses = arduino.pulses(PC2_E0_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+    Serial.push(JT("{'mov':{'a':50}}}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    for (int i=0; mt.status==STATUS_BUSY_CALIBRATING && i<1000; i++) {
+        mt.loop();
+    }
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(50, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
+    ASSERTQUAD(Quad<StepCoord>(0,0,0,50), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'a':50.000}},'t':0.105}\n"),
                  Serial.output().c_str());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);

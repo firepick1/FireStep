@@ -394,16 +394,20 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
             status = execute(jcmd, NULL);
         }
     } else if (strcmp_PS(OP_d, key) == 0) {
-        if (!jobj.at("a").success()) {
+		char keyword[10];
+		strcpy_P(keyword, OP_angle);
+        if (!jobj.at(keyword).success()) {
             return jcmd.setError(STATUS_FIELD_REQUIRED,"a");
         }
-    } else if (strcmp_PS(OP_a, key) == 0) {
+    } else if (strcmp_PS(OP_angle, key) == 0) {
         // polar CCW from X-axis around X0Y0
         if (!jobj.at("d").success()) {
             return jcmd.setError(STATUS_FIELD_REQUIRED,"d");
         }
         PH5TYPE d = jobj["d"];
-        PH5TYPE a = jobj["a"];
+		char keyword[10];
+		strcpy_P(keyword, OP_angle);
+        PH5TYPE a = jobj[keyword];
         PH5TYPE radians = a * PI / 180.0;
         PH5TYPE y = d * sin(radians);
         PH5TYPE x = d * cos(radians);

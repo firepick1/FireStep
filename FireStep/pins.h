@@ -86,6 +86,10 @@ enum PinConfig {
 
 #define PC1_PWR_SUPPLY_PIN     28
 
+#define PC1_E0_STEP_PIN        PC1_TOOL_STEP_PIN
+#define PC1_E0_DIR_PIN         PC1_TOOL_DIR_PIN
+#define PC1_E0_ENABLE_PIN      PC1_TOOL1_ENABLE_PIN
+
 
 ///////////////// PC2_RAMPS_1_4 ////////////////
 // Arduino Mega2560 with RAMPS v1.4 shield

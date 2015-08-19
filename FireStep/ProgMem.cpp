@@ -8,6 +8,7 @@ const char firestep::OP_2[] PROGMEM = { "2" };
 const char firestep::OP_3[] PROGMEM = { "3" };
 const char firestep::OP_4[] PROGMEM = { "4" };
 const char firestep::OP_a[] PROGMEM = { "a" };
+const char firestep::OP_angle[] PROGMEM = { "angle" };
 const char firestep::OP_a1[] PROGMEM = { "a1" };
 const char firestep::OP_a2[] PROGMEM = { "a2" };
 const char firestep::OP_a3[] PROGMEM = { "a3" };
@@ -129,6 +130,7 @@ const char firestep::OP_ma[] PROGMEM = { "ma" };
 const char firestep::OP_mi[] PROGMEM = { "mi" };
 const char firestep::OP_mov[] PROGMEM = { "mov" };
 const char firestep::OP_mova1[] PROGMEM = { "mova1" };
+const char firestep::OP_movangle[] PROGMEM = { "movangle" };
 const char firestep::OP_mova2[] PROGMEM = { "mova2" };
 const char firestep::OP_mova3[] PROGMEM = { "mova3" };
 const char firestep::OP_movrx[] PROGMEM = { "movrx" };
@@ -286,17 +288,17 @@ const char src_test2[] PROGMEM = {
     "{\"prbz\":\"\"},"\
     "{\"movzr\":10},"\
     "{\"mrkwp\":1},"\
-    "{\"mov\":{ \"zm\":3,\"a\":0,\"d\":50}},"\
+    "{\"mov\":{ \"zm\":3,\"angle\":0,\"d\":50}},"\
     "{\"prbz\":\"\"},"\
-    "{\"mov\":{\"zm\":3,\"a\":60,\"d\":50}},"\
+    "{\"mov\":{\"zm\":3,\"angle\":60,\"d\":50}},"\
     "{\"prbz\":\"\"},"\
-    "{\"mov\":{\"zm\":3,\"a\":120,\"d\":50}},"\
+    "{\"mov\":{\"zm\":3,\"angle\":120,\"d\":50}},"\
     "{\"prbz\":\"\"},"\
-    "{\"mov\":{\"zm\":3,\"a\":180,\"d\":50}},"\
+    "{\"mov\":{\"zm\":3,\"angle\":180,\"d\":50}},"\
     "{\"prbz\":\"\"},"\
-    "{\"mov\":{\"zm\":3,\"a\":240,\"d\":50}},"\
+    "{\"mov\":{\"zm\":3,\"angle\":240,\"d\":50}},"\
     "{\"prbz\":\"\"},"\
-    "{\"mov\":{\"zm\":3,\"a\":300,\"d\":50}},"\
+    "{\"mov\":{\"zm\":3,\"angle\":300,\"d\":50}},"\
     "{\"prbz\":\"\"},"\
     "{\"mov\":{\"zm\":3,\"x\":0,\"y\":0}},"\
     "{\"prbz\":\"\"},"\
