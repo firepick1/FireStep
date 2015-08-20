@@ -125,7 +125,7 @@ public:
 } FPDMoveTo;
 
 FPDMoveTo::FPDMoveTo(FPDController &controller, Machine& machine)
-    : nLoops(0), nSegs(0), machine(machine), controller(controller), isZBed(false)
+    : nLoops(0), nSegs(0), machine(machine), controller(controller), isZBed(false), isRaw(false)
 {
     machine.loadDeltaCalculator();
     StepCoord pulses = machine.delta.getHomePulses();
@@ -146,6 +146,7 @@ FPDMoveTo::FPDMoveTo(FPDController &controller, Machine& machine)
 
 Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
 	if (isRaw) {
+		TESTCOUT1("execute:", "isRaw");
 		return STATUS_OK;
 	}
     PH5TYPE x = destination.value[0];
@@ -178,12 +179,14 @@ Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     float ts = 0;
     float pp = 0;
     int16_t sg = 0;
-    if (!dPos.isZero()) {
+    if (dPos.isZero()) {
+		TESTCOUT1("execute:","dPos.isZero()");
+	} else {
         status = sb.buildLine(machine.stroke, dPos);
         if (status != STATUS_OK) {
             return status;
         }
-        Ticks tStrokeStart = ticks();
+        Ticks tStrokeStart = ticks()-1; // ensure that we always move
         status = machine.stroke.start(tStrokeStart);
         switch (status) {
         case STATUS_OK:
