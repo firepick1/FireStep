@@ -23,17 +23,17 @@ const char firestep::OP_by[] PROGMEM = { "by" };
 const char firestep::OP_bz[] PROGMEM = { "bz" };
 const char firestep::OP_c[] PROGMEM = { "c" };
 const char firestep::OP_cal[] PROGMEM = { "cal" };
-const char firestep::OP_cal_fpd_bed_coarse[] PROGMEM = { "cal-fpd-bed-coarse" };
-const char firestep::OP_cal_fpd_bed_medium[] PROGMEM = { "cal-fpd-bed-medium" };
-const char firestep::OP_cal_fpd_bed_fine[] PROGMEM = { "cal-fpd-bed-fine" };
 const char firestep::OP_cal_coarse[] PROGMEM = { "cal-coarse" };
 const char firestep::OP_cal_fine[] PROGMEM = { "cal-fine" };
-const char firestep::OP_cal_gear[] PROGMEM = { "cal-gear" };
-const char firestep::OP_cal_gear_coarse[] PROGMEM = { "cal-gear-coarse" };
-const char firestep::OP_cal_gear_fine[] PROGMEM = { "cal-gear-fine" };
+const char firestep::OP_cal_fpd_bed_coarse[] PROGMEM = { "cal-fpd-bed-coarse" };
+const char firestep::OP_cal_fpd_bed_fine[] PROGMEM = { "cal-fpd-bed-fine" };
+const char firestep::OP_cal_fpd_bed_medium[] PROGMEM = { "cal-fpd-bed-medium" };
 const char firestep::OP_cal_fpd_home_coarse[] PROGMEM = { "cal-fpd-home-coarse" };
 const char firestep::OP_cal_fpd_home_fine[] PROGMEM = { "cal-fpd-home-fine" };
 const char firestep::OP_cal_fpd_home_medium[] PROGMEM = { "cal-fpd-home-medium" };
+const char firestep::OP_cal_gear[] PROGMEM = { "cal-gear" };
+const char firestep::OP_cal_gear_coarse[] PROGMEM = { "cal-gear-coarse" };
+const char firestep::OP_cal_gear_fine[] PROGMEM = { "cal-gear-fine" };
 const char firestep::OP_calbx[] PROGMEM = { "calbx" };
 const char firestep::OP_calby[] PROGMEM = { "calby" };
 const char firestep::OP_calbz[] PROGMEM = { "calbz" };
@@ -91,6 +91,7 @@ const char firestep::OP_eep[] PROGMEM = { "eep" };
 const char firestep::OP_en[] PROGMEM = { "en" };
 const char firestep::OP_eu[] PROGMEM = { "eu" };
 const char firestep::OP_f[] PROGMEM = { "f" };
+const char firestep::OP_fpd_hex_probe[] PROGMEM = { "fpd-hex-probe" };
 const char firestep::OP_fr[] PROGMEM = { "fr" };
 const char firestep::OP_ge[] PROGMEM = { "ge" };
 const char firestep::OP_gr1[] PROGMEM = { "gr1" };
@@ -103,7 +104,6 @@ const char firestep::OP_ha3[] PROGMEM = { "ha3" };
 const char firestep::OP_ha[] PROGMEM = { "ha" };
 const char firestep::OP_he[] PROGMEM = { "he" };
 const char firestep::OP_help[] PROGMEM = { "help" };
-const char firestep::OP_fpd_hex_probe[] PROGMEM = { "fpd-hex-probe" };
 const char firestep::OP_ho[] PROGMEM = { "ho" };
 const char firestep::OP_hom[] PROGMEM = { "hom" };
 const char firestep::OP_hp[] PROGMEM = { "hp" };
@@ -326,24 +326,18 @@ const char src_test2[] PROGMEM = {
     "{\"mov\":{\"zm\":3,\"x\":0,\"y\":0}},"\
     "{\"prbz\":\"\"}"
 
-#define CAL_FPD_HOME_MEDIUM \
+#define CAL_FPD_HOME_COARSE \
 	HEX_PROBE "," \
-    "{\"cal\":{\"ha\":\"\",\"sv\":1.0}},"\
-    HEX_PROBE_CW ","\
     "{\"cal\":{\"bz\":\"\",\"ha\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}," \
     "{\"dim\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"hom\":\"\"}}"
 
-#define CAL_FPD_HOME_COARSE \
+#define CAL_FPD_HOME_MEDIUM \
 	HEX_PROBE "," \
-    "{\"cal\":{\"ha\":\"\",\"sv\":0.7}},"\
-    HEX_PROBE_CW ","\
     "{\"cal\":{\"bz\":\"\",\"ha\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}," \
     "{\"dim\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"hom\":\"\"}}"
 
 #define CAL_FPD_HOME_FINE \
 	HEX_PROBE "," \
-    "{\"cal\":{\"ha\":\"\",\"sv\":0.3}},"\
-    HEX_PROBE_CW ","\
     "{\"cal\":{\"bz\":\"\",\"ha\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}," \
     "{\"dim\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"hom\":\"\"}}"
 

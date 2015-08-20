@@ -828,6 +828,7 @@ Status FPDController::finalizeHome() {
         status = STATUS_OK;
     } else if (status == STATUS_OK) {
         // we hit something and that's not good
+		TESTCOUT1("finalizeHome:", "COLLISION");
         status = STATUS_LIMIT_MAX;
     }
 

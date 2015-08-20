@@ -4661,7 +4661,7 @@ void test_pgm() {
 
     // pgmd: dump program
     MachineThread mt = test_MTO_FPD_setup();
-	Machine& machine = mt.machine;
+    Machine& machine = mt.machine;
     Serial.push(JT("{'pgmd':'test'}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -4711,13 +4711,13 @@ void test_pgm() {
     test_pgm_parse("fpd-hex-probe");
 
     // pgmx: dim-fpd
-	machine.delta.setGearRatio(9); // wrong value
+    machine.delta.setGearRatio(9); // wrong value
     machine.delta.setBaseTriangleSide(180); // wrong value
     machine.delta.setEffectorTriangleSide(123); // wrong value
     machine.delta.setBaseArmLength(80); // wrong value
     machine.delta.setEffectorLength(230);
     machine.delta.setHomeAngle(66); // wrong value
-	machine.homePulses = -1234; // wrong value
+    machine.homePulses = -1234; // wrong value
     Serial.push(JT("{'pgmx':'dim-fpd'}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -4727,22 +4727,50 @@ void test_pgm() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop(); // program
     ASSERTEQUAL(STATUS_OK, mt.status);
-	double pi = 3.14159265359;
-	double GT2_pitch_length_offset = 0.75;
-	double gearRatioFPD = (300/pi+2*GT2_pitch_length_offset)*pi/2/16;
-	printf("%.12lf", gearRatioFPD);
-	ASSERTEQUALT(gearRatioFPD, machine.delta.getGearRatio(), 0.000001);
-	ASSERTEQUALT(131.636, machine.delta.getEffectorTriangleSide(), 0.001);
-	ASSERTEQUALT(190.526, machine.delta.getBaseTriangleSide(), 0.001);
-	ASSERTEQUALT(270.000, machine.delta.getEffectorLength(), 0.001);
-	ASSERTEQUALT(90.000, machine.delta.getBaseArmLength(), 0.001);
-	ASSERTEQUAL(-1234, machine.homePulses); // still custom value
+    double pi = 3.14159265359;
+    double GT2_pitch_length_offset = 0.75;
+    double gearRatioFPD = (300/pi+2*GT2_pitch_length_offset)*pi/2/16;
+    printf("%.12lf", gearRatioFPD);
+    ASSERTEQUALT(gearRatioFPD, machine.delta.getGearRatio(), 0.000001);
+    ASSERTEQUALT(131.636, machine.delta.getEffectorTriangleSide(), 0.001);
+    ASSERTEQUALT(190.526, machine.delta.getBaseTriangleSide(), 0.001);
+    ASSERTEQUALT(270.000, machine.delta.getEffectorLength(), 0.001);
+    ASSERTEQUALT(90.000, machine.delta.getBaseArmLength(), 0.001);
+    ASSERTEQUAL(-1234, machine.homePulses); // still custom value
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
-					"{'gr':9.522,'ha':-67.200,'e':131.636,'f':190.526,'re':270.000,'rf':90.000}}"
+                    "{'gr':9.522,'ha':-67.200,'e':131.636,'f':190.526,'re':270.000,'rf':90.000}}"
                     ",'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    //// pmgx: cal-fpd-home-coarse
+    //machine.outputMode = (OutputMode)1;
+    //machine.setMotorPosition(Quad<StepCoord>());
+    //Serial.push(JT("{'pgmx':'cal-fpd-home-coarse'}\n"));
+    //do {
+        //if (machine.axis[0].position > 2000 && 
+			//machine.axis[1].position > 2000 && 
+			//machine.axis[2].position > 2000) {
+            //arduino.setPin(PC2_PROBE_PIN, LOW);
+        //} else {
+            //arduino.setPin(PC2_PROBE_PIN, HIGH);
+        //}
+		//arduino.setPin(PC2_X_MIN_PIN, machine.axis[0].position < -5600 ? LOW : HIGH);
+		//arduino.setPin(PC2_Y_MIN_PIN, machine.axis[1].position < -5600 ? LOW : HIGH);
+		//arduino.setPin(PC2_Z_MIN_PIN, machine.axis[2].position < -5600 ? LOW : HIGH);
+        //mt.loop();
+        //string s = Serial.output();
+        //if (s.length() > 0) {
+            //cout << "Serial	:" << s << endl;
+			//TESTCOUT3(" position: ", machine.axis[0].position,
+				//",", machine.axis[1].position,
+				//",", machine.axis[2].position);
+        //}
+		//arduino.timer1(MS_TICKS(1));
+    //} while(mt.status > 0);
+    //mt.loop();
+    //ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     cout << "TEST	: test_pgm() OK " << endl;
 }
@@ -4836,8 +4864,8 @@ int main(int argc, char *argv[]) {
         test_mark();
         test_ZPlane();
         test_pgm();
-		test_gearRatio();
-		test_cal_arm();
+        test_gearRatio();
+        test_cal_arm();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;
