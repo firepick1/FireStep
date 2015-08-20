@@ -12,19 +12,14 @@ v0.2.3
 * NEW: "calgr3" calibrate gear ratio for arm 3 at given angle in degrees
 * FIX: static strings now stored in PROGMEM to free up SRAM
 * FIX: "sys" no longer overwrites custom pin configuration on query
-* NEW: "syspb" sets probe pin
+* NEW: "syspb" sets custom probe pin
 * NEW: "dimhp" user provided home pulses 
-* NEW: {"pgmx":"cal"}             Use hex probe to calibrate home angle, gear ratio and Z-bed plane (non-adaptive)
-* NEW: {"pgmx":"cal-coarse"}      Use hex probe to calibrate home angle, gear ratio and Z-bed plane (adaptive coarse)
-* NEW: {"pgmx":"cal-fine"}        Use hex probe to calibrate home angle, gear ratio and Z-bed plane (adaptive fine)
-* NEW: {"pgmx":"cal-gear"}        Use hex probe to calibrate gear ratio and Z-bed plane (non-adaptive)
-* NEW: {"pgmx":"cal-gear-coarse"} Use hex probe to calibrate gear ratio and Z-bed plane (adaptive coarse)
-* NEW: {"pgmx":"cal-gear-fine"}   Use hex probe to calibrate gear ratio and Z-bed plane (adaptive fine)
-* NEW: {"pgmx":"cal-home"}        Use hex probe to calibrate home angle and Z-bed plane (non-adaptive)
+* NEW: {"pgmx":"dim-fpd"} Set default FirePick Delta dimensions
 * NEW: {"pgmx":"cal-home-coarse"} Use hex probe to calibrate home angle and Z-bed plane (adaptive coarse)
+* NEW: {"pgmx":"cal-home-medium"} Use hex probe to calibrate home angle and Z-bed plane (adaptive medium)
 * NEW: {"pgmx":"cal-home-fine"}   Use hex probe to calibrate home angle and Z-bed plane (adaptive fine)
-* NEW: {"pgmx":"cal-bed"}         Use hex probe to calibrate Z-bed plane (non-adaptive)
 * NEW: {"pgmx":"cal-bed-coarse"}  Use hex probe to calibrate Z-bed plane (adaptive coarse)
+* NEW: {"pgmx":"cal-bed-medium"}  Use hex probe to calibrate Z-bed plane (adaptive medium)
 * NEW: {"pgmx":"cal-bed-fine"}    Use hex probe to calibrate Z-bed plane (adaptive fine)
 
 v0.2.2

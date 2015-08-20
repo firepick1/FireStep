@@ -4582,6 +4582,7 @@ void test_msg_cmt_idl() {
 }
 
 void test_pgm_parse(const char *pgm) {
+	TESTCOUT1("test_pgm_parse:", pgm);
     JsonCommand jc;
     const char *s;
     ASSERTEQUALS("", Serial.output().c_str());
@@ -4680,20 +4681,20 @@ void test_pgm() {
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     // check syntax of pgm sources
-    test_pgm_parse("cal");
-    test_pgm_parse("cal-coarse");
-    test_pgm_parse("cal-fine");
-    test_pgm_parse("cal-bed");
-    test_pgm_parse("cal-bed-coarse");
-    test_pgm_parse("cal-bed-fine");
-    test_pgm_parse("cal-gear");
-    test_pgm_parse("cal-gear-coarse");
-    test_pgm_parse("cal-gear-fine");
-    test_pgm_parse("cal-home");
-    test_pgm_parse("cal-home-coarse");
-    test_pgm_parse("cal-home-fine");
+    //test_pgm_parse("cal");
+    //test_pgm_parse("cal-coarse");
+    //test_pgm_parse("cal-fine");
+    test_pgm_parse("cal-fpd-bed-coarse");
+    test_pgm_parse("cal-fpd-bed-medium");
+    test_pgm_parse("cal-fpd-bed-fine");
+    //test_pgm_parse("cal-gear");
+    //test_pgm_parse("cal-gear-coarse");
+    //test_pgm_parse("cal-gear-fine");
+    test_pgm_parse("cal-fpd-home-coarse");
+    test_pgm_parse("cal-fpd-home-medium");
+    test_pgm_parse("cal-fpd-home-fine");
     test_pgm_parse("dim-fpd");
-    test_pgm_parse("hex-probe");
+    test_pgm_parse("fpd-hex-probe");
 
     // pgmx: dim-fpd
 	machine.delta.setGearRatio(9); // wrong value
@@ -4723,7 +4724,7 @@ void test_pgm() {
 	ASSERTEQUALT(90.000, machine.delta.getBaseArmLength(), 0.001);
 	ASSERTEQUAL(-1234, machine.homePulses); // still custom value
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
-					"{'gr':9.522,'ha':67.200,'e':131.636,'f':190.526,'re':270.000,'rf':90.000}}"
+					"{'gr':9.522,'ha':-67.200,'e':131.636,'f':190.526,'re':270.000,'rf':90.000}}"
                     ",'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();

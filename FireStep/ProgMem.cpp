@@ -23,17 +23,17 @@ const char firestep::OP_by[] PROGMEM = { "by" };
 const char firestep::OP_bz[] PROGMEM = { "bz" };
 const char firestep::OP_c[] PROGMEM = { "c" };
 const char firestep::OP_cal[] PROGMEM = { "cal" };
-const char firestep::OP_cal_bed[] PROGMEM = { "cal-bed" };
-const char firestep::OP_cal_bed_coarse[] PROGMEM = { "cal-bed-coarse" };
-const char firestep::OP_cal_bed_fine[] PROGMEM = { "cal-bed-fine" };
+const char firestep::OP_cal_fpd_bed_coarse[] PROGMEM = { "cal-fpd-bed-coarse" };
+const char firestep::OP_cal_fpd_bed_medium[] PROGMEM = { "cal-fpd-bed-medium" };
+const char firestep::OP_cal_fpd_bed_fine[] PROGMEM = { "cal-fpd-bed-fine" };
 const char firestep::OP_cal_coarse[] PROGMEM = { "cal-coarse" };
 const char firestep::OP_cal_fine[] PROGMEM = { "cal-fine" };
 const char firestep::OP_cal_gear[] PROGMEM = { "cal-gear" };
 const char firestep::OP_cal_gear_coarse[] PROGMEM = { "cal-gear-coarse" };
 const char firestep::OP_cal_gear_fine[] PROGMEM = { "cal-gear-fine" };
-const char firestep::OP_cal_home[] PROGMEM = { "cal-home" };
-const char firestep::OP_cal_home_coarse[] PROGMEM = { "cal-home-coarse" };
-const char firestep::OP_cal_home_fine[] PROGMEM = { "cal-home-fine" };
+const char firestep::OP_cal_fpd_home_coarse[] PROGMEM = { "cal-fpd-home-coarse" };
+const char firestep::OP_cal_fpd_home_fine[] PROGMEM = { "cal-fpd-home-fine" };
+const char firestep::OP_cal_fpd_home_medium[] PROGMEM = { "cal-fpd-home-medium" };
 const char firestep::OP_calbx[] PROGMEM = { "calbx" };
 const char firestep::OP_calby[] PROGMEM = { "calby" };
 const char firestep::OP_calbz[] PROGMEM = { "calbz" };
@@ -103,7 +103,7 @@ const char firestep::OP_ha3[] PROGMEM = { "ha3" };
 const char firestep::OP_ha[] PROGMEM = { "ha" };
 const char firestep::OP_he[] PROGMEM = { "he" };
 const char firestep::OP_help[] PROGMEM = { "help" };
-const char firestep::OP_hex_probe[] PROGMEM = { "hex-probe" };
+const char firestep::OP_fpd_hex_probe[] PROGMEM = { "fpd-hex-probe" };
 const char firestep::OP_ho[] PROGMEM = { "ho" };
 const char firestep::OP_hom[] PROGMEM = { "hom" };
 const char firestep::OP_hp[] PROGMEM = { "hp" };
@@ -259,19 +259,19 @@ const char src_help[] PROGMEM = {
     "{\"msg\":\"Program names are:\"},"
     "{\"msg\":\"  help             print this help text\"},"
     "{\"msg\":\"  test             print test message\"},"
-    "{\"msg\":\"  cal              Use hex probe to calibrate home angle, gear ratio and Z-bed plane (non-adaptive)\"}"
-    "{\"msg\":\"  cal-coarse       Use hex probe to calibrate home angle, gear ratio and Z-bed plane (adaptive coarse)\"}"
-    "{\"msg\":\"  cal-fine         Use hex probe to calibrate home angle, gear ratio and Z-bed plane (adaptive fine)\"}"
-    "{\"msg\":\"  cal-gear         Use hex probe to calibrate gear ratio and Z-bed plane (non-adaptive)\"}"
-    "{\"msg\":\"  cal-gear-coarse  Use hex probe to calibrate gear ratio and Z-bed plane (adaptive coarse)\"}"
-    "{\"msg\":\"  cal-gear-fine    Use hex probe to calibrate gear ratio and Z-bed plane (adaptive fine)\"}"
-    "{\"msg\":\"  cal-home         Use hex probe to calibrate home angle and Z-bed plane (non-adaptive)\"}"
-    "{\"msg\":\"  cal-home-coarse  Use hex probe to calibrate home angle and Z-bed plane (adaptive coarse)\"}"
-    "{\"msg\":\"  cal-home-fine    Use hex probe to calibrate home angle and Z-bed plane (adaptive fine)\"}"
-    "{\"msg\":\"  cal-bed    	   Use hex probe to calibrate Z-bed plane (non-adaptive)\"}"
-    "{\"msg\":\"  cal-bed-coarse   Use hex probe to calibrate Z-bed plane (adaptive coarse)\"}"
-    "{\"msg\":\"  cal-bed-fine     Use hex probe to calibrate Z-bed plane (adaptive fine)\"}"
-    "{\"msg\":\"  hex-probe        Perform hex probe and return probe Z-data\"}"
+    //"{\"msg\":\"  cal              Use hex probe to calibrate home angle, gear ratio and Z-bed plane (non-adaptive)\"}"
+    //"{\"msg\":\"  cal-coarse       Use hex probe to calibrate home angle, gear ratio and Z-bed plane (adaptive coarse)\"}"
+    //"{\"msg\":\"  cal-fine         Use hex probe to calibrate home angle, gear ratio and Z-bed plane (adaptive fine)\"}"
+    //"{\"msg\":\"  cal-gear         Use hex probe to calibrate gear ratio and Z-bed plane (non-adaptive)\"}"
+    //"{\"msg\":\"  cal-gear-coarse  Use hex probe to calibrate gear ratio and Z-bed plane (adaptive coarse)\"}"
+    //"{\"msg\":\"  cal-gear-fine    Use hex probe to calibrate gear ratio and Z-bed plane (adaptive fine)\"}"
+    "{\"msg\":\"  cal-fpd-home-coarse  Use hex probe to calibrate FPD home angle and Z-bed plane (adaptive coarse)\"}"
+    "{\"msg\":\"  cal-fpd-home-medium  Use hex probe to calibrate FPD home angle and Z-bed plane (adaptive medium)\"}"
+    "{\"msg\":\"  cal-fpd-home-fine    Use hex probe to calibrate FPD home angle and Z-bed plane (adaptive fine)\"}"
+    "{\"msg\":\"  cal-fpd-bed-coarse   Use hex probe to calibrate FPD Z-bed plane (adaptive coarse)\"}"
+    "{\"msg\":\"  cal-fpd-bed-medium   Use hex probe to calibrate FPD Z-bed plane (adaptive medium)\"}"
+    "{\"msg\":\"  cal-fpd-bed-fine     Use hex probe to calibrate FPD Z-bed plane (adaptive fine)\"}"
+    "{\"msg\":\"  fpd-hex-probe        Perform hex probe and return probe Z-data\"}"
     "]"
 };
 
@@ -304,9 +304,48 @@ const char src_test2[] PROGMEM = {
     "{\"mov\":{\"zm\":3,\"angle\":300,\"d\":50}},"\
     "{\"prbz\":\"\"},"\
     "{\"mov\":{\"zm\":3,\"x\":0,\"y\":0}},"\
+    "{\"prbz\":\"\"}"
+
+#define HEX_PROBE_CW \
+    "{\"hom\":\"\"},"\
     "{\"prbz\":\"\"},"\
-    "{\"movwp\":1},"\
-	"{\"prbd\":\"\"}"
+    "{\"movzr\":10},"\
+    "{\"mrkwp\":1},"\
+    "{\"mov\":{\"zm\":3,\"angle\":300,\"d\":50}},"\
+    "{\"prbz\":\"\"},"\
+    "{\"mov\":{\"zm\":3,\"angle\":240,\"d\":50}},"\
+    "{\"prbz\":\"\"},"\
+    "{\"mov\":{\"zm\":3,\"angle\":180,\"d\":50}},"\
+    "{\"prbz\":\"\"},"\
+    "{\"mov\":{\"zm\":3,\"angle\":120,\"d\":50}},"\
+    "{\"prbz\":\"\"},"\
+    "{\"mov\":{\"zm\":3,\"angle\":60,\"d\":50}},"\
+    "{\"prbz\":\"\"},"\
+    "{\"mov\":{ \"zm\":3,\"angle\":0,\"d\":50}},"\
+    "{\"prbz\":\"\"},"\
+    "{\"mov\":{\"zm\":3,\"x\":0,\"y\":0}},"\
+    "{\"prbz\":\"\"}"
+
+#define CAL_FPD_HOME_MEDIUM \
+	HEX_PROBE "," \
+    "{\"cal\":{\"ha\":\"\",\"sv\":1.0}},"\
+    HEX_PROBE_CW ","\
+    "{\"cal\":{\"bz\":\"\",\"ha\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}," \
+    "{\"dim\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"hom\":\"\"}}"
+
+#define CAL_FPD_HOME_COARSE \
+	HEX_PROBE "," \
+    "{\"cal\":{\"ha\":\"\",\"sv\":0.7}},"\
+    HEX_PROBE_CW ","\
+    "{\"cal\":{\"bz\":\"\",\"ha\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}," \
+    "{\"dim\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"hom\":\"\"}}"
+
+#define CAL_FPD_HOME_FINE \
+	HEX_PROBE "," \
+    "{\"cal\":{\"ha\":\"\",\"sv\":0.3}},"\
+    HEX_PROBE_CW ","\
+    "{\"cal\":{\"bz\":\"\",\"ha\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}," \
+    "{\"dim\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"hom\":\"\"}}"
 
 const char src_calibrate[] PROGMEM = {
     "[" HEX_PROBE ","
@@ -326,40 +365,34 @@ const char src_cal_coarse[] PROGMEM = {
     "]"
 };
 
-const char src_cal_bed[] PROGMEM = {
-    "[" HEX_PROBE ","
-    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"he\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}"
-    "]"
-};
-
-const char src_cal_bed_fine[] PROGMEM = {
+const char src_cal_fpd_bed_fine[] PROGMEM = {
     "[" HEX_PROBE ","
     "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"he\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
-const char src_cal_bed_coarse[] PROGMEM = {
+const char src_cal_fpd_bed_medium[] PROGMEM = {
     "[" HEX_PROBE ","
     "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"he\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
-const char src_cal_home[] PROGMEM = {
+const char src_cal_fpd_bed_coarse[] PROGMEM = {
     "[" HEX_PROBE ","
-    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"ha\":\"\",\"he\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}"
+    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"he\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}"
     "]"
 };
 
-const char src_cal_home_coarse[] PROGMEM = {
-    "[" HEX_PROBE ","
-    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"ha\":\"\",\"he\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
-    "]"
+const char src_cal_fpd_home_medium[] PROGMEM = {
+    "[" CAL_FPD_HOME_MEDIUM "]"
 };
 
-const char src_cal_home_fine[] PROGMEM = {
-    "[" HEX_PROBE ","
-    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"ha\":\"\",\"he\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
-    "]"
+const char src_cal_fpd_home_coarse[] PROGMEM = {
+    "[" CAL_FPD_HOME_COARSE "]"
+};
+
+const char src_cal_fpd_home_fine[] PROGMEM = {
+    "[" CAL_FPD_HOME_FINE "]"
 };
 
 const char src_cal_gear[] PROGMEM = {
@@ -380,13 +413,13 @@ const char src_cal_gear_fine[] PROGMEM = {
     "]"
 };
 
-const char src_hex_probe[] PROGMEM = {
+const char src_fpd_hex_probe[] PROGMEM = {
     "[" HEX_PROBE "]"
 };
 
 const char src_dim_fpd[] PROGMEM = {
     "[" 
-	"{\"dim\":{\"gr\":9.522262155637,\"ha\":67.2,\"e\":131.636,\"f\":190.526,\"re\":270.000,\"rf\":90.000}}"
+	"{\"dim\":{\"gr\":9.522262155637,\"ha\":-67.2,\"e\":131.636,\"f\":190.526,\"re\":270.000,\"rf\":90.000}}"
 	"]"
 };
 
@@ -395,21 +428,21 @@ const char *firestep::prog_src(const char *name) {
 
     } else if (strcmp_PS(OP_test2, name) == 0) { return src_test2;
     } else if (strcmp_PS(OP_test1, name) == 0) { return src_test1;
-    } else if (strcmp_PS(OP_hex_probe, name) == 0) { return src_hex_probe;
+    } else if (strcmp_PS(OP_fpd_hex_probe, name) == 0) { return src_fpd_hex_probe;
     } else if (strcmp_PS(OP_help, name) == 0) { return src_help;
     } else if (strcmp_PS(OP_dim_fpd, name) == 0) { return src_dim_fpd;
-    } else if (strcmp_PS(OP_cal_home_fine, name) == 0) { return src_cal_home_fine;
-    } else if (strcmp_PS(OP_cal_home_coarse, name) == 0) { return src_cal_home_coarse;
-    } else if (strcmp_PS(OP_cal_home, name) == 0) { return src_cal_home;
-    } else if (strcmp_PS(OP_cal_gear_fine, name) == 0) { return src_cal_gear_fine;
-    } else if (strcmp_PS(OP_cal_gear_coarse, name) == 0) { return src_cal_gear_coarse;
-    } else if (strcmp_PS(OP_cal_gear, name) == 0) { return src_cal_gear;
-    } else if (strcmp_PS(OP_cal_fine, name) == 0) { return src_cal_fine;
-    } else if (strcmp_PS(OP_cal_coarse, name) == 0) { return src_cal_coarse;
-    } else if (strcmp_PS(OP_cal_bed_fine, name) == 0) { return src_cal_bed_fine;
-    } else if (strcmp_PS(OP_cal_bed_coarse, name) == 0) { return src_cal_bed_coarse;
-    } else if (strcmp_PS(OP_cal_bed, name) == 0) { return src_cal_bed;
-    } else if (strcmp_PS(OP_cal, name) == 0) { return src_calibrate;
+    } else if (strcmp_PS(OP_cal_fpd_home_fine, name) == 0) { return src_cal_fpd_home_fine;
+    } else if (strcmp_PS(OP_cal_fpd_home_medium, name) == 0) { return src_cal_fpd_home_medium;
+    } else if (strcmp_PS(OP_cal_fpd_home_coarse, name) == 0) { return src_cal_fpd_home_coarse;
+    //} else if (strcmp_PS(OP_cal_gear_fine, name) == 0) { return src_cal_gear_fine;
+    //} else if (strcmp_PS(OP_cal_gear_coarse, name) == 0) { return src_cal_gear_coarse;
+    //} else if (strcmp_PS(OP_cal_gear, name) == 0) { return src_cal_gear;
+    //} else if (strcmp_PS(OP_cal_fine, name) == 0) { return src_cal_fine;
+    //} else if (strcmp_PS(OP_cal_coarse, name) == 0) { return src_cal_coarse;
+    } else if (strcmp_PS(OP_cal_fpd_bed_fine, name) == 0) { return src_cal_fpd_bed_fine;
+    } else if (strcmp_PS(OP_cal_fpd_bed_medium, name) == 0) { return src_cal_fpd_bed_medium;
+    } else if (strcmp_PS(OP_cal_fpd_bed_coarse, name) == 0) { return src_cal_fpd_bed_coarse;
+    //} else if (strcmp_PS(OP_cal, name) == 0) { return src_calibrate;
 	} else if (strcmp_PS(OP_test, name) == 0) { return src_test2; 
 
     }
@@ -419,7 +452,7 @@ const char *firestep::prog_src(const char *name) {
 
 Status firestep::prog_dump(const char *name) {
     const char *src = prog_src(name);
-    TESTCOUT2("prog_dump:", name, " src:", src);
+    TESTCOUT3("prog_dump:", name, " bytes:", (strlen_P(src)+1), " src:", src);
 
     for (size_t i = 0; i<MAX_JSON; i++) {
         char c = pgm_read_byte_near(src + i);
