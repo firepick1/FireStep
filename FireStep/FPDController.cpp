@@ -257,23 +257,23 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
     if (strcmp_PS(OP_mov, key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["lp"] = "";
-            node["mv"] = "";
-            node["pp"] = "";
-            node["sg"] = "";
-            node["tp"] = "";
-            node["ts"] = "";
+            JsonController::clearJsonObjectAttr(node, OP_lp);
+            JsonController::clearJsonObjectAttr(node, OP_mv);
+            JsonController::clearJsonObjectAttr(node, OP_pp);
+            JsonController::clearJsonObjectAttr(node, OP_sg);
+            JsonController::clearJsonObjectAttr(node, OP_tp);
+            JsonController::clearJsonObjectAttr(node, OP_ts);
             if (machine.getMotorAxis(0).isEnabled()) {
-                node["1"] = "";
+                JsonController::clearJsonObjectAttr(node, OP_1);
             }
             if (machine.getMotorAxis(1).isEnabled()) {
-                node["2"] = "";
+                JsonController::clearJsonObjectAttr(node, OP_2);
             }
             if (machine.getMotorAxis(2).isEnabled()) {
-                node["3"] = "";
+                JsonController::clearJsonObjectAttr(node, OP_3);
             }
             if (machine.getMotorAxis(3).isEnabled()) {
-                node["4"] = "";
+                JsonController::clearJsonObjectAttr(node, OP_4);
             }
         }
         JsonObject& kidObj = jobj[key];
@@ -456,13 +456,13 @@ Status FPDController::processPosition(JsonCommand &jcmd, JsonObject& jobj, const
     if (strlen(key) == 3) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["1"] = "";
-            node["2"] = "";
-            node["3"] = "";
-            node["4"] = "";
-            node["x"] = "";
-            node["y"] = "";
-            node["z"] = "";
+            clearJsonObjectAttr(node, OP_1);
+            clearJsonObjectAttr(node, OP_2);
+            clearJsonObjectAttr(node, OP_3);
+            clearJsonObjectAttr(node, OP_4);
+            clearJsonObjectAttr(node, OP_x);
+            clearJsonObjectAttr(node, OP_y);
+            clearJsonObjectAttr(node, OP_z);
             if (!node.at("4").success()) {
                 return jcmd.setError(STATUS_JSON_KEY, "4");
             }
@@ -538,13 +538,13 @@ Status FPDController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& job
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
             xyzEnd.z = machine.delta.getMinZ(xyzEnd.z, xyzEnd.y);
-            node["1"] = "";
-            node["2"] = "";
-            node["3"] = "";
-            node["4"] = "";
-            node["ip"] = "";
-            node["pn"] = machine.op.probe.pinProbe;
-            node["sd"] = "";
+            clearJsonObjectAttr(node, OP_1);
+            clearJsonObjectAttr(node, OP_2);
+            clearJsonObjectAttr(node, OP_3);
+            clearJsonObjectAttr(node, OP_4);
+            clearJsonObjectAttr(node, OP_ip);
+            node["pb"] = machine.op.probe.pinProbe;
+            clearJsonObjectAttr(node, OP_sd);
             node["x"] = xyzEnd.x;
             node["y"] = xyzEnd.y;
             node["z"] = xyzEnd.z;
@@ -558,13 +558,15 @@ Status FPDController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& job
                 }
             }
             if (status == STATUS_BUSY_CALIBRATING && machine.op.probe.pinProbe==NOPIN) {
-                return jcmd.setError(STATUS_FIELD_REQUIRED, "pn");
+                return jcmd.setError(STATUS_FIELD_REQUIRED, "pb");
             }
         }
     } else if (strcmp_PS(OP_prbip, key) == 0 || strcmp_PS(OP_ip, key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.op.probe.invertProbe);
-    } else if (strcmp_PS(OP_prbpn, key) == 0 || strcmp_PS(OP_pn, key) == 0) {
+    } else if (strcmp_PS(OP_prbpb, key) == 0 || strcmp_PS(OP_pb, key) == 0) {
         status = processField<PinType, int32_t>(jobj, key, machine.op.probe.pinProbe);
+    } else if (strcmp_PS(OP_prbpn, key) == 0 || strcmp_PS(OP_pn, key) == 0) { // legacy
+        status = processField<PinType, int32_t>(jobj, key, machine.op.probe.pinProbe); // legacy
     } else if (strcmp_PS(OP_prbsd, key) == 0 || strcmp_PS(OP_sd, key) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else if (strcmp_PS(OP_prbx, key) == 0 || strcmp_PS(OP_x, key) == 0) {
@@ -663,18 +665,18 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["bx"] = "";
-            node["by"] = "";
-            node["bz"] = "";
-            node["e"] = "";
-            node["f"] = "";
-            node["gr"] = "";
-            node["ha"] = "";
-            node["hp"] = "";
-            node["mi"] = "";
-            node["re"] = "";
-            node["rf"] = "";
-            node["st"] = "";
+            clearJsonObjectAttr(node, OP_bx);
+            clearJsonObjectAttr(node, OP_by);
+            clearJsonObjectAttr(node, OP_bz);
+            clearJsonObjectAttr(node, OP_e);
+            clearJsonObjectAttr(node, OP_f);
+            clearJsonObjectAttr(node, OP_gr);
+            clearJsonObjectAttr(node, OP_ha);
+            clearJsonObjectAttr(node, OP_hp);
+            clearJsonObjectAttr(node, OP_mi);
+            clearJsonObjectAttr(node, OP_re);
+            clearJsonObjectAttr(node, OP_rf);
+            clearJsonObjectAttr(node, OP_st);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -770,10 +772,10 @@ Status FPDController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["1"] = "";
-            node["2"] = "";
-            node["3"] = "";
-            node["4"] = "";
+            clearJsonObjectAttr(node, OP_1);
+            clearJsonObjectAttr(node, OP_2);
+            clearJsonObjectAttr(node, OP_3);
+            clearJsonObjectAttr(node, OP_4);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -887,16 +889,16 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
     if (strcmp_PS(OP_cal, key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["bx"] = "";
-            node["by"] = "";
-            node["bz"] = "";
-            node["gr"] = "";
-            node["ge"] = "";
-            node["ha"] = "";
-            node["he"] = "";
-            node["sv"] = "";
-            node["zc"] = "";
-            node["zr"] = "";
+            clearJsonObjectAttr(node, OP_bx);
+            clearJsonObjectAttr(node, OP_by);
+            clearJsonObjectAttr(node, OP_bz);
+            clearJsonObjectAttr(node, OP_gr);
+            clearJsonObjectAttr(node, OP_ge);
+            clearJsonObjectAttr(node, OP_ha);
+            clearJsonObjectAttr(node, OP_he);
+            clearJsonObjectAttr(node, OP_sv);
+            clearJsonObjectAttr(node, OP_zc);
+            clearJsonObjectAttr(node, OP_zr);
         }
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {

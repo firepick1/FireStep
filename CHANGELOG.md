@@ -4,12 +4,15 @@ FireStep: change log
 v0.2.3
 ------
 * CHG: MTO_FPD "mov:{a,d}" changed to "mov:{angle,d}" move in XY plane to polar coordinate `d` millimeters from X0Y0 at `angle` degrees CCW from x-axis.
+* CHG: prb pn attribute deprecated in favor of "pb" to match "syspb"
 * FIX: "movrx" is now identified as a bad command (the correct command is "movxr")
 * NEW: "calsv" provides adaptive calibration via exponential smoothing
 * NEW: "calgr1" calibrate gear ratio for arm 1 at given angle in degrees
 * NEW: "calgr2" calibrate gear ratio for arm 2 at given angle in degrees
 * NEW: "calgr3" calibrate gear ratio for arm 3 at given angle in degrees
 * FIX: static strings now stored in PROGMEM to free up SRAM
+* FIX: "sys" no longer overwrites custom pin configuration on query
+* NEW: "syspb" sets probe pin
 * NEW: "dimhp" user provided home pulses 
 * NEW: {"pgmx":"cal"}             Use hex probe to calibrate home angle, gear ratio and Z-bed plane (non-adaptive)
 * NEW: {"pgmx":"cal-coarse"}      Use hex probe to calibrate home angle, gear ratio and Z-bed plane (adaptive coarse)

@@ -759,7 +759,7 @@ void test_JsonController() {
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
                       "{'ah':false,'as':false,'ch':-2128988886,'eu':false,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
-                      "'lp':0,'mv':12800,'om':0,'pc':2,'pi':11,'sd':800,'tc':12345,"\
+                      "'lp':0,'mv':12800,'om':0,'pb':2,'pc':2,'pi':11,'sd':800,'tc':12345,"\
                       "'to':0,'tv':0.700,'v':%.3f}"\
                       "},'t':0.000}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
@@ -1249,6 +1249,7 @@ void test_sys() {
 
     MachineThread mt = test_setup();
     Machine &machine = mt.machine;
+
     ASSERTEQUAL(800, machine.searchDelay);
     ASSERTEQUAL(MTO_RAW, machine.topology);
     Serial.push(JT("{'systo':1,'syssd':400}\n"));
@@ -1257,8 +1258,39 @@ void test_sys() {
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(400, machine.searchDelay);
+	ASSERTEQUAL(11, machine.pinStatus);
     ASSERTEQUAL(MTO_FPD, machine.topology);
     ASSERTEQUALS(JT("{'s':0,'r':{'systo':1,'syssd':400},'t':0.000}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	// syspi: custom pin status
+    Serial.push(JT("{'syspi':57}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(400, machine.searchDelay);
+	ASSERTEQUAL(57, machine.pinStatus);
+    ASSERTEQUAL(MTO_FPD, machine.topology);
+    ASSERTEQUALS(JT("{'s':0,'r':{'syspi':57},'t':0.000}\n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    Serial.push(JT("{'sys':''}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(400, machine.searchDelay);
+	ASSERTEQUAL(57, machine.pinStatus);
+    ASSERTEQUAL(MTO_FPD, machine.topology);
+    ASSERTEQUALS(JT("{'s':0,'r':"
+					"{'sys':{'ah':false,'as':false,'ch':1032997939,'eu':false,'fr':1000,"
+					"'hp':3,'jp':false,'lb':200,'lh':false,'lp':0,'mv':12800,'om':0,"
+					"'pb':2,'pc':2,'pi':57,'sd':400,'tc':5,'to':1,'tv':0.700,'v':2.030}"
+					"},'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -1850,7 +1882,7 @@ void test_MTO_FPD_prb() {
     ASSERTQUAD(Quad<StepCoord>(1096, 1096, 1096, 100), mt.machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'prb':"
                     "{'1':1096,'2':1096,'3':1096,'4':100,'ip':false,"
-                    "'pn':2,'sd':800,'x':0.000,'y':-0.000,'z':-21.142}},'t':6.016}\n"),
+                    "'pb':2,'sd':800,'x':0.000,'y':-0.000,'z':-21.142}},'t':6.016}\n"),
                  Serial.output().c_str());
     test_ticks(1);	// tripped
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);

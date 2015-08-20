@@ -104,23 +104,23 @@ Status MTO_RAWMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* k
     if (strcmp_PS(OP_mov, key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["lp"] = "";
-            node["mv"] = "";
-            node["pp"] = "";
-            node["sg"] = "";
-            node["tp"] = "";
-            node["ts"] = "";
+            JsonController::clearJsonObjectAttr(node, OP_lp);
+            JsonController::clearJsonObjectAttr(node, OP_mv);
+            JsonController::clearJsonObjectAttr(node, OP_pp);
+            JsonController::clearJsonObjectAttr(node, OP_sg);
+            JsonController::clearJsonObjectAttr(node, OP_tp);
+            JsonController::clearJsonObjectAttr(node, OP_ts);
             if (machine.getMotorAxis(0).isEnabled()) {
-                node["1"] = "";
+                JsonController::clearJsonObjectAttr(node, OP_1);
             }
             if (machine.getMotorAxis(1).isEnabled()) {
-                node["2"] = "";
+                JsonController::clearJsonObjectAttr(node, OP_2);
             }
             if (machine.getMotorAxis(2).isEnabled()) {
-                node["3"] = "";
+                JsonController::clearJsonObjectAttr(node, OP_3);
             }
             if (machine.getMotorAxis(3).isEnabled()) {
-                node["4"] = "";
+                JsonController::clearJsonObjectAttr(node, OP_4);
             }
         }
         JsonObject& kidObj = jobj[key];
@@ -213,10 +213,10 @@ Status RawController::processPosition(JsonCommand &jcmd, JsonObject& jobj, const
     if (strlen(key) == 3) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["1"] = "";
-            node["2"] = "";
-            node["3"] = "";
-            node["4"] = "";
+            clearJsonObjectAttr(node, OP_1);
+            clearJsonObjectAttr(node, OP_2);
+            clearJsonObjectAttr(node, OP_3);
+            clearJsonObjectAttr(node, OP_4);
             if (!node.at("4").success()) {
                 return jcmd.setError(STATUS_JSON_KEY, "4");
             }
@@ -261,13 +261,13 @@ Status RawController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["1"] = "";
-            node["2"] = "";
-            node["3"] = "";
-            node["4"] = "";
-            node["ip"] = "";
-            node["pn"] = "";
-            node["sd"] = "";
+            clearJsonObjectAttr(node, OP_1);
+            clearJsonObjectAttr(node, OP_2);
+            clearJsonObjectAttr(node, OP_3);
+            clearJsonObjectAttr(node, OP_4);
+            clearJsonObjectAttr(node, OP_ip);
+            clearJsonObjectAttr(node, OP_pn);
+            clearJsonObjectAttr(node, OP_sd);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -345,10 +345,10 @@ Status RawController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["1"] = "";
-            node["2"] = "";
-            node["3"] = "";
-            node["4"] = "";
+            clearJsonObjectAttr(node, OP_1);
+            clearJsonObjectAttr(node, OP_2);
+            clearJsonObjectAttr(node, OP_3);
+            clearJsonObjectAttr(node, OP_4);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {

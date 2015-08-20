@@ -19,6 +19,13 @@ JsonController& JsonController::operator=(JsonController& that) {
     return *this;
 }
 
+void JsonController::clearJsonObjectAttr(JsonObject& node, const char *key) {
+	char buf[MAX_ATTR_BYTES];
+	strcpy_P(buf, key);
+	char empty[1] = {0};
+	node[key] = empty;
+}
+
 AxisIndex JsonController::axisOf(char c) {
     switch (c) {
     default:
@@ -222,7 +229,7 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
     if (strlen(key) == 1) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["ma"] = "";
+            clearJsonObjectAttr(node, OP_ma);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -264,23 +271,23 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
     if (strlen(key) == 1) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["dh"] = "";
-            node["en"] = "";
-            node["ho"] = "";
-            node["is"] = "";
-            node["lm"] = "";
-            node["ln"] = "";
-            node["mi"] = "";
-            node["pd"] = "";
-            node["pe"] = "";
-            node["pm"] = "";
-            node["pn"] = "";
-            node["po"] = "";
-            node["ps"] = "";
-            node["sa"] = "";
-            node["tm"] = "";
-            node["tn"] = "";
-            node["ud"] = "";
+            clearJsonObjectAttr(node, OP_dh);
+            clearJsonObjectAttr(node, OP_en);
+            clearJsonObjectAttr(node, OP_ho);
+            clearJsonObjectAttr(node, OP_is);
+            clearJsonObjectAttr(node, OP_lm);
+            clearJsonObjectAttr(node, OP_ln);
+            clearJsonObjectAttr(node, OP_mi);
+            clearJsonObjectAttr(node, OP_pd);
+            clearJsonObjectAttr(node, OP_pe);
+            clearJsonObjectAttr(node, OP_pm);
+            clearJsonObjectAttr(node, OP_pn);
+            clearJsonObjectAttr(node, OP_po);
+            clearJsonObjectAttr(node, OP_ps);
+            clearJsonObjectAttr(node, OP_sa);
+            clearJsonObjectAttr(node, OP_tm);
+            clearJsonObjectAttr(node, OP_tn);
+            clearJsonObjectAttr(node, OP_ud);
             if (!node.at("ud").success()) {
                 return jcmd.setError(STATUS_JSON_KEY, "ud");
             }
@@ -449,14 +456,14 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
     if (strcmp_PS(OP_tstph, key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["lp"] = "";
-            node["mv"] = "";
-            node["pp"] = "";
-            node["pu"] = "";
-            node["sg"] = "";
-            node["ts"] = "";
-            node["tp"] = "";
-            node["tv"] = "";
+            JsonController::clearJsonObjectAttr(node, OP_lp);
+            JsonController::clearJsonObjectAttr(node, OP_mv);
+            JsonController::clearJsonObjectAttr(node, OP_pp);
+            JsonController::clearJsonObjectAttr(node, OP_pu);
+            JsonController::clearJsonObjectAttr(node, OP_sg);
+            JsonController::clearJsonObjectAttr(node, OP_ts);
+            JsonController::clearJsonObjectAttr(node, OP_tp);
+            JsonController::clearJsonObjectAttr(node, OP_tv);
         }
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {
@@ -568,25 +575,26 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["ah"] = "";
-            node["as"] = "";
-            node["ch"] = "";
-            node["eu"] = "";
-            node["fr"] = "";
-            node["hp"] = "";
-            node["jp"] = "";
-            node["lb"] = "";
-            node["lh"] = "";
-            node["lp"] = "";
-            node["mv"] = "";
-            node["om"] = "";
-            node["pc"] = "";
-            node["pi"] = "";
-            node["sd"] = "";
-            node["tc"] = "";
-            node["to"] = "";
-            node["tv"] = "";
-            node["v"] = "";
+            clearJsonObjectAttr(node, OP_ah);
+            clearJsonObjectAttr(node, OP_as);
+            clearJsonObjectAttr(node, OP_ch);
+            clearJsonObjectAttr(node, OP_eu);
+            clearJsonObjectAttr(node, OP_fr);
+            clearJsonObjectAttr(node, OP_hp);
+            clearJsonObjectAttr(node, OP_jp);
+            clearJsonObjectAttr(node, OP_lb);
+            clearJsonObjectAttr(node, OP_lh);
+            clearJsonObjectAttr(node, OP_lp);
+            clearJsonObjectAttr(node, OP_mv);
+            clearJsonObjectAttr(node, OP_om);
+            clearJsonObjectAttr(node, OP_pb);
+            clearJsonObjectAttr(node, OP_pc);
+            clearJsonObjectAttr(node, OP_pi);
+            clearJsonObjectAttr(node, OP_sd);
+            clearJsonObjectAttr(node, OP_tc);
+            clearJsonObjectAttr(node, OP_to);
+            clearJsonObjectAttr(node, OP_tv);
+            clearJsonObjectAttr(node, OP_v);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -639,16 +647,17 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp_PS(OP_pc, key) == 0 || strcmp_PS(OP_syspc, key) == 0) {
         PinConfig pc = machine.getPinConfig();
         status = processField<PinConfig, int32_t>(jobj, key, pc);
-        const char *s;
-        if ((s = jobj.at(key)) && *s == 0) { // query
-            // do nothing
-        } else {
+		if (pc != machine.getPinConfig()) {
             machine.setPinConfig(pc);
-        }
+		}
+    } else if (strcmp_PS(OP_pb, key) == 0 || strcmp_PS(OP_pb, key + 1) == 0) {
+        status = processPin(jobj, key, machine.op.probe.pinProbe, INPUT);
     } else if (strcmp_PS(OP_pi, key) == 0 || strcmp_PS(OP_syspi, key) == 0) {
         PinType pinStatus = machine.pinStatus;
+		TESTCOUT1("pinStatus:", (int) pinStatus);
         status = processField<PinType, int32_t>(jobj, key, pinStatus);
         if (pinStatus != machine.pinStatus) {
+			TESTCOUT1("pinStatus new:", (int) pinStatus);
             machine.pinStatus = pinStatus;
             machine.pDisplay->setup(pinStatus);
         }
@@ -871,15 +880,15 @@ Status JsonController::processMark(JsonCommand& jcmd, JsonObject& jobj, const ch
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["m1"] = "";
-            node["m2"] = "";
-            node["m3"] = "";
-            node["m4"] = "";
-            node["m5"] = "";
-            node["m6"] = "";
-            node["m7"] = "";
-            node["m8"] = "";
-            node["m9"] = "";
+            clearJsonObjectAttr(node, OP_m1);
+            clearJsonObjectAttr(node, OP_m2);
+            clearJsonObjectAttr(node, OP_m3);
+            clearJsonObjectAttr(node, OP_m4);
+            clearJsonObjectAttr(node, OP_m5);
+            clearJsonObjectAttr(node, OP_m6);
+            clearJsonObjectAttr(node, OP_m7);
+            clearJsonObjectAttr(node, OP_m8);
+            clearJsonObjectAttr(node, OP_m9);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -932,11 +941,11 @@ Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            node["cb"] = "";
-            node["cg"] = "";
-            node["cr"] = "";
-            node["dl"] = "";
-            node["ds"] = "";
+            clearJsonObjectAttr(node, OP_cb);
+            clearJsonObjectAttr(node, OP_cg);
+            clearJsonObjectAttr(node, OP_cr);
+            clearJsonObjectAttr(node, OP_dl);
+            clearJsonObjectAttr(node, OP_ds);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {

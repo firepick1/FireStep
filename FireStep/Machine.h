@@ -28,6 +28,7 @@ namespace firestep {
 #define EEUSER 2000
 #define EEUSER_ENABLED (EEUSER-1)
 #define MARK_COUNT 9
+#define MAX_ATTR_BYTES 30
 
 typedef int16_t DelayMics; // delay microseconds
 #ifdef TEST
