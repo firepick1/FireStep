@@ -814,7 +814,7 @@ Status JsonController::processProgram(JsonCommand& jcmd, JsonObject& jobj, const
         for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
             status = processProgram(jcmd, kidObj, it->key);
         }
-    } else if (strcmp_PS(OP_r,key)==0 || strcmp_PS(OP_pgmd,key)==0) {
+    } else if (strcmp_PS(OP_d,key)==0 || strcmp_PS(OP_pgmd,key)==0) {
         const char * name = jobj[key];
         status = prog_dump(name);
     } else if (strcmp_PS(OP_x,key)==0 || strcmp_PS(OP_pgmx,key)==0) {
