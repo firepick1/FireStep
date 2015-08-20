@@ -8,7 +8,6 @@
 #include "Machine.h"
 #include "JsonCommand.h"
 #include "DeltaCalculator.h"
-#include "jansson.h"
 
 namespace firestep {
 
