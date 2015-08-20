@@ -257,23 +257,23 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
     if (strcmp_PS(OP_mov, key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            JsonController::clearJsonObjectAttr(node, OP_lp);
-            JsonController::clearJsonObjectAttr(node, OP_mv);
-            JsonController::clearJsonObjectAttr(node, OP_pp);
-            JsonController::clearJsonObjectAttr(node, OP_sg);
-            JsonController::clearJsonObjectAttr(node, OP_tp);
-            JsonController::clearJsonObjectAttr(node, OP_ts);
+            jcmd.addQueryAttr(node, OP_lp);
+            jcmd.addQueryAttr(node, OP_mv);
+            jcmd.addQueryAttr(node, OP_pp);
+            jcmd.addQueryAttr(node, OP_sg);
+            jcmd.addQueryAttr(node, OP_tp);
+            jcmd.addQueryAttr(node, OP_ts);
             if (machine.getMotorAxis(0).isEnabled()) {
-                JsonController::clearJsonObjectAttr(node, OP_1);
+                jcmd.addQueryAttr(node, OP_1);
             }
             if (machine.getMotorAxis(1).isEnabled()) {
-                JsonController::clearJsonObjectAttr(node, OP_2);
+                jcmd.addQueryAttr(node, OP_2);
             }
             if (machine.getMotorAxis(2).isEnabled()) {
-                JsonController::clearJsonObjectAttr(node, OP_3);
+                jcmd.addQueryAttr(node, OP_3);
             }
             if (machine.getMotorAxis(3).isEnabled()) {
-                JsonController::clearJsonObjectAttr(node, OP_4);
+                jcmd.addQueryAttr(node, OP_4);
             }
         }
         JsonObject& kidObj = jobj[key];
@@ -456,13 +456,13 @@ Status FPDController::processPosition(JsonCommand &jcmd, JsonObject& jobj, const
     if (strlen(key) == 3) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            clearJsonObjectAttr(node, OP_1);
-            clearJsonObjectAttr(node, OP_2);
-            clearJsonObjectAttr(node, OP_3);
-            clearJsonObjectAttr(node, OP_4);
-            clearJsonObjectAttr(node, OP_x);
-            clearJsonObjectAttr(node, OP_y);
-            clearJsonObjectAttr(node, OP_z);
+            jcmd.addQueryAttr(node, OP_1);
+            jcmd.addQueryAttr(node, OP_2);
+            jcmd.addQueryAttr(node, OP_3);
+            jcmd.addQueryAttr(node, OP_4);
+            jcmd.addQueryAttr(node, OP_x);
+            jcmd.addQueryAttr(node, OP_y);
+            jcmd.addQueryAttr(node, OP_z);
             if (!node.at("4").success()) {
                 return jcmd.setError(STATUS_JSON_KEY, "4");
             }
@@ -538,13 +538,13 @@ Status FPDController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& job
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
             xyzEnd.z = machine.delta.getMinZ(xyzEnd.z, xyzEnd.y);
-            clearJsonObjectAttr(node, OP_1);
-            clearJsonObjectAttr(node, OP_2);
-            clearJsonObjectAttr(node, OP_3);
-            clearJsonObjectAttr(node, OP_4);
-            clearJsonObjectAttr(node, OP_ip);
+            jcmd.addQueryAttr(node, OP_1);
+            jcmd.addQueryAttr(node, OP_2);
+            jcmd.addQueryAttr(node, OP_3);
+            jcmd.addQueryAttr(node, OP_4);
+            jcmd.addQueryAttr(node, OP_ip);
             node["pb"] = machine.op.probe.pinProbe;
-            clearJsonObjectAttr(node, OP_sd);
+            jcmd.addQueryAttr(node, OP_sd);
             node["x"] = xyzEnd.x;
             node["y"] = xyzEnd.y;
             node["z"] = xyzEnd.z;
@@ -665,18 +665,18 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            clearJsonObjectAttr(node, OP_bx);
-            clearJsonObjectAttr(node, OP_by);
-            clearJsonObjectAttr(node, OP_bz);
-            clearJsonObjectAttr(node, OP_e);
-            clearJsonObjectAttr(node, OP_f);
-            clearJsonObjectAttr(node, OP_gr);
-            clearJsonObjectAttr(node, OP_ha);
-            clearJsonObjectAttr(node, OP_hp);
-            clearJsonObjectAttr(node, OP_mi);
-            clearJsonObjectAttr(node, OP_re);
-            clearJsonObjectAttr(node, OP_rf);
-            clearJsonObjectAttr(node, OP_st);
+            jcmd.addQueryAttr(node, OP_bx);
+            jcmd.addQueryAttr(node, OP_by);
+            jcmd.addQueryAttr(node, OP_bz);
+            jcmd.addQueryAttr(node, OP_e);
+            jcmd.addQueryAttr(node, OP_f);
+            jcmd.addQueryAttr(node, OP_gr);
+            jcmd.addQueryAttr(node, OP_ha);
+            jcmd.addQueryAttr(node, OP_hp);
+            jcmd.addQueryAttr(node, OP_mi);
+            jcmd.addQueryAttr(node, OP_re);
+            jcmd.addQueryAttr(node, OP_rf);
+            jcmd.addQueryAttr(node, OP_st);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -772,10 +772,10 @@ Status FPDController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            clearJsonObjectAttr(node, OP_1);
-            clearJsonObjectAttr(node, OP_2);
-            clearJsonObjectAttr(node, OP_3);
-            clearJsonObjectAttr(node, OP_4);
+            jcmd.addQueryAttr(node, OP_1);
+            jcmd.addQueryAttr(node, OP_2);
+            jcmd.addQueryAttr(node, OP_3);
+            jcmd.addQueryAttr(node, OP_4);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -889,16 +889,16 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
     if (strcmp_PS(OP_cal, key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            clearJsonObjectAttr(node, OP_bx);
-            clearJsonObjectAttr(node, OP_by);
-            clearJsonObjectAttr(node, OP_bz);
-            clearJsonObjectAttr(node, OP_gr);
-            clearJsonObjectAttr(node, OP_ge);
-            clearJsonObjectAttr(node, OP_ha);
-            clearJsonObjectAttr(node, OP_he);
-            clearJsonObjectAttr(node, OP_sv);
-            clearJsonObjectAttr(node, OP_zc);
-            clearJsonObjectAttr(node, OP_zr);
+            jcmd.addQueryAttr(node, OP_bx);
+            jcmd.addQueryAttr(node, OP_by);
+            jcmd.addQueryAttr(node, OP_bz);
+            jcmd.addQueryAttr(node, OP_gr);
+            jcmd.addQueryAttr(node, OP_ge);
+            jcmd.addQueryAttr(node, OP_ha);
+            jcmd.addQueryAttr(node, OP_he);
+            jcmd.addQueryAttr(node, OP_sv);
+            jcmd.addQueryAttr(node, OP_zc);
+            jcmd.addQueryAttr(node, OP_zr);
         }
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {

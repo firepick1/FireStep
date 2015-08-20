@@ -50,7 +50,6 @@ public:
     JsonController(Machine& machine);
 
 public:
-	static void clearJsonObjectAttr(JsonObject& node, const char *key);
     void sendResponse(JsonCommand& jcmd, Status status);
     Status processObj(JsonCommand& jcmd, JsonObject&jobj);
     JsonController& operator=(JsonController& that);

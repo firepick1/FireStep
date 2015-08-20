@@ -19,13 +19,6 @@ JsonController& JsonController::operator=(JsonController& that) {
     return *this;
 }
 
-void JsonController::clearJsonObjectAttr(JsonObject& node, const char *key) {
-	char buf[MAX_ATTR_BYTES];
-	strcpy_P(buf, key);
-	char empty[1] = {0};
-	node[key] = empty;
-}
-
 AxisIndex JsonController::axisOf(char c) {
     switch (c) {
     default:
@@ -229,7 +222,7 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
     if (strlen(key) == 1) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            clearJsonObjectAttr(node, OP_ma);
+            jcmd.addQueryAttr(node, OP_ma);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -271,23 +264,23 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
     if (strlen(key) == 1) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            clearJsonObjectAttr(node, OP_dh);
-            clearJsonObjectAttr(node, OP_en);
-            clearJsonObjectAttr(node, OP_ho);
-            clearJsonObjectAttr(node, OP_is);
-            clearJsonObjectAttr(node, OP_lm);
-            clearJsonObjectAttr(node, OP_ln);
-            clearJsonObjectAttr(node, OP_mi);
-            clearJsonObjectAttr(node, OP_pd);
-            clearJsonObjectAttr(node, OP_pe);
-            clearJsonObjectAttr(node, OP_pm);
-            clearJsonObjectAttr(node, OP_pn);
-            clearJsonObjectAttr(node, OP_po);
-            clearJsonObjectAttr(node, OP_ps);
-            clearJsonObjectAttr(node, OP_sa);
-            clearJsonObjectAttr(node, OP_tm);
-            clearJsonObjectAttr(node, OP_tn);
-            clearJsonObjectAttr(node, OP_ud);
+            jcmd.addQueryAttr(node, OP_dh);
+            jcmd.addQueryAttr(node, OP_en);
+            jcmd.addQueryAttr(node, OP_ho);
+            jcmd.addQueryAttr(node, OP_is);
+            jcmd.addQueryAttr(node, OP_lm);
+            jcmd.addQueryAttr(node, OP_ln);
+            jcmd.addQueryAttr(node, OP_mi);
+            jcmd.addQueryAttr(node, OP_pd);
+            jcmd.addQueryAttr(node, OP_pe);
+            jcmd.addQueryAttr(node, OP_pm);
+            jcmd.addQueryAttr(node, OP_pn);
+            jcmd.addQueryAttr(node, OP_po);
+            jcmd.addQueryAttr(node, OP_ps);
+            jcmd.addQueryAttr(node, OP_sa);
+            jcmd.addQueryAttr(node, OP_tm);
+            jcmd.addQueryAttr(node, OP_tn);
+            jcmd.addQueryAttr(node, OP_ud);
             if (!node.at("ud").success()) {
                 return jcmd.setError(STATUS_JSON_KEY, "ud");
             }
@@ -456,14 +449,14 @@ Status PHSelfTest::process(JsonCommand& jcmd, JsonObject& jobj, const char* key)
     if (strcmp_PS(OP_tstph, key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            JsonController::clearJsonObjectAttr(node, OP_lp);
-            JsonController::clearJsonObjectAttr(node, OP_mv);
-            JsonController::clearJsonObjectAttr(node, OP_pp);
-            JsonController::clearJsonObjectAttr(node, OP_pu);
-            JsonController::clearJsonObjectAttr(node, OP_sg);
-            JsonController::clearJsonObjectAttr(node, OP_ts);
-            JsonController::clearJsonObjectAttr(node, OP_tp);
-            JsonController::clearJsonObjectAttr(node, OP_tv);
+            jcmd.addQueryAttr(node, OP_lp);
+            jcmd.addQueryAttr(node, OP_mv);
+            jcmd.addQueryAttr(node, OP_pp);
+            jcmd.addQueryAttr(node, OP_pu);
+            jcmd.addQueryAttr(node, OP_sg);
+            jcmd.addQueryAttr(node, OP_ts);
+            jcmd.addQueryAttr(node, OP_tp);
+            jcmd.addQueryAttr(node, OP_tv);
         }
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {
@@ -575,26 +568,26 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            clearJsonObjectAttr(node, OP_ah);
-            clearJsonObjectAttr(node, OP_as);
-            clearJsonObjectAttr(node, OP_ch);
-            clearJsonObjectAttr(node, OP_eu);
-            clearJsonObjectAttr(node, OP_fr);
-            clearJsonObjectAttr(node, OP_hp);
-            clearJsonObjectAttr(node, OP_jp);
-            clearJsonObjectAttr(node, OP_lb);
-            clearJsonObjectAttr(node, OP_lh);
-            clearJsonObjectAttr(node, OP_lp);
-            clearJsonObjectAttr(node, OP_mv);
-            clearJsonObjectAttr(node, OP_om);
-            clearJsonObjectAttr(node, OP_pb);
-            clearJsonObjectAttr(node, OP_pc);
-            clearJsonObjectAttr(node, OP_pi);
-            clearJsonObjectAttr(node, OP_sd);
-            clearJsonObjectAttr(node, OP_tc);
-            clearJsonObjectAttr(node, OP_to);
-            clearJsonObjectAttr(node, OP_tv);
-            clearJsonObjectAttr(node, OP_v);
+            jcmd.addQueryAttr(node, OP_ah);
+            jcmd.addQueryAttr(node, OP_as);
+            jcmd.addQueryAttr(node, OP_ch);
+            jcmd.addQueryAttr(node, OP_eu);
+            jcmd.addQueryAttr(node, OP_fr);
+            jcmd.addQueryAttr(node, OP_hp);
+            jcmd.addQueryAttr(node, OP_jp);
+            jcmd.addQueryAttr(node, OP_lb);
+            jcmd.addQueryAttr(node, OP_lh);
+            jcmd.addQueryAttr(node, OP_lp);
+            jcmd.addQueryAttr(node, OP_mv);
+            jcmd.addQueryAttr(node, OP_om);
+            jcmd.addQueryAttr(node, OP_pb);
+            jcmd.addQueryAttr(node, OP_pc);
+            jcmd.addQueryAttr(node, OP_pi);
+            jcmd.addQueryAttr(node, OP_sd);
+            jcmd.addQueryAttr(node, OP_tc);
+            jcmd.addQueryAttr(node, OP_to);
+            jcmd.addQueryAttr(node, OP_tv);
+            jcmd.addQueryAttr(node, OP_v);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -654,10 +647,8 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         status = processPin(jobj, key, machine.op.probe.pinProbe, INPUT);
     } else if (strcmp_PS(OP_pi, key) == 0 || strcmp_PS(OP_syspi, key) == 0) {
         PinType pinStatus = machine.pinStatus;
-		TESTCOUT1("pinStatus:", (int) pinStatus);
         status = processField<PinType, int32_t>(jobj, key, pinStatus);
         if (pinStatus != machine.pinStatus) {
-			TESTCOUT1("pinStatus new:", (int) pinStatus);
             machine.pinStatus = pinStatus;
             machine.pDisplay->setup(pinStatus);
         }
@@ -880,15 +871,15 @@ Status JsonController::processMark(JsonCommand& jcmd, JsonObject& jobj, const ch
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            clearJsonObjectAttr(node, OP_m1);
-            clearJsonObjectAttr(node, OP_m2);
-            clearJsonObjectAttr(node, OP_m3);
-            clearJsonObjectAttr(node, OP_m4);
-            clearJsonObjectAttr(node, OP_m5);
-            clearJsonObjectAttr(node, OP_m6);
-            clearJsonObjectAttr(node, OP_m7);
-            clearJsonObjectAttr(node, OP_m8);
-            clearJsonObjectAttr(node, OP_m9);
+            jcmd.addQueryAttr(node, OP_m1);
+            jcmd.addQueryAttr(node, OP_m2);
+            jcmd.addQueryAttr(node, OP_m3);
+            jcmd.addQueryAttr(node, OP_m4);
+            jcmd.addQueryAttr(node, OP_m5);
+            jcmd.addQueryAttr(node, OP_m6);
+            jcmd.addQueryAttr(node, OP_m7);
+            jcmd.addQueryAttr(node, OP_m8);
+            jcmd.addQueryAttr(node, OP_m9);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -941,11 +932,11 @@ Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            clearJsonObjectAttr(node, OP_cb);
-            clearJsonObjectAttr(node, OP_cg);
-            clearJsonObjectAttr(node, OP_cr);
-            clearJsonObjectAttr(node, OP_dl);
-            clearJsonObjectAttr(node, OP_ds);
+            jcmd.addQueryAttr(node, OP_cb);
+            jcmd.addQueryAttr(node, OP_cg);
+            jcmd.addQueryAttr(node, OP_cr);
+            jcmd.addQueryAttr(node, OP_dl);
+            jcmd.addQueryAttr(node, OP_ds);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {

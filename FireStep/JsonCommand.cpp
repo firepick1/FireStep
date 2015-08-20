@@ -5,6 +5,7 @@
 #endif
 #include "version.h"
 #include "JsonCommand.h"
+#include "ProgMem.h"
 
 using namespace firestep;
 
@@ -22,6 +23,16 @@ size_t JsonCommand::requestCapacity() {
 
 size_t JsonCommand::responseAvailable() {
     return jbResponse.capacity() - jbResponse.size();
+}
+
+void JsonCommand::addQueryAttr(JsonObject& node, const char *key) {
+	char *buf = JsonCommand::allocate(strlen_P(key)+1);
+	if (buf) {
+		strcpy_P(buf, key);
+		node[buf] = "";
+	} else {
+		TESTCOUT1("ERROR:", "############ addQueryAttr OUT OF MEMORY ##############");
+	}
 }
 
 void JsonCommand::responseClear() {
@@ -112,12 +123,13 @@ Status JsonCommand::parseInput(const char *jsonIn, Status status) {
         return STATUS_BUSY_PARSED;
     }
     if (jsonIn && (jsonIn < json || json+MAX_JSON < jsonIn)) {
-        snprintf(json, sizeof(json), "%s", jsonIn);
-        //TESTCOUT1("parseInput:", (int) jsonIn[0]);
-        if (strcmp(jsonIn, json) != 0) {
-            parsed = true;
+		size_t len = strlen(jsonIn)+1;
+		char *buf = allocate(len);
+		parsed = true;
+		if (!buf) {
             return STATUS_JSON_TOO_LONG;
         }
+		snprintf(buf, len, "%s", jsonIn);
         return parseCore();
     } else if (pJsonFree == json || status == STATUS_WAIT_EOL) {
         while (Serial.available()) {
