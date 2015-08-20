@@ -230,9 +230,9 @@ void test_Machine() {
 	ASSERTEQUALS(JT("{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveSysConfig(buf, sizeof(buf));
-#define HASH1 "-2128988824"
+#define HASH1 "-2128992920"
 	ASSERTEQUALS(JT("{'ch':" HASH1 ",'pc':2,'to':0,'ah':0,'as':0,'db':0,'hp':3,'jp':0,'lb':200,'lh':0,"
-				 "'mv':12800,'om':0,'pi':11,'tv':0.70}"), 
+				 "'mv':12800,'om':0,'pb':2,'pi':11,'tv':0.70}"), 
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	machine.bed.a = 0.00015;
@@ -758,7 +758,7 @@ void test_JsonController() {
     mt.process(jcmd);
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
-                      "{'ah':false,'as':false,'ch':-2128988886,'eu':false,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
+                      "{'ah':false,'as':false,'ch':-2128992982,'eu':false,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
                       "'lp':0,'mv':12800,'om':0,'pb':2,'pc':2,'pi':11,'sd':800,'tc':12345,"\
                       "'to':0,'tv':0.700,'v':%.3f}"\
                       "},'t':0.000}\n";
@@ -1287,7 +1287,7 @@ void test_sys() {
 	ASSERTEQUAL(57, machine.pinStatus);
     ASSERTEQUAL(MTO_FPD, machine.topology);
     ASSERTEQUALS(JT("{'s':0,'r':"
-					"{'sys':{'ah':false,'as':false,'ch':1032997939,'eu':false,'fr':1000,"
+					"{'sys':{'ah':false,'as':false,'ch':1033002035,'eu':false,'fr':1000,"
 					"'hp':3,'jp':false,'lb':200,'lh':false,'lp':0,'mv':12800,'om':0,"
 					"'pb':2,'pc':2,'pi':57,'sd':400,'tc':5,'to':1,'tv':0.700,'v':2.030}"
 					"},'t':0.000}\n"),
@@ -3047,7 +3047,7 @@ void test_autoSync() {
     int32_t hash3 = machine.hash();
     ASSERT(hash2 != hash3);
     ASSERTEQUAL(false, machine.axis[4].isEnabled());
-#define HASH3 "-2128202232"
+#define HASH3 "-2128206328"
     snprintf(buf, sizeof(buf), "%ld", (long) hash3);
     ASSERTEQUALS(HASH3, buf);
 
@@ -3055,7 +3055,7 @@ void test_autoSync() {
     string eeprom3 = eeprom_read_string(0);
     ASSERTEQUALS(JT( "["
                      "{'sys':{'ch':" HASH3 ",'pc':2,'to':0,'ah':1,'as':1,'db':0,'hp':3,'jp':0,"
-                     "'lb':200,'lh':0,'mv':12800,'om':3,'pi':11,'tv':0.70}},"
+                     "'lb':200,'lh':0,'mv':12800,'om':3,'pb':2,'pi':11,'tv':0.70}},"
                      "{'x':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'y':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'z':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
@@ -3092,7 +3092,7 @@ void test_autoSync() {
     ASSERTEQUALS(eeprom3.c_str(), eeprom_read_string(0).c_str());
     ASSERTEQUALS(JT("{'s':0,'r':"
                     "{'sys':{'ch':" HASH3 ",'pc':2,'to':0,'ah':true,'as':true,'db':0,'hp':3,"
-                    "'jp':false,'lb':200,'lh':false,'mv':12800,'om':3,'pi':11,'tv':0.700}},"
+                    "'jp':false,'lb':200,'lh':false,'mv':12800,'om':3,'pb':2,'pi':11,'tv':0.700}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop(); // x

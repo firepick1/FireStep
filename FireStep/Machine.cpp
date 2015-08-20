@@ -272,6 +272,7 @@ int32_t Machine::hash() {
                      ^ ((uint32_t) outputMode << 8)
                      ^ ((uint32_t) topology << 9)
                      ^ ((uint32_t) pinConfig << 10)
+                     ^ ((uint32_t) op.probe.pinProbe << 11)
                      ^ (invertLim ? (BIT_HASH << 16) : 0)
                      ^ (pinEnableHigh ? (BIT_HASH << 17) : 0)
                      ^ (autoSync ? (BIT_HASH << 18) : 0)
@@ -826,6 +827,7 @@ char * Machine::saveSysConfig(char *out, size_t maxLen) {
     out = saveConfigValue("lh", invertLim, out);
     out = saveConfigValue("mv", vMax, out);
     out = saveConfigValue("om", outputMode, out);
+    out = saveConfigValue("pb", op.probe.pinProbe, out);
     out = saveConfigValue("pi", pinStatus, out);
     out = saveConfigValue("tv", tvMax, out);
 
