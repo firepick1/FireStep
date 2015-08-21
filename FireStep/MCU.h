@@ -13,6 +13,10 @@
 #define TESTCOUT4(k1,v1,k2,v2,k3,v3,k4,v4) cout << k1<<v1 <<k2<<v2 <<k3<<v3 <<k4<<v4 << endl
 #define TESTDECL(t,v) t v
 #define TESTEXP(e) e
+#include <sys/types.h>
+#include <unistd.h>
+#include <signal.h>
+#define DIE() kill(getpid(), SIGABRT)
 #else
 #define TESTCOUT1(k,v)
 #define TESTCOUT2(k1,v1,k2,v2)
@@ -20,6 +24,7 @@
 #define TESTCOUT4(k1,v1,k2,v2,k3,v3,k4,v4)
 #define TESTDECL(t,v)
 #define TESTEXP(e)
+#define DIE() 
 #endif
 
 #define DEBUG_EOL() Serial.println("");

@@ -31,7 +31,8 @@ void JsonCommand::addQueryAttr(JsonObject& node, const char *key) {
 		strcpy_P(buf, key);
 		node[buf] = "";
 	} else {
-		TESTCOUT1("ERROR:", "############ addQueryAttr OUT OF MEMORY ##############");
+		TESTCOUT1("ERROR	: addQueryAttr OUT OF MEMORY ##############", key);
+		DIE();
 	}
 }
 

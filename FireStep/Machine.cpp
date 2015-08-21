@@ -275,7 +275,7 @@ int32_t Machine::hash() {
                      ^ ((uint32_t) op.probe.pinProbe << 11)
                      ^ (invertLim ? (BIT_HASH << 16) : 0)
                      ^ (pinEnableHigh ? (BIT_HASH << 17) : 0)
-                     ^ (autoSync ? (BIT_HASH << 18) : 0)
+                     // ^ (autoSync ? (BIT_HASH << 18) : 0)
                      ^ (jsonPrettyPrint ? (BIT_HASH << 19) : 0)
                      ^ (autoHome ? (BIT_HASH << 20) : 0)
                      ^ delta.hash()
@@ -818,7 +818,7 @@ char * Machine::saveSysConfig(char *out, size_t maxLen) {
 
     // priority 2
     out = saveConfigValue("ah", autoHome, out);
-    out = saveConfigValue("as", autoSync, out);
+    //out = saveConfigValue("as", autoSync, out); // too dangerous
     out = saveConfigValue("db", debounce, out);
     //out = saveConfigValue("eu", eeUser, out); // saved separately
     out = saveConfigValue("hp", fastSearchPulses, out);

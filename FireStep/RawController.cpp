@@ -345,10 +345,10 @@ Status RawController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            jcmd.addQueryAttr(node, OP_1);
-            jcmd.addQueryAttr(node, OP_2);
-            jcmd.addQueryAttr(node, OP_3);
-            jcmd.addQueryAttr(node, OP_4);
+			node["1"] = ""; // do not use jcmd.addQueryAttr()
+			node["2"] = ""; // do not use jcmd.addQueryAttr()
+			node["3"] = ""; // do not use jcmd.addQueryAttr()
+			node["4"] = ""; // do not use jcmd.addQueryAttr()
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
