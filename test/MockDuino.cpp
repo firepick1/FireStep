@@ -168,7 +168,7 @@ void MockDuino::clear() {
 	sei(); // enable interrupts
 }
 
-uint32_t MockDuino::pulses(int16_t pin) {
+int32_t MockDuino::pulses(int16_t pin) {
     ASSERT(0 <= pin && pin < ARDUINO_PINS);
     return pinPulses[pin];
 }

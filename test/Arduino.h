@@ -151,7 +151,7 @@ typedef class MockDuino {
 		int16_t getPin(int16_t pin);
 		void setPin(int16_t pin, int16_t value);
 		void setPinMode(int16_t pin, int16_t value);
-		uint32_t pulses(int16_t pin);
+		int32_t pulses(int16_t pin);
 		uint32_t get_usDelay() {return usDelay;}
 } MockDuino;
 

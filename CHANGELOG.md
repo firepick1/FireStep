@@ -6,6 +6,7 @@ v0.2.3
 * CHG: MTO_FPD "mov:{a,d}" changed to "mov:{angle,d}" move in XY plane to polar coordinate `d` millimeters from X0Y0 at `angle` degrees CCW from x-axis.
 * CHG: prb pn attribute deprecated in favor of "pb" to match "syspb"
 * CHG: "sysas" configuration autoSync is no longer saved and must be enabled explicitly
+* FIX: MTO_FPD single axis home (e.g., "hom1") will not reposition to origin
 * FIX: "movrx" is now identified as a bad command (the correct command is "movxr")
 * NEW: latch backoff is now an axis attribute (e.g. "xlb"), but you can still use "syslb" to set all axes at once.
 * NEW: "calsv" provides adaptive calibration via exponential smoothing

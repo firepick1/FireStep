@@ -799,9 +799,13 @@ Status FPDController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
     return status == STATUS_OK ? STATUS_BUSY_MOVING : status;
 }
 
-Status FPDController::finalizeHome() {
+Status FPDController::finalizeHome(JsonCommand& jcmd, JsonObject& jobj, const char * key) {
     Status status = STATUS_OK;
 
+	if (strcmp_PS(OP_hom, key) != 0) { 
+		return status; // single axis home does not reposition to post-home destination
+	}
+	
     // calculate distance to post-home destination
     machine.loadDeltaCalculator();
     Quad<StepCoord> limit = machine.getMotorPosition();
@@ -815,22 +819,21 @@ Status FPDController::finalizeHome() {
                                limit.value[3]
                            ));
 
-    // move to post-home destination using probe
-    status = STATUS_BUSY_CALIBRATING;
-    do {
-        // fast probe because we don't expect to hit anything
-        status = machine.probe(status, 0);
-        //TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
-    } while (status == STATUS_BUSY_CALIBRATING);
+	status = STATUS_BUSY_CALIBRATING;
+	do {
+		// fast probe because we don't expect to hit anything
+		status = machine.probe(status, 0);
+		//TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
+	} while (status == STATUS_BUSY_CALIBRATING);
 
-    if (status == STATUS_PROBE_FAILED) {
-        // we didn't hit anything and that is good
-        status = STATUS_OK;
-    } else if (status == STATUS_OK) {
-        // we hit something and that's not good
+	if (status == STATUS_PROBE_FAILED) {
+		// we didn't hit anything and that is good
+		status = STATUS_OK;
+	} else if (status == STATUS_OK) {
+		// we hit something and that's not good
 		TESTCOUT1("finalizeHome:", "COLLISION");
-        status = STATUS_LIMIT_MAX;
-    }
+		status = STATUS_LIMIT_MAX;
+	}
 
     return status;
 }
@@ -858,7 +861,7 @@ Status FPDController::processHome(JsonCommand& jcmd, JsonObject& jobj, const cha
                   " 3:", machine.axis[2].position,
                   " 4:", machine.axis[3].position);
         if (status == STATUS_OK) {
-            status = finalizeHome();
+            status = finalizeHome(jcmd, jobj, key);
             TESTCOUT4("processHome finalize 1:", machine.axis[0].position,
                       " 2:", machine.axis[1].position,
                       " 3:", machine.axis[2].position,

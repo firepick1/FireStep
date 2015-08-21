@@ -2079,6 +2079,51 @@ void test_MTO_FPD_hom() {
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
 
+    {   // home single axis
+        MachineThread mt = test_MTO_FPD_setup();
+        Machine &machine = mt.machine;
+        machine = mt.machine;
+    	int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    	int32_t ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    	int32_t zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+		machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
+        arduino.setPin(PC2_PROBE_PIN, LOW);
+        Serial.push(JT("{'hom1':''}\n"));
+        mt.loop();	// parse
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // initializing
+        ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+        ASSERTEQUALT(-5688, machine.axis[0].home, 0.01);
+        ASSERTEQUALT(-5688, machine.axis[1].home, 0.01);
+        ASSERTEQUALT(-5688, machine.axis[2].home, 0.01);
+        ASSERTEQUALT(0, machine.axis[3].home, 0.01);
+        ASSERTEQUALT(-5688, machine.axis[0].position, 0.01);
+        ASSERTEQUALT(2, machine.axis[1].position, 0.01);
+        ASSERTEQUALT(3, machine.axis[2].position, 0.01);
+        ASSERTEQUALT(4, machine.axis[3].position, 0.01);
+		StepCoord hp = machine.delta.getHomePulses();
+        arduino.setPin(PC2_X_MIN_PIN, HIGH);
+        arduino.setPin(PC2_Y_MIN_PIN, HIGH);
+        arduino.setPin(PC2_Z_MIN_PIN, HIGH);
+        mt.loop();	// moving: home and backoff
+        ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+        mt.loop(); // calibrating: rapid probe to post-home destination
+        ASSERTEQUAL(STATUS_OK, mt.status);
+        ASSERTEQUALS(JT("{'s':0,'r':{'hom1':-5688},'t':0.000}\n"),
+                     Serial.output().c_str());
+		hp = machine.delta.getHomePulses();
+		ASSERTEQUAL(machine.axis[0].home, hp);
+		ASSERTEQUAL(machine.axis[1].home, hp);
+		ASSERTEQUAL(machine.axis[2].home, hp);
+    	ASSERTEQUAL(2*LATCH_BACKOFF, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+		TESTCOUT2("ypulses:", ypulses, " lb:", machine.axis[1].latchBackoff);
+    	ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    	ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+        ASSERTQUAD(Quad<StepCoord>(-5688,2,3,4), machine.getMotorPosition());
+        mt.loop();
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    }
+
     cout << "TEST	: test_MTO_FPD_hom() OK " << endl;
 }
 

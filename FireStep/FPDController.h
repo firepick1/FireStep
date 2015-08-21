@@ -39,7 +39,7 @@ protected:
     Status initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
     virtual Status initializeHome(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool clear);
     Status finalizeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-    Status finalizeHome();
+    Status finalizeHome(JsonCommand& jcmd, JsonObject& jobj, const char * key);
     Status processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, const char* key, FPDCalibrateHome &cal, bool output);
     virtual Status processMark(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processCalibrate(JsonCommand &jcmd, JsonObject& jobj, const char* keycal);
