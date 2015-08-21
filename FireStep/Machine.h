@@ -81,6 +81,7 @@ public:
     char		id;		// a single character describing the axis
 
 public: // configuration
+    StepCoord	latchBackoff; // high speed limit switch compensation
     StepCoord	home; // home position
     StepCoord 	travelMin; // soft minimum travel limit
     StepCoord 	travelMax; // soft maximum travel limit
@@ -89,8 +90,6 @@ public: // configuration
     float		stepAngle; // 1.8:200 steps/rev; 0.9:400 steps/rev
     uint8_t		microsteps;	// normally 1,2,4,8,16 or 32
     bool		dirHIGH; // advance on HIGH
-
-public:
     PinType 	pinStep; // step pin
     PinType 	pinDir;	// step direction pin
     PinType 	pinMin; // homing minimum limit switch
@@ -102,6 +101,7 @@ public:
     bool		homing; // true:axis is active for homing
     StepCoord 	position; // current position (pulses)
 
+public:
     Axis() :
         enabled(false),
         pinStep(NOPIN),
@@ -110,6 +110,7 @@ public:
         pinMax(NOPIN),
         pinEnable(NOPIN),
         home(0),
+		latchBackoff(LATCH_BACKOFF),
         travelMin(-32000),  // -5 full 400-step revolutiosn @16-microsteps
         travelMax(32000),	// 5 full 400-step revolutions @16-microsteps
         position(0),
@@ -278,7 +279,6 @@ public:
     PH5TYPE 	tvMax; // time to reach maximum velocity
     PH5TYPE		marks[MARK_COUNT];
     int16_t		fastSearchPulses;
-    StepCoord	latchBackoff; // high speed limit switch compensation
     DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
     PinType		pinStatus;
     Topology	topology;

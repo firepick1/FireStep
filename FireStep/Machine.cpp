@@ -118,6 +118,7 @@ int32_t Axis::hash() {
                      ^ ((uint32_t) travelMin << 3)
                      ^ ((uint32_t) travelMax << 4)
                      ^ ((uint32_t) usDelay << 5)
+                     ^ ((uint32_t) latchBackoff << 6)
                      ;
 
     return result;
@@ -130,6 +131,7 @@ char * Axis::saveConfig(char *out, size_t maxLen) {
         out = saveConfigValue("en", enabled, out);
         out = saveConfigValue("ho", home, out);
         out = saveConfigValue("is", idleSnooze, out);
+        out = saveConfigValue("lb", latchBackoff, out);
         out = saveConfigValue("mi", microsteps, out);
         out = saveConfigValue("sa", stepAngle, out, 1);
         out = saveConfigValue("tm", travelMax, out);
@@ -197,7 +199,7 @@ bool ZPlane::initialize(XYZ3D p1, XYZ3D p2, XYZ3D p3) {
 
 Machine::Machine()
     : autoHome(false),invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
-      tvMax(0.7), fastSearchPulses(3), latchBackoff(LATCH_BACKOFF),
+      tvMax(0.7), fastSearchPulses(3), 
       searchDelay(800), pinStatus(NOPIN), topology(MTO_RAW),
       outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0)
 {
@@ -283,7 +285,6 @@ int32_t Machine::hash() {
                      ^ (*(uint32_t *)(void*)&tvMax)
                      ^ (debounce)
                      ^ (fastSearchPulses)
-                     ^ (latchBackoff)
                      ^ (searchDelay)
                      ^ (pinStatus)
                      ^ (*(uint32_t *)(void*)&bed.a)
@@ -741,7 +742,7 @@ void Machine::backoffHome(int16_t delay) {
         backingOff = false;
         for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {
             Axis &a(*motorAxis[i]);
-            if (a.homing && pulses < latchBackoff) {
+            if (a.homing && pulses < a.latchBackoff) {
                 a.pulse(true);
                 backingOff = true;
             }
@@ -823,7 +824,6 @@ char * Machine::saveSysConfig(char *out, size_t maxLen) {
     //out = saveConfigValue("eu", eeUser, out); // saved separately
     out = saveConfigValue("hp", fastSearchPulses, out);
     out = saveConfigValue("jp", jsonPrettyPrint, out);
-    out = saveConfigValue("lb", latchBackoff, out);
     out = saveConfigValue("lh", invertLim, out);
     out = saveConfigValue("mv", vMax, out);
     out = saveConfigValue("om", outputMode, out);

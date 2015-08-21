@@ -7,6 +7,7 @@ v0.2.3
 * CHG: prb pn attribute deprecated in favor of "pb" to match "syspb"
 * CHG: "sysas" configuration autoSync is no longer saved and must be enabled explicitly
 * FIX: "movrx" is now identified as a bad command (the correct command is "movxr")
+* NEW: latch backoff is now an axis attribute (e.g. "xlb"), but you can still use "syslb" to set all axes at once.
 * NEW: "calsv" provides adaptive calibration via exponential smoothing
 * NEW: "calgr1" calibrate gear ratio for arm 1 at given angle in degrees
 * NEW: "calgr2" calibrate gear ratio for arm 2 at given angle in degrees

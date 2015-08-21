@@ -227,11 +227,11 @@ void test_Machine() {
 	// Configuration save
 	char buf[255];
 	char *out = machine.axis[0].saveConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
+	ASSERTEQUALS(JT("{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveSysConfig(buf, sizeof(buf));
-#define HASH1 "-2128992920"
-	ASSERTEQUALS(JT("{'ch':" HASH1 ",'pc':2,'to':0,'ah':0,'db':0,'hp':3,'jp':0,'lb':200,'lh':0,"
+#define HASH1 "-2128720992"
+	ASSERTEQUALS(JT("{'ch':" HASH1 ",'pc':2,'to':0,'ah':0,'db':0,'hp':3,'jp':0,'lh':0,"
 				 "'mv':12800,'om':0,'pb':2,'pi':11,'tv':0.70}"), 
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
@@ -543,15 +543,15 @@ void test_JsonController_axis(MachineThread &mt, char axis) {
     testJSON(mt, replace, "{'?':{'sa':1.8}}", "{'s':0,'r':{'?':{'sa':1.800}},'t':0.000}\n");
 
     testJSON(mt, replace, "{'x':''}",
-             "{'s':0,'r':{'x':{'dh':true,'en':false,'ho':0,'is':0,'lm':false,'ln':false,"\
+             "{'s':0,'r':{'x':{'dh':true,'en':false,'ho':0,'is':0,'lb':200,'lm':false,'ln':false,"\
              "'mi':16,'pd':55,'pe':38,'pm':255,'pn':3,'po':0,'ps':54,"\
              "'sa':1.800,'tm':32000,'tn':-32000,'ud':0}},'t':0.000}\n");
     testJSON(mt, replace, "{'y':''}",
-             "{'s':0,'r':{'y':{'dh':true,'en':false,'ho':0,'is':0,'lm':false,'ln':false,"\
+             "{'s':0,'r':{'y':{'dh':true,'en':false,'ho':0,'is':0,'lb':200,'lm':false,'ln':false,"\
              "'mi':16,'pd':61,'pe':56,'pm':255,'pn':14,'po':0,'ps':60,"\
              "'sa':1.800,'tm':32000,'tn':-32000,'ud':0}},'t':0.000}\n");
     testJSON(mt, replace, "{'z':''}",
-             "{'s':0,'r':{'z':{'dh':true,'en':false,'ho':0,'is':0,'lm':false,'ln':false,"\
+             "{'s':0,'r':{'z':{'dh':true,'en':false,'ho':0,'is':0,'lb':200,'lm':false,'ln':false,"\
              "'mi':16,'pd':48,'pe':62,'pm':255,'pn':18,'po':0,'ps':46,"\
              "'sa':1.800,'tm':32000,'tn':-32000,'ud':0}},'t':0.000}\n");
 }
@@ -758,7 +758,7 @@ void test_JsonController() {
     mt.process(jcmd);
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
-                      "{'ah':false,'as':false,'ch':-2128992982,'eu':false,'fr':1000,'hp':3,'jp':false,'lb':200,'lh':false,"\
+                      "{'ah':false,'as':false,'ch':-2128720926,'eu':false,'fr':1000,'hp':3,'jp':false,'lh':false,"\
                       "'lp':0,'mv':12800,'om':0,'pb':2,'pc':2,'pi':11,'sd':800,'tc':12345,"\
                       "'to':0,'tv':0.700,'v':%.3f}"\
                       "},'t':0.000}\n";
@@ -1287,8 +1287,8 @@ void test_sys() {
 	ASSERTEQUAL(57, machine.pinStatus);
     ASSERTEQUAL(MTO_FPD, machine.topology);
     ASSERTEQUALS(JT("{'s':0,'r':"
-					"{'sys':{'ah':false,'as':false,'ch':1033002035,'eu':false,'fr':1000,"
-					"'hp':3,'jp':false,'lb':200,'lh':false,'lp':0,'mv':12800,'om':0,"
+					"{'sys':{'ah':false,'as':false,'ch':1033253627,'eu':false,'fr':1000,"
+					"'hp':3,'jp':false,'lh':false,'lp':0,'mv':12800,'om':0,"
 					"'pb':2,'pc':2,'pi':57,'sd':400,'tc':5,'to':1,'tv':0.700,'v':2.030}"
 					"},'t':0.000}\n"),
                  Serial.output().c_str());
@@ -1999,9 +1999,9 @@ void test_MTO_FPD_hom() {
         ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
         mt.loop(); // calibrating
         ASSERTEQUAL(STATUS_OK, mt.status);
-    	ASSERTEQUAL(5688, arduino.pulses(PC2_X_STEP_PIN)-xpulses-machine.latchBackoff);
-    	ASSERTEQUAL(5688, arduino.pulses(PC2_Y_STEP_PIN)-ypulses-machine.latchBackoff);
-    	ASSERTEQUAL(5688, arduino.pulses(PC2_Z_STEP_PIN)-zpulses-machine.latchBackoff);
+    	ASSERTEQUAL(5688, arduino.pulses(PC2_X_STEP_PIN)-xpulses-machine.axis[0].latchBackoff);
+    	ASSERTEQUAL(5688, arduino.pulses(PC2_Y_STEP_PIN)-ypulses-machine.axis[1].latchBackoff);
+    	ASSERTEQUAL(5688, arduino.pulses(PC2_Z_STEP_PIN)-zpulses-machine.axis[2].latchBackoff);
         ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':-5688,'2':-5688,'3':-5688,'4':0}},'t':0.000}\n"),
                      Serial.output().c_str());
         ASSERTQUAD(Quad<StepCoord>(), machine.getMotorPosition());
@@ -2059,9 +2059,9 @@ void test_MTO_FPD_hom() {
 		ASSERTEQUAL(machine.axis[0].home, hp);
 		ASSERTEQUAL(machine.axis[1].home, hp);
 		ASSERTEQUAL(machine.axis[2].home, hp);
-    	ASSERTEQUAL(5601, arduino.pulses(PC2_X_STEP_PIN)-xpulses-machine.latchBackoff);
-    	ASSERTEQUAL(5601, arduino.pulses(PC2_Y_STEP_PIN)-ypulses-machine.latchBackoff);
-    	ASSERTEQUAL(5601, arduino.pulses(PC2_Z_STEP_PIN)-zpulses-machine.latchBackoff);
+    	ASSERTEQUAL(5601, arduino.pulses(PC2_X_STEP_PIN)-xpulses-machine.axis[0].latchBackoff);
+    	ASSERTEQUAL(5601, arduino.pulses(PC2_Y_STEP_PIN)-ypulses-machine.axis[1].latchBackoff);
+    	ASSERTEQUAL(5601, arduino.pulses(PC2_Z_STEP_PIN)-zpulses-machine.axis[2].latchBackoff);
         ASSERTQUAD(Quad<StepCoord>(0,0,0,4), machine.getMotorPosition());
         XYZ3D xyz = mt.fpdController.getXYZ3D();
         ASSERTEQUALT(0, xyz.x, 0.01);
@@ -3059,7 +3059,7 @@ void test_autoSync() {
     int32_t hash3 = machine.hash();
     ASSERT(hash2 != hash3);
     ASSERTEQUAL(false, machine.axis[4].isEnabled());
-#define HASH3 "-2127944184"
+#define HASH3 "-2127673152"
     snprintf(buf, sizeof(buf), "%ld", (long) hash3);
     ASSERTEQUALS(HASH3, buf);
 
@@ -3067,11 +3067,11 @@ void test_autoSync() {
     string eeprom3 = eeprom_read_string(0);
     ASSERTEQUALS(JT( "["
                      "{'sys':{'ch':" HASH3 ",'pc':2,'to':0,'ah':1,'db':0,'hp':3,'jp':0,"
-                     "'lb':200,'lh':0,'mv':12800,'om':3,'pb':2,'pi':11,'tv':0.70}},"
-                     "{'x':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
-                     "{'y':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
-                     "{'z':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
-                     "{'a':{'dh':1,'en':1,'ho':0,'is':0,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "'lh':0,'mv':12800,'om':3,'pb':2,'pi':11,'tv':0.70}},"
+                     "{'x':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'y':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'z':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'a':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'b':{'en':0}},"
                      "{'c':{'en':0}},"
                      "{'hom':''}]"),
@@ -3104,7 +3104,7 @@ void test_autoSync() {
     ASSERTEQUALS(eeprom3.c_str(), eeprom_read_string(0).c_str());
     ASSERTEQUALS(JT("{'s':0,'r':"
                     "{'sys':{'ch':" HASH3 ",'pc':2,'to':0,'ah':true,'db':0,'hp':3,"
-                    "'jp':false,'lb':200,'lh':false,'mv':12800,'om':3,'pb':2,'pi':11,'tv':0.700}},"
+                    "'jp':false,'lh':false,'mv':12800,'om':3,'pb':2,'pi':11,'tv':0.700}},"
                     "'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop(); // x
@@ -4522,9 +4522,29 @@ void test_axis() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_ENABLE_PIN));
     ASSERTEQUALS(JT("{'s':0,'r':{'x':"
-                    "{'dh':true,'en':true,'ho':-5688,'is':0,'lm':false,'ln':false,'mi':16,"
+                    "{'dh':true,'en':true,'ho':-5688,'is':0,'lb':200,'lm':false,'ln':false,'mi':16,"
                     "'pd':55,'pe':38,'pm':255,'pn':3,'po':0,'ps':54,'sa':1.800,'tm':32000,'tn':-32000,'ud':0}"
                     "},'t':0.000}\n"), Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+	// latchBackoff
+	ASSERTEQUAL(200, machine.axis[0].latchBackoff);
+	ASSERTEQUAL(200, machine.axis[1].latchBackoff);
+	ASSERTEQUAL(200, machine.axis[2].latchBackoff);
+    Serial.push(JT("[{'xlb':201,'y':{'lb':202},'zlb':203}]\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(LOW, arduino.getPin(PC2_X_ENABLE_PIN));
+    ASSERTEQUALS(JT("{'s':0,'r':{'xlb':201,'y':{'lb':202},'zlb':203}"
+                    ",'t':0.000}\n"), Serial.output().c_str());
+	ASSERTEQUAL(201, machine.axis[0].latchBackoff);
+	ASSERTEQUAL(202, machine.axis[1].latchBackoff);
+	ASSERTEQUAL(203, machine.axis[2].latchBackoff);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 

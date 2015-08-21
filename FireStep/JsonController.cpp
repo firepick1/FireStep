@@ -268,6 +268,7 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             jcmd.addQueryAttr(node, OP_en);
             jcmd.addQueryAttr(node, OP_ho);
             jcmd.addQueryAttr(node, OP_is);
+            jcmd.addQueryAttr(node, OP_lb);
             jcmd.addQueryAttr(node, OP_lm);
             jcmd.addQueryAttr(node, OP_ln);
             jcmd.addQueryAttr(node, OP_mi);
@@ -312,7 +313,7 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
     } else if (strcmp_PS(OP_is, key) == 0 || strcmp_PS(OP_is, key + 1) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, axis.idleSnooze);
     } else if (strcmp_PS(OP_lb, key) == 0 || strcmp_PS(OP_lb, key + 1) == 0) {
-        status = processField<StepCoord, int32_t>(jobj, key, machine.latchBackoff);
+        status = processField<StepCoord, int32_t>(jobj, key, axis.latchBackoff);
     } else if (strcmp_PS(OP_lm, key) == 0 || strcmp_PS(OP_lm, key + 1) == 0) {
         axis.readAtMax(machine.invertLim);
         status = processField<bool, bool>(jobj, key, axis.atMax);
@@ -575,7 +576,6 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             jcmd.addQueryAttr(node, OP_fr);
             jcmd.addQueryAttr(node, OP_hp);
             jcmd.addQueryAttr(node, OP_jp);
-            jcmd.addQueryAttr(node, OP_lb);
             jcmd.addQueryAttr(node, OP_lh);
             jcmd.addQueryAttr(node, OP_lp);
             jcmd.addQueryAttr(node, OP_mv);
@@ -628,7 +628,14 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp_PS(OP_jp, key) == 0 || strcmp_PS(OP_sysjp, key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.jsonPrettyPrint);
     } else if (strcmp_PS(OP_lb, key) == 0 || strcmp_PS(OP_lb, key + 1) == 0) {
-        status = processField<StepCoord, int32_t>(jobj, key, machine.latchBackoff);
+		StepCoord latchBackoff = 0;
+		for (AxisIndex i=0; i<AXIS_COUNT; i++) {
+			latchBackoff = max(latchBackoff, machine.axis[i].latchBackoff);
+		}
+        status = processField<StepCoord, int32_t>(jobj, key, latchBackoff);
+		for (AxisIndex i=0; i<AXIS_COUNT; i++) {
+			machine.axis[i].latchBackoff = latchBackoff;
+		}
     } else if (strcmp_PS(OP_lh, key) == 0 || strcmp_PS(OP_syslh, key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.invertLim);
     } else if (strcmp_PS(OP_lp, key) == 0 || strcmp_PS(OP_syslp, key) == 0) {
