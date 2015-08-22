@@ -2125,6 +2125,77 @@ void test_MTO_FPD_hom() {
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
+	
+	{   // autoHome
+        MachineThread mt = test_MTO_FPD_setup();
+        Machine &machine = mt.machine;
+        machine = mt.machine;
+    	int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    	int32_t ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    	int32_t zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+		machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
+        arduino.setPin(PC2_PROBE_PIN, LOW);
+        Serial.push(JT("{'sysah':true,'sysas':true}\n"));
+        mt.loop();	// parse
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // initializing
+        ASSERTEQUAL(STATUS_OK, mt.status);
+        ASSERTEQUALS(JT("{'s':0,'r':{'sysah':true,'sysas':true},'t':0.000}\n"),
+                     Serial.output().c_str());
+        mt.loop();
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+		// simulate restart
+		mt.status = STATUS_BUSY_SETUP;
+		mt.loop();
+		ASSERTEQUAL(STATUS_BUSY_EEPROM, mt.status);
+		mt.loop(); // parse startup JSON
+		Serial.clear(); // banner
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop(); // sys
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop(); // x
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop(); // y
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop(); // z
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop(); // a
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop(); // b
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop(); // c
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop(); // home
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop(); // home
+		ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    	ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    	ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    	ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+		mt.loop(); // home moves up
+		ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    	ASSERTEQUAL(3, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    	ASSERTEQUAL(3, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    	ASSERTEQUAL(3, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+		// trip min switch
+        arduino.setPin(PC2_X_MIN_PIN, HIGH);
+        arduino.setPin(PC2_Y_MIN_PIN, HIGH);
+        arduino.setPin(PC2_Z_MIN_PIN, HIGH);
+        mt.loop();	// moving: home and backoff
+        ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
+		mt.loop(); // home
+		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // calibrating: rapid probe to post-home destination
+        ASSERTEQUAL(STATUS_OK, mt.status);
+        ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':-5688,'2':-5688,'3':-5688,'4':0}},'t':0.001}\n"),
+                     Serial.output().c_str());
+    	ASSERTEQUAL(3+5688+2*LATCH_BACKOFF, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    	ASSERTEQUAL(3+5688+2*LATCH_BACKOFF, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    	ASSERTEQUAL(3+5688+2*LATCH_BACKOFF, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+        ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.getMotorPosition());
+        mt.loop();
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    }
 
     cout << "TEST	: test_MTO_FPD_hom() OK " << endl;
 }

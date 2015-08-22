@@ -777,10 +777,10 @@ Status FPDController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            jcmd.addQueryAttr(node, OP_1);
-            jcmd.addQueryAttr(node, OP_2);
-            jcmd.addQueryAttr(node, OP_3);
-            jcmd.addQueryAttr(node, OP_4);
+			node["1"] = 
+			node["2"] =
+			node["3"] =
+			node["4"] = ""; // DO NOT USE jcmd.addQueryAttr(...)
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
