@@ -110,7 +110,7 @@ public:
         pinMax(NOPIN),
         pinEnable(NOPIN),
         home(0),
-		latchBackoff(LATCH_BACKOFF),
+        latchBackoff(LATCH_BACKOFF),
         travelMin(-32000),  // -5 full 400-step revolutiosn @16-microsteps
         travelMax(32000),	// 5 full 400-step revolutions @16-microsteps
         position(0),
@@ -262,7 +262,7 @@ typedef class Machine : public QuadStepper {
     friend void ::test_Home();
 
 private:
-	PH5TYPE		homeAngle; // recorded home angle
+    PH5TYPE		homeAngle; // recorded home angle
 
 public:
     PinConfig	pinConfig;
@@ -282,7 +282,7 @@ public:
     DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
     PinType		pinStatus;
     Topology	topology;
-	StepCoord	homePulses; // user provided pulse offset from limit switch as 0
+    StepCoord	homePulses; // user provided pulse offset from limit switch as 0
     OutputMode	outputMode;
     struct {
         OpProbe		probe;
@@ -389,10 +389,14 @@ public:
     void enableEEUser(bool enable);
     bool isEEUserEnabled();
     void loadDeltaCalculator(); // initialize from raw axis
-	StepCoord setHomeAngle(PH5TYPE degrees);
-	PH5TYPE getHomeAngle() { return homeAngle; }
-	StepCoord getHomePulses() { return homePulses; }
-	PH5TYPE setHomePulses(StepCoord pulseCount);
+    StepCoord setHomeAngle(PH5TYPE degrees);
+    PH5TYPE getHomeAngle() {
+        return homeAngle;
+    }
+    StepCoord getHomePulses() {
+        return homePulses;
+    }
+    PH5TYPE setHomePulses(StepCoord pulseCount);
 } Machine;
 
 #ifdef TEST

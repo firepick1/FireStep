@@ -412,32 +412,44 @@ const char src_fpd_hex_probe[] PROGMEM = {
 };
 
 const char src_dim_fpd[] PROGMEM = {
-    "[" 
-	"{\"dim\":{\"gr\":9.522262155637,\"ha\":-67.2,\"e\":131.636,\"f\":190.526,\"re\":270.000,\"rf\":90.000}}"
-	"]"
+    "["
+    "{\"dim\":{\"gr\":9.522262155637,\"ha\":-67.2,\"e\":131.636,\"f\":190.526,\"re\":270.000,\"rf\":90.000}}"
+    "]"
 };
 
 const char *firestep::prog_src(const char *name) {
-	if (false) { // must be sorted reverse alphabetical
+    if (false) { // must be sorted reverse alphabetical
 
-	} else if (strcmp_PS(OP_test, name) == 0) { return src_test2; 
-    //} else if (strcmp_PS(OP_cal, name) == 0) { return src_calibrate;
-    //} else if (strcmp_PS(OP_cal_coarse, name) == 0) { return src_cal_coarse;
-    //} else if (strcmp_PS(OP_cal_fine, name) == 0) { return src_cal_fine;
-    //} else if (strcmp_PS(OP_cal_gear, name) == 0) { return src_cal_gear;
-    //} else if (strcmp_PS(OP_cal_gear_coarse, name) == 0) { return src_cal_gear_coarse;
-    //} else if (strcmp_PS(OP_cal_gear_fine, name) == 0) { return src_cal_gear_fine;
-    } else if (strcmp_PS(OP_cal_fpd_bed_coarse, name) == 0) { return src_cal_fpd_bed_coarse;
-    } else if (strcmp_PS(OP_cal_fpd_bed_fine, name) == 0) { return src_cal_fpd_bed_fine;
-    } else if (strcmp_PS(OP_cal_fpd_bed_medium, name) == 0) { return src_cal_fpd_bed_medium;
-    } else if (strcmp_PS(OP_cal_fpd_home_coarse, name) == 0) { return src_cal_fpd_home_coarse;
-    } else if (strcmp_PS(OP_cal_fpd_home_fine, name) == 0) { return src_cal_fpd_home_fine;
-    } else if (strcmp_PS(OP_cal_fpd_home_medium, name) == 0) { return src_cal_fpd_home_medium;
-    } else if (strcmp_PS(OP_dim_fpd, name) == 0) { return src_dim_fpd;
-    } else if (strcmp_PS(OP_fpd_hex_probe, name) == 0) { return src_fpd_hex_probe;
-    } else if (strcmp_PS(OP_help, name) == 0) { return src_help;
-    } else if (strcmp_PS(OP_test1, name) == 0) { return src_test1;
-    } else if (strcmp_PS(OP_test2, name) == 0) { return src_test2;
+    } else if (strcmp_PS(OP_test, name) == 0) {
+        return src_test2;
+        //} else if (strcmp_PS(OP_cal, name) == 0) { return src_calibrate;
+        //} else if (strcmp_PS(OP_cal_coarse, name) == 0) { return src_cal_coarse;
+        //} else if (strcmp_PS(OP_cal_fine, name) == 0) { return src_cal_fine;
+        //} else if (strcmp_PS(OP_cal_gear, name) == 0) { return src_cal_gear;
+        //} else if (strcmp_PS(OP_cal_gear_coarse, name) == 0) { return src_cal_gear_coarse;
+        //} else if (strcmp_PS(OP_cal_gear_fine, name) == 0) { return src_cal_gear_fine;
+    } else if (strcmp_PS(OP_cal_fpd_bed_coarse, name) == 0) {
+        return src_cal_fpd_bed_coarse;
+    } else if (strcmp_PS(OP_cal_fpd_bed_fine, name) == 0) {
+        return src_cal_fpd_bed_fine;
+    } else if (strcmp_PS(OP_cal_fpd_bed_medium, name) == 0) {
+        return src_cal_fpd_bed_medium;
+    } else if (strcmp_PS(OP_cal_fpd_home_coarse, name) == 0) {
+        return src_cal_fpd_home_coarse;
+    } else if (strcmp_PS(OP_cal_fpd_home_fine, name) == 0) {
+        return src_cal_fpd_home_fine;
+    } else if (strcmp_PS(OP_cal_fpd_home_medium, name) == 0) {
+        return src_cal_fpd_home_medium;
+    } else if (strcmp_PS(OP_dim_fpd, name) == 0) {
+        return src_dim_fpd;
+    } else if (strcmp_PS(OP_fpd_hex_probe, name) == 0) {
+        return src_fpd_hex_probe;
+    } else if (strcmp_PS(OP_help, name) == 0) {
+        return src_help;
+    } else if (strcmp_PS(OP_test1, name) == 0) {
+        return src_test1;
+    } else if (strcmp_PS(OP_test2, name) == 0) {
+        return src_test2;
 
     }
 

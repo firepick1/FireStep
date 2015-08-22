@@ -8,10 +8,10 @@ namespace firestep {
 #define NO_SOLUTION ((PH5TYPE)1E20)
 
 enum DeltaAxis {
-	DELTA_AXIS_ALL = -1,
-	DELTA_AXIS_1 = 0,
-	DELTA_AXIS_2 = 1,
-	DELTA_AXIS_3 = 2
+    DELTA_AXIS_ALL = -1,
+    DELTA_AXIS_1 = 0,
+    DELTA_AXIS_2 = 1,
+    DELTA_AXIS_3 = 2
 };
 
 typedef class Step3D {
@@ -72,7 +72,7 @@ protected:
     PH5TYPE acr; // arm clearance radius at pulley
     int16_t steps360;
     int16_t microsteps;
-	PH5TYPE degreesPerPulse[3];
+    PH5TYPE degreesPerPulse[3];
     PH5TYPE dz;
     PH5TYPE homeAngle;
     static PH5TYPE sqrt3;
@@ -86,8 +86,8 @@ protected:
     static PH5TYPE dtr;
 
 protected:
-	PH5TYPE calcZBowlErrorFromEParam(Step3D center, Step3D rim, PH5TYPE eK, PH5TYPE &param);
-	PH5TYPE calcZBowlErrorFromEParam(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK, PH5TYPE &param);
+    PH5TYPE calcZBowlErrorFromEParam(Step3D center, Step3D rim, PH5TYPE eK, PH5TYPE &param);
+    PH5TYPE calcZBowlErrorFromEParam(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK, PH5TYPE &param);
 
 public:
     DeltaCalculator();
@@ -131,33 +131,33 @@ public:
     }
     void setMicrosteps(int16_t value);
     inline PH5TYPE getDegreesPerPulse(DeltaAxis axis=DELTA_AXIS_ALL) {
-		PH5TYPE dpp;
-		if (axis == DELTA_AXIS_ALL) {
-			dpp = (degreesPerPulse[0]+degreesPerPulse[1]+degreesPerPulse[2])/3;
-		} else {
-			dpp = degreesPerPulse[axis];
-		}
+        PH5TYPE dpp;
+        if (axis == DELTA_AXIS_ALL) {
+            dpp = (degreesPerPulse[0]+degreesPerPulse[1]+degreesPerPulse[2])/3;
+        } else {
+            dpp = degreesPerPulse[axis];
+        }
 
-		//TESTCOUT2("getDegreesPerPulse:", dpp, " axis:", axis);
-		return dpp;
+        //TESTCOUT2("getDegreesPerPulse:", dpp, " axis:", axis);
+        return dpp;
     }
     void setDegreesPerPulse(PH5TYPE value, DeltaAxis axis=DELTA_AXIS_ALL);
     inline PH5TYPE getGearRatio(DeltaAxis axis=DELTA_AXIS_ALL) {
-		PH5TYPE gearRatio = 360/(microsteps*steps360*getDegreesPerPulse(axis));
-		if (axis == DELTA_AXIS_ALL) {
-			PH5TYPE gearRatio = ( getGearRatio(DELTA_AXIS_1)+
-				getGearRatio(DELTA_AXIS_2)+
-				getGearRatio(DELTA_AXIS_3))/3;
-			return gearRatio;
-		} else {
-			PH5TYPE gearRatio = 360/(microsteps*steps360*getDegreesPerPulse(axis));
-			return gearRatio;
-		}
+        PH5TYPE gearRatio = 360/(microsteps*steps360*getDegreesPerPulse(axis));
+        if (axis == DELTA_AXIS_ALL) {
+            PH5TYPE gearRatio = ( getGearRatio(DELTA_AXIS_1)+
+                                  getGearRatio(DELTA_AXIS_2)+
+                                  getGearRatio(DELTA_AXIS_3))/3;
+            return gearRatio;
+        } else {
+            PH5TYPE gearRatio = 360/(microsteps*steps360*getDegreesPerPulse(axis));
+            return gearRatio;
+        }
     }
     void setGearRatio(PH5TYPE value, DeltaAxis axis=DELTA_AXIS_ALL);
-    inline PH5TYPE getZOffset() { 
-		// Z distance from base to effector with arms level (0 degrees)
-		// DEPENDENCIES: ZOffset(e,f,re,rf)
+    inline PH5TYPE getZOffset() {
+        // Z distance from base to effector with arms level (0 degrees)
+        // DEPENDENCIES: ZOffset(e,f,re,rf)
         return dz;
     }
     PH5TYPE getMinZ(PH5TYPE x=0, PH5TYPE y=0);  // lowest possible point at given XY
@@ -184,10 +184,10 @@ public:
     PH5TYPE calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE radius);
     int32_t hash();
     static StepCoord roundStep(PH5TYPE value);
-	PH5TYPE calcZBowlErrorFromE_f(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK);
-	PH5TYPE calcZBowlErrorFromE_e(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK);
-	PH5TYPE calcZBowlErrorFromE_rf(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK);
-	PH5TYPE calcZBowlErrorFromE_re(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK);
+    PH5TYPE calcZBowlErrorFromE_f(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK);
+    PH5TYPE calcZBowlErrorFromE_e(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK);
+    PH5TYPE calcZBowlErrorFromE_rf(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK);
+    PH5TYPE calcZBowlErrorFromE_re(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK);
 } DeltaCalculator;
 
 } // firestep

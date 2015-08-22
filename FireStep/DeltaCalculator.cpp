@@ -36,12 +36,12 @@ DeltaCalculator::DeltaCalculator()
       microsteps(16),
       dz(0)
 {
-	setGearRatio(9.522262155637);
+    setGearRatio(9.522262155637);
     homeAngle = getDefaultHomeAngle();
 }
 
 void DeltaCalculator::useEffectorOrigin() {
-	dz = 0;
+    dz = 0;
     XYZ3D xyz = calcXYZ(Angle3D());
     ASSERT(xyz.isValid());
 
@@ -56,39 +56,39 @@ PH5TYPE DeltaCalculator::getMinDegrees() {
 }
 
 void DeltaCalculator::setMicrosteps(int16_t value) {
-	PH5TYPE scale = ((PH5TYPE)microsteps)/value;
-	microsteps = value;
-	degreesPerPulse[0] *= scale;
-	degreesPerPulse[1] *= scale;
-	degreesPerPulse[2] *= scale;
+    PH5TYPE scale = ((PH5TYPE)microsteps)/value;
+    microsteps = value;
+    degreesPerPulse[0] *= scale;
+    degreesPerPulse[1] *= scale;
+    degreesPerPulse[2] *= scale;
 }
 
 void DeltaCalculator::setSteps360(int16_t value) {
-	PH5TYPE scale = ((PH5TYPE)steps360)/value;
-	steps360 = value;
-	degreesPerPulse[0] *= scale;
-	degreesPerPulse[1] *= scale;
-	degreesPerPulse[2] *= scale;
+    PH5TYPE scale = ((PH5TYPE)steps360)/value;
+    steps360 = value;
+    degreesPerPulse[0] *= scale;
+    degreesPerPulse[1] *= scale;
+    degreesPerPulse[2] *= scale;
 }
 
 void DeltaCalculator::setGearRatio(PH5TYPE value, DeltaAxis axis) {
-	setDegreesPerPulse(360/(microsteps*steps360*value), axis);
-	StepCoord pulses = getHomePulses();
-	setHomePulses(pulses);
-	//TESTCOUT4("setGearRatio:", value, " getGearRatio:", getGearRatio(axis),  " home pulses:", getHomePulses(), " angle:", getHomeAngle());
+    setDegreesPerPulse(360/(microsteps*steps360*value), axis);
+    StepCoord pulses = getHomePulses();
+    setHomePulses(pulses);
+    //TESTCOUT4("setGearRatio:", value, " getGearRatio:", getGearRatio(axis),  " home pulses:", getHomePulses(), " angle:", getHomeAngle());
 }
 
 void DeltaCalculator::setDegreesPerPulse(PH5TYPE value, DeltaAxis axis) {
-	StepCoord pulses = getHomePulses();
-	if (axis == DELTA_AXIS_ALL) {
-		degreesPerPulse[0] = 
-		degreesPerPulse[1] = 
-		degreesPerPulse[2] = value;
-	} else {
-		degreesPerPulse[axis] = value;
-	}
-	setHomePulses(pulses);
-	//TESTCOUT2("setDegreesPerPulse:", value, " axis:", axis);
+    StepCoord pulses = getHomePulses();
+    if (axis == DELTA_AXIS_ALL) {
+        degreesPerPulse[0] =
+            degreesPerPulse[1] =
+                degreesPerPulse[2] = value;
+    } else {
+        degreesPerPulse[axis] = value;
+    }
+    setHomePulses(pulses);
+    //TESTCOUT2("setDegreesPerPulse:", value, " axis:", axis);
 }
 
 PH5TYPE DeltaCalculator::getDefaultHomeAngle() {
@@ -292,40 +292,40 @@ PH5TYPE DeltaCalculator::calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE 
     PH5TYPE eDegrees = 0;
     PH5TYPE goal_zErr = zRim - zCenter;
     PH5TYPE dTheta = 0.1;
-	PH5TYPE best_dGoal = abs(goal_zErr);
-	PH5TYPE best_eDegrees = eDegrees;
+    PH5TYPE best_dGoal = abs(goal_zErr);
+    PH5TYPE best_eDegrees = eDegrees;
     for (int16_t i=0; i<10; i++) {
         PH5TYPE zErr = calcZBowlErrorFromETheta(center, rim, eDegrees);
         PH5TYPE zErr_delta = calcZBowlErrorFromETheta(center, rim, eDegrees+dTheta);
         PH5TYPE slope = (zErr_delta-zErr)/dTheta;
-		if (abs(slope) < 0.01) {
-			break;
-		}
-		PH5TYPE dGoal = zErr - goal_zErr;
+        if (abs(slope) < 0.01) {
+            break;
+        }
+        PH5TYPE dGoal = zErr - goal_zErr;
         TESTCOUT3("dGoal:", dGoal, " eDegrees:", eDegrees, " slope:", slope);
-		if (abs(dGoal) < best_dGoal) {
-			best_dGoal = abs(dGoal);
-			best_eDegrees = eDegrees;
-			TESTCOUT2("best_dGoal:", best_dGoal, " best_eDegrees:", best_eDegrees);
-		}
+        if (abs(dGoal) < best_dGoal) {
+            best_dGoal = abs(dGoal);
+            best_eDegrees = eDegrees;
+            TESTCOUT2("best_dGoal:", best_dGoal, " best_eDegrees:", best_eDegrees);
+        }
         eDegrees -= dGoal / slope;
     }
 
-	TESTCOUT1("calcZBowlETheta best_eDegrees:", best_eDegrees);
+    TESTCOUT1("calcZBowlETheta best_eDegrees:", best_eDegrees);
     return best_eDegrees;
 }
 
 PH5TYPE DeltaCalculator::calcZBowlErrorFromGearRatio(Step3D center, Step3D rim, PH5TYPE newRatio) {
-	PH5TYPE saveGearRatio = getGearRatio();
-	PH5TYPE dGearRatio = newRatio - saveGearRatio;
-	setGearRatio(getGearRatio(DELTA_AXIS_1)+dGearRatio, DELTA_AXIS_1);
-	setGearRatio(getGearRatio(DELTA_AXIS_2)+dGearRatio, DELTA_AXIS_2);
-	setGearRatio(getGearRatio(DELTA_AXIS_3)+dGearRatio, DELTA_AXIS_3);
+    PH5TYPE saveGearRatio = getGearRatio();
+    PH5TYPE dGearRatio = newRatio - saveGearRatio;
+    setGearRatio(getGearRatio(DELTA_AXIS_1)+dGearRatio, DELTA_AXIS_1);
+    setGearRatio(getGearRatio(DELTA_AXIS_2)+dGearRatio, DELTA_AXIS_2);
+    setGearRatio(getGearRatio(DELTA_AXIS_3)+dGearRatio, DELTA_AXIS_3);
     XYZ3D xyzCtr = calcXYZ(Step3D(center.p1, center.p2, center.p3));
     XYZ3D xyzRim = calcXYZ(Step3D(rim.p1, rim.p2, rim.p3));
-	setGearRatio(getGearRatio(DELTA_AXIS_1)-dGearRatio, DELTA_AXIS_1);
-	setGearRatio(getGearRatio(DELTA_AXIS_2)-dGearRatio, DELTA_AXIS_2);
-	setGearRatio(getGearRatio(DELTA_AXIS_3)-dGearRatio, DELTA_AXIS_3);
+    setGearRatio(getGearRatio(DELTA_AXIS_1)-dGearRatio, DELTA_AXIS_1);
+    setGearRatio(getGearRatio(DELTA_AXIS_2)-dGearRatio, DELTA_AXIS_2);
+    setGearRatio(getGearRatio(DELTA_AXIS_3)-dGearRatio, DELTA_AXIS_3);
     PH5TYPE error = xyzRim.z - xyzCtr.z;
     return error;
 }
@@ -350,34 +350,34 @@ PH5TYPE DeltaCalculator::calcZBowlGearRatio(PH5TYPE zCenter, PH5TYPE zRim, PH5TY
     PH5TYPE eGear = eGearCur;
     PH5TYPE goalZError = zRim - zCenter;
     PH5TYPE dGear = 0.01;
-	PH5TYPE newGearRatio = getGearRatio();
-	PH5TYPE bestGearRatio = newGearRatio;
-	PH5TYPE best_dGoal = abs(goalZError);
+    PH5TYPE newGearRatio = getGearRatio();
+    PH5TYPE bestGearRatio = newGearRatio;
+    PH5TYPE best_dGoal = abs(goalZError);
 
     for (int16_t i=0; i<25; i++) {
         PH5TYPE zError = calcZBowlErrorFromGearRatio(center, rim, newGearRatio);
         PH5TYPE zErrorDelta = calcZBowlErrorFromGearRatio(center, rim, newGearRatio+dGear);
         PH5TYPE slope = (zErrorDelta-zError)/dGear;
-		PH5TYPE dGoal = zError - goalZError;
-		if (abs(dGoal) < best_dGoal) {
-			bestGearRatio = newGearRatio;
-			best_dGoal = abs(dGoal);
-			TESTCOUT2("bestGearRatio:", bestGearRatio, " best_dGoal:", best_dGoal);
-		}
-		eGear -= dGoal / slope;
+        PH5TYPE dGoal = zError - goalZError;
+        if (abs(dGoal) < best_dGoal) {
+            bestGearRatio = newGearRatio;
+            best_dGoal = abs(dGoal);
+            TESTCOUT2("bestGearRatio:", bestGearRatio, " best_dGoal:", best_dGoal);
+        }
+        eGear -= dGoal / slope;
         TESTCOUT4("dGoal:", dGoal, " newGearRatio:", newGearRatio, " slope:", slope, " zError:", zError);
-		newGearRatio = newGearRatio + eGear;
-		//dGear /= 2;
+        newGearRatio = newGearRatio + eGear;
+        //dGear /= 2;
     }
-	return bestGearRatio;
+    return bestGearRatio;
 }
 
 PH5TYPE DeltaCalculator::calcZBowlErrorFromEParam(Step3D center, Step3D rim, PH5TYPE eK, PH5TYPE &param) {
-	PH5TYPE saveParam = param;
-	param *= eK;
+    PH5TYPE saveParam = param;
+    param *= eK;
     XYZ3D xyzCtr = calcXYZ(center);
     XYZ3D xyzRim = calcXYZ(rim);
-	param = saveParam;
+    param = saveParam;
     return xyzRim.z - xyzCtr.z;
 }
 
@@ -390,17 +390,17 @@ PH5TYPE DeltaCalculator::calcZBowlErrorFromEParam(PH5TYPE zCenter, PH5TYPE radiu
 }
 
 PH5TYPE DeltaCalculator::calcZBowlErrorFromE_f(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK) {
-	return calcZBowlErrorFromEParam(zCenter, radius, eK, f);
+    return calcZBowlErrorFromEParam(zCenter, radius, eK, f);
 }
 
 PH5TYPE DeltaCalculator::calcZBowlErrorFromE_e(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK) {
-	return calcZBowlErrorFromEParam(zCenter, radius, eK, e);
+    return calcZBowlErrorFromEParam(zCenter, radius, eK, e);
 }
 
 PH5TYPE DeltaCalculator::calcZBowlErrorFromE_rf(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK) {
-	return calcZBowlErrorFromEParam(zCenter, radius, eK, rf);
+    return calcZBowlErrorFromEParam(zCenter, radius, eK, rf);
 }
 
 PH5TYPE DeltaCalculator::calcZBowlErrorFromE_re(PH5TYPE zCenter, PH5TYPE radius, PH5TYPE eK) {
-	return calcZBowlErrorFromEParam(zCenter, radius, eK, re);
+    return calcZBowlErrorFromEParam(zCenter, radius, eK, re);
 }

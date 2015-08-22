@@ -199,7 +199,7 @@ bool ZPlane::initialize(XYZ3D p1, XYZ3D p2, XYZ3D p3) {
 
 Machine::Machine()
     : autoHome(false),invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
-      tvMax(0.7), fastSearchPulses(3), 
+      tvMax(0.7), fastSearchPulses(3),
       searchDelay(800), pinStatus(NOPIN), topology(MTO_RAW),
       outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0)
 {
@@ -226,29 +226,29 @@ Machine::Machine()
     axis[3].id = 'a';
     axis[4].id = 'b';
     axis[5].id = 'c';
-	homeAngle = delta.getHomeAngle(); 
-	homePulses = delta.getHomePulses();
+    homeAngle = delta.getHomeAngle();
+    homePulses = delta.getHomePulses();
 }
 
 StepCoord Machine::setHomeAngle(PH5TYPE degrees) {
-	delta.setHomeAngle(degrees);
-	homeAngle = degrees;
-	StepCoord pulses = delta.getHomePulses();
-	StepCoord dHome = pulses - axis[0].home;
-	switch (topology) {
-	case MTO_FPD:
-		axis[0].home += dHome;
-		axis[1].home += dHome;
-		axis[2].home += dHome;
-		axis[0].position += dHome;
-		axis[1].position += dHome;
-		axis[2].position += dHome;
-		break;
-	default:
-		break;
-	}
-	TESTCOUT3("setHomeAngle degrees:", degrees, " pulses:", pulses, " home:", axis[0].home);
-	return pulses;
+    delta.setHomeAngle(degrees);
+    homeAngle = degrees;
+    StepCoord pulses = delta.getHomePulses();
+    StepCoord dHome = pulses - axis[0].home;
+    switch (topology) {
+    case MTO_FPD:
+        axis[0].home += dHome;
+        axis[1].home += dHome;
+        axis[2].home += dHome;
+        axis[0].position += dHome;
+        axis[1].position += dHome;
+        axis[2].position += dHome;
+        break;
+    default:
+        break;
+    }
+    TESTCOUT3("setHomeAngle degrees:", degrees, " pulses:", pulses, " home:", axis[0].home);
+    return pulses;
 }
 
 void Machine::setup(PinConfig cfg) {
@@ -260,16 +260,16 @@ void Machine::setup(PinConfig cfg) {
 }
 
 PH5TYPE Machine::setHomePulses(StepCoord pulseCount) {
-	homePulses = pulseCount;
-	PH5TYPE degrees = homePulses*delta.getDegreesPerPulse();
-	setHomeAngle(degrees);
-	return degrees;
+    homePulses = pulseCount;
+    PH5TYPE degrees = homePulses*delta.getDegreesPerPulse();
+    setHomeAngle(degrees);
+    return degrees;
 }
 
 int32_t Machine::hash() {
-	 PH5TYPE gr1 = delta.getGearRatio(DELTA_AXIS_1);
-	 PH5TYPE gr2 = delta.getGearRatio(DELTA_AXIS_2);
-	 PH5TYPE gr3 = delta.getGearRatio(DELTA_AXIS_3);
+    PH5TYPE gr1 = delta.getGearRatio(DELTA_AXIS_1);
+    PH5TYPE gr2 = delta.getGearRatio(DELTA_AXIS_2);
+    PH5TYPE gr3 = delta.getGearRatio(DELTA_AXIS_3);
     int32_t result = 0
                      ^ ((uint32_t) outputMode << 8)
                      ^ ((uint32_t) topology << 9)
@@ -845,9 +845,9 @@ char * Machine::saveDimConfig(char *out, size_t maxLen) {
     out = saveConfigValue("bz", bed.getZOffset(), out);
     out = saveConfigValue("e", delta.getEffectorTriangleSide(), out);
     out = saveConfigValue("f", delta.getBaseTriangleSide(), out);
-	out = saveConfigValue("gr1", delta.getGearRatio(DELTA_AXIS_1), out, 3);
-	out = saveConfigValue("gr2", delta.getGearRatio(DELTA_AXIS_2), out, 3);
-	out = saveConfigValue("gr3", delta.getGearRatio(DELTA_AXIS_3), out, 3);
+    out = saveConfigValue("gr1", delta.getGearRatio(DELTA_AXIS_1), out, 3);
+    out = saveConfigValue("gr2", delta.getGearRatio(DELTA_AXIS_2), out, 3);
+    out = saveConfigValue("gr3", delta.getGearRatio(DELTA_AXIS_3), out, 3);
     out = saveConfigValue("ha", homeAngle, out);
     out = saveConfigValue("mi", delta.getMicrosteps(), out);
     out = saveConfigValue("re", delta.getEffectorLength(), out);
@@ -870,6 +870,6 @@ bool Machine::isEEUserEnabled() {
 }
 
 void Machine::loadDeltaCalculator() {
-	delta.setHomeAngle(homeAngle);
+    delta.setHomeAngle(homeAngle);
     delta.setHomePulses((axis[0].home+axis[1].home+axis[2].home)/3);
 }

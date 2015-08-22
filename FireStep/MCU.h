@@ -24,7 +24,7 @@
 #define TESTCOUT4(k1,v1,k2,v2,k3,v3,k4,v4)
 #define TESTDECL(t,v)
 #define TESTEXP(e)
-#define DIE() 
+#define DIE()
 #endif
 
 #define DEBUG_EOL() Serial.println("");

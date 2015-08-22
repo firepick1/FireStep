@@ -32,48 +32,48 @@ Status FPDCalibrateHome::calibrate() {
         return STATUS_CAL_HOME1;
     }
     PH5TYPE radius = 50;
-	PH5TYPE zError = zRim - zCenter;
-	PH5TYPE zRim_gearRatio = zRim; // assume all error is due to gear ratio
-	PH5TYPE zRim_homeAngle = zRim; // assume all error is due to home angle
+    PH5TYPE zError = zRim - zCenter;
+    PH5TYPE zRim_gearRatio = zRim; // assume all error is due to gear ratio
+    PH5TYPE zRim_homeAngle = zRim; // assume all error is due to home angle
 
-	// convert probe data to stepper coordinates
-	Step3D pd[6];
-	for (int16_t i=0; i<6; i++) {
-		PH5TYPE a = i*60;
-		PH5TYPE radians = a * PI / 180.0;
-		pd[i] = machine.delta.calcPulses(XYZ3D(radius*cos(radians), radius*sin(radians), probe.probeData[1+i]));
-	};
+    // convert probe data to stepper coordinates
+    Step3D pd[6];
+    for (int16_t i=0; i<6; i++) {
+        PH5TYPE a = i*60;
+        PH5TYPE radians = a * PI / 180.0;
+        pd[i] = machine.delta.calcPulses(XYZ3D(radius*cos(radians), radius*sin(radians), probe.probeData[1+i]));
+    };
 
-	if ((mode&CAL_HOME) && (mode&CAL_GEAR)) {
-		PH5TYPE hgr = 4; // SWAG at ratio of homeAngleError / gearRatioError
-		PH5TYPE g = sqrt(zError*zError /(1+hgr*hgr));
-		PH5TYPE h = hgr * g;
-		zRim_gearRatio = zCenter + (zError > 0 ? g : -g); // gear ratio error split
-		zRim_homeAngle = zCenter + (zError > 0 ? h : -h); // homeAngle error split
-	}
-	TESTCOUT1("saveWeight:", saveWeight);
-	if (mode&CAL_HOME) {
-		eTheta = machine.delta.calcZBowlETheta(zCenter, zRim_homeAngle, radius);
-		PH5TYPE homeAngleCur = machine.delta.getHomeAngle();
-		homeAngle = saveWeight*(homeAngleCur+eTheta) + (1-saveWeight)*machine.getHomeAngle();
-		TESTCOUT4("CalibrateHome CAL_HOME zCenter:", zCenter, " zRim_homeAngle:", zRim_homeAngle,
-				  " eTheta:", eTheta, " homeAngle:", homeAngle);
-		machine.setHomeAngle(homeAngle);
-	}
-	if (mode&CAL_GEAR) {
-		if (MAX_GEAR_ZBOWL_ERROR < abs(zRim_gearRatio - zCenter)) {
-			return STATUS_ZBOWL_GEAR;
-		}
-		gearRatio = machine.delta.calcZBowlGearRatio(zCenter, zRim_gearRatio, radius);
-		PH5TYPE curGearRatio = machine.delta.getGearRatio();
-		eGear = gearRatio - curGearRatio; 
-		gearRatio = saveWeight * gearRatio + (1-saveWeight) * curGearRatio;
-		machine.delta.setGearRatio(gearRatio);
-		TESTCOUT4("CalibrateHome CAL_GEAR zCenter:", zCenter, " zRim_gearRatio:", zRim_gearRatio,
-				  " eGear:", eGear, " gearRatio:", gearRatio);
-	}
+    if ((mode&CAL_HOME) && (mode&CAL_GEAR)) {
+        PH5TYPE hgr = 4; // SWAG at ratio of homeAngleError / gearRatioError
+        PH5TYPE g = sqrt(zError*zError /(1+hgr*hgr));
+        PH5TYPE h = hgr * g;
+        zRim_gearRatio = zCenter + (zError > 0 ? g : -g); // gear ratio error split
+        zRim_homeAngle = zCenter + (zError > 0 ? h : -h); // homeAngle error split
+    }
+    TESTCOUT1("saveWeight:", saveWeight);
+    if (mode&CAL_HOME) {
+        eTheta = machine.delta.calcZBowlETheta(zCenter, zRim_homeAngle, radius);
+        PH5TYPE homeAngleCur = machine.delta.getHomeAngle();
+        homeAngle = saveWeight*(homeAngleCur+eTheta) + (1-saveWeight)*machine.getHomeAngle();
+        TESTCOUT4("CalibrateHome CAL_HOME zCenter:", zCenter, " zRim_homeAngle:", zRim_homeAngle,
+                  " eTheta:", eTheta, " homeAngle:", homeAngle);
+        machine.setHomeAngle(homeAngle);
+    }
+    if (mode&CAL_GEAR) {
+        if (MAX_GEAR_ZBOWL_ERROR < abs(zRim_gearRatio - zCenter)) {
+            return STATUS_ZBOWL_GEAR;
+        }
+        gearRatio = machine.delta.calcZBowlGearRatio(zCenter, zRim_gearRatio, radius);
+        PH5TYPE curGearRatio = machine.delta.getGearRatio();
+        eGear = gearRatio - curGearRatio;
+        gearRatio = saveWeight * gearRatio + (1-saveWeight) * curGearRatio;
+        machine.delta.setGearRatio(gearRatio);
+        TESTCOUT4("CalibrateHome CAL_GEAR zCenter:", zCenter, " zRim_gearRatio:", zRim_gearRatio,
+                  " eGear:", eGear, " gearRatio:", gearRatio);
+    }
 
-	// Calculate bed ZPlane
+    // Calculate bed ZPlane
     ZPlane zpl0;
     if (!zpl0.initialize(
                 machine.delta.calcXYZ(pd[0]),
@@ -89,16 +89,16 @@ Status FPDCalibrateHome::calibrate() {
                 machine.delta.calcXYZ(pd[3]),
                 machine.delta.calcXYZ(pd[5])
             )) {
-		return STATUS_CAL_BED;
+        return STATUS_CAL_BED;
     }
     TESTCOUT3("zpl60 a:", zpl60.a, " b:", zpl60.b, " c:", zpl60.c);
     bed.a = (zpl0.a + zpl60.b) / 2;
     bed.b = (zpl0.b + zpl60.b) / 2;
     bed.c = (zpl0.c + zpl60.c) / 2;
     TESTCOUT3("bed a:", bed.a, " b:", bed.b, " c:", bed.c);
-	machine.bed.a = bed.a = saveWeight*bed.a + (1-saveWeight) * machine.bed.a;
-	machine.bed.b = bed.b = saveWeight*bed.b + (1-saveWeight) * machine.bed.b;
-	machine.bed.c = bed.c = saveWeight*bed.c + (1-saveWeight) * machine.bed.c;
+    machine.bed.a = bed.a = saveWeight*bed.a + (1-saveWeight) * machine.bed.a;
+    machine.bed.b = bed.b = saveWeight*bed.b + (1-saveWeight) * machine.bed.b;
+    machine.bed.c = bed.c = saveWeight*bed.c + (1-saveWeight) * machine.bed.c;
     TESTCOUT3("machine.bed a:", machine.bed.a, " b:", machine.bed.b, " c:", machine.bed.c);
 
     return STATUS_OK;
@@ -111,13 +111,13 @@ private:
     Quad<PH5TYPE> destination;
     int16_t nSegs;
     bool isZBed;
-	bool isRaw; // MTO_RAW movement requested
+    bool isRaw; // MTO_RAW movement requested
     Machine &machine;
     FPDController &controller;
 
 private:
     Status execute(JsonCommand& jcmd, JsonObject *pjobj);
-	Status movePulleyArmToAngle(DeltaAxis axis, PH5TYPE degrees);
+    Status movePulleyArmToAngle(DeltaAxis axis, PH5TYPE degrees);
 
 public:
     FPDMoveTo(FPDController &controller, Machine& machine);
@@ -145,10 +145,10 @@ FPDMoveTo::FPDMoveTo(FPDController &controller, Machine& machine)
 }
 
 Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
-	if (isRaw) {
-		TESTCOUT1("execute:", "isRaw");
-		return STATUS_OK;
-	}
+    if (isRaw) {
+        TESTCOUT1("execute:", "isRaw");
+        return STATUS_OK;
+    }
     PH5TYPE x = destination.value[0];
     PH5TYPE y = destination.value[1];
     PH5TYPE z = destination.value[2];
@@ -180,8 +180,8 @@ Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     float pp = 0;
     int16_t sg = 0;
     if (dPos.isZero()) {
-		TESTCOUT1("execute:","dPos.isZero()");
-	} else {
+        TESTCOUT1("execute:","dPos.isZero()");
+    } else {
         status = sb.buildLine(machine.stroke, dPos);
         if (status != STATUS_OK) {
             return status;
@@ -228,30 +228,30 @@ Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
 }
 
 Status FPDMoveTo::movePulleyArmToAngle(DeltaAxis axis, PH5TYPE degrees) {
-	Quad<StepCoord> posStart = machine.getMotorPosition();
-	Quad<StepCoord> posEnd = posStart;
-	PH5TYPE dpp = machine.delta.getDegreesPerPulse(axis);
-	if (axis == DELTA_AXIS_ALL) {
-		return STATUS_AXIS_ERROR;
-	}
-	posEnd.value[axis] = machine.delta.roundStep(degrees / dpp);
-	PinType pinProbe = machine.op.probe.pinProbe; // save syspb
-	machine.op.probe.pinProbe = machine.axis[axis].pinMin;
-	machine.op.probe.setup(posStart, posEnd);
-	Status status = STATUS_BUSY_CALIBRATING;
-	int32_t stopTicks = ticks() + MS_TICKS(20000); // stop after 20 seconds
+    Quad<StepCoord> posStart = machine.getMotorPosition();
+    Quad<StepCoord> posEnd = posStart;
+    PH5TYPE dpp = machine.delta.getDegreesPerPulse(axis);
+    if (axis == DELTA_AXIS_ALL) {
+        return STATUS_AXIS_ERROR;
+    }
+    posEnd.value[axis] = machine.delta.roundStep(degrees / dpp);
+    PinType pinProbe = machine.op.probe.pinProbe; // save syspb
+    machine.op.probe.pinProbe = machine.axis[axis].pinMin;
+    machine.op.probe.setup(posStart, posEnd);
+    Status status = STATUS_BUSY_CALIBRATING;
+    int32_t stopTicks = ticks() + MS_TICKS(20000); // stop after 20 seconds
 
-	while (ticks() < stopTicks && status == STATUS_BUSY_CALIBRATING) {
-		status = machine.probe(status, 0);
-	} 
-	machine.op.probe.pinProbe = pinProbe; // restore syspb
-	if (status == STATUS_PROBE_FAILED) {
-		isRaw = true;
-		return STATUS_OK; // we're not really probing, so this is good
-	} else if (status == STATUS_OK) {
-		return STATUS_LIMIT_MIN; // uh oh
-	}
-	return status;
+    while (ticks() < stopTicks && status == STATUS_BUSY_CALIBRATING) {
+        status = machine.probe(status, 0);
+    }
+    machine.op.probe.pinProbe = pinProbe; // restore syspb
+    if (status == STATUS_PROBE_FAILED) {
+        isRaw = true;
+        return STATUS_OK; // we're not really probing, so this is good
+    } else if (status == STATUS_OK) {
+        return STATUS_LIMIT_MIN; // uh oh
+    }
+    return status;
 }
 
 Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
@@ -308,11 +308,11 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
             status = execute(jcmd, NULL);
         }
     } else if (strcmp_PS(OP_mova1,key) == 0 || strcmp_PS(OP_a1,key) == 0) {
-		return movePulleyArmToAngle(DELTA_AXIS_1, (PH5TYPE) jobj[key]);
+        return movePulleyArmToAngle(DELTA_AXIS_1, (PH5TYPE) jobj[key]);
     } else if (strcmp_PS(OP_mova2,key) == 0 || strcmp_PS(OP_a2,key) == 0) {
-		return movePulleyArmToAngle(DELTA_AXIS_2, (PH5TYPE) jobj[key]);
+        return movePulleyArmToAngle(DELTA_AXIS_2, (PH5TYPE) jobj[key]);
     } else if (strcmp_PS(OP_mova3,key) == 0 || strcmp_PS(OP_a3,key) == 0) {
-		return movePulleyArmToAngle(DELTA_AXIS_3, (PH5TYPE) jobj[key]);
+        return movePulleyArmToAngle(DELTA_AXIS_3, (PH5TYPE) jobj[key]);
     } else if (strcmp_PS(OP_movxm,key) == 0 || strcmp_PS(OP_xm,key) == 0) {
         int16_t iMark = ((int16_t)jobj[key]) - 1;
         if (iMark < 0 || MARK_COUNT <= iMark) {
@@ -399,8 +399,8 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
             status = execute(jcmd, NULL);
         }
     } else if (strcmp_PS(OP_d, key) == 0) {
-		char keyword[10];
-		strcpy_P(keyword, OP_angle);
+        char keyword[10];
+        strcpy_P(keyword, OP_angle);
         if (!jobj.at(keyword).success()) {
             return jcmd.setError(STATUS_FIELD_REQUIRED,"a");
         }
@@ -410,8 +410,8 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
             return jcmd.setError(STATUS_FIELD_REQUIRED,"d");
         }
         PH5TYPE d = jobj["d"];
-		char keyword[10];
-		strcpy_P(keyword, OP_angle);
+        char keyword[10];
+        strcpy_P(keyword, OP_angle);
         PH5TYPE a = jobj[keyword];
         PH5TYPE radians = a * PI / 180.0;
         PH5TYPE y = d * sin(radians);
@@ -729,11 +729,11 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.delta.setGearRatio(value, DELTA_AXIS_3);
     } else if (strcmp_PS(OP_ha, key) == 0 || strcmp_PS(OP_dimha, key) == 0) {
-		PH5TYPE homeAngle = machine.getHomeAngle();
+        PH5TYPE homeAngle = machine.getHomeAngle();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngle);
         machine.setHomeAngle(homeAngle);
     } else if (strcmp_PS(OP_hp, key) == 0 || strcmp_PS(OP_dimhp, key) == 0) {
-		StepCoord homePulses = machine.getHomePulses();
+        StepCoord homePulses = machine.getHomePulses();
         status = processField<StepCoord, StepCoord>(jobj, key, homePulses);
         machine.setHomePulses(homePulses);
     } else if (strcmp_PS(OP_mi, key) == 0 || strcmp_PS(OP_dimmi, key) == 0) {
@@ -804,10 +804,10 @@ Status FPDController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
 Status FPDController::finalizeHome(JsonCommand& jcmd, JsonObject& jobj, const char * key) {
     Status status = STATUS_OK;
 
-	if (strcmp_PS(OP_hom, key) != 0) { 
-		return status; // single axis home does not reposition to post-home destination
-	}
-	
+    if (strcmp_PS(OP_hom, key) != 0) {
+        return status; // single axis home does not reposition to post-home destination
+    }
+
     // calculate distance to post-home destination
     machine.loadDeltaCalculator();
     Quad<StepCoord> limit = machine.getMotorPosition();
@@ -821,21 +821,21 @@ Status FPDController::finalizeHome(JsonCommand& jcmd, JsonObject& jobj, const ch
                                limit.value[3]
                            ));
 
-	status = STATUS_BUSY_CALIBRATING;
-	do {
-		// fast probe because we don't expect to hit anything
-		status = machine.probe(status, 0);
-		//TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
-	} while (status == STATUS_BUSY_CALIBRATING);
+    status = STATUS_BUSY_CALIBRATING;
+    do {
+        // fast probe because we don't expect to hit anything
+        status = machine.probe(status, 0);
+        //TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
+    } while (status == STATUS_BUSY_CALIBRATING);
 
-	if (status == STATUS_PROBE_FAILED) {
-		// we didn't hit anything and that is good
-		status = STATUS_OK;
-	} else if (status == STATUS_OK) {
-		// we hit something and that's not good
-		TESTCOUT1("finalizeHome:", "COLLISION");
-		status = STATUS_LIMIT_MAX;
-	}
+    if (status == STATUS_PROBE_FAILED) {
+        // we didn't hit anything and that is good
+        status = STATUS_OK;
+    } else if (status == STATUS_OK) {
+        // we hit something and that's not good
+        TESTCOUT1("finalizeHome:", "COLLISION");
+        status = STATUS_LIMIT_MAX;
+    }
 
     return status;
 }
@@ -882,11 +882,11 @@ Status FPDController::processCalibrate(JsonCommand &jcmd, JsonObject& jobj, cons
     FPDCalibrateHome cal(machine);
     Status status = processCalibrateCore(jcmd, jobj, key, cal, false); // get saveWeight
     if (status == STATUS_OK) {
-		status = cal.calibrate();
+        status = cal.calibrate();
     }
-	if (status == STATUS_OK) {
-		status = processCalibrateCore(jcmd, jobj, key, cal, true); // save results
-	}
+    if (status == STATUS_OK) {
+        status = processCalibrateCore(jcmd, jobj, key, cal, true); // save results
+    }
     return status;
 }
 
@@ -921,14 +921,14 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
             }
         }
     } else if (strcmp_PS(OP_calbx,key) == 0 || strcmp_PS(OP_bx,key) == 0) {
-		if (output) {
-			PH5TYPE value = machine.bed.a;
-			status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-			if (value != cal.bed.a) {
-				return jcmd.setError(STATUS_OUTPUT_FIELD, key);
-			}
-			jobj[key].set(value, 4);
-		}
+        if (output) {
+            PH5TYPE value = machine.bed.a;
+            status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+            if (value != cal.bed.a) {
+                return jcmd.setError(STATUS_OUTPUT_FIELD, key);
+            }
+            jobj[key].set(value, 4);
+        }
     } else if (strcmp_PS(OP_calby,key) == 0 || strcmp_PS(OP_by,key) == 0) {
         if (output) {
             PH5TYPE value = machine.bed.b;
@@ -954,43 +954,43 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
                 return jcmd.setError(STATUS_OUTPUT_FIELD, key);
             }
         }
-		cal.mode = (CalibrateMode)((cal.mode&CAL_HOME) | CAL_GEAR);
+        cal.mode = (CalibrateMode)((cal.mode&CAL_HOME) | CAL_GEAR);
     } else if (strcmp_PS(OP_calgr1,key) == 0 || strcmp_PS(OP_gr1,key) == 0) {
-		PH5TYPE degrees = 0;
-		status = processField<PH5TYPE, PH5TYPE>(jobj, key, degrees);
-		if (!degrees) {
-			return jcmd.setError(STATUS_CAL_DEGREES, key);
+        PH5TYPE degrees = 0;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, degrees);
+        if (!degrees) {
+            return jcmd.setError(STATUS_CAL_DEGREES, key);
         }
-		if (machine.axis[0].position == 0) {
-			return jcmd.setError(STATUS_CAL_POSITION_0, key);
-		}
-		PH5TYPE dpp = abs(degrees / machine.axis[0].position);
-		machine.delta.setDegreesPerPulse(dpp, DELTA_AXIS_1);
-		cal.mode = CAL_GEAR1;
+        if (machine.axis[0].position == 0) {
+            return jcmd.setError(STATUS_CAL_POSITION_0, key);
+        }
+        PH5TYPE dpp = abs(degrees / machine.axis[0].position);
+        machine.delta.setDegreesPerPulse(dpp, DELTA_AXIS_1);
+        cal.mode = CAL_GEAR1;
     } else if (strcmp_PS(OP_calgr2,key) == 0 || strcmp_PS(OP_gr2,key) == 0) {
-		PH5TYPE degrees = 0;
-		status = processField<PH5TYPE, PH5TYPE>(jobj, key, degrees);
-		if (!degrees) {
-			return jcmd.setError(STATUS_CAL_DEGREES, key);
+        PH5TYPE degrees = 0;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, degrees);
+        if (!degrees) {
+            return jcmd.setError(STATUS_CAL_DEGREES, key);
         }
-		if (machine.axis[1].position == 0) {
-			return jcmd.setError(STATUS_CAL_POSITION_0, key);
-		}
-		PH5TYPE dpp = abs(degrees / machine.axis[1].position);
-		machine.delta.setDegreesPerPulse(dpp, DELTA_AXIS_2);
-		cal.mode = CAL_GEAR2;
+        if (machine.axis[1].position == 0) {
+            return jcmd.setError(STATUS_CAL_POSITION_0, key);
+        }
+        PH5TYPE dpp = abs(degrees / machine.axis[1].position);
+        machine.delta.setDegreesPerPulse(dpp, DELTA_AXIS_2);
+        cal.mode = CAL_GEAR2;
     } else if (strcmp_PS(OP_calgr3,key) == 0 || strcmp_PS(OP_gr3,key) == 0) {
-		PH5TYPE degrees = 0;
-		status = processField<PH5TYPE, PH5TYPE>(jobj, key, degrees);
-		if (!degrees) {
-			return jcmd.setError(STATUS_CAL_DEGREES, key);
+        PH5TYPE degrees = 0;
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, degrees);
+        if (!degrees) {
+            return jcmd.setError(STATUS_CAL_DEGREES, key);
         }
-		if (machine.axis[2].position == 0) {
-			return jcmd.setError(STATUS_CAL_POSITION_0, key);
-		}
-		PH5TYPE dpp = abs(degrees / machine.axis[2].position);
-		machine.delta.setDegreesPerPulse(dpp, DELTA_AXIS_3);
-		cal.mode = CAL_GEAR3;
+        if (machine.axis[2].position == 0) {
+            return jcmd.setError(STATUS_CAL_POSITION_0, key);
+        }
+        PH5TYPE dpp = abs(degrees / machine.axis[2].position);
+        machine.delta.setDegreesPerPulse(dpp, DELTA_AXIS_3);
+        cal.mode = CAL_GEAR3;
     } else if (strcmp_PS(OP_calge,key) == 0 || strcmp_PS(OP_ge,key) == 0) {
         if (output) {
             PH5TYPE value = cal.eGear;
@@ -999,7 +999,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
                 return jcmd.setError(STATUS_OUTPUT_FIELD, key);
             }
         }
-		cal.mode = (CalibrateMode)((cal.mode&CAL_HOME) | CAL_GEAR);
+        cal.mode = (CalibrateMode)((cal.mode&CAL_HOME) | CAL_GEAR);
     } else if (strcmp_PS(OP_calha,key) == 0 || strcmp_PS(OP_ha,key) == 0) {
         if (output) {
             PH5TYPE value = machine.getHomeAngle();
@@ -1008,7 +1008,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
                 return jcmd.setError(STATUS_OUTPUT_FIELD, key);
             }
         }
-		cal.mode = (CalibrateMode)((cal.mode&CAL_GEAR) | CAL_HOME);
+        cal.mode = (CalibrateMode)((cal.mode&CAL_GEAR) | CAL_HOME);
     } else if (strcmp_PS(OP_calhe,key) == 0 || strcmp_PS(OP_he,key) == 0) {
         if (output) {
             PH5TYPE value = cal.eTheta;
@@ -1017,7 +1017,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
                 return jcmd.setError(STATUS_OUTPUT_FIELD, key);
             }
         }
-		cal.mode = (CalibrateMode)((cal.mode&CAL_GEAR) | CAL_HOME);
+        cal.mode = (CalibrateMode)((cal.mode&CAL_GEAR) | CAL_HOME);
     } else if (strcmp_PS(OP_calzc,key) == 0 || strcmp_PS(OP_zc,key) == 0) {
         if (output) {
             PH5TYPE value = cal.zCenter;
@@ -1035,13 +1035,13 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
             }
         }
     } else if (strcmp_PS(OP_calsv,key) == 0 || strcmp_PS(OP_sv,key) == 0) {
-		if (jobj.at(key).is<bool>()) {
-			bool save = true;
-			status = processField<bool, bool>(jobj, key, save);
-			cal.saveWeight = save ? 0.3 : 0;
-		} else {
-			status = processField<PH5TYPE, PH5TYPE>(jobj, key, cal.saveWeight);
-		}
+        if (jobj.at(key).is<bool>()) {
+            bool save = true;
+            status = processField<bool, bool>(jobj, key, save);
+            cal.saveWeight = save ? 0.3 : 0;
+        } else {
+            status = processField<PH5TYPE, PH5TYPE>(jobj, key, cal.saveWeight);
+        }
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
@@ -1049,7 +1049,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
 }
 
 void FPDController::onTopologyChanged() {
-	machine.setHomeAngle(machine.getHomeAngle()); // sync axes to homeAngle
+    machine.setHomeAngle(machine.getHomeAngle()); // sync axes to homeAngle
     machine.delta.useEffectorOrigin();
     if (machine.axis[0].home >= 0 &&
             machine.axis[1].home >= 0 &&

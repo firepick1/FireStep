@@ -26,14 +26,14 @@ size_t JsonCommand::responseAvailable() {
 }
 
 void JsonCommand::addQueryAttr(JsonObject& node, const char *key) {
-	char *buf = JsonCommand::allocate(strlen_P(key)+1);
-	if (buf) {
-		strcpy_P(buf, key);
-		node[buf] = "";
-	} else {
-		TESTCOUT1("ERROR	: addQueryAttr OUT OF MEMORY ##############", key);
-		DIE();
-	}
+    char *buf = JsonCommand::allocate(strlen_P(key)+1);
+    if (buf) {
+        strcpy_P(buf, key);
+        node[buf] = "";
+    } else {
+        TESTCOUT1("ERROR	: addQueryAttr OUT OF MEMORY ##############", key);
+        DIE();
+    }
 }
 
 void JsonCommand::responseClear() {
@@ -124,13 +124,13 @@ Status JsonCommand::parseInput(const char *jsonIn, Status status) {
         return STATUS_BUSY_PARSED;
     }
     if (jsonIn && (jsonIn < json || json+MAX_JSON < jsonIn)) {
-		size_t len = strlen(jsonIn)+1;
-		char *buf = allocate(len);
-		parsed = true;
-		if (!buf) {
+        size_t len = strlen(jsonIn)+1;
+        char *buf = allocate(len);
+        parsed = true;
+        if (!buf) {
             return STATUS_JSON_TOO_LONG;
         }
-		snprintf(buf, len, "%s", jsonIn);
+        snprintf(buf, len, "%s", jsonIn);
         return parseCore();
     } else if (pJsonFree == json || status == STATUS_WAIT_EOL) {
         while (Serial.available()) {

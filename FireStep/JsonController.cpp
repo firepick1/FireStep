@@ -628,14 +628,14 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp_PS(OP_jp, key) == 0 || strcmp_PS(OP_sysjp, key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.jsonPrettyPrint);
     } else if (strcmp_PS(OP_lb, key) == 0 || strcmp_PS(OP_lb, key + 1) == 0) {
-		StepCoord latchBackoff = 0;
-		for (AxisIndex i=0; i<AXIS_COUNT; i++) {
-			latchBackoff = max(latchBackoff, machine.axis[i].latchBackoff);
-		}
+        StepCoord latchBackoff = 0;
+        for (AxisIndex i=0; i<AXIS_COUNT; i++) {
+            latchBackoff = max(latchBackoff, machine.axis[i].latchBackoff);
+        }
         status = processField<StepCoord, int32_t>(jobj, key, latchBackoff);
-		for (AxisIndex i=0; i<AXIS_COUNT; i++) {
-			machine.axis[i].latchBackoff = latchBackoff;
-		}
+        for (AxisIndex i=0; i<AXIS_COUNT; i++) {
+            machine.axis[i].latchBackoff = latchBackoff;
+        }
     } else if (strcmp_PS(OP_lh, key) == 0 || strcmp_PS(OP_syslh, key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.invertLim);
     } else if (strcmp_PS(OP_lp, key) == 0 || strcmp_PS(OP_syslp, key) == 0) {
@@ -647,9 +647,9 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp_PS(OP_pc, key) == 0 || strcmp_PS(OP_syspc, key) == 0) {
         PinConfig pc = machine.getPinConfig();
         status = processField<PinConfig, int32_t>(jobj, key, pc);
-		if (pc != machine.getPinConfig()) {
+        if (pc != machine.getPinConfig()) {
             machine.setPinConfig(pc);
-		}
+        }
     } else if (strcmp_PS(OP_pb, key) == 0 || strcmp_PS(OP_syspb, key) == 0) {
         status = processPin(jobj, key, machine.op.probe.pinProbe, INPUT);
     } else if (strcmp_PS(OP_pi, key) == 0 || strcmp_PS(OP_syspi, key) == 0) {
