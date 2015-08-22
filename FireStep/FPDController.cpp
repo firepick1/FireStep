@@ -235,6 +235,7 @@ Status FPDMoveTo::movePulleyArmToAngle(DeltaAxis axis, PH5TYPE degrees) {
 		return STATUS_AXIS_ERROR;
 	}
 	posEnd.value[axis] = machine.delta.roundStep(degrees / dpp);
+	PinType pinProbe = machine.op.probe.pinProbe; // save syspb
 	machine.op.probe.pinProbe = machine.axis[axis].pinMin;
 	machine.op.probe.setup(posStart, posEnd);
 	Status status = STATUS_BUSY_CALIBRATING;
@@ -243,6 +244,7 @@ Status FPDMoveTo::movePulleyArmToAngle(DeltaAxis axis, PH5TYPE degrees) {
 	while (ticks() < stopTicks && status == STATUS_BUSY_CALIBRATING) {
 		status = machine.probe(status, 0);
 	} 
+	machine.op.probe.pinProbe = pinProbe; // restore syspb
 	if (status == STATUS_PROBE_FAILED) {
 		isRaw = true;
 		return STATUS_OK; // we're not really probing, so this is good

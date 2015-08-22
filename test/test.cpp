@@ -1600,6 +1600,7 @@ void test_MTO_FPD_mov() {
     ASSERTEQUAL(846, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(2, machine.op.probe.pinProbe);
     ASSERTQUAD(Quad<StepCoord>(846,0,0,0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'mova1':10},'t':0.054}\n"),
                  Serial.output().c_str());
