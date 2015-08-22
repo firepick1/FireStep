@@ -650,7 +650,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
 		if (pc != machine.getPinConfig()) {
             machine.setPinConfig(pc);
 		}
-    } else if (strcmp_PS(OP_pb, key) == 0 || strcmp_PS(OP_pb, key + 1) == 0) {
+    } else if (strcmp_PS(OP_pb, key) == 0 || strcmp_PS(OP_syspb, key) == 0) {
         status = processPin(jobj, key, machine.op.probe.pinProbe, INPUT);
     } else if (strcmp_PS(OP_pi, key) == 0 || strcmp_PS(OP_syspi, key) == 0) {
         PinType pinStatus = machine.pinStatus;

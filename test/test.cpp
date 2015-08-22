@@ -1265,8 +1265,8 @@ void test_sys() {
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-	// syspi: custom pin status
-    Serial.push(JT("{'syspi':57}\n"));
+	// syspi: custom pin status, probe
+    Serial.push(JT("{'syspi':57,'syspb':3}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
@@ -1274,7 +1274,7 @@ void test_sys() {
     ASSERTEQUAL(400, machine.searchDelay);
 	ASSERTEQUAL(57, machine.pinStatus);
     ASSERTEQUAL(MTO_FPD, machine.topology);
-    ASSERTEQUALS(JT("{'s':0,'r':{'syspi':57},'t':0.000}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'syspi':57,'syspb':3},'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -1285,11 +1285,12 @@ void test_sys() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(400, machine.searchDelay);
 	ASSERTEQUAL(57, machine.pinStatus);
+	ASSERTEQUAL(3, machine.op.probe.pinProbe);
     ASSERTEQUAL(MTO_FPD, machine.topology);
     ASSERTEQUALS(JT("{'s':0,'r':"
-					"{'sys':{'ah':false,'as':false,'ch':1033253627,'eu':false,'fr':1000,"
+					"{'sys':{'ah':false,'as':false,'ch':1033255675,'eu':false,'fr':1000,"
 					"'hp':3,'jp':false,'lh':false,'lp':0,'mv':12800,'om':0,"
-					"'pb':2,'pc':2,'pi':57,'sd':400,'tc':5,'to':1,'tv':0.700,'v':2.030}"
+					"'pb':3,'pc':2,'pi':57,'sd':400,'tc':5,'to':1,'tv':0.700,'v':2.030}"
 					"},'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
