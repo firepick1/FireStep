@@ -36,7 +36,7 @@ DeltaCalculator::DeltaCalculator()
       microsteps(16),
       dz(0)
 {
-    setGearRatio(9.522262155637);
+    setGearRatio(9.47387);
     homeAngle = getDefaultHomeAngle();
 }
 
