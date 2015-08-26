@@ -75,6 +75,8 @@ protected:
     PH5TYPE degreesPerPulse[3];
     PH5TYPE dz;
     PH5TYPE homeAngle;
+    PH5TYPE spAngle;
+    PH5TYPE spSlope;
     static PH5TYPE sqrt3;
     static PH5TYPE sin120;
     static PH5TYPE cos120;
@@ -92,6 +94,18 @@ protected:
 public:
     DeltaCalculator();
     void useEffectorOrigin();
+    inline PH5TYPE getSPAngle() {
+        return spAngle;
+    }
+    inline void setSPAngle(PH5TYPE value) {
+        spAngle = value;
+    }
+    inline PH5TYPE getSPSlope() {
+        return spSlope;
+    }
+    inline void setSPSlope(PH5TYPE value) {
+        spSlope = value;
+    }
     inline PH5TYPE getBaseTriangleSide() {
         return f;
     }

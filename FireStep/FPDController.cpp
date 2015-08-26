@@ -681,6 +681,8 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
             jcmd.addQueryAttr(node, OP_mi);
             jcmd.addQueryAttr(node, OP_re);
             jcmd.addQueryAttr(node, OP_rf);
+            jcmd.addQueryAttr(node, OP_spa);
+            jcmd.addQueryAttr(node, OP_sps);
             jcmd.addQueryAttr(node, OP_st);
         }
         JsonObject& kidObj = jobj[key];
@@ -750,6 +752,14 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         PH5TYPE value = machine.delta.getBaseArmLength();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
         machine.delta.setBaseArmLength(value);
+    } else if (strcmp_PS(OP_spa, key) == 0 || strcmp_PS(OP_dimspa, key) == 0) {
+        PH5TYPE value = machine.delta.getSPAngle();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        machine.delta.setSPAngle(value);
+    } else if (strcmp_PS(OP_sps, key) == 0 || strcmp_PS(OP_dimsps, key) == 0) {
+        PH5TYPE value = machine.delta.getSPSlope();
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
+        machine.delta.setSPSlope(value);
     } else if (strcmp_PS(OP_st, key) == 0 || strcmp_PS(OP_dimst, key) == 0) {
         int16_t value = machine.delta.getSteps360();
         status = processField<int16_t, int16_t>(jobj, key, value);

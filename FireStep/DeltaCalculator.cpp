@@ -34,6 +34,8 @@ DeltaCalculator::DeltaCalculator()
       acr(24.15), // arm clearance radius (mm)
       steps360(200),
       microsteps(16),
+	  spAngle(-51.58135),
+	  spSlope(-0.16478),
       dz(0)
 {
     setGearRatio(9.47387);

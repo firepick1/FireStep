@@ -270,6 +270,8 @@ int32_t Machine::hash() {
     PH5TYPE gr1 = delta.getGearRatio(DELTA_AXIS_1);
     PH5TYPE gr2 = delta.getGearRatio(DELTA_AXIS_2);
     PH5TYPE gr3 = delta.getGearRatio(DELTA_AXIS_3);
+	PH5TYPE spa = delta.getSPAngle();
+	PH5TYPE sps = delta.getSPSlope();
     int32_t result = 0
                      ^ ((uint32_t) outputMode << 8)
                      ^ ((uint32_t) topology << 9)
@@ -293,6 +295,8 @@ int32_t Machine::hash() {
                      ^ (*(uint32_t *)(void*)&gr1)
                      ^ (*(uint32_t *)(void*)&gr2)
                      ^ (*(uint32_t *)(void*)&gr3)
+                     ^ (*(uint32_t *)(void*)&spa)
+                     ^ (*(uint32_t *)(void*)&sps)
                      //^ (eeUser)
                      ;
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
@@ -852,6 +856,8 @@ char * Machine::saveDimConfig(char *out, size_t maxLen) {
     out = saveConfigValue("mi", delta.getMicrosteps(), out);
     out = saveConfigValue("re", delta.getEffectorLength(), out);
     out = saveConfigValue("rf", delta.getBaseArmLength(), out);
+    out = saveConfigValue("spa", delta.getSPAngle(), out);
+    out = saveConfigValue("sps", delta.getSPSlope(), out);
     out = saveConfigValue("st", delta.getSteps360(), out);
     out--;
     *out++ = '}';

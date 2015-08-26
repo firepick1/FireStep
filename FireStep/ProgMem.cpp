@@ -75,6 +75,8 @@ const char firestep::OP_dimmi[] PROGMEM = { "dimmi" };
 const char firestep::OP_dimpd[] PROGMEM = { "dimpd" };
 const char firestep::OP_dimre[] PROGMEM = { "dimre" };
 const char firestep::OP_dimrf[] PROGMEM = { "dimrf" };
+const char firestep::OP_dimspa[] PROGMEM = { "dimspa" };
+const char firestep::OP_dimsps[] PROGMEM = { "dimsps" };
 const char firestep::OP_dimst[] PROGMEM = { "dimst" };
 const char firestep::OP_dl[] PROGMEM = { "dl" };
 const char firestep::OP_dp[] PROGMEM = { "dp" };
@@ -201,6 +203,8 @@ const char firestep::OP_sc[] PROGMEM = { "sc" };
 const char firestep::OP_sd[] PROGMEM = { "sd" };
 const char firestep::OP_sg[] PROGMEM = { "sg" };
 const char firestep::OP_sp[] PROGMEM = { "sp" };
+const char firestep::OP_spa[] PROGMEM = { "spa" };
+const char firestep::OP_sps[] PROGMEM = { "sps" };
 const char firestep::OP_st[] PROGMEM = { "st" };
 const char firestep::OP_sv[] PROGMEM = { "sv" };
 const char firestep::OP_sys[] PROGMEM = { "sys" };
@@ -413,7 +417,7 @@ const char src_fpd_hex_probe[] PROGMEM = {
 
 const char src_dim_fpd[] PROGMEM = {
     "["
-    "{\"dim\":{\"gr\":9.47387,\"ha\":-67.2,\"e\":131.636,\"f\":190.526,\"re\":270.000,\"rf\":90.000}}"
+    "{\"dim\":{\"gr\":9.47387,\"ha\":-67.2,\"e\":131.636,\"f\":190.526,\"re\":270.000,\"rf\":90.000,\"spa\":-51.58135,\"sps\":-0.16478}}"
     "]"
 };
 
