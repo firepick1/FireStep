@@ -1,6 +1,11 @@
 FireStep: change log
 ====================
 
+v0.2.4
+------
+* NEW: MTO_FPD "dimspa" Sliced pulley arm critical angle
+* NEW: MTO_FPD "dimsps" Sliced pulley error slope (mm/degree)
+
 v0.2.3
 ------
 * CHG: MTO_FPD "mov:{a,d}" changed to "mov:{angle,d}" move in XY plane to polar coordinate `d` millimeters from X0Y0 at `angle` degrees CCW from x-axis.
