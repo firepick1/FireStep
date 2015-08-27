@@ -4631,6 +4631,20 @@ void test_DeltaCalculator() {
         ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
     }
 
+	// SPE off
+	ASSERTEQUALT(0, dc.getSPERatio(), 0.001);
+	// verify SPE calculation round trip
+	ASSERTEQUAL(-4175, dc.calcSPEPulses(dc.getSPEAngle()+2));
+	ASSERTEQUALT(2.004, dc.calcSPEAngle(-4175)-dc.getSPEAngle(), 0.001);
+	ASSERTEQUAL(-4260, dc.calcSPEPulses(dc.getSPEAngle()+1));
+	ASSERTEQUALT(0.995, dc.calcSPEAngle(-4260)-dc.getSPEAngle(), 0.001);
+	ASSERTEQUAL(-4344, dc.calcSPEPulses(dc.getSPEAngle()+0));
+	ASSERTEQUALT(-0.003, dc.calcSPEAngle(-4344)-dc.getSPEAngle(), 0.001);
+	ASSERTEQUAL(-4428, dc.calcSPEPulses(dc.getSPEAngle()-1));
+	ASSERTEQUALT(-1.00048, dc.calcSPEAngle(-4428)-dc.getSPEAngle(), 0.001);
+	ASSERTEQUAL(-4512, dc.calcSPEPulses(dc.getSPEAngle()-2));
+	ASSERTEQUALT(-1.998, dc.calcSPEAngle(-4512)-dc.getSPEAngle(), 0.001);
+	// SPE on
 	dc.setSPERatio(FPD_SPE_RATIO);
 	ASSERTEQUALT(FPD_SPE_ANGLE, dc.getSPEAngle(), 0.001);
 	ASSERTEQUALT(FPD_SPE_RATIO, dc.getSPERatio(), 0.001);
@@ -4641,10 +4655,10 @@ void test_DeltaCalculator() {
 	ASSERTEQUALT(0.995, dc.calcSPEAngle(-4260)-dc.getSPEAngle(), 0.001);
 	ASSERTEQUAL(-4344, dc.calcSPEPulses(dc.getSPEAngle()+0));
 	ASSERTEQUALT(-0.003, dc.calcSPEAngle(-4344)-dc.getSPEAngle(), 0.001);
-	ASSERTEQUAL(-4414, dc.calcSPEPulses(dc.getSPEAngle()-1));
-	ASSERTEQUALT(-0.971, dc.calcSPEAngle(-4414)-dc.getSPEAngle(), 0.001);
-	ASSERTEQUAL(-4484, dc.calcSPEPulses(dc.getSPEAngle()-2));
-	ASSERTEQUALT(-1.939, dc.calcSPEAngle(-4484)-dc.getSPEAngle(), 0.001);
+	ASSERTEQUAL(-4414, dc.calcSPEPulses(dc.getSPEAngle()-1)); // SPE change
+	ASSERTEQUALT(-0.971, dc.calcSPEAngle(-4414)-dc.getSPEAngle(), 0.001); // SPE change
+	ASSERTEQUAL(-4484, dc.calcSPEPulses(dc.getSPEAngle()-2)); // SPE change
+	ASSERTEQUALT(-1.939, dc.calcSPEAngle(-4484)-dc.getSPEAngle(), 0.001); // SPE change
 
     cout << "TEST	: test_DeltaCalculator() OK " << endl;
 }
