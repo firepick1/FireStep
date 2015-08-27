@@ -3,8 +3,8 @@ FireStep: change log
 
 v0.2.4
 ------
-* NEW: MTO_FPD "dimspa" Sliced pulley arm critical angle
-* NEW: MTO_FPD "dimsps" Sliced pulley error slope (mm/degree)
+* NEW: MTO_FPD "dimspa" [Sliced pulley arm critical angle](https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error)
+* NEW: MTO_FPD "dimspr" [Sliced pulley ratio (mm/degree)](https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error)
 
 v0.2.3
 ------
