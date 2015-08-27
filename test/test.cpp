@@ -230,7 +230,7 @@ void test_Machine() {
 	ASSERTEQUALS(JT("{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveSysConfig(buf, sizeof(buf));
-#define HASH1 "-42699643"
+#define HASH1 "1130154285"
 	ASSERTEQUALS(JT("{'ch':" HASH1 ",'pc':2,'to':0,'ah':0,'db':0,'hp':3,'jp':0,'lh':0,"
 				 "'mv':12800,'om':0,'pb':2,'pi':11,'tv':0.70}"), 
 				 buf);
@@ -239,8 +239,8 @@ void test_Machine() {
 	machine.bed.b = -0.00025;
 	out = machine.saveDimConfig(buf, sizeof(buf));
 	ASSERTEQUALS(JT("{'bx':0.0002,'by':-0.0003,'bz':0.00,"
-				 "'e':131.64,'f':190.53,'gr1':9.474,'gr2':9.474,'gr3':9.474,"
-				 "'ha':-67.20,'mi':16,'re':270.00,'rf':90.00,'spa':-51.58,'sps':-0.16,'st':200}"),
+				 "'e':131.64,'f':190.53,'gr1':"FPD_GEAR_RATIO_S",'gr2':"FPD_GEAR_RATIO_S",'gr3':"FPD_GEAR_RATIO_S","
+				 "'ha':-67.20,'mi':16,'re':270.00,'rf':90.00,'spa':"FPD_SPE_ANGLE_S",'spr':0.00000,'st':200}"),
 				 buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 
@@ -758,7 +758,7 @@ void test_JsonController() {
     mt.process(jcmd);
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
-                      "{'ah':false,'as':false,'ch':-42699577,'eu':false,'fr':1000,'hp':3,'jp':false,'lh':false,"\
+                      "{'ah':false,'as':false,'ch':1130154351,'eu':false,'fr':1000,'hp':3,'jp':false,'lh':false,"\
                       "'lp':0,'mv':12800,'om':0,'pb':2,'pc':2,'pi':11,'sd':800,'tc':12345,"\
                       "'to':0,'tv':0.700,'v':%.3f}"\
                       "},'t':0.000}\n";
@@ -1288,9 +1288,9 @@ void test_sys() {
 	ASSERTEQUAL(3, machine.op.probe.pinProbe);
     ASSERTEQUAL(MTO_FPD, machine.topology);
     ASSERTEQUALS(JT("{'s':0,'r':"
-					"{'sys':{'ah':false,'as':false,'ch':1107035421,'eu':false,'fr':1000,"
+					"{'sys':{'ah':false,'as':false,'ch':-2836299,'eu':false,'fr':1000,"
 					"'hp':3,'jp':false,'lh':false,'lp':0,'mv':12800,'om':0,"
-					"'pb':3,'pc':2,'pi':57,'sd':400,'tc':5,'to':1,'tv':0.700,'v':2.030}"
+					"'pb':3,'pc':2,'pi':57,'sd':400,'tc':5,'to':1,'tv':0.700,'v':2.040}"
 					"},'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -1939,7 +1939,8 @@ void test_MTO_FPD_dim() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
 					"'bx':0.0000,'by':0.0000,'bz':0.000,'e':131.636,'f':190.526,'gr':9.474,"
-				    "'ha':-67.199,'hp':-5659,'mi':16,'re':270.000,'rf':90.000,'spa':-51.581,'sps':-0.165,'st':200}"
+				    //"'ha':-67.199,'hp':-5659,'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':"FPD_SPE_RATIO_S",'st':200}"
+				    "'ha':-67.199,'hp':-5659,'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':0.00000,'st':200}"
                     "},'t':0.000}\n"),
                  Serial.output().c_str());
 	ASSERTEQUALT(9.474, dc.getGearRatio(), 0.001);
@@ -2552,7 +2553,7 @@ void test_calibrate() {
         ASSERTEQUAL(-5659, machine.axis[0].home);
         ASSERTEQUAL(-5659, machine.axis[1].home);
         ASSERTEQUAL(-5659, machine.axis[2].home);
-        ASSERTEQUALT(9.47387, machine.delta.getGearRatio(),0.001);
+        ASSERTEQUALT(FPD_GEAR_RATIO, machine.delta.getGearRatio(),0.001);
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
@@ -3177,7 +3178,7 @@ void test_autoSync() {
     int32_t hash3 = machine.hash();
     ASSERT(hash2 != hash3);
     ASSERTEQUAL(false, machine.axis[4].isEnabled());
-#define HASH3 "-45844507"
+#define HASH3 "1131203149"
     snprintf(buf, sizeof(buf), "%ld", (long) hash3);
     ASSERTEQUALS(HASH3, buf);
 
@@ -4422,6 +4423,7 @@ void test_DeltaCalculator() {
 
     DeltaCalculator dc;
     dc.useEffectorOrigin();
+
     PH5TYPE ha1 = dc.getHomeAngle();
     dc.setHomePulses(dc.getHomePulses());
     PH5TYPE ha2 = dc.getHomeAngle();
@@ -4433,14 +4435,18 @@ void test_DeltaCalculator() {
     ASSERTEQUALT(90, dc.getBaseArmLength(), 0.000001);
     ASSERTEQUALT(200, dc.getSteps360(), 0.000001);
     ASSERTEQUALT(16, dc.getMicrosteps(), 0.000001);
-    ASSERTEQUALT(9.47387, dc.getGearRatio(), 0.000001);
-    ASSERTEQUALT(9.47387, 360/(16*200*dc.getDegreesPerPulse()), 0.000001);
+    ASSERTEQUALT(FPD_GEAR_RATIO, dc.getGearRatio(), 0.000001);
+    ASSERTEQUALT(FPD_GEAR_RATIO, 360/(16*200*dc.getDegreesPerPulse()), 0.000001);
     ASSERTEQUALT(-111.571, dc.getMinZ(), 0.001);
     ASSERTEQUALT(-69.571, dc.getMinZ(100,100), 0.001);
     ASSERTEQUALT(-67.2, dc.getMinDegrees(), 0.001);
     ASSERTEQUAL(-5659, homePulses);
     ASSERTEQUAL(-5659, homePulses);
     ASSERTEQUAL(-5659, homePulses);
+	Step3D pulses65 = dc.calcPulses(XYZ3D(0,0,65));
+	ASSERTEQUALT(-5444, pulses65.p1, 0.001);
+	ASSERTEQUALT(-5444, pulses65.p2, 0.001);
+	ASSERTEQUALT(-5444, pulses65.p3, 0.001);
     PH5TYPE homeAngle = dc.getHomeAngle();
     ASSERTEQUALT(-67.2, homeAngle, 0.001);
     XYZ3D xyz = dc.calcXYZ(Angle3D());
@@ -4491,7 +4497,7 @@ void test_DeltaCalculator() {
     ASSERTEQUALT(-0.535, dc.calcZBowlErrorFromETheta(zCenter, radius, 10), e);
     ASSERTEQUALT(-0.750763, dc.calcZBowlErrorFromETheta(zCenter, radius, 15), e);
 
-    PH5TYPE gearRatio = 9.47387;
+    PH5TYPE gearRatio = FPD_GEAR_RATIO;
 	e = 0.01;
     ASSERTEQUALT(0.13, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio * 0.98), e);
     ASSERTEQUALT(0.06, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio * 0.99), e);
@@ -4554,7 +4560,7 @@ void test_DeltaCalculator() {
         PH5TYPE zError = zRim - zCenter;
         ASSERTEQUALT(-0.1, zError, 0.001);
         DeltaCalculator dc2(dc);
-        ASSERTEQUALT(9.47387, dc2.getGearRatio(), 0.00001);
+        ASSERTEQUALT(FPD_GEAR_RATIO, dc2.getGearRatio(), 0.00001);
         ASSERTEQUALT(-0.074, dc.calcZBowlErrorFromGearRatio(zCenter, radius, gearRatio + 0.1), e);
         PH5TYPE gearRatio1 = dc2.calcZBowlGearRatio(zCenter, zRim, radius);
         ASSERTEQUALT(9.607, gearRatio1, 0.001);
@@ -4574,14 +4580,14 @@ void test_DeltaCalculator() {
 
     {   // verify internal constraints
         DeltaCalculator dc3;
-        ASSERTEQUALT(9.47387, dc3.getGearRatio(), 0.00001);
+        ASSERTEQUALT(FPD_GEAR_RATIO, dc3.getGearRatio(), 0.00001);
         ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001);
         ASSERTEQUALT(84.2122, 1/dc3.getDegreesPerPulse(), 0.001);
         ASSERTEQUAL(-5659, dc3.getHomePulses());
         ASSERTEQUAL(0, dc3.getZOffset());
 
         dc3.useEffectorOrigin();
-        ASSERTEQUALT(9.47387, dc3.getGearRatio(), 0.00001);
+        ASSERTEQUALT(FPD_GEAR_RATIO, dc3.getGearRatio(), 0.00001);
         ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001);
         //ASSERTEQUALT(0.0118748, dc3.getDegreesPerPulse(), 0.00001);
         ASSERTEQUALT(84.2122, 1/dc3.getDegreesPerPulse(), 0.001);
@@ -4596,34 +4602,49 @@ void test_DeltaCalculator() {
         ASSERTEQUAL(-5659, dc3.getHomePulses());
         ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
 
-        dc3.setGearRatio(9.47387);
-        ASSERTEQUALT(9.47387, dc3.getGearRatio(), 0.00001);
+        dc3.setGearRatio(FPD_GEAR_RATIO);
+        ASSERTEQUALT(FPD_GEAR_RATIO, dc3.getGearRatio(), 0.00001);
         ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001); 	// CHANGED
         ASSERTEQUALT(84.2122, 1/dc3.getDegreesPerPulse(), 0.001);
         ASSERTEQUAL(-5659, dc3.getHomePulses());
         ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
 
         dc3.setHomeAngle(-66);
-        ASSERTEQUALT(9.47387, dc3.getGearRatio(), 0.00001);
+        ASSERTEQUALT(FPD_GEAR_RATIO, dc3.getGearRatio(), 0.00001);
         ASSERTEQUALT(-66, dc3.getHomeAngle(), 0.001); 		// CHANGED
         ASSERTEQUALT(84.2122, 1/dc3.getDegreesPerPulse(), 0.001);
         ASSERTEQUAL(-5558, dc3.getHomePulses()); 			// CHANGED
         ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
 
         dc3.setMicrosteps(32);
-        ASSERTEQUALT(9.47387, dc3.getGearRatio(), 0.00001);
+        ASSERTEQUALT(FPD_GEAR_RATIO, dc3.getGearRatio(), 0.00001);
         ASSERTEQUALT(-66, dc3.getHomeAngle(), 0.001); 		
         ASSERTEQUALT(168.424, 1/dc3.getDegreesPerPulse(), 0.001);	// CHANGED
         ASSERTEQUAL(-11116, dc3.getHomePulses()); 			// CHANGED
         ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
 
         dc3.setSteps360(100);
-        ASSERTEQUALT(9.47387, dc3.getGearRatio(), 0.00001);
+        ASSERTEQUALT(FPD_GEAR_RATIO, dc3.getGearRatio(), 0.00001);
         ASSERTEQUALT(-66, dc3.getHomeAngle(), 0.001); 		
         ASSERTEQUALT(84.2122, 1/dc3.getDegreesPerPulse(), 0.001);	// CHANGED
         ASSERTEQUAL(-5558, dc3.getHomePulses()); 			// CHANGED
         ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
     }
+
+	dc.setSPERatio(FPD_SPE_RATIO);
+	ASSERTEQUALT(FPD_SPE_ANGLE, dc.getSPEAngle(), 0.001);
+	ASSERTEQUALT(FPD_SPE_RATIO, dc.getSPERatio(), 0.001);
+	// verify SPE calculation round trip
+	ASSERTEQUAL(-4175, dc.calcSPEPulses(dc.getSPEAngle()+2));
+	ASSERTEQUALT(2.004, dc.calcSPEAngle(-4175)-dc.getSPEAngle(), 0.001);
+	ASSERTEQUAL(-4260, dc.calcSPEPulses(dc.getSPEAngle()+1));
+	ASSERTEQUALT(0.995, dc.calcSPEAngle(-4260)-dc.getSPEAngle(), 0.001);
+	ASSERTEQUAL(-4344, dc.calcSPEPulses(dc.getSPEAngle()+0));
+	ASSERTEQUALT(-0.003, dc.calcSPEAngle(-4344)-dc.getSPEAngle(), 0.001);
+	ASSERTEQUAL(-4414, dc.calcSPEPulses(dc.getSPEAngle()-1));
+	ASSERTEQUALT(-0.971, dc.calcSPEAngle(-4414)-dc.getSPEAngle(), 0.001);
+	ASSERTEQUAL(-4484, dc.calcSPEPulses(dc.getSPEAngle()-2));
+	ASSERTEQUALT(-1.939, dc.calcSPEAngle(-4484)-dc.getSPEAngle(), 0.001);
 
     cout << "TEST	: test_DeltaCalculator() OK " << endl;
 }
@@ -4868,7 +4889,7 @@ void test_pgm() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     double pi = 3.14159265359;
     double GT2_pitch_length_offset = 0.75;
-    double gearRatioFPD = 9.47387;
+    double gearRatioFPD = FPD_GEAR_RATIO;
     printf("%.12lf", gearRatioFPD);
     ASSERTEQUALT(gearRatioFPD, machine.delta.getGearRatio(), 0.000001);
     ASSERTEQUALT(131.636, machine.delta.getEffectorTriangleSide(), 0.001);
@@ -4877,7 +4898,7 @@ void test_pgm() {
     ASSERTEQUALT(90.000, machine.delta.getBaseArmLength(), 0.001);
     ASSERTEQUAL(-1234, machine.homePulses); // still custom value
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
-                    "{'gr':9.474,'ha':-67.200,'e':131.636,'f':190.526,'re':270.000,'rf':90.000,'spa':-51.581,'sps':-0.165}}"
+                    "{'gr':9.474,'ha':-67.200,'e':131.636,'f':190.526,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':"FPD_SPE_RATIO_S"}}"
                     ",'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();

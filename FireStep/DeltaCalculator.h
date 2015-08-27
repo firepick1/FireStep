@@ -76,7 +76,7 @@ protected:
     PH5TYPE dz;
     PH5TYPE homeAngle;
     PH5TYPE spAngle;
-    PH5TYPE spSlope;
+    PH5TYPE spRatio;
     static PH5TYPE sqrt3;
     static PH5TYPE sin120;
     static PH5TYPE cos120;
@@ -94,17 +94,17 @@ protected:
 public:
     DeltaCalculator();
     void useEffectorOrigin();
-    inline PH5TYPE getSPAngle() {
+    inline PH5TYPE getSPEAngle() {
         return spAngle;
     }
-    inline void setSPAngle(PH5TYPE value) {
+    inline void setSPEAngle(PH5TYPE value) {
         spAngle = value;
     }
-    inline PH5TYPE getSPSlope() {
-        return spSlope;
+    inline PH5TYPE getSPERatio() {
+        return spRatio;
     }
-    inline void setSPSlope(PH5TYPE value) {
-        spSlope = value;
+    inline void setSPERatio(PH5TYPE value) {
+        spRatio = value;
     }
     inline PH5TYPE getBaseTriangleSide() {
         return f;
@@ -185,6 +185,8 @@ public:
     }
     StepCoord getHomePulses();
     void setHomePulses(StepCoord value);
+	StepCoord calcSPEPulses(PH5TYPE armAngle, DeltaAxis axis=DELTA_AXIS_ALL);
+	PH5TYPE calcSPEAngle(StepCoord pulses, DeltaAxis axis=DELTA_AXIS_ALL);
     Step3D calcPulses(XYZ3D xyz);
     Angle3D calcAngles(XYZ3D xyz);
     XYZ3D calcXYZ(Step3D pulses);

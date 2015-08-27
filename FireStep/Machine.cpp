@@ -53,6 +53,19 @@ char * firestep::saveConfigValue(const char *key, PH5TYPE value, char *out, uint
     *out++ = '.';
     value -= ivalue;
     switch (places) {
+    case 5:
+        ivalue = value * 100000 + 0.5;
+        out[4] = '0' + (ivalue % 10);
+        ivalue /= 10;
+        out[3] = '0' + (ivalue % 10);
+        ivalue /= 10;
+        out[2] = '0' + (ivalue % 10);
+        ivalue /= 10;
+        out[1] = '0' + (ivalue % 10);
+        ivalue /= 10;
+        out[0] = '0' + (ivalue % 10);
+        out += 5;
+        break;
     case 4:
         ivalue = value * 10000 + 0.5;
         out[3] = '0' + (ivalue % 10);
@@ -270,8 +283,8 @@ int32_t Machine::hash() {
     PH5TYPE gr1 = delta.getGearRatio(DELTA_AXIS_1);
     PH5TYPE gr2 = delta.getGearRatio(DELTA_AXIS_2);
     PH5TYPE gr3 = delta.getGearRatio(DELTA_AXIS_3);
-	PH5TYPE spa = delta.getSPAngle();
-	PH5TYPE sps = delta.getSPSlope();
+	PH5TYPE spa = delta.getSPEAngle();
+	PH5TYPE sps = delta.getSPERatio();
     int32_t result = 0
                      ^ ((uint32_t) outputMode << 8)
                      ^ ((uint32_t) topology << 9)
@@ -849,15 +862,15 @@ char * Machine::saveDimConfig(char *out, size_t maxLen) {
     out = saveConfigValue("bz", bed.getZOffset(), out);
     out = saveConfigValue("e", delta.getEffectorTriangleSide(), out);
     out = saveConfigValue("f", delta.getBaseTriangleSide(), out);
-    out = saveConfigValue("gr1", delta.getGearRatio(DELTA_AXIS_1), out, 3);
-    out = saveConfigValue("gr2", delta.getGearRatio(DELTA_AXIS_2), out, 3);
-    out = saveConfigValue("gr3", delta.getGearRatio(DELTA_AXIS_3), out, 3);
+    out = saveConfigValue("gr1", delta.getGearRatio(DELTA_AXIS_1), out, 5);
+    out = saveConfigValue("gr2", delta.getGearRatio(DELTA_AXIS_2), out, 5);
+    out = saveConfigValue("gr3", delta.getGearRatio(DELTA_AXIS_3), out, 5);
     out = saveConfigValue("ha", homeAngle, out);
     out = saveConfigValue("mi", delta.getMicrosteps(), out);
     out = saveConfigValue("re", delta.getEffectorLength(), out);
     out = saveConfigValue("rf", delta.getBaseArmLength(), out);
-    out = saveConfigValue("spa", delta.getSPAngle(), out);
-    out = saveConfigValue("sps", delta.getSPSlope(), out);
+    out = saveConfigValue("spa", delta.getSPEAngle(), out, 3);
+    out = saveConfigValue("spr", delta.getSPERatio(), out, 5);
     out = saveConfigValue("st", delta.getSteps360(), out);
     out--;
     *out++ = '}';

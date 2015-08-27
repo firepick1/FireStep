@@ -10,7 +10,7 @@ Status processField(JsonObject& jobj, const char* key, TF& field) {
     Status status = STATUS_OK;
     const char *s;
     if ((s = jobj[key]) && *s == 0) { // query
-        status = (jobj[key] = (TJ) field).success() ? status : STATUS_FIELD_ERROR;
+		status = (jobj[key] = (TJ) field).success() ? status : STATUS_FIELD_ERROR;
     } else {
         TJ tjValue = jobj[key];
         double value = tjValue;
@@ -21,7 +21,7 @@ Status processField(JsonObject& jobj, const char* key, TF& field) {
             TESTCOUT3("STATUS_VALUE_RANGE tfValue:", tfValue, " tjValue:", tjValue, " diff:", diff);
             return STATUS_VALUE_RANGE;
         }
-        jobj[key] = (TJ) field;
+		jobj[key] = (TJ) field;
     }
     return status;
 }
