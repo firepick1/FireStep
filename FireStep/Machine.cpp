@@ -283,8 +283,8 @@ int32_t Machine::hash() {
     PH5TYPE gr1 = delta.getGearRatio(DELTA_AXIS_1);
     PH5TYPE gr2 = delta.getGearRatio(DELTA_AXIS_2);
     PH5TYPE gr3 = delta.getGearRatio(DELTA_AXIS_3);
-	PH5TYPE spa = delta.getSPEAngle();
-	PH5TYPE sps = delta.getSPERatio();
+    PH5TYPE spa = delta.getSPEAngle();
+    PH5TYPE sps = delta.getSPERatio();
     int32_t result = 0
                      ^ ((uint32_t) outputMode << 8)
                      ^ ((uint32_t) topology << 9)

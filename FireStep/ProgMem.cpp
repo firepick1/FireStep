@@ -419,14 +419,14 @@ const char src_fpd_hex_probe[] PROGMEM = {
 const char src_dim_fpd[] PROGMEM = {
     "["
     "{\"dim\":{"
-	"\"gr\":" FPD_GEAR_RATIO_S "," // gear ratio
-	"\"ha\":-67.2," // home angle
-	"\"e\":131.636," // effector triangle side
-	"\"f\":190.526," // base triangle side
-	"\"re\":270.000," // effector arm length (mm)
-	"\"rf\":90.000," // pulley arm length (mm)
-	"\"spa\":" FPD_SPE_ANGLE_S "," // MC:arm critical angle https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
-	"\"spr\":" FPD_SPE_RATIO_S "}}" // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    "\"gr\":" FPD_GEAR_RATIO_S "," // gear ratio
+    "\"ha\":-67.2," // home angle
+    "\"e\":131.636," // effector triangle side
+    "\"f\":190.526," // base triangle side
+    "\"re\":270.000," // effector arm length (mm)
+    "\"rf\":90.000," // pulley arm length (mm)
+    "\"spa\":" FPD_SPE_ANGLE_S "," // MC:arm critical angle https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    "\"spr\":" FPD_SPE_RATIO_S "}}" // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
     "]"
 };
 

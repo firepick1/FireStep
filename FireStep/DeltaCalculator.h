@@ -185,8 +185,8 @@ public:
     }
     StepCoord getHomePulses();
     void setHomePulses(StepCoord value);
-	StepCoord calcSPEPulses(PH5TYPE armAngle, DeltaAxis axis=DELTA_AXIS_ALL);
-	PH5TYPE calcSPEAngle(StepCoord pulses, DeltaAxis axis=DELTA_AXIS_ALL);
+    StepCoord calcSPEPulses(PH5TYPE armAngle, DeltaAxis axis=DELTA_AXIS_ALL);
+    PH5TYPE calcSPEAngle(StepCoord pulses, DeltaAxis axis=DELTA_AXIS_ALL);
     Step3D calcPulses(XYZ3D xyz);
     Angle3D calcAngles(XYZ3D xyz);
     XYZ3D calcXYZ(Step3D pulses);

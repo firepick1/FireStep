@@ -759,7 +759,7 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
     } else if (strcmp_PS(OP_spr, key) == 0 || strcmp_PS(OP_dimspr, key) == 0) {
         PH5TYPE value = machine.delta.getSPERatio();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-		jobj[key].set(value,3);
+        jobj[key].set(value,3);
         machine.delta.setSPERatio(value);
     } else if (strcmp_PS(OP_st, key) == 0 || strcmp_PS(OP_dimst, key) == 0) {
         int16_t value = machine.delta.getSteps360();
@@ -788,10 +788,10 @@ Status FPDController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-			node["1"] = 
-			node["2"] =
-			node["3"] =
-			node["4"] = ""; // DO NOT USE jcmd.addQueryAttr(...)
+            node["1"] =
+                node["2"] =
+                    node["3"] =
+                        node["4"] = ""; // DO NOT USE jcmd.addQueryAttr(...)
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
