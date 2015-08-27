@@ -34,8 +34,8 @@ namespace firestep {
 #define FPD_GEAR_RATIO_S "9.47387"
 #define FPD_SPE_ANGLE -51.581
 #define FPD_SPE_ANGLE_S "-51.581" /* -51.58135 */
-#define FPD_SPE_RATIO -0.165  /* -0.16478 */
-#define FPD_SPE_RATIO_S "-0.165"
+#define FPD_SPE_RATIO -0.196  /* -0.19568 */
+#define FPD_SPE_RATIO_S "-0.196"
 
 typedef int16_t DelayMics; // delay microseconds
 #ifdef TEST
