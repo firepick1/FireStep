@@ -1940,7 +1940,7 @@ void test_MTO_FPD_dim() {
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
 					"'bx':0.0000,'by':0.0000,'bz':0.000,'e':131.636,'f':190.526,'gr':9.474,"
 				    //"'ha':-67.199,'hp':-5659,'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':"FPD_SPE_RATIO_S",'st':200}"
-				    "'ha':-67.199,'hp':-5659,'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':0.00000,'st':200}"
+				    "'ha':-67.199,'hp':-5659,'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':0.000,'st':200}"
                     "},'t':0.000}\n"),
                  Serial.output().c_str());
 	ASSERTEQUALT(9.474, dc.getGearRatio(), 0.001);
