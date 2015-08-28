@@ -765,6 +765,10 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         int16_t value = machine.delta.getSteps360();
         status = processField<int16_t, int16_t>(jobj, key, value);
         machine.delta.setSteps360(value);
+		PH5TYPE stepAngle = 360.0/value;
+		machine.axis[0].stepAngle = stepAngle;
+		machine.axis[1].stepAngle = stepAngle;
+		machine.axis[2].stepAngle = stepAngle;
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
@@ -969,7 +973,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
     } else if (strcmp_PS(OP_calgr1,key) == 0 || strcmp_PS(OP_gr1,key) == 0) {
         PH5TYPE degrees = 0;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, degrees);
-        if (!degrees) {
+        if (degrees==0) {
             return jcmd.setError(STATUS_CAL_DEGREES, key);
         }
         if (machine.axis[0].position == 0) {
@@ -981,7 +985,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
     } else if (strcmp_PS(OP_calgr2,key) == 0 || strcmp_PS(OP_gr2,key) == 0) {
         PH5TYPE degrees = 0;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, degrees);
-        if (!degrees) {
+        if (degrees==0) {
             return jcmd.setError(STATUS_CAL_DEGREES, key);
         }
         if (machine.axis[1].position == 0) {
@@ -993,7 +997,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
     } else if (strcmp_PS(OP_calgr3,key) == 0 || strcmp_PS(OP_gr3,key) == 0) {
         PH5TYPE degrees = 0;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, degrees);
-        if (!degrees) {
+        if (degrees==0) {
             return jcmd.setError(STATUS_CAL_DEGREES, key);
         }
         if (machine.axis[2].position == 0) {

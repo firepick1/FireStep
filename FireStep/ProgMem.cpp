@@ -76,6 +76,7 @@ const char firestep::OP_dimmi[] PROGMEM = { "dimmi" };
 const char firestep::OP_dimpd[] PROGMEM = { "dimpd" };
 const char firestep::OP_dimre[] PROGMEM = { "dimre" };
 const char firestep::OP_dimrf[] PROGMEM = { "dimrf" };
+const char firestep::OP_dimsa[] PROGMEM = { "dimsa" };
 const char firestep::OP_dimspa[] PROGMEM = { "dimspa" };
 const char firestep::OP_dimspr[] PROGMEM = { "dimspr" };
 const char firestep::OP_dimst[] PROGMEM = { "dimst" };
@@ -426,7 +427,8 @@ const char src_dim_fpd[] PROGMEM = {
     "\"re\":270.000," // effector arm length (mm)
     "\"rf\":90.000," // pulley arm length (mm)
     "\"spa\":" FPD_SPE_ANGLE_S "," // MC:arm critical angle https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
-    "\"spr\":" FPD_SPE_RATIO_S "}}" // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    "\"spr\":" FPD_SPE_RATIO_S "," // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    "\"st\":200}}" // 200 steps/revolution
     "]"
 };
 

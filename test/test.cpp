@@ -230,7 +230,7 @@ void test_Machine() {
 	ASSERTEQUALS(JT("{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
 	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 	out = machine.saveSysConfig(buf, sizeof(buf));
-#define HASH1 "1130154285"
+#define HASH1 "1130154469"
 	ASSERTEQUALS(JT("{'ch':" HASH1 ",'pc':2,'to':0,'ah':0,'db':0,'hp':3,'jp':0,'lh':0,"
 				 "'mv':12800,'om':0,'pb':2,'pi':11,'tv':0.70}"), 
 				 buf);
@@ -758,7 +758,7 @@ void test_JsonController() {
     mt.process(jcmd);
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
-                      "{'ah':false,'as':false,'ch':1130154351,'eu':false,'fr':1000,'hp':3,'jp':false,'lh':false,"\
+                      "{'ah':false,'as':false,'ch':1130154407,'eu':false,'fr':1000,'hp':3,'jp':false,'lh':false,"\
                       "'lp':0,'mv':12800,'om':0,'pb':2,'pc':2,'pi':11,'sd':800,'tc':12345,"\
                       "'to':0,'tv':0.700,'v':%.3f}"\
                       "},'t':0.000}\n";
@@ -1288,7 +1288,7 @@ void test_sys() {
 	ASSERTEQUAL(3, machine.op.probe.pinProbe);
     ASSERTEQUAL(MTO_FPD, machine.topology);
     ASSERTEQUALS(JT("{'s':0,'r':"
-					"{'sys':{'ah':false,'as':false,'ch':-2836299,'eu':false,'fr':1000,"
+					"{'sys':{'ah':false,'as':false,'ch':-2836355,'eu':false,'fr':1000,"
 					"'hp':3,'jp':false,'lh':false,'lp':0,'mv':12800,'om':0,"
 					"'pb':3,'pc':2,'pi':57,'sd':400,'tc':5,'to':1,'tv':0.700,'v':2.040}"
 					"},'t':0.000}\n"),
@@ -1974,6 +1974,9 @@ void test_MTO_FPD_dim() {
 	ASSERTEQUALT(270.000, dc.getEffectorLength(), 0.001);
 	ASSERTEQUALT(90.000, dc.getBaseArmLength(), 0.001);
 	ASSERTEQUALT(400.000, dc.getSteps360(), 0.001);
+	ASSERTEQUALT(360/400.000, machine.axis[0].stepAngle, 0.001);
+	ASSERTEQUALT(360/400.000, machine.axis[1].stepAngle, 0.001);
+	ASSERTEQUALT(360/400.000, machine.axis[2].stepAngle, 0.001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -3178,7 +3181,7 @@ void test_autoSync() {
     int32_t hash3 = machine.hash();
     ASSERT(hash2 != hash3);
     ASSERTEQUAL(false, machine.axis[4].isEnabled());
-#define HASH3 "1131203149"
+#define HASH3 "1131203205"
     snprintf(buf, sizeof(buf), "%ld", (long) hash3);
     ASSERTEQUALS(HASH3, buf);
 
@@ -4912,7 +4915,7 @@ void test_pgm() {
     ASSERTEQUALT(90.000, machine.delta.getBaseArmLength(), 0.001);
     ASSERTEQUAL(-1234, machine.homePulses); // still custom value
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
-                    "{'gr':9.474,'ha':-67.200,'e':131.636,'f':190.526,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':"FPD_SPE_RATIO_S"}}"
+                    "{'gr':9.474,'ha':-67.200,'e':131.636,'f':190.526,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':"FPD_SPE_RATIO_S",'st':200}}"
                     ",'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();

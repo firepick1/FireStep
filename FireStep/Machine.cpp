@@ -302,6 +302,7 @@ int32_t Machine::hash() {
                      ^ (fastSearchPulses)
                      ^ (searchDelay)
                      ^ (pinStatus)
+                     ^ (delta.getSteps360())
                      ^ (*(uint32_t *)(void*)&bed.a)
                      ^ (*(uint32_t *)(void*)&bed.b)
                      ^ (*(uint32_t *)(void*)&bed.c)

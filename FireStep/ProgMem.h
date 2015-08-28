@@ -100,6 +100,7 @@ extern const char OP_dimmi[];
 extern const char OP_dimpd[];
 extern const char OP_dimre[];
 extern const char OP_dimrf[];
+extern const char OP_dimsa[];
 extern const char OP_dimspa[];
 extern const char OP_dimspr[];
 extern const char OP_dimst[];
