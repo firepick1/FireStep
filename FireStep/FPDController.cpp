@@ -741,6 +741,15 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
     } else if (strcmp_PS(OP_mi, key) == 0 || strcmp_PS(OP_dimmi, key) == 0) {
         int16_t value = machine.delta.getMicrosteps();
         status = processField<int16_t, int16_t>(jobj, key, value);
+		PH5TYPE scale = value/(PH5TYPE)machine.delta.getMicrosteps();
+		machine.axis[0].home *= scale;
+		machine.axis[1].home *= scale;
+		machine.axis[2].home *= scale;
+		TESTCOUT2("mi scale:", scale, " position:", machine.axis[0].position);
+		machine.axis[0].position *= scale;
+		machine.axis[1].position *= scale;
+		machine.axis[2].position *= scale;
+		machine.homePulses *= scale;
         machine.delta.setMicrosteps(value);
     } else if (strcmp_PS(OP_pd, key) == 0 || strcmp_PS(OP_dimpd, key) == 0) {
         status = processProbeData(jcmd, jobj, key);
@@ -764,7 +773,16 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
     } else if (strcmp_PS(OP_st, key) == 0 || strcmp_PS(OP_dimst, key) == 0) {
         int16_t value = machine.delta.getSteps360();
         status = processField<int16_t, int16_t>(jobj, key, value);
+		PH5TYPE scale = value/machine.delta.getSteps360();
         machine.delta.setSteps360(value);
+		machine.axis[0].home *= scale;
+		machine.axis[1].home *= scale;
+		machine.axis[2].home *= scale;
+		TESTCOUT2("st scale:", scale, " position:", machine.axis[0].position);
+		machine.axis[0].position *= scale;
+		machine.axis[1].position *= scale;
+		machine.axis[2].position *= scale;
+		machine.homePulses *= scale;
         PH5TYPE stepAngle = 360.0/value;
         machine.axis[0].stepAngle = stepAngle;
         machine.axis[1].stepAngle = stepAngle;
