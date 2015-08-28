@@ -765,10 +765,10 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         int16_t value = machine.delta.getSteps360();
         status = processField<int16_t, int16_t>(jobj, key, value);
         machine.delta.setSteps360(value);
-		PH5TYPE stepAngle = 360.0/value;
-		machine.axis[0].stepAngle = stepAngle;
-		machine.axis[1].stepAngle = stepAngle;
-		machine.axis[2].stepAngle = stepAngle;
+        PH5TYPE stepAngle = 360.0/value;
+        machine.axis[0].stepAngle = stepAngle;
+        machine.axis[1].stepAngle = stepAngle;
+        machine.axis[2].stepAngle = stepAngle;
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
