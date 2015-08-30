@@ -774,7 +774,7 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
     } else if (strcmp_PS(OP_st, key) == 0 || strcmp_PS(OP_dimst, key) == 0) {
         int16_t value = machine.delta.getSteps360();
         status = processField<int16_t, int16_t>(jobj, key, value);
-		PH5TYPE scale = value/machine.delta.getSteps360();
+		PH5TYPE scale = value/(PH5TYPE)machine.delta.getSteps360();
         machine.delta.setSteps360(value);
 		machine.axis[0].home *= scale;
 		machine.axis[1].home *= scale;

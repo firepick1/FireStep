@@ -420,6 +420,8 @@ const char src_fpd_hex_probe[] PROGMEM = {
 const char src_dim_fpd[] PROGMEM = {
     "["
     "{"
+    "\"dimst\":200," // 200 steps/revolution
+    "\"dimmi\":16," // 16 microsteps
     "\"syshp\":" FPD_FAST_SEARCH_PULSES_S "," // fast search pulse group size
     "\"syssd\":" FPD_SEARCH_DELAY_S "," // fast homing delay
     "\"dimgr\":" FPD_GEAR_RATIO_S "," // gear ratio
@@ -429,8 +431,7 @@ const char src_dim_fpd[] PROGMEM = {
     "\"dimre\":270.000," // effector arm length (mm)
     "\"dimrf\":90.000," // pulley arm length (mm)
     "\"dimspa\":" FPD_SPE_ANGLE_S "," // MC:arm critical angle https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
-    "\"dimspr\":" FPD_SPE_RATIO_S "," // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
-    "\"dimst\":200" // 200 steps/revolution
+    "\"dimspr\":" FPD_SPE_RATIO_S // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
 	"}"
     "]"
 };

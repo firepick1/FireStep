@@ -4944,7 +4944,11 @@ void test_pgm() {
     machine.delta.setBaseArmLength(80); // wrong value
     machine.delta.setEffectorLength(230); // wrong value
     machine.delta.setHomeAngle(66); // wrong value
+    machine.delta.setSteps360(400); // wrong value
     machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
+	machine.axis[0].stepAngle = 0.9; // wrong value
+	machine.axis[1].stepAngle = 0.9; // wrong value
+	machine.axis[2].stepAngle = 0.9; // wrong value
 	machine.axis[0].home = -10; // wrong value
 	machine.axis[1].home = -20; // wrong value
 	machine.axis[2].home = -30; // wrong value
@@ -4969,19 +4973,23 @@ void test_pgm() {
     ASSERTEQUALT(190.526, machine.delta.getBaseTriangleSide(), 0.001);
     ASSERTEQUALT(270.000, machine.delta.getEffectorLength(), 0.001);
     ASSERTEQUALT(90.000, machine.delta.getBaseArmLength(), 0.001);
+    ASSERTEQUALT(1.8, machine.axis[0].stepAngle, 0.001);
+    ASSERTEQUALT(1.8, machine.axis[1].stepAngle, 0.001);
+    ASSERTEQUALT(1.8, machine.axis[2].stepAngle, 0.001);
     ASSERTEQUAL(-5659, machine.homePulses); 
     ASSERTEQUAL(-5659, machine.axis[0].home); 
     ASSERTEQUAL(-5659, machine.axis[1].home); 
     ASSERTEQUAL(-5659, machine.axis[2].home); 
-    ASSERTEQUAL(-5648, machine.axis[0].position); 
-    ASSERTEQUAL(-5637, machine.axis[1].position); 
-    ASSERTEQUAL(-5626, machine.axis[2].position); 
+    ASSERTEQUAL(-5654, machine.axis[0].position); 
+    ASSERTEQUAL(-5648, machine.axis[1].position); 
+    ASSERTEQUAL(-5643, machine.axis[2].position); 
     ASSERTEQUAL(FPD_SEARCH_DELAY, machine.searchDelay); 
     ASSERTEQUAL(FPD_FAST_SEARCH_PULSES, machine.fastSearchPulses); 
     ASSERTEQUALS(JT("{'s':0,'r':{"
+					"'dimst':200,'dimmi':16,"
                     "'syshp':3,'syssd':800,'dimgr':9.474,'dimha':-67.200,'dime':131.636,"
 					"'dimf':190.526,'dimre':270.000,'dimrf':90.000,'dimspa':"FPD_SPE_ANGLE_S","
-					"'dimspr':"FPD_SPE_RATIO_S",'dimst':200}"
+					"'dimspr':"FPD_SPE_RATIO_S"}"
                     ",'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
