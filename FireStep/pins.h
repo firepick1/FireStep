@@ -45,7 +45,7 @@ enum PinConfig {
 #define PC1_SERVO3			   6
 #define PC1_SERVO4			   7
 
-#define PC1_PROBE_PIN		   PC1_SERVO3
+#define PC1_PROBE_PIN		   25 // (servos cannot be used) PC1_SERVO3
 #define PC1_STATUS_PIN	 	   PC1_SERVO4
 #define PC1_LED_PIN            13
 

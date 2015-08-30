@@ -396,14 +396,14 @@ public:
     void enableEEUser(bool enable);
     bool isEEUserEnabled();
     void loadDeltaCalculator(); // initialize from raw axis
-    StepCoord setHomeAngle(PH5TYPE degrees);
     PH5TYPE getHomeAngle() {
         return homeAngle;
     }
+    void setHomeAngle(PH5TYPE degrees);
     StepCoord getHomePulses() {
         return homePulses;
     }
-    PH5TYPE setHomePulses(StepCoord pulseCount);
+    void setHomePulses(StepCoord pulseCount);
 } Machine;
 
 #ifdef TEST

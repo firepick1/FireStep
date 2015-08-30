@@ -750,6 +750,7 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
 		machine.axis[1].position *= scale;
 		machine.axis[2].position *= scale;
 		machine.homePulses *= scale;
+		machine.searchDelay /= scale;
         machine.delta.setMicrosteps(value);
     } else if (strcmp_PS(OP_pd, key) == 0 || strcmp_PS(OP_dimpd, key) == 0) {
         status = processProbeData(jcmd, jobj, key);
@@ -783,6 +784,7 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
 		machine.axis[1].position *= scale;
 		machine.axis[2].position *= scale;
 		machine.homePulses *= scale;
+		machine.searchDelay /= scale;
         PH5TYPE stepAngle = 360.0/value;
         machine.axis[0].stepAngle = stepAngle;
         machine.axis[1].stepAngle = stepAngle;

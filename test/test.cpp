@@ -255,10 +255,12 @@ void test_Machine() {
 		Machine mach;
 		mach.topology = MTO_FPD;
 		mach.delta.setGearRatio(9.5);
-		ASSERTEQUALT(-66.316, mach.setHomePulses(-5600), 0.001);
+		mach.setHomePulses(-5600);
+		ASSERTEQUALT(-66.316, mach.getHomeAngle(), 0.001);
 		ASSERTEQUAL(mach.getHomePulses(), mach.axis[0].home);
 		mach.delta.setGearRatio(9.375);
-		ASSERTEQUALT(-67.2, mach.setHomePulses(-5600), 0.001);
+		mach.setHomePulses(-5600);
+		ASSERTEQUALT(-67.2, mach.getHomeAngle(), 0.001);
 		ASSERTEQUAL(mach.getHomePulses(), mach.axis[0].home);
 	}
 
@@ -4943,9 +4945,13 @@ void test_pgm() {
     machine.delta.setBaseTriangleSide(180); // wrong value
     machine.delta.setEffectorTriangleSide(123); // wrong value
     machine.delta.setBaseArmLength(80); // wrong value
-    machine.delta.setEffectorLength(230);
+    machine.delta.setEffectorLength(230); // wrong value
     machine.delta.setHomeAngle(66); // wrong value
-    machine.homePulses = -1234; // wrong value
+    machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
+	machine.axis[0].home = -10; // wrong value
+	machine.axis[1].home = -20; // wrong value
+	machine.axis[2].home = -30; // wrong value
+    machine.homePulses = -1000; // wrong value
     Serial.push(JT("{'pgmx':'dim-fpd'}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -4964,41 +4970,19 @@ void test_pgm() {
     ASSERTEQUALT(190.526, machine.delta.getBaseTriangleSide(), 0.001);
     ASSERTEQUALT(270.000, machine.delta.getEffectorLength(), 0.001);
     ASSERTEQUALT(90.000, machine.delta.getBaseArmLength(), 0.001);
-    ASSERTEQUAL(-1234, machine.homePulses); // still custom value
+    ASSERTEQUAL(-5659, machine.homePulses); 
+    ASSERTEQUAL(-5659, machine.axis[0].home); 
+    ASSERTEQUAL(-5659, machine.axis[1].home); 
+    ASSERTEQUAL(-5659, machine.axis[2].home); 
+    ASSERTEQUAL(-5648, machine.axis[0].position); 
+    ASSERTEQUAL(-5637, machine.axis[1].position); 
+    ASSERTEQUAL(-5626, machine.axis[2].position); 
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
                     "{'gr':9.474,'ha':-67.200,'e':131.636,'f':190.526,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':"FPD_SPE_RATIO_S",'st':200}}"
                     ",'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-
-    //// pmgx: cal-fpd-home-coarse
-    //machine.outputMode = (OutputMode)1;
-    //machine.setMotorPosition(Quad<StepCoord>());
-    //Serial.push(JT("{'pgmx':'cal-fpd-home-coarse'}\n"));
-    //do {
-        //if (machine.axis[0].position > 2000 && 
-			//machine.axis[1].position > 2000 && 
-			//machine.axis[2].position > 2000) {
-            //arduino.setPin(PC2_PROBE_PIN, LOW);
-        //} else {
-            //arduino.setPin(PC2_PROBE_PIN, HIGH);
-        //}
-		//arduino.setPin(PC2_X_MIN_PIN, machine.axis[0].position < -5600 ? LOW : HIGH);
-		//arduino.setPin(PC2_Y_MIN_PIN, machine.axis[1].position < -5600 ? LOW : HIGH);
-		//arduino.setPin(PC2_Z_MIN_PIN, machine.axis[2].position < -5600 ? LOW : HIGH);
-        //mt.loop();
-        //string s = Serial.output();
-        //if (s.length() > 0) {
-            //cout << "Serial	:" << s << endl;
-			//TESTCOUT3(" position: ", machine.axis[0].position,
-				//",", machine.axis[1].position,
-				//",", machine.axis[2].position);
-        //}
-		//arduino.timer1(MS_TICKS(1));
-    //} while(mt.status > 0);
-    //mt.loop();
-    //ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     cout << "TEST	: test_pgm() OK " << endl;
 }

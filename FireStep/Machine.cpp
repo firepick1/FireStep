@@ -243,25 +243,33 @@ Machine::Machine()
     homePulses = delta.getHomePulses();
 }
 
-StepCoord Machine::setHomeAngle(PH5TYPE degrees) {
-    delta.setHomeAngle(degrees);
-    homeAngle = degrees;
-    StepCoord pulses = delta.getHomePulses();
-    StepCoord dHome = pulses - axis[0].home;
-    switch (topology) {
-    case MTO_FPD:
-        axis[0].home += dHome;
-        axis[1].home += dHome;
-        axis[2].home += dHome;
-        axis[0].position += dHome;
-        axis[1].position += dHome;
-        axis[2].position += dHome;
-        break;
-    default:
-        break;
+/**
+ * Set the home angle and pulses
+ */
+void Machine::setHomeAngle(PH5TYPE degrees) {
+	if (topology == MTO_FPD) {
+		delta.setHomeAngle(degrees);
+		homeAngle = degrees;
+		StepCoord newHomePulses = delta.getHomePulses();
+		StepCoord dHome = newHomePulses - homePulses;
+		homePulses = newHomePulses;
+		axis[0].position += newHomePulses - axis[0].home;
+		axis[1].position += newHomePulses - axis[1].home;
+		axis[2].position += newHomePulses - axis[2].home;
+        axis[0].home = newHomePulses;
+        axis[1].home = newHomePulses;
+        axis[2].home = newHomePulses;
+		TESTCOUT3("setHomeAngle degrees:", degrees, " newHomePulses:", newHomePulses, " dHome:", dHome);
     }
-    TESTCOUT3("setHomeAngle degrees:", degrees, " pulses:", pulses, " home:", axis[0].home);
-    return pulses;
+}
+
+/**
+ * Set the home pulses and angle.
+ */
+void Machine::setHomePulses(StepCoord pulseCount) {
+    homePulses = pulseCount;
+	delta.setHomePulses(homePulses);
+    setHomeAngle(delta.getHomeAngle());
 }
 
 void Machine::setup(PinConfig cfg) {
@@ -270,13 +278,6 @@ void Machine::setup(PinConfig cfg) {
         axis[i].enable(false); // toggle
         axis[i].enable(true);
     }
-}
-
-PH5TYPE Machine::setHomePulses(StepCoord pulseCount) {
-    homePulses = pulseCount;
-    PH5TYPE degrees = homePulses*delta.getDegreesPerPulse();
-    setHomeAngle(degrees);
-    return degrees;
 }
 
 int32_t Machine::hash() {
