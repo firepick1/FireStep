@@ -5,6 +5,7 @@ v0.2.4
 ------
 * NEW: MTO_FPD "dimspa" [Sliced pulley arm critical angle](https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error)
 * NEW: MTO_FPD "dimspr" [Sliced pulley ratio (mm/degree)](https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error)
+* NEW: changing "dimmi" or "dimst" will now scale associated dimensions automatically (e.g., home pulses, etc.)
 
 v0.2.3
 ------
