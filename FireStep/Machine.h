@@ -36,6 +36,12 @@ namespace firestep {
 #define FPD_SPE_ANGLE_S "-51.581" /* -51.58135 */
 #define FPD_SPE_RATIO -0.196  /* -0.19568 */
 #define FPD_SPE_RATIO_S "-0.196"
+#define FPD_SEARCH_DELAY 800
+#define FPD_SEARCH_DELAY_S "800"
+#define FPD_HOME_PULSES -5659
+#define FPD_HOME_PULSES_S "-5659"
+#define FPD_FAST_SEARCH_PULSES 3
+#define FPD_FAST_SEARCH_PULSES_S "3"
 
 typedef int16_t DelayMics; // delay microseconds
 #ifdef TEST

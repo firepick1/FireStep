@@ -1301,9 +1301,6 @@ void test_sys() {
     cout << "TEST	: test_sys() OK " << endl;
 }
 
-#define FPD_HOME_PULSES 5659
-#define FPD_HOME_PULSES_S "-5659"
-
 MachineThread test_MTO_FPD_setup() {
     cout << "TEST	: test_MTO_FPD_setup() =====" << endl;
 
@@ -1328,12 +1325,12 @@ MachineThread test_MTO_FPD_setup() {
     ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
 
 	// but our first 3 axis coordinates have changed
-    ASSERTQUAD(Quad<StepCoord>(-FPD_HOME_PULSES,-FPD_HOME_PULSES,-FPD_HOME_PULSES,0), machine.getMotorPosition());
+    ASSERTQUAD(Quad<StepCoord>(FPD_HOME_PULSES,FPD_HOME_PULSES,FPD_HOME_PULSES,0), machine.getMotorPosition());
 
 	// since our home position has changed
-    ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[0].home);
-    ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[1].home);
-    ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[2].home);
+    ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].home);
+    ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[1].home);
+    ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[2].home);
 
 	// DeltaCalculator should be in sync with FPD axes
 	StepCoord pulses = machine.delta.getHomePulses();
@@ -2054,9 +2051,9 @@ void test_MTO_FPD_hom() {
         ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
         mt.loop(); // calibrating
         ASSERTEQUAL(STATUS_OK, mt.status);
-    	ASSERTEQUAL(FPD_HOME_PULSES, arduino.pulses(PC2_X_STEP_PIN)-xpulses-machine.axis[0].latchBackoff);
-    	ASSERTEQUAL(FPD_HOME_PULSES, arduino.pulses(PC2_Y_STEP_PIN)-ypulses-machine.axis[1].latchBackoff);
-    	ASSERTEQUAL(FPD_HOME_PULSES, arduino.pulses(PC2_Z_STEP_PIN)-zpulses-machine.axis[2].latchBackoff);
+    	ASSERTEQUAL(abs(FPD_HOME_PULSES), arduino.pulses(PC2_X_STEP_PIN)-xpulses-machine.axis[0].latchBackoff);
+    	ASSERTEQUAL(abs(FPD_HOME_PULSES), arduino.pulses(PC2_Y_STEP_PIN)-ypulses-machine.axis[1].latchBackoff);
+    	ASSERTEQUAL(abs(FPD_HOME_PULSES), arduino.pulses(PC2_Z_STEP_PIN)-zpulses-machine.axis[2].latchBackoff);
         ASSERTEQUALS(JT("{'s':0,'r':{'hom':{"
 					 "'1':"FPD_HOME_PULSES_S",'2':"FPD_HOME_PULSES_S",'3':"FPD_HOME_PULSES_S",'4':0"
 					 "}},'t':0.000}\n"),
@@ -2066,9 +2063,9 @@ void test_MTO_FPD_hom() {
         ASSERTEQUALT(0, xyz.x, 0.01);
         ASSERTEQUALT(0, xyz.y, 0.01);
         ASSERTEQUALT(0, xyz.z, 0.01);
-        ASSERTEQUALT(-FPD_HOME_PULSES, machine.axis[0].home, 0.01);
-        ASSERTEQUALT(-FPD_HOME_PULSES, machine.axis[1].home, 0.01);
-        ASSERTEQUALT(-FPD_HOME_PULSES, machine.axis[2].home, 0.01);
+        ASSERTEQUALT(FPD_HOME_PULSES, machine.axis[0].home, 0.01);
+        ASSERTEQUALT(FPD_HOME_PULSES, machine.axis[1].home, 0.01);
+        ASSERTEQUALT(FPD_HOME_PULSES, machine.axis[2].home, 0.01);
         ASSERTEQUALT(0, machine.axis[3].home, 0.01);
         ASSERTEQUALT(0, machine.axis[0].position, 0.01);
         ASSERTEQUALT(0, machine.axis[1].position, 0.01);
@@ -2150,11 +2147,11 @@ void test_MTO_FPD_hom() {
         ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
         mt.loop(); // initializing
         ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-        ASSERTEQUALT(-FPD_HOME_PULSES, machine.axis[0].home, 0.01);
-        ASSERTEQUALT(-FPD_HOME_PULSES, machine.axis[1].home, 0.01);
-        ASSERTEQUALT(-FPD_HOME_PULSES, machine.axis[2].home, 0.01);
+        ASSERTEQUALT(FPD_HOME_PULSES, machine.axis[0].home, 0.01);
+        ASSERTEQUALT(FPD_HOME_PULSES, machine.axis[1].home, 0.01);
+        ASSERTEQUALT(FPD_HOME_PULSES, machine.axis[2].home, 0.01);
         ASSERTEQUALT(0, machine.axis[3].home, 0.01);
-        ASSERTEQUALT(-FPD_HOME_PULSES, machine.axis[0].position, 0.01);
+        ASSERTEQUALT(FPD_HOME_PULSES, machine.axis[0].position, 0.01);
         ASSERTEQUALT(2, machine.axis[1].position, 0.01);
         ASSERTEQUALT(3, machine.axis[2].position, 0.01);
         ASSERTEQUALT(4, machine.axis[3].position, 0.01);
@@ -2176,7 +2173,7 @@ void test_MTO_FPD_hom() {
 		TESTCOUT2("ypulses:", ypulses, " lb:", machine.axis[1].latchBackoff);
     	ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     	ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
-        ASSERTQUAD(Quad<StepCoord>(-FPD_HOME_PULSES,2,3,4), machine.getMotorPosition());
+        ASSERTQUAD(Quad<StepCoord>(FPD_HOME_PULSES,2,3,4), machine.getMotorPosition());
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
@@ -2246,9 +2243,9 @@ void test_MTO_FPD_hom() {
 					 "'1':"FPD_HOME_PULSES_S",'2':"FPD_HOME_PULSES_S",'3':"FPD_HOME_PULSES_S",'4':0"
 					 "}},'t':0.001}\n"),
                      Serial.output().c_str());
-    	ASSERTEQUAL(3+FPD_HOME_PULSES+2*LATCH_BACKOFF, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
-    	ASSERTEQUAL(3+FPD_HOME_PULSES+2*LATCH_BACKOFF, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
-    	ASSERTEQUAL(3+FPD_HOME_PULSES+2*LATCH_BACKOFF, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    	ASSERTEQUAL(3+abs(FPD_HOME_PULSES)+2*LATCH_BACKOFF, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    	ASSERTEQUAL(3+abs(FPD_HOME_PULSES)+2*LATCH_BACKOFF, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    	ASSERTEQUAL(3+abs(FPD_HOME_PULSES)+2*LATCH_BACKOFF, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
         ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.getMotorPosition());
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -2350,9 +2347,9 @@ void test_calibrate() {
                         "'cal':{'bx':0.0000,'by':0.0000,'bz':0.000,'ha':-67.199,'sv':0.000}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[0].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[1].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[2].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[1].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[2].home);
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
@@ -2432,9 +2429,9 @@ void test_calibrate() {
                         "'cal':{'bx':0.0038,'by':0.0061,'bz':-50.500,'gr':10.107,'ge':0.732,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[0].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[1].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[2].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[1].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[2].home);
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
@@ -2462,9 +2459,9 @@ void test_calibrate() {
                         "'cal':{'bx':0.0000,'by':0.0000,'bz':-53.536,'gr':9.344,'ge':-0.129,'sv':1.000,'zc':-53.000,'zr':-52.900}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[0].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[1].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[2].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[1].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[2].home);
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
@@ -2491,9 +2488,9 @@ void test_calibrate() {
                         "'cal':{'bx':0.0000,'by':0.0000,'bz':-52.292,'gr':9.642,'ge':0.169,'sv':1.000,'zc':-53.000,'zr':-53.100}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[0].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[1].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[2].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[1].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[2].home);
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
@@ -2521,9 +2518,9 @@ void test_calibrate() {
                         "'t':0.000}\n"),
                      Serial.output().c_str());
 		mt.status = STATUS_WAIT_IDLE;
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[0].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[1].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[2].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[1].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[2].home);
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
@@ -2606,9 +2603,9 @@ void test_calibrate() {
                         "'cal':{'bx':0.0037,'by':0.0060,'bz':-53.956,'sv':1.000,'zc':-53.520,'zr':-53.953}},"
                         "'t':0.000}\n"),
                      Serial.output().c_str());
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[0].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[1].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[2].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[1].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[2].home);
         ASSERTEQUALT(FPD_GEAR_RATIO, machine.delta.getGearRatio(),0.001);
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -2625,9 +2622,9 @@ void test_calibrate() {
         machine.op.probe.probeData[5] = -54.208;
         machine.op.probe.probeData[6] = -54.208;
         machine.op.probe.probeData[7] = -53.529;
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[0].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[1].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[2].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[1].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[2].home);
         Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','gr':'','ge':'','ha':'','he':'','sv':'','zc':'','zr':''}}\n"));
         mt.loop();
         ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -2657,9 +2654,9 @@ void test_calibrate() {
         machine.op.probe.probeData[5] = -54.208;
         machine.op.probe.probeData[6] = -54.208;
         machine.op.probe.probeData[7] = -53.529;
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[0].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[1].home);
-        ASSERTEQUAL(-FPD_HOME_PULSES, machine.axis[2].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[1].home);
+        ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[2].home);
         Serial.push(JT("{'cal':''}\n"));
         mt.loop();
         ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -4496,9 +4493,9 @@ void test_DeltaCalculator() {
     ASSERTEQUALT(-111.571, dc.getMinZ(), 0.001);
     ASSERTEQUALT(-69.571, dc.getMinZ(100,100), 0.001);
     ASSERTEQUALT(-67.2, dc.getMinDegrees(), 0.001);
-    ASSERTEQUAL(-FPD_HOME_PULSES, homePulses);
-    ASSERTEQUAL(-FPD_HOME_PULSES, homePulses);
-    ASSERTEQUAL(-FPD_HOME_PULSES, homePulses);
+    ASSERTEQUAL(FPD_HOME_PULSES, homePulses);
+    ASSERTEQUAL(FPD_HOME_PULSES, homePulses);
+    ASSERTEQUAL(FPD_HOME_PULSES, homePulses);
 	Step3D pulses65 = dc.calcPulses(XYZ3D(0,0,65));
 	ASSERTEQUALT(-5444, pulses65.p1, 0.001);
 	ASSERTEQUALT(-5444, pulses65.p2, 0.001);
@@ -4639,7 +4636,7 @@ void test_DeltaCalculator() {
         ASSERTEQUALT(FPD_GEAR_RATIO, dc3.getGearRatio(), 0.00001);
         ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001);
         ASSERTEQUALT(84.2122, 1/dc3.getDegreesPerPulse(), 0.001);
-        ASSERTEQUAL(-FPD_HOME_PULSES, dc3.getHomePulses());
+        ASSERTEQUAL(FPD_HOME_PULSES, dc3.getHomePulses());
         ASSERTEQUAL(0, dc3.getZOffset());
 
         dc3.useEffectorOrigin();
@@ -4647,7 +4644,7 @@ void test_DeltaCalculator() {
         ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001);
         //ASSERTEQUALT(0.0118748, dc3.getDegreesPerPulse(), 0.00001);
         ASSERTEQUALT(84.2122, 1/dc3.getDegreesPerPulse(), 0.001);
-        ASSERTEQUAL(-FPD_HOME_PULSES, dc3.getHomePulses());
+        ASSERTEQUAL(FPD_HOME_PULSES, dc3.getHomePulses());
         ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001); 	// CHANGED
 
         dc3.setGearRatio(9.5);
@@ -4655,14 +4652,14 @@ void test_DeltaCalculator() {
         ASSERTEQUALT(-67.0145, dc3.getHomeAngle(), 0.001); 	// CHANGED
         //ASSERTEQUALT(0.0118421, dc3.getDegreesPerPulse(), 0.00001);
         ASSERTEQUALT(84.444, 1/dc3.getDegreesPerPulse(), 0.001); 	// CHANGED
-        ASSERTEQUAL(-FPD_HOME_PULSES, dc3.getHomePulses());
+        ASSERTEQUAL(FPD_HOME_PULSES, dc3.getHomePulses());
         ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
 
         dc3.setGearRatio(FPD_GEAR_RATIO);
         ASSERTEQUALT(FPD_GEAR_RATIO, dc3.getGearRatio(), 0.00001);
         ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001); 	// CHANGED
         ASSERTEQUALT(84.2122, 1/dc3.getDegreesPerPulse(), 0.001);
-        ASSERTEQUAL(-FPD_HOME_PULSES, dc3.getHomePulses());
+        ASSERTEQUAL(FPD_HOME_PULSES, dc3.getHomePulses());
         ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
 
         dc3.setHomeAngle(-66);
@@ -4952,6 +4949,8 @@ void test_pgm() {
 	machine.axis[1].home = -20; // wrong value
 	machine.axis[2].home = -30; // wrong value
     machine.homePulses = -1000; // wrong value
+	machine.searchDelay = 700; // wrong value
+	machine.fastSearchPulses = 123; // wrong value
     Serial.push(JT("{'pgmx':'dim-fpd'}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -4977,8 +4976,12 @@ void test_pgm() {
     ASSERTEQUAL(-5648, machine.axis[0].position); 
     ASSERTEQUAL(-5637, machine.axis[1].position); 
     ASSERTEQUAL(-5626, machine.axis[2].position); 
-    ASSERTEQUALS(JT("{'s':0,'r':{'dim':"
-                    "{'gr':9.474,'ha':-67.200,'e':131.636,'f':190.526,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':"FPD_SPE_RATIO_S",'st':200}}"
+    ASSERTEQUAL(FPD_SEARCH_DELAY, machine.searchDelay); 
+    ASSERTEQUAL(FPD_FAST_SEARCH_PULSES, machine.fastSearchPulses); 
+    ASSERTEQUALS(JT("{'s':0,'r':{"
+                    "'syshp':3,'syssd':800,'dimgr':9.474,'dimha':-67.200,'dime':131.636,"
+					"'dimf':190.526,'dimre':270.000,'dimrf':90.000,'dimspa':"FPD_SPE_ANGLE_S","
+					"'dimspr':"FPD_SPE_RATIO_S",'dimst':200}"
                     ",'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();

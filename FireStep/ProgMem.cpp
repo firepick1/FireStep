@@ -419,16 +419,19 @@ const char src_fpd_hex_probe[] PROGMEM = {
 
 const char src_dim_fpd[] PROGMEM = {
     "["
-    "{\"dim\":{"
-    "\"gr\":" FPD_GEAR_RATIO_S "," // gear ratio
-    "\"ha\":-67.2," // home angle
-    "\"e\":131.636," // effector triangle side
-    "\"f\":190.526," // base triangle side
-    "\"re\":270.000," // effector arm length (mm)
-    "\"rf\":90.000," // pulley arm length (mm)
-    "\"spa\":" FPD_SPE_ANGLE_S "," // MC:arm critical angle https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
-    "\"spr\":" FPD_SPE_RATIO_S "," // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
-    "\"st\":200}}" // 200 steps/revolution
+    "{"
+    "\"syshp\":" FPD_FAST_SEARCH_PULSES_S "," // fast search pulse group size
+    "\"syssd\":" FPD_SEARCH_DELAY_S "," // fast homing delay
+    "\"dimgr\":" FPD_GEAR_RATIO_S "," // gear ratio
+    "\"dimha\":-67.2," // home angle
+    "\"dime\":131.636," // effector triangle side
+    "\"dimf\":190.526," // base triangle side
+    "\"dimre\":270.000," // effector arm length (mm)
+    "\"dimrf\":90.000," // pulley arm length (mm)
+    "\"dimspa\":" FPD_SPE_ANGLE_S "," // MC:arm critical angle https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    "\"dimspr\":" FPD_SPE_RATIO_S "," // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    "\"dimst\":200" // 200 steps/revolution
+	"}"
     "]"
 };
 

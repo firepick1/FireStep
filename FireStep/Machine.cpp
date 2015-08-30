@@ -212,8 +212,8 @@ bool ZPlane::initialize(XYZ3D p1, XYZ3D p2, XYZ3D p3) {
 
 Machine::Machine()
     : autoHome(false),invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
-      tvMax(0.7), fastSearchPulses(3),
-      searchDelay(800), pinStatus(NOPIN), topology(MTO_RAW),
+      tvMax(0.7), fastSearchPulses(FPD_FAST_SEARCH_PULSES),
+      searchDelay(FPD_SEARCH_DELAY), pinStatus(NOPIN), topology(MTO_RAW),
       outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0)
 {
     pinEnableHigh = false;
