@@ -2,7 +2,6 @@
 #define ARDUINOUSB_H
 
 #include <sys/types.h>
-#include <termios.h>
 #include <fstream>
 #include <string>
 
@@ -14,16 +13,17 @@ namespace firestep {
 typedef class ArduinoUSB {
 private:
     int fd;
-	int rc;
-	struct termios term_save;
+	int resultCode;
+	std::string path;
     std::ofstream os;
 public:
     ArduinoUSB(const char *path=SERIAL_PATH);
 	~ArduinoUSB();
-	bool configure(int baud=B19200);
+	int init_stty(const char *sttyArgs=FIRESTEP_STTY);
 	bool isOpen();
+	int open();
 	std::string readln(int32_t msTimeout=100);
-	void write(std::string line);
+	void writeln(std::string line);
 } ArduinoUSB;
 
 }

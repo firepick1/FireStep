@@ -1,4 +1,5 @@
 ziptmp
+*.log
 *.zip
 Adafruit_NeoPixel
 ph5
