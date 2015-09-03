@@ -42,6 +42,7 @@ static class Singleton {
 		if (logFile) {
 			LOGINFO("==============CLOSING LOG FILE==============");
 			fclose(logFile);
+			logFile = NULL;
 		}
 	}
 } singleton;

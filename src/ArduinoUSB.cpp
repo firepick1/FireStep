@@ -34,7 +34,14 @@ int ArduinoUSB::open() {
             close(fd);
             resultCode = -EIO;
         }
-    }
+    } else {
+		string msg = "ArduinoUSB::open() could not open ";
+		msg += path;
+		msg += " for input";
+        cerr << "ERROR	: " << msg << endl;
+		LOGERROR1("%s", msg.c_str());
+	}
+	return resultCode;
 }
 
 ArduinoUSB::~ArduinoUSB() {

@@ -4,7 +4,7 @@ project( firestep )
 
 SET(PROJECT_VERSION_MAJOR 0)
 SET(PROJECT_VERSION_MINOR 2)
-set(PROJECT_VERSION_PATCH 4)
+set(PROJECT_VERSION_PATCH 5)
 set(PROJECT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
 
 IF(WIN32)
@@ -86,8 +86,8 @@ add_executable(firestep
 	FireStep/Stroke.cpp
 	FireStep/Machine.cpp
 	FireStep/MachineThread.cpp
-	src/ArduinoUSB.cpp
 	src/FireLog.cpp
+	src/ArduinoUSB.cpp
 	src/MockDuino.cpp
 	src/firestep.cpp
 )

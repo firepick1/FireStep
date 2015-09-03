@@ -16,37 +16,7 @@
 #include "Arduino.h"
 #include "ArduinoUSB.h"
 
-#include "MachineThread.h"
-#include "Display.h"
-#include "DeltaCalculator.h"
-#include "ProgMem.h"
-
-using namespace ph5;
 using namespace firestep;
-using namespace ArduinoJson;
-
-//#define SERIAL_PATH "/dev/ttyACM0"
-
-#define ASSERTQUAD(expected,actual) ASSERTEQUALS( expected.toString().c_str(), actual.toString().c_str() );
-
-void replaceChar(string &s, char cmatch, char creplace) {
-    for (int i = 0; i < s.size(); i++) {
-        if (s[i] == cmatch) {
-            s[i] = creplace;
-        }
-    }
-}
-
-string jsonTemplate(const char *jsonIn, string replace = "'\"") {
-    string ji(jsonIn);
-    for (int i = 0; i < replace.size(); i += 2) {
-        char cmatch = replace[i];
-        char creplace = replace[i + 1];
-        replaceChar(ji, cmatch, creplace);
-    }
-    return ji;
-}
-#define JT(s) (jsonTemplate(s).c_str())
 
 int help(int rc=0) {
     cerr << "HELP	: firestep command line client v"
@@ -54,62 +24,41 @@ int help(int rc=0) {
     return rc;
 }
 
-string readLine(istream &serial, int32_t msTimeout=100) {
-    string line;
-    bool isDone = false;
-    long msIdle = millis() + msTimeout;
-    do {
-        int c = serial.peek();
-        if (c != EOF) {
-            msIdle = millis() + msTimeout;
-        }
-        switch (c) {
-        case '\r':
-            serial.get(); // ignore
-            break;
-        case '\n':
-            line += (char) serial.get();
-            isDone = true;
-            break;
-        case EOF:
-            serial.clear();
-            break;
-        case 0:
-            cout << "NULL" << endl;
-            break;
-        default:
-            line += (char) serial.get();
-            break;
-        }
-    } while (!isDone && millis() < msIdle);
-    return line;
+typedef class FireStepClient {
+private:
+	string serialPath;
+	int32_t msResponse; // response timeout
+	ArduinoUSB usb;
+public:
+	FireStepClient(const char *serialPath=SERIAL_PATH, int32_t msResponse=10*1000);
+	int console(bool prompt=true);
+} FireStepClient;
+
+FireStepClient::FireStepClient(const char *serialPath, int32_t msResponse) 
+	: serialPath(serialPath), msResponse(msResponse), usb(serialPath) 
+{
 }
 
-int terminal(bool prompt=true, const char *serialPath=SERIAL_PATH, int32_t msResponse=10*1000) {
-	ArduinoUSB usb(serialPath);
+int FireStepClient::console(bool prompt) {
 	if (prompt) {
-		char ver[100];
-		snprintf(ver, sizeof(ver), "firestep v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH); 
-		cerr << "STATUS	; " << ver << " serial console" << endl;
-		cerr << "STATUS	: initializing serial port..." << endl;
+		cerr << "START	: initializing serial port..." << endl;
 	}
-	usb.init_stty();
-	if (!usb.open()) {
-		string msg = "ERROR	: could not open ";
-		msg += serialPath;
-		msg += " for input";
-        cerr << msg << endl;
-		LOGERROR1("terminal() %s", msg.c_str());
-        return -EIO;
+	int rc = usb.init_stty();
+	if (rc == 0) {
+		rc = usb.open();
+	}
+	if (rc != 0) {
+		return rc;
     }
-
     string ignore = usb.readln(5000);
     while (ignore.size()) {
+		LOGINFO1("console() start:%s", ignore.c_str());
 		if (prompt) {
 			cerr << "START	: " << ignore;
 		}
         ignore = usb.readln();
     }
+
     for (;;) {
 		if (prompt) {
 			cerr << "CMD	: ";
@@ -120,16 +69,16 @@ int terminal(bool prompt=true, const char *serialPath=SERIAL_PATH, int32_t msRes
 			if (prompt) {
 				cerr << "OK	: quit" << endl;
 			}
-			LOGDEBUG("terminal() quit");
+			LOGDEBUG("console() quit");
             break;
         } else if (request.size() > 0) {
 			usb.writeln(request);
-			LOGDEBUG2("terminal() bytes:%ld write:%s", (long) request.size(), request.c_str());
+			LOGDEBUG2("console() bytes:%ld write:%s", (long) request.size(), request.c_str());
         } else { // EOF for file stdin
 			if (prompt) {
 				cerr << "EOF" << endl;
 			}
-			LOGDEBUG("terminal() EOF");
+			LOGDEBUG("console() EOF");
 			break;
         }
         string response = usb.readln(msResponse);
@@ -137,34 +86,39 @@ int terminal(bool prompt=true, const char *serialPath=SERIAL_PATH, int32_t msRes
 			if (prompt) {
 				cerr << "STATUS	: wait " << msResponse << "ms..." << endl;
 			}
-			LOGDEBUG1("terminal() wait %ldms", (long) msResponse);
+			LOGDEBUG1("console() wait %ldms", (long) msResponse);
             response = usb.readln(msResponse);
         }
         if (response.size() > 0) {
             cout << response;
-			LOGDEBUG1("terminal() read:%s", response.c_str());
+			LOGDEBUG1("console() read:%s", response.c_str());
         } else {
 			if (prompt) {
 				cerr << "ERROR	: timeout" << endl;
 			}
-			LOGERROR1("terminal(%s) timeout", serialPath);
+			LOGERROR("console() timeout");
             break;
         }
     }
 
 	if (prompt) {
-		cout << "END	: closing " << serialPath << endl;
+		cout << "END	: closing serial port" << endl;
 	}
-	LOGINFO1("terminal() closing %s", serialPath);
+	LOGINFO("console() closing serial port");
 }
 
-int parse_args(int argc, char *argv[], bool &prompt) {
+int parse_args(int argc, char *argv[], bool &prompt, bool &logging, string &json) {
     int rc = 0;
-    bool logging = false;
     int logLvl = FIRELOG_INFO;
     for (int iArg=0; iArg<argc; iArg++) {
         if (strcmp("-h", argv[iArg])==0 || strcmp("--help", argv[iArg])==0) {
             return help();
+        } else if (strcmp("-e",argv[iArg])==0 || strcmp("--expr", argv[iArg])==0) {
+			if (++iArg >= argc) {
+				cerr << "ERROR	: expected FireStep JSON expression" << endl;
+			}
+			json = argv[iArg];
+			return help(-EINVAL);
         } else if (strcmp("-p",argv[iArg])==0 || strcmp("--prompt", argv[iArg])==0) {
 			prompt = true;
         } else if (strcmp("--logerror", argv[iArg])==0) {
@@ -194,9 +148,19 @@ int main(int argc, char *argv[]) {
     LOGINFO3("INFO	: firestep command line client v%d.%d.%d",
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 	bool prompt = false;
-    int rc = parse_args(argc, argv, prompt);
+	bool logging = false;
+	string json;
+    int rc = parse_args(argc, argv, prompt, logging, json);
 
-    terminal(prompt);
+	char ver[100];
+	snprintf(ver, sizeof(ver), "firestep v%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH); 
+	LOGINFO1("%s", ver);
+	if (prompt) {
+		cerr << "STATUS	: " << ver << " serial console" << endl;
+	}
+
+	FireStepClient fsc;
+    fsc.console(prompt);
 
     return rc;
 }
