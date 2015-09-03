@@ -38,7 +38,7 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/FireStep
 	${PROJECT_SOURCE_DIR}/FireStep/pins
 	${BUILD_TARGET_DIR} 
-	${PROJECT_SOURCE_DIR}/test
+	${PROJECT_SOURCE_DIR}/src
 	${PROJECT_SOURCE_DIR}/ArduinoJson/include 
 	${PROJECT_SOURCE_DIR}/ph5
 	/usr/local/include 
@@ -73,6 +73,34 @@ link_directories(
 	/usr/local/lib 
 )
 
+add_executable(firestep 
+	FireStep/DeltaCalculator.cpp
+	FireStep/ProcessField.cpp
+	FireStep/ProgMem.cpp
+	FireStep/JsonCommand.cpp
+	FireStep/JsonController.cpp
+	FireStep/FPDController.cpp
+	FireStep/RawController.cpp
+	FireStep/NeoPixel.cpp
+	FireStep/Thread.cpp
+	FireStep/Stroke.cpp
+	FireStep/Machine.cpp
+	FireStep/MachineThread.cpp
+	src/ArduinoUSB.cpp
+	src/FireLog.cpp
+	src/MockDuino.cpp
+	src/firestep.cpp
+)
+
+add_dependencies(firestep
+	ArduinoJson
+	_ph5
+)
+target_link_libraries(firestep
+	ArduinoJson
+	_ph5
+)
+
 add_executable(test 
 	FireStep/DeltaCalculator.cpp
 	FireStep/ProcessField.cpp
@@ -86,9 +114,9 @@ add_executable(test
 	FireStep/Stroke.cpp
 	FireStep/Machine.cpp
 	FireStep/MachineThread.cpp
-	test/FireLog.cpp
-	test/MockDuino.cpp
-	test/test.cpp
+	src/FireLog.cpp
+	src/MockDuino.cpp
+	src/test.cpp
 )
 
 add_dependencies(test
