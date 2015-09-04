@@ -71,6 +71,7 @@ Status JsonCommand::setError(Status status, const char *err) {
 
 Status JsonCommand::parseCore() {
     if (*json == 0) {
+		Serial.println(); // echo EOL
         return STATUS_WAIT_IDLE;	// empty command
     }
     JsonObject &jobj = jbRequest.parseObject(json);

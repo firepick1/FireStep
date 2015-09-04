@@ -686,6 +686,7 @@ void test_JsonController_tst() {
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     ASSERTEQUAL(DISPLAY_WAIT_IDLE, mt.machine.pDisplay->getStatus());
+    ASSERTEQUALS(JT("\n"), Serial.output().c_str()); // empty line
 
     Serial.push(JT("{'tstsp':[1,100,1000]}\n")); // tstsp: test stepper pulse
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -1292,7 +1293,7 @@ void test_sys() {
     ASSERTEQUALS(JT("{'s':0,'r':"
 					"{'sys':{'ah':false,'as':false,'ch':-2836355,'eu':false,'fr':1000,"
 					"'hp':3,'jp':false,'lh':false,'lp':0,'mv':12800,'om':0,"
-					"'pb':3,'pc':2,'pi':57,'sd':400,'tc':5,'to':1,'tv':0.700,'v':2.040}"
+					"'pb':3,'pc':2,'pi':57,'sd':400,'tc':5,'to':1,'tv':0.700,'v':2.050}"
 					"},'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();
@@ -4237,7 +4238,7 @@ void test_ph5() {
     mt.loop();	// command.process
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(true, machine.stroke.isDone());
-    ASSERTEQUALS(JT(""), Serial.output().c_str());
+    ASSERTEQUALS(JT("\n"), Serial.output().c_str());
     ASSERTEQUAL(1, arduino.pulses(PC2_X_DIR_PIN) - xdirpulses);	// never reversing
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_DIR_PIN));	// advancing
     ASSERTEQUAL(12800, arduino.pulses(PC2_X_STEP_PIN) - xpulses);
@@ -4253,6 +4254,8 @@ void test_ph5() {
         Serial.output().c_str());
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN) - xpulses);
     mt.loop(); // idle
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    ASSERTEQUALS(JT("\n"), Serial.output().c_str());
 
     // TEST: max velocity
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -4280,6 +4283,8 @@ void test_ph5() {
         Serial.output().c_str());
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN) - xpulses);
     mt.loop(); // idle
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    ASSERTEQUALS(JT("\n"), Serial.output().c_str());
 
     // TEST: just one pulse
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -4307,6 +4312,8 @@ void test_ph5() {
         Serial.output().c_str());
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN) - xpulses);
     mt.loop(); // idle
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    ASSERTEQUALS(JT("\n"), Serial.output().c_str());
 
     // TEST: long fast line
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -4334,6 +4341,8 @@ void test_ph5() {
         Serial.output().c_str());
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN) - xpulses);
     mt.loop(); // idle
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    ASSERTEQUALS(JT("\n"), Serial.output().c_str());
 
     // TEST: long slow line
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -4361,6 +4370,8 @@ void test_ph5() {
         Serial.output().c_str());
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN) - xpulses);
     mt.loop(); // idle
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    ASSERTEQUALS(JT("\n"), Serial.output().c_str());
 
     // TEST: short and fast
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -4388,6 +4399,8 @@ void test_ph5() {
         Serial.output().c_str());
     ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN) - xpulses);
     mt.loop(); // idle
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    ASSERTEQUALS(JT("\n"), Serial.output().c_str());
 
     cout << "TEST	: test_ph5() OK " << endl;
 }
@@ -4428,6 +4441,7 @@ void test_command_array() {
     ASSERTEQUALS(JT("{'s':-901,'r':{'xpo':1},'t':0.000}\n"), Serial.output().c_str());
     test_ticks(1);
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    ASSERTEQUALS(JT("\n"), Serial.output().c_str());
 
     // TEST two command array
     ASSERT(machine.axis[0].isEnabled());

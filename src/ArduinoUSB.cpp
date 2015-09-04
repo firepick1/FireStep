@@ -40,6 +40,7 @@ int ArduinoUSB::open() {
             ::close(fd);
             resultCode = -EIO;
 		} else {
+			os.unsetf(ios_base::skipws);
 			LOGINFO1("ArduinoUSB::open(%s) opened for write", path.c_str());
         }
     } else {

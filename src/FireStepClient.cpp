@@ -21,6 +21,7 @@ using namespace firestep;
 FireStepClient::FireStepClient(bool prompt, const char *serialPath, int32_t msResponse)
     : prompt(prompt),serialPath(serialPath), msResponse(msResponse), usb(serialPath)
 {
+	cin.unsetf(ios_base::skipws);
 	LOGINFO1("%s", version().c_str());
 }
 
@@ -115,20 +116,21 @@ int FireStepClient::console() {
         }
         string request;
         cin >> request;
+		cerr << "DEBUG: cin:"<< (cin.eof() ? "EOF" : "...") << " request:" << request.size() << endl;
         if (request == "quit") {
             if (prompt) {
                 cerr << "OK	: quit" << endl;
             }
-            LOGDEBUG("console() quit");
+            LOGDEBUG("FireStepClient::console() quit");
             break;
-        } else if (request.size() > 0) {
+        } else if (request.size() > 0 || !cin.eof()) {
             usb.writeln(request);
-            LOGINFO2("console() bytes:%ld write:%s", (long) request.size(), request.c_str());
+            LOGINFO2("FireStepClient::console() bytes:%ld write:%s", (long) request.size()+1, request.c_str());
         } else { // EOF for file stdin
             if (prompt) {
                 cerr << "EOF" << endl;
             }
-            LOGDEBUG("console() EOF");
+            LOGINFO("FireStepClient::console() EOF");
             break;
         }
         string response = usb.readln(msResponse);
@@ -136,17 +138,17 @@ int FireStepClient::console() {
             if (prompt) {
                 cerr << "STATUS	: wait " << msResponse << "ms..." << endl;
             }
-            LOGDEBUG1("console() wait %ldms", (long) msResponse);
+            LOGDEBUG1("FireStepClient::console() wait %ldms", (long) msResponse);
             response = usb.readln(msResponse);
         }
         if (response.size() > 0) {
             cout << response;
-            LOGINFO1("console() read:%s", response.c_str());
+            LOGINFO1("FireStepClient::console() read:%s", response.c_str());
         } else {
             if (prompt) {
                 cerr << "ERROR	: timeout" << endl;
             }
-            LOGERROR("console() timeout");
+            LOGERROR("FireStepClient::console() timeout");
             break;
         }
     }
@@ -154,7 +156,7 @@ int FireStepClient::console() {
     if (prompt) {
         cout << "END	: closing serial port" << endl;
     }
-    LOGINFO("console() closing serial port");
+    LOGINFO("FireStepClient::console() closing serial port");
 
     return usb.close();
 }
