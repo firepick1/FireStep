@@ -33,6 +33,7 @@ SET(BUILD_TARGET_DIR "${CMAKE_CURRENT_SOURCE_DIR}/target" CACHE STRING "Put all 
 SET(EXECUTABLE_OUTPUT_PATH "${BUILD_TARGET_DIR}")
 SET(RUNTIME_OUTPUT_NAME firestep)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+SET(FIRESTEP_LIB "lib_firestep.so")
 
 include_directories( 
 	${PROJECT_SOURCE_DIR}/FireStep
@@ -73,7 +74,8 @@ link_directories(
 	/usr/local/lib 
 )
 
-add_executable(firestep 
+########## lib_firestep.so: shared library ################
+add_library(_firestep SHARED 
 	FireStep/DeltaCalculator.cpp
 	FireStep/ProcessField.cpp
 	FireStep/ProgMem.cpp
@@ -86,6 +88,14 @@ add_executable(firestep
 	FireStep/Stroke.cpp
 	FireStep/Machine.cpp
 	FireStep/MachineThread.cpp
+)
+add_dependencies(_firestep
+	ArduinoJson
+	_ph5
+)
+
+########## firestep: command line client ################
+add_executable(firestep 
 	src/FireLog.cpp
 	src/ArduinoUSB.cpp
 	src/FireStepClient.cpp
@@ -94,41 +104,31 @@ add_executable(firestep
 )
 
 add_dependencies(firestep
+	_firestep
 	ArduinoJson
 	_ph5
 )
 target_link_libraries(firestep
+	_firestep
 	ArduinoJson
 	_ph5
 )
 
+########## test: MockDuino test program ################
 add_executable(test 
-	FireStep/DeltaCalculator.cpp
-	FireStep/ProcessField.cpp
-	FireStep/ProgMem.cpp
-	FireStep/JsonCommand.cpp
-	FireStep/JsonController.cpp
-	FireStep/FPDController.cpp
-	FireStep/RawController.cpp
-	FireStep/NeoPixel.cpp
-	FireStep/Thread.cpp
-	FireStep/Stroke.cpp
-	FireStep/Machine.cpp
-	FireStep/MachineThread.cpp
-	src/FireLog.cpp
 	src/MockDuino.cpp
 	src/test.cpp
 )
-
 add_dependencies(test
+	_firestep
 	ArduinoJson
 	_ph5
 )
 target_link_libraries(test
+	_firestep
 	ArduinoJson
 	_ph5
 )
-
 if(WIN32)
   add_custom_command(TARGET test POST_BUILD    
     COMMAND ${CMAKE_COMMAND} -E copy_if_different  
@@ -136,3 +136,34 @@ if(WIN32)
         "${PROJECT_SOURCE_DIR}/target/test.exe" 
         )
 endif(WIN32)
+
+set(FIRESTEP_INSTALL_LIB_DIR		lib CACHE PATH "Installation directory for libraries")
+set(FIRESTEP_INSTALL_BIN_DIR		bin CACHE PATH "Installation directory for executable")
+set(FIRESTEP_INSTALL_INCLUDE_DIR	include CACHE PATH "Installation directory for header files")
+
+INSTALL(TARGETS _firestep DESTINATION ${FIRESTEP_INSTALL_LIB_DIR})
+INSTALL(TARGETS firestep DESTINATION ${FIRESTEP_INSTALL_BIN_DIR})
+INSTALL(FILES src/FireStep.h DESTINATION ${FIRESTEP_INSTALL_INCLUDE_DIR})
+INSTALL(FILES 
+	FireStep/AnalogRead.h
+	FireStep/DeltaCalculator.h
+	FireStep/Display.h
+	FireStep/FPDController.h
+	FireStep/FireUtils.h
+	FireStep/JsonCommand.h
+	FireStep/JsonController.h
+	FireStep/MCU.h
+	FireStep/Machine.h
+	FireStep/MachineThread.h
+	FireStep/NeoPixel.h
+	FireStep/ProcessField.h
+	FireStep/ProgMem.h
+	FireStep/Quad.h
+	FireStep/RawController.h
+	FireStep/Status.h
+	FireStep/Stroke.h
+	FireStep/Thread.h
+	FireStep/build.h
+	FireStep/pins.h
+	FireStep/version.h
+DESTINATION ${FIRESTEP_INSTALL_INCLUDE_DIR}/firestep)

@@ -67,7 +67,7 @@ int parse_args(int argc, char *argv[], bool &prompt, bool &logging,
     int logLvl = FIRELOG_INFO;
     for (int iArg=0; iArg<argc; iArg++) {
         if (strcmp("-h", argv[iArg])==0 || strcmp("--help", argv[iArg])==0) {
-            return help();
+            return help(-EAGAIN);
         } else if (strcmp("-e",argv[iArg])==0 || strcmp("--expr", argv[iArg])==0) {
             if (++iArg >= argc) {
                 cerr << "ERROR	: expected FireStep JSON expression" << endl;
@@ -118,17 +118,8 @@ int parse_args(int argc, char *argv[], bool &prompt, bool &logging,
     return rc;
 }
 
-int main(int argc, char *argv[]) {
-    bool prompt = false;
-    bool reset = false;
-    bool logging = false;
-    string json;
-	string device = FIRESTEP_SERIAL_PATH;
-    int rc = parse_args(argc, argv, prompt, logging, json, reset, device);
-    if (rc != 0) {
-        return rc;
-    }
-
+int process(bool prompt, string device, bool reset, string json) {
+	int rc = 0;
 	FireStepClient fsc(prompt, device.c_str());
 
     if (prompt) {
@@ -148,4 +139,18 @@ int main(int argc, char *argv[]) {
     }
 
 	return rc;
+}
+
+int main(int argc, char *argv[]) {
+    bool prompt = false;
+    bool reset = false;
+    bool logging = false;
+    string json;
+	string device = FIRESTEP_SERIAL_PATH;
+    int rc = parse_args(argc, argv, prompt, logging, json, reset, device);
+    if (rc != 0) {
+        return rc;
+    }
+
+	return process(prompt, device, reset, json);
 }

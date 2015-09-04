@@ -13,9 +13,9 @@
 #include "FireLog.h"
 #include "FireUtils.h"
 #include "version.h"
-#include "Arduino.h"
 #include "FireStepClient.h"
 
+using namespace std;
 using namespace firestep;
 
 FireStepClient::FireStepClient(bool prompt, const char *serialPath, int32_t msResponse)

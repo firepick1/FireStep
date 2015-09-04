@@ -60,6 +60,12 @@ if [ "$1" == "" ]; then
 	popd
 fi
 
+if [ "$DESTDIR" == "" ]; then
+	echo "INSTALL	: using default installation prefix"
+	export DESTDIR=/usr/local
+fi
+echo "INSTALL	: ${DESTDIR}"
+
 if [ "$WINDIR" != "" ]; then
 	echo "SYSTEM	: FireStep Windows support is limited to Arduino IDE"
 	echo "TRY	: Copy ArduinoJson       to <your-Arduino-sketch-folder>/libraries/ArduinoJson"
@@ -117,7 +123,7 @@ fi
 
 echo "STATUS	: creating makefile"
 cmake \
-  -DCMAKE_INSTALL_PREFIX:PATH=$installPrefix "$@" \
+  -DCMAKE_INSTALL_PREFIX:PATH=$DESTDIR "$@" \
   .
 RC=$?; if [ $RC -ne 0 ]; then
 	echo "ERROR	: cmake failed (RC=$RC)"
