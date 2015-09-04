@@ -25,6 +25,30 @@ FireStepClient::FireStepClient(bool prompt, const char *serialPath, int32_t msRe
 	LOGINFO1("%s", version().c_str());
 }
 
+string FireStepClient::readLine(istream &is) {
+	string line;
+	bool isEOL = false;
+	while (!isEOL) {
+		int c = is.get();
+		if (c == EOF) {
+			break;
+		}
+		switch (c) {
+		case '\r':
+			// ignore CR and expect LF
+			break;
+		case '\n':
+			line += (char)c;
+			isEOL = true;
+			break;
+		default:
+			line += (char)c;
+			break;
+		}
+	}
+	return line;
+}
+
 int FireStepClient::reset() {
 	ArduinoUSB usb(serialPath.c_str());
     int rc = 0;
@@ -95,7 +119,7 @@ int FireStepClient::sendJson(string request) {
     }
     if (response.size() > 0) {
         cout << response;
-        LOGINFO1("sendJson() read:%s", response.c_str());
+        LOGINFO2("sendJson() bytes:%ld read:%s", (long), response.size(), response.c_str());
     } else {
         LOGERROR("sendJson() timeout");
         return -ETIME;
@@ -114,18 +138,11 @@ int FireStepClient::console() {
         if (prompt) {
             cerr << "CMD	: ";
         }
-        string request;
-        cin >> request;
-		cerr << "DEBUG: cin:"<< (cin.eof() ? "EOF" : "...") << " request:" << request.size() << endl;
-        if (request == "quit") {
-            if (prompt) {
-                cerr << "OK	: quit" << endl;
-            }
-            LOGDEBUG("FireStepClient::console() quit");
-            break;
-        } else if (request.size() > 0 || !cin.eof()) {
-            usb.writeln(request);
-            LOGINFO2("FireStepClient::console() bytes:%ld write:%s", (long) request.size()+1, request.c_str());
+        string request = readLine(cin);
+		//cerr << "DEBUG: cin:"<< (cin.eof() ? "EOF" : "...") << " request:" << request.size() << endl;
+        if (request.size() > 0) {
+            usb.write(request);
+            LOGINFO2("FireStepClient::console() bytes:%ld write:%s", (long) request.size(), request.c_str());
         } else { // EOF for file stdin
             if (prompt) {
                 cerr << "EOF" << endl;
@@ -143,7 +160,7 @@ int FireStepClient::console() {
         }
         if (response.size() > 0) {
             cout << response;
-            LOGINFO1("FireStepClient::console() read:%s", response.c_str());
+            LOGINFO2("FireStepClient::console() bytes:%ld read:%s", (long) response.size(), response.c_str());
         } else {
             if (prompt) {
                 cerr << "ERROR	: timeout" << endl;

@@ -33,23 +33,40 @@ int ArduinoUSB::open() {
 	} else {
 		LOGINFO1("ArduinoUSB::open(%s) opened for read", path.c_str());
     }
-    if (resultCode == 0) {
-        os.open(path.c_str());
-        if (!os.is_open()) {
-            cerr << "ERROR	: could not open " << path << " for output" << endl;
-            ::close(fd);
-            resultCode = -EIO;
-		} else {
-			os.unsetf(ios_base::skipws);
-			LOGINFO1("ArduinoUSB::open(%s) opened for write", path.c_str());
-        }
-    } else {
+    if (resultCode != 0) {
 		string msg = "ArduinoUSB::open() could not open ";
 		msg += path;
 		msg += " for input";
         cerr << "ERROR	: " << msg << endl;
 		LOGERROR1("%s", msg.c_str());
+		return resultCode;
 	}
+	os.open(path.c_str());
+	if (!os.is_open()) {
+		cerr << "ERROR	: could not open " << path << " for output" << endl;
+		::close(fd);
+		return -EIO;
+	} 
+	os.unsetf(ios_base::skipws);
+	LOGINFO1("ArduinoUSB::open(%s) opened for write", path.c_str());
+
+    char buf[10];
+	int res = read(fd, buf, 1);
+	string ignored;
+	if (res == 1) {
+		// we expect no incoming data, so discard any found
+		while (res == 1) {
+			ignored += buf[0];
+			res = read(fd, buf, 1);
+			if (res == 0) {
+				usleep(100*1000); // make sure there's no more coming
+				res = read(fd, buf, 1);
+			}
+		} 
+		LOGINFO1("ArduinoUSB::open() ignoring:%ldB", (long) ignored.size());
+		LOGDEBUG1("ArduinoUSB::open() ignored:%s", ignored.c_str());
+	}
+
 	return resultCode;
 }
 
@@ -128,6 +145,11 @@ string ArduinoUSB::readln(int32_t msTimeout) {
         }
     } while (!isEOL && millis() < msIdle);
     return line;
+}
+
+void ArduinoUSB::write(string line) {
+    os << line;
+    os.flush();
 }
 
 void ArduinoUSB::writeln(string line) {

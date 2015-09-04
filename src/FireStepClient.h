@@ -11,6 +11,8 @@ private:
     std::string serialPath;
     int32_t msResponse; // response timeout
     firestep::ArduinoUSB usb;
+protected:
+	std::string readLine(std::istream &is);
 public:
     FireStepClient(bool prompt=true, const char *serialPath=FIRESTEP_SERIAL_PATH, int32_t msResponse=10*1000);
 	static std::string version(bool verbose=true);
