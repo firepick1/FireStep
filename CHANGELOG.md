@@ -1,6 +1,12 @@
 FireStep: change log
 ====================
 
+v0.2.5
+------
+* NEW: [firestep command line client](https://github.com/firepick1/FireStep/wiki/firestep-command-line)
+* NEW: *lib_firestep.so* shared library for Linux 
+* FIX: empty lines are now echoed so that firestep client doesn't hang
+
 v0.2.4
 ------
 * NEW: MTO_FPD "dimspa" [Sliced pulley arm critical angle](https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error)
