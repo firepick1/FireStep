@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ -e /dev/ttyACM0 ]; then
 	echo "STTY	: configuring /dev/ttyACM0 for FireStep"
-	stty -F /dev/ttyACM0 0:4:cbe:0:3:1c:7f:15:4:0:0:0:11:13:1a:0:12:f:17:16:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0
+	stty -F /dev/ttyACM0 0:4:cbe:0:3:1c:7f:15:4:0:0:0:11:13:1a:0:12:f:17:16:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 -hup
 	rc=$?; if [ $rc -ne 0 ]; then
 		echo "ERROR	: stty failed with error $rc"
 		exit

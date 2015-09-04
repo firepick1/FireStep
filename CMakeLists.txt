@@ -88,6 +88,7 @@ add_executable(firestep
 	FireStep/MachineThread.cpp
 	src/FireLog.cpp
 	src/ArduinoUSB.cpp
+	src/FireStepClient.cpp
 	src/MockDuino.cpp
 	src/firestep.cpp
 )

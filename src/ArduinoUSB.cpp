@@ -17,8 +17,12 @@ using namespace std;
 using namespace firestep;
 
 ArduinoUSB::ArduinoUSB(const char *path) 
-	: path(path) 
+	: path(path), fd(-1), sttyArgs(FIRESTEP_STTY), resultCode(-1)
 {}
+
+ArduinoUSB::~ArduinoUSB() {
+	close();
+}
 
 int ArduinoUSB::open() {
     resultCode = 0;
@@ -26,13 +30,17 @@ int ArduinoUSB::open() {
     if (fd < 0) {
         cerr << "ERROR	: could not open " << SERIAL_PATH << endl;
         resultCode = fd;
+	} else {
+		LOGINFO1("ArduinoUSB::open(%s) opened for read", path.c_str());
     }
     if (resultCode == 0) {
         os.open(path.c_str());
         if (!os.is_open()) {
             cerr << "ERROR	: could not open " << path << " for output" << endl;
-            close(fd);
+            ::close(fd);
             resultCode = -EIO;
+		} else {
+			LOGINFO1("ArduinoUSB::open(%s) opened for write", path.c_str());
         }
     } else {
 		string msg = "ArduinoUSB::open() could not open ";
@@ -44,10 +52,41 @@ int ArduinoUSB::open() {
 	return resultCode;
 }
 
-ArduinoUSB::~ArduinoUSB() {
-    if (isOpen()) {
-        close(fd);
-    }
+int ArduinoUSB::close() {
+	if (isOpen()) {
+		resultCode = ::close(fd);
+		if (resultCode) {
+			LOGERROR2("ArduinoUSB::close(%s) failed:%d", path.c_str(), resultCode);
+		} else {
+			LOGINFO1("ArduinoUSB::close(%s)", path.c_str());
+			fd = -1;
+		}
+		os.close();
+	}
+	return resultCode;
+}
+
+int ArduinoUSB::configure(bool resetOnClose) {
+	struct stat fs;
+	int rc = stat(path.c_str(), &fs);
+	if (rc) {
+		LOGERROR2("ArduinoUSB::configure(%s) could not access serial port:%d", path.c_str(), rc);
+		return rc;
+	}
+
+	char cmd[255];
+	snprintf(cmd, sizeof(cmd), "stty -F %s %s %s", path.c_str(), sttyArgs.c_str(), resetOnClose ? "hup" : "-hup");
+	LOGINFO1("ArduinoUSB::configure() %s", cmd);
+	rc = system(cmd);
+	if (rc == 0) {
+		LOGINFO1("ArduinoUSB::configure(%s) initialized serial port", path.c_str());
+	} else if (rc == 256) {
+		LOGERROR2("ArduinoUSB::configure(%s) failed. Add user to serial group and login again.", path.c_str(), rc);
+	} else {
+		LOGERROR2("ArduinoUSB::configure(%s) could not initialize serial port. stty=>%d", path.c_str(), rc);
+	}
+
+	return rc;
 }
 
 int ArduinoUSB::init_stty(const char *sttyArgs) {
@@ -74,7 +113,7 @@ int ArduinoUSB::init_stty(const char *sttyArgs) {
 }
 
 bool ArduinoUSB::isOpen() {
-    return resultCode == 0 ? true : false;
+    return resultCode == 0 && fd >= 0 ? true : false;
 }
 
 string ArduinoUSB::readln(int32_t msTimeout) {
