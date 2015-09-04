@@ -26,9 +26,9 @@ ArduinoUSB::~ArduinoUSB() {
 
 int ArduinoUSB::open() {
     resultCode = 0;
-    fd = ::open(SERIAL_PATH, O_RDONLY | O_NOCTTY | O_NONBLOCK );
+    fd = ::open(FIRESTEP_SERIAL_PATH, O_RDONLY | O_NOCTTY | O_NONBLOCK );
     if (fd < 0) {
-        cerr << "ERROR	: could not open " << SERIAL_PATH << endl;
+        cerr << "ERROR	: could not open " << FIRESTEP_SERIAL_PATH << endl;
         resultCode = fd;
 	} else {
 		LOGINFO1("ArduinoUSB::open(%s) opened for read", path.c_str());
@@ -84,29 +84,6 @@ int ArduinoUSB::configure(bool resetOnClose) {
 		LOGERROR2("ArduinoUSB::configure(%s) failed. Add user to serial group and login again.", path.c_str(), rc);
 	} else {
 		LOGERROR2("ArduinoUSB::configure(%s) could not initialize serial port. stty=>%d", path.c_str(), rc);
-	}
-
-	return rc;
-}
-
-int ArduinoUSB::init_stty(const char *sttyArgs) {
-	struct stat fs;
-	int rc = stat(path.c_str(), &fs);
-	if (rc) {
-		LOGERROR2("init_serial(%s) could not access serial port:%d", path.c_str(), rc);
-		return rc;
-	}
-
-	char cmd[255];
-	snprintf(cmd, sizeof(cmd), "stty -F %s %s", path.c_str(), sttyArgs);
-	LOGINFO1("ArduinoUSB::init_stty() %s", cmd);
-	rc = system(cmd);
-	if (rc == 0) {
-		LOGINFO1("init_serial(%s) initialized serial port", path.c_str());
-	} else if (rc == 256) {
-		LOGERROR2("init_serial(%s) failed. Add user to serial group and login again.", path.c_str(), rc);
-	} else {
-		LOGERROR2("init_serial(%s) could not initialize serial port. stty=>%d", path.c_str(), rc);
 	}
 
 	return rc;
