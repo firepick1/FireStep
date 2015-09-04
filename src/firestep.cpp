@@ -106,6 +106,14 @@ int parse_args(int argc, char *argv[], bool &prompt, bool &logging,
     }
     if (logging) {
         firelog_init("firestep.log", logLvl);
+		string cmd;
+		for (int i=0; i<argc; i++) {
+			if (i) {
+				cmd += " ";
+			}
+			cmd += argv[i];
+		}
+		LOGINFO1("argv: %s", cmd.c_str());
     }
     return rc;
 }

@@ -85,7 +85,7 @@ int FireStepClient::sendJson(string request) {
     }
 
     usb.writeln(request);
-    LOGDEBUG2("sendJson() bytes:%ld write:%s", (long) request.size(), request.c_str());
+    LOGINFO2("sendJson() bytes:%ld write:%s", (long) request.size(), request.c_str());
 
     string response = usb.readln(msResponse);
     for (int i=0; response.size()==0 && i<4; i++) {
@@ -94,7 +94,7 @@ int FireStepClient::sendJson(string request) {
     }
     if (response.size() > 0) {
         cout << response;
-        LOGDEBUG1("sendJson() read:%s", response.c_str());
+        LOGINFO1("sendJson() read:%s", response.c_str());
     } else {
         LOGERROR("sendJson() timeout");
         return -ETIME;
@@ -123,7 +123,7 @@ int FireStepClient::console() {
             break;
         } else if (request.size() > 0) {
             usb.writeln(request);
-            LOGDEBUG2("console() bytes:%ld write:%s", (long) request.size(), request.c_str());
+            LOGINFO2("console() bytes:%ld write:%s", (long) request.size(), request.c_str());
         } else { // EOF for file stdin
             if (prompt) {
                 cerr << "EOF" << endl;
@@ -141,7 +141,7 @@ int FireStepClient::console() {
         }
         if (response.size() > 0) {
             cout << response;
-            LOGDEBUG1("console() read:%s", response.c_str());
+            LOGINFO1("console() read:%s", response.c_str());
         } else {
             if (prompt) {
                 cerr << "ERROR	: timeout" << endl;

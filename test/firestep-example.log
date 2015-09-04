@@ -1,7 +1,25 @@
-08:03:22.643 4465  I  FireLog firestep.log version 1.0.0
-08:03:22.643 4465  I  firestep command line client v0.2.5
-08:03:22.644 4465  I  ArduinoUSB::open(/dev/ttyACM0) opened for read
-08:03:22.644 4465  I  ArduinoUSB::open(/dev/ttyACM0) opened for write
-08:07:13.326 4465  I  console() closing serial port
-08:07:13.326 4465  I  ArduinoUSB::close(/dev/ttyACM0)
-08:07:13.327 4465  I  ==============CLOSING LOG FILE==============
+08:26:23.910 6366  I  FireLog firestep.log version 1.0.0
+08:26:23.911 6366  I  firestep command line client v0.2.5
+08:26:23.911 6366  I  ArduinoUSB::open(/dev/ttyACM0) opened for read
+08:26:23.911 6366  I  ArduinoUSB::open(/dev/ttyACM0) opened for write
+08:26:23.912 6366  I  console() bytes:30 write:{"pgmx":"cal-fpd-home-medium"}
+08:27:02.354 6366  I  console() read:{"s":0,"r":{"dim":{"bx":0.0009,"by":0.0009,"bz":-48.654},"hom":{"1":-10173,"2":-10173,"3":-10173,"4":0}},"t":29.996}
+
+08:27:02.354 6366  I  console() bytes:30 write:{"pgmx":"cal-fpd-home-medium"}
+08:27:40.809 6366  I  console() read:{"s":0,"r":{"dim":{"bx":0.0008,"by":0.0009,"bz":-48.758},"hom":{"1":-10176,"2":-10176,"3":-10176,"4":0}},"t":30.009}
+
+08:27:40.809 6366  I  console() bytes:30 write:{"pgmx":"cal-fpd-home-medium"}
+08:28:19.294 6366  I  console() read:{"s":0,"r":{"dim":{"bx":0.0008,"by":0.0008,"bz":-48.774},"hom":{"1":-10145,"2":-10145,"3":-10145,"4":0}},"t":30.039}
+
+08:28:19.294 6366  I  console() bytes:28 write:{"pgmx":"cal-fpd-home-fine"}
+08:28:57.758 6366  I  console() read:{"s":0,"r":{"dim":{"bx":0.0008,"by":0.0008,"bz":-48.864},"hom":{"1":-10161,"2":-10161,"3":-10161,"4":0}},"t":30.018}
+
+08:28:57.758 6366  I  console() bytes:28 write:{"pgmx":"cal-fpd-home-fine"}
+08:29:36.246 6366  I  console() read:{"s":0,"r":{"dim":{"bx":0.0008,"by":0.0009,"bz":-48.880},"hom":{"1":-10164,"2":-10164,"3":-10164,"4":0}},"t":30.042}
+
+08:29:36.246 6366  I  console() bytes:28 write:{"pgmx":"cal-fpd-home-fine"}
+08:30:14.726 6366  I  console() read:{"s":0,"r":{"dim":{"bx":0.0008,"by":0.0010,"bz":-48.882},"hom":{"1":-10174,"2":-10174,"3":-10174,"4":0}},"t":30.032}
+
+08:30:14.726 6366  I  console() closing serial port
+08:30:14.726 6366  I  ArduinoUSB::close(/dev/ttyACM0)
+08:30:14.727 6366  I  ==============CLOSING LOG FILE==============
