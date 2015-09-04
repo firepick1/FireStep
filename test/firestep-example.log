@@ -1,0 +1,7 @@
+08:03:22.643 4465  I  FireLog firestep.log version 1.0.0
+08:03:22.643 4465  I  firestep command line client v0.2.5
+08:03:22.644 4465  I  ArduinoUSB::open(/dev/ttyACM0) opened for read
+08:03:22.644 4465  I  ArduinoUSB::open(/dev/ttyACM0) opened for write
+08:07:13.326 4465  I  console() closing serial port
+08:07:13.326 4465  I  ArduinoUSB::close(/dev/ttyACM0)
+08:07:13.327 4465  I  ==============CLOSING LOG FILE==============
