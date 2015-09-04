@@ -37,7 +37,7 @@ public:
 	int open();
 	int close();
 	std::string readln(int32_t msTimeout=100);
-	void writeln(std::string line);
+	void writeln(std::string line="");
 	void write(std::string line);
 } ArduinoUSB;
 

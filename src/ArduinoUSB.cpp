@@ -120,16 +120,17 @@ string ArduinoUSB::readln(int32_t msTimeout) {
         int res = read(fd, buf, 1);
         if (res == 1) {
             if (buf[0] == '\r') {
+                // do nothing
+            } else if (buf[0] == '\n') {
                 line += "\n";
                 isEOL = true;
-            } else if (buf[0] == '\n') {
-                // do nothing
             } else {
                 line += buf[0];
                 msIdle = millis() + msTimeout;
             }
         } else if (res == 0) {
             //cerr << "USB	: zero bytes read" << endl;
+			usleep(100*1000); // be kind
         }
         switch (errno) {
         case 0:

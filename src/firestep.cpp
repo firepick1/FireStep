@@ -1,21 +1,13 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <termios.h>
 #include <stdio.h>
-#include <unistd.h>
-
 #include <string.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
+#include <cstdlib>
 #include <errno.h>
+#include <signal.h>
 #include "FireLog.h"
 #include "FireUtils.h"
-#include "version.h"
-#include "Arduino.h"
 #include "FireStepClient.h"
 
+using namespace std;
 using namespace firestep;
 
 int help(int rc=0) {
@@ -118,9 +110,27 @@ int parse_args(int argc, char *argv[], bool &prompt, bool &logging,
     return rc;
 }
 
+FireStepClient *pFSC = NULL;
+void on_signal(int sig) {
+	const char *msg = "attempting FireStep reset...";
+	cerr << endl << "SIG	: " << msg << endl;
+	if (pFSC) {
+		LOGINFO2("on_signal(%d) %s", sig, msg);
+		int rc = pFSC->reset();
+		if (rc) {
+			LOGWARN2("on_signal(%d) could not reset FireStep. ERR%d", sig, rc);
+		}
+	} else {
+		LOGWARN1("on_signal(%d) FireStepClient not present. Terminating... ", sig);
+	}
+	exit(-EINTR);
+}
+
 int process(bool prompt, string device, bool reset, string json) {
 	int rc = 0;
 	FireStepClient fsc(prompt, device.c_str());
+
+	pFSC = &fsc;
 
     if (prompt) {
         cerr << "STATUS	: " << FireStepClient::version() << endl;
@@ -151,6 +161,10 @@ int main(int argc, char *argv[]) {
     if (rc != 0) {
         return rc;
     }
+
+    if (signal(SIGINT, on_signal) == SIG_ERR) {
+		LOGWARN("cannot register signal handler for SIGINT");
+	}
 
 	return process(prompt, device, reset, json);
 }

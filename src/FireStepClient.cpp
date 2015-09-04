@@ -50,9 +50,12 @@ string FireStepClient::readLine(istream &is) {
 }
 
 int FireStepClient::reset() {
-	ArduinoUSB usb(serialPath.c_str());
     int rc = 0;
     if (usb.isOpen()) {
+		const char *msg ="FireStepClient::reset() sending LF to interrupt FireStep";
+		cerr << "RESET	: " << msg << endl;
+		LOGINFO1("%s", msg);
+		usb.writeln(); // interrupt any current processing
         rc = usb.close();
     }
     if (rc == 0) {
@@ -63,8 +66,8 @@ int FireStepClient::reset() {
         LOGERROR("FireStepClient::reset(hup) failed");
         return rc;
     }
-
     rc = usb.open();
+	#ifdef tbd
     if (rc==0) { // clear out startup text
         string ignore = usb.readln(5000);
         while (ignore.size()) {
@@ -75,9 +78,9 @@ int FireStepClient::reset() {
             ignore = usb.readln();
         }
     }
-
+	#endif
     if (rc == 0) {
-        usb.close();
+        usb.close(); // hup
     }
     if (rc == 0) {
         rc = usb.configure(false);
@@ -87,6 +90,20 @@ int FireStepClient::reset() {
         LOGERROR("FireStepClient::reset(nohup) failed");
         return rc;
 	}
+    rc = usb.open(); 
+    if (rc==0) { // clear out startup text
+        string ignore = usb.readln(5000);
+        while (ignore.size()) {
+            LOGINFO1("FireStepClient::reset() start:%s", ignore.c_str());
+            if (prompt) {
+                cerr << "START	: " << ignore;
+            }
+            ignore = usb.readln();
+        }
+    }
+    if (rc == 0) {
+        usb.close(); // nohup
+    }
 	LOGINFO("FireStepClient::reset() complete");
 	return rc;
 }
@@ -119,7 +136,7 @@ int FireStepClient::sendJson(string request) {
     }
     if (response.size() > 0) {
         cout << response;
-        LOGINFO2("sendJson() bytes:%ld read:%s", (long), response.size(), response.c_str());
+        LOGINFO2("sendJson() bytes:%ld read:%s", (long) response.size(), response.c_str());
     } else {
         LOGERROR("sendJson() timeout");
         return -ETIME;
