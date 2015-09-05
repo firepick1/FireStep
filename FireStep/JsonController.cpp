@@ -674,7 +674,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
 
 Status JsonController::processDebug(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
-    if (strcmp_PS(OP_sys, key) == 0) {
+    if (strcmp_PS(OP_dbg, key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
