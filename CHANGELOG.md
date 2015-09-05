@@ -1,7 +1,7 @@
 FireStep: change log
 ====================
 
-v0.2.5
+v0.0205 
 ------
 * NEW: [firestep command line client](https://github.com/firepick1/FireStep/wiki/firestep-command-line)
 * NEW: *lib_firestep.so* shared library for Linux 
