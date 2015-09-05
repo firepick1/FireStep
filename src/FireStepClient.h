@@ -13,23 +13,34 @@ protected:
     firestep::ArduinoUSB usb;
     int send(std::string request, std::string &response);
 
-public:
+protected: /* IFireStep */ 
+    virtual int executeCore(const std::string &jsonRequest, std::string &jsonResponse);
+
+public: // construction
     FireStepSerial(const char *serialPath=FIRESTEP_SERIAL_PATH, int32_t msResponse=10*1000);
-	~FireStepSerial();
-	/* IFireStep */ protected: virtual std::string executeCore(std::string &json);
-	/* IFireStep */ public: virtual int startup();
-	/* IFireStep */ public: virtual int shutdown();
+    ~FireStepSerial();
+public: /* IFireStep */
+    virtual int reset();
+public: /* IFireStep */ 
+    virtual int open();
+public: /* IFireStep */ 
+    virtual int close();
 } FireStepSerial;
 
-typedef class FireStepClient : public FireStepSerial {
+typedef class FireStepClient {
 private:
     bool prompt;
+    IFireStep *pFireStep;
+
 protected:
-	std::string readLine(std::istream &is);
-public:
-    FireStepClient(bool prompt=true, const char *serialPath=FIRESTEP_SERIAL_PATH, int32_t msResponse=10*1000);
-	~FireStepClient();
-	static std::string version(bool verbose=true);
+    std::string readLine(std::istream &is);
+
+public: // construction
+    FireStepClient(IFireStep *pFireStep, bool prompt=true);
+    ~FireStepClient();
+
+public: // use
+    static std::string version(bool verbose=true);
     int reset();
     int console();
     int sendJson(std::string json);

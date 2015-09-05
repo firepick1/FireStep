@@ -28,57 +28,123 @@ FireStepSerial::FireStepSerial(const char *serialPath, int32_t msResponse)
 FireStepSerial::~FireStepSerial() {
 }
 
-int FireStepSerial::startup() {
-    int rc = usb.open();
-	ready = rc == 0 ? true : false;
-	return rc;
-}
-
-int FireStepSerial::shutdown() {
-	return usb.close();
-}
-
-string FireStepSerial::executeCore(string &json) {
-    if (!ready) {
-        return osError(-EPROTO);
-    }
-
-	string response;
-	int rc = send(json, response);
-	if (rc != 0) {
-		return osError(rc);
+int FireStepSerial::open() {
+	ready = false;
+	if (usb.open() != 0) {
+		return STATUS_USB_OPEN;
 	}
 
-	return response;
+	ready = true;
+	return 0;
+}
+
+int FireStepSerial::close() {
+	if (usb.close() != 0) {
+		return STATUS_USB_CLOSE;
+	}
+	return 0;
+}
+
+int FireStepSerial::executeCore(const string &jsonRequest, string &jsonResponse) {
+	return send(jsonRequest, jsonResponse);
 }
 
 int FireStepSerial::send(std::string request, std::string &response) {
     if (!ready) {
-        return -EPROTO;
+        return errorResponse(STATUS_OPEN, response);
     }
 
     usb.writeln(request);
-    LOGINFO2("FireStepClient::send() bytes:%ld write:%s", (long) request.size(), request.c_str());
+    LOGINFO2("FireStepSerial::send() bytes:%ld write:%s", (long) request.size(), request.c_str());
 
     response = usb.readln(msResponse);
     for (int i=0; response.size()==0 && i<4; i++) {
-        LOGDEBUG1("FireStepClient::send() wait %ldms", (long) msResponse);
+        LOGDEBUG1("FireStepSerial::send() wait %ldms", (long) msResponse);
         response = usb.readln(msResponse);
     }
     if (response.size() > 0) {
-        LOGINFO2("FireStepClient::send() bytes:%ld read:%s", (long) response.size(), response.c_str());
+        LOGINFO2("FireStepSerial::send() bytes:%ld read:%s", (long) response.size(), response.c_str());
     } else {
-        LOGERROR("FireStepClient::send() timeout");
-        return -ETIME;
+        LOGERROR("FireStepSerial::send() timeout");
+        return STATUS_USB_TIMEOUT;
     }
+	return 0;
+}
+
+int FireStepSerial::reset() {
+    if (usb.isOpen()) {
+		const char *msg ="FireStepSerial::reset() sending LF to interrupt FireStep";
+		cerr << "RESET	: " << msg << endl;
+		LOGINFO1("%s", msg);
+		usb.writeln(); // interrupt any current processing
+		if (usb.close() != 0) { 
+			msg = "FireStepSerial::reset() could not close serial port ";
+			cerr << "ERROR	: " << msg << serialPath << endl;
+			LOGERROR2("%s %s", msg, serialPath.c_str());
+			return STATUS_USB_CLOSE;
+		}
+    }
+	int rc = usb.configure(true);
+    if (rc != 0) {
+		const char *msg = "FireStepSerial::reset() could not configure serial port for hup";
+		cerr << "ERROR	: " << msg << serialPath << endl;
+		LOGERROR2("FireStepSerial::reset() %s %s", msg, serialPath.c_str());
+        return STATUS_USB_CONFIGURE;
+    }
+	if (usb.open() != 0) {
+		const char *msg = "FireStepSerial::reset() could not open serial port ";
+		cerr << "ERROR	: " << msg << serialPath << endl;
+		LOGERROR2("FireStepSerial::reset() %s %s", msg, serialPath.c_str());
+		return STATUS_USB_OPEN;
+	}
+	if (usb.close() != 0) {
+		const char *msg = "FireStepSerial::reset() could not close serial port ";
+		cerr << "ERROR	: " << msg << serialPath << endl;
+		LOGERROR2("FireStepSerial::reset() %s %s", msg, serialPath.c_str());
+		return STATUS_USB_CLOSE;
+    }
+
+	if (usb.configure(false) != 0) {
+		const char *msg = "FireStepSerial::reset() could not configure serial port for nohup";
+		cerr << "ERROR	: " << msg << serialPath << endl;
+		LOGERROR2("FireStepSerial::reset() %s %s", msg, serialPath.c_str());
+        return STATUS_USB_CONFIGURE;
+    }
+
+	if (usb.open() != 0) {
+		const char *msg = "FireStepSerial::reset() could not open serial port ";
+		cerr << "ERROR	: " << msg << serialPath << endl;
+		LOGERROR2("FireStepSerial::reset() %s %s", msg, serialPath.c_str());
+		return STATUS_USB_OPEN;
+	}
+	
+    // clear out startup text
+	string ignore = usb.readln(5000);
+	while (ignore.size()) {
+		LOGINFO1("FireStepSerial::reset() ignore:%s", ignore.c_str());
+		ignore = usb.readln();
+	}
+
+	if (usb.close() != 0) {
+		const char *msg = "FireStepSerial::reset() could not close serial port ";
+		cerr << "ERROR	: " << msg << serialPath << endl;
+		return STATUS_USB_CLOSE;
+    }
+
+	LOGINFO("FireStepClient::reset() complete");
+
 	return 0;
 }
 
 ////////////////// FireStepClient ///////////
 
-FireStepClient::FireStepClient(bool prompt, const char *serialPath, int32_t msResponse)
-    : FireStepSerial(serialPath,msResponse), prompt(prompt)
+FireStepClient::FireStepClient(IFireStep *pFireStep, bool prompt)
+    : pFireStep(pFireStep), prompt(prompt)
 {
+	if (pFireStep == NULL) {
+		LOGERROR("FireStepClient(NULL) expected IFireStep");
+		return;
+	}
 	cin.unsetf(ios_base::skipws);
 	LOGINFO1("%s", version().c_str());
 }
@@ -111,51 +177,11 @@ string FireStepClient::readLine(istream &is) {
 }
 
 int FireStepClient::reset() {
-    int rc = 0;
-    if (usb.isOpen()) {
-		const char *msg ="FireStepClient::reset() sending LF to interrupt FireStep";
-		cerr << "RESET	: " << msg << endl;
-		LOGINFO1("%s", msg);
-		usb.writeln(); // interrupt any current processing
-        rc = usb.close();
-    }
-    if (rc == 0) {
-        rc = usb.configure(true);
-    }
-    if (rc != 0) {
-        cerr << "ERROR	: could not configure serial port " << serialPath << endl;
-        LOGERROR("FireStepClient::reset(hup) failed");
-        return rc;
-    }
-    rc = usb.open();
-    if (rc == 0) {
-        rc = usb.close(); // hup
-    }
-
-    if (rc == 0) {
-        rc = usb.configure(false);
-    }
-    if (rc != 0) {
-        cerr << "ERROR	: could not configure serial port " << serialPath << endl;
-        LOGERROR("FireStepClient::reset(nohup) failed");
-        return rc;
+	if (pFireStep == NULL) {
+		LOGERROR("FireStepClient::reset() expected IFireStep");
+		return -EINVAL;
 	}
-    rc = usb.open(); 
-    if (rc==0) { // clear out startup text
-        string ignore = usb.readln(5000);
-        while (ignore.size()) {
-            LOGINFO1("FireStepClient::reset() start:%s", ignore.c_str());
-            if (prompt) {
-                cerr << "START	: " << ignore;
-            }
-            ignore = usb.readln();
-        }
-    }
-    if (rc == 0) {
-        rc = usb.close(); // nohup
-    }
-	LOGINFO("FireStepClient::reset() complete");
-	return rc;
+	return pFireStep->reset();
 }
 
 string FireStepClient::version(bool verbose) {
@@ -171,67 +197,51 @@ string FireStepClient::version(bool verbose) {
 }
 
 int FireStepClient::sendJson(string request) {
-	int rc = startup();
-	if (rc != 0) {
-		return rc;
+	if (pFireStep == NULL) {
+		LOGERROR("FireStepClient::sendJson() expected IFireStep");
+		return STATUS_IFIRESTEP;
 	}
-	string response;
-	rc = send(request, response);
-	if (rc != 0) {
-		return rc;
-	}
-	cout << response;
 
-	return shutdown();
+	int rc = pFireStep->open();
+	if (rc != 0) {
+		return rc;
+	}
+	
+	string response;
+	rc = pFireStep->execute(request, response);
+	cout << response;
+	if (rc != 0) {
+		return rc;
+	}
+
+	return pFireStep->close();
 }
 
 int FireStepClient::console() {
-    int rc = usb.open();
-    if (rc != 0) {
-        return rc;
-    }
+	if (pFireStep == NULL) {
+		LOGERROR("FireStepClient::console() expected IFireStep");
+		return STATUS_IFIRESTEP;
+	}
 
-    for (;;) {
+	int rc = pFireStep->open();
+	if (rc != 0) {
+		return rc;
+	}
+
+    while (rc == 0) {
         if (prompt) {
             cerr << "CMD	: ";
         }
         string request = readLine(cin);
-		//cerr << "DEBUG: cin:"<< (cin.eof() ? "EOF" : "...") << " request:" << request.size() << endl;
-        if (request.size() > 0) {
-            usb.write(request);
-            LOGINFO2("FireStepClient::console() bytes:%ld write:%s", (long) request.size(), request.c_str());
-        } else { // EOF for file stdin
-            if (prompt) {
-                cerr << "EOF" << endl;
-            }
-            LOGINFO("FireStepClient::console() EOF");
-            break;
-        }
-        string response = usb.readln(msResponse);
-        for (int i=0; response.size()==0 && i<4; i++) {
-            if (prompt) {
-                cerr << "STATUS	: wait " << msResponse << "ms..." << endl;
-            }
-            LOGDEBUG1("FireStepClient::console() wait %ldms", (long) msResponse);
-            response = usb.readln(msResponse);
-        }
-        if (response.size() > 0) {
-            cout << response;
-            LOGINFO2("FireStepClient::console() bytes:%ld read:%s", (long) response.size(), response.c_str());
-        } else {
-            if (prompt) {
-                cerr << "ERROR	: timeout" << endl;
-            }
-            LOGERROR("FireStepClient::console() timeout");
-            break;
-        }
+		string response;
+		rc = pFireStep->execute(request, response);
     }
 
     if (prompt) {
-        cout << "END	: closing serial port" << endl;
+        cerr << "END	: closing serial port" << endl;
     }
     LOGINFO("FireStepClient::console() closing serial port");
 
-    return usb.close();
+    return pFireStep->close();
 }
 
