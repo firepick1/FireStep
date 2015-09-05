@@ -761,8 +761,8 @@ void test_JsonController() {
     mt.process(jcmd);
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
-                      "{'ah':false,'as':false,'ch':1130154407,'eu':false,'fr':1000,'hp':3,'jp':false,'lh':false,"\
-                      "'lp':0,'mv':12800,'om':0,'pb':2,'pc':2,'pi':11,'sd':800,'tc':12345,"\
+                      "{'ah':false,'as':false,'ch':1130154407,'eu':false,'hp':3,'jp':false,'lh':false,"\
+                      "'mv':12800,'om':0,'pb':2,'pc':2,'pi':11,'sd':800,"\
                       "'to':0,'tv':0.700,'v':%.3f}"\
                       "},'t':0.000}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
@@ -1291,9 +1291,9 @@ void test_sys() {
 	ASSERTEQUAL(3, machine.op.probe.pinProbe);
     ASSERTEQUAL(MTO_FPD, machine.topology);
     ASSERTEQUALS(JT("{'s':0,'r':"
-					"{'sys':{'ah':false,'as':false,'ch':-2836355,'eu':false,'fr':1000,"
-					"'hp':3,'jp':false,'lh':false,'lp':0,'mv':12800,'om':0,"
-					"'pb':3,'pc':2,'pi':57,'sd':400,'tc':5,'to':1,'tv':0.700,'v':2.050}"
+					"{'sys':{'ah':false,'as':false,'ch':-2836355,'eu':false,"
+					"'hp':3,'jp':false,'lh':false,'mv':12800,'om':0,"
+					"'pb':3,'pc':2,'pi':57,'sd':400,'to':1,'tv':0.700,'v':2.050}"
 					"},'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();

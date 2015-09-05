@@ -573,18 +573,15 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             jcmd.addQueryAttr(node, OP_as);
             jcmd.addQueryAttr(node, OP_ch);
             jcmd.addQueryAttr(node, OP_eu);
-            jcmd.addQueryAttr(node, OP_fr);
             jcmd.addQueryAttr(node, OP_hp);
             jcmd.addQueryAttr(node, OP_jp);
             jcmd.addQueryAttr(node, OP_lh);
-            jcmd.addQueryAttr(node, OP_lp);
             jcmd.addQueryAttr(node, OP_mv);
             jcmd.addQueryAttr(node, OP_om);
             jcmd.addQueryAttr(node, OP_pb);
             jcmd.addQueryAttr(node, OP_pc);
             jcmd.addQueryAttr(node, OP_pi);
             jcmd.addQueryAttr(node, OP_sd);
-            jcmd.addQueryAttr(node, OP_tc);
             jcmd.addQueryAttr(node, OP_to);
             jcmd.addQueryAttr(node, OP_tv);
             jcmd.addQueryAttr(node, OP_v);
@@ -669,6 +666,38 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.tvMax);
     } else if (strcmp_PS(OP_v, key) == 0 || strcmp_PS(OP_sysv, key) == 0) {
         jobj[key] = VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0;
+    } else {
+        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
+    }
+    return status;
+}
+
+Status JsonController::processDebug(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+    Status status = STATUS_OK;
+    if (strcmp_PS(OP_sys, key) == 0) {
+        const char *s;
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+            jcmd.addQueryAttr(node, OP_fr);
+            jcmd.addQueryAttr(node, OP_lp);
+            jcmd.addQueryAttr(node, OP_tc);
+        }
+        JsonObject& kidObj = jobj[key];
+        if (kidObj.success()) {
+            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+                status = processDebug(jcmd, kidObj, it->key);
+                if (status != STATUS_OK) {
+                    return status;
+                }
+            }
+        }
+    } else if (strcmp_PS(OP_fr, key) == 0 || strcmp_PS(OP_dbgfr, key) == 0) {
+        leastFreeRam = min(leastFreeRam, freeRam());
+        jobj[key] = leastFreeRam;
+    } else if (strcmp_PS(OP_lp, key) == 0 || strcmp_PS(OP_dbglp, key) == 0) {
+        status = processField<int32_t, int32_t>(jobj, key, nLoops);
+    } else if (strcmp_PS(OP_tc, key) == 0 || strcmp_PS(OP_dbgtc, key) == 0) {
+        jobj[key] = threadClock.ticks;
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
@@ -1037,6 +1066,8 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
             status = processTest(jcmd, jobj, it->key);
         } else if (strncmp("sys", it->key, 3) == 0) {
             status = processSys(jcmd, jobj, it->key);
+        } else if (strncmp("dbg", it->key, 3) == 0) {
+            status = processDebug(jcmd, jobj, it->key);
         } else if (strncmp("dpy", it->key, 3) == 0) {
             status = processDisplay(jcmd, jobj, it->key);
         } else if (strncmp("mpo", it->key, 3) == 0) {

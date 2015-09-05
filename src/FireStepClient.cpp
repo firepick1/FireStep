@@ -67,21 +67,10 @@ int FireStepClient::reset() {
         return rc;
     }
     rc = usb.open();
-	#ifdef tbd
-    if (rc==0) { // clear out startup text
-        string ignore = usb.readln(5000);
-        while (ignore.size()) {
-            LOGINFO1("FireStepClient::reset() start:%s", ignore.c_str());
-            if (prompt) {
-                cerr << "START	: " << ignore;
-            }
-            ignore = usb.readln();
-        }
-    }
-	#endif
     if (rc == 0) {
-        usb.close(); // hup
+        rc = usb.close(); // hup
     }
+
     if (rc == 0) {
         rc = usb.configure(false);
     }
@@ -102,7 +91,7 @@ int FireStepClient::reset() {
         }
     }
     if (rc == 0) {
-        usb.close(); // nohup
+        rc = usb.close(); // nohup
     }
 	LOGINFO("FireStepClient::reset() complete");
 	return rc;
@@ -111,7 +100,7 @@ int FireStepClient::reset() {
 string FireStepClient::version(bool verbose) {
     char ver[100];
 	if (verbose) {
-		snprintf(ver, sizeof(ver), "firestep command line client v%d.%d.%d",
+		snprintf(ver, sizeof(ver), "firestep - command line client v%d.%d.%d",
 				 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 	} else {
 		snprintf(ver, sizeof(ver), "v%02d.%02d.%02d",

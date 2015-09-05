@@ -25,6 +25,10 @@ const char *prog_src(const char *name);
 Status prog_dump(const char *name);
 Status prog_load_cmd(const char *name, JsonCommand &jcmd);
 
+extern const char OP_dbg[];
+extern const char OP_dbglp[];
+extern const char OP_dbgtc[];
+extern const char OP_dbgfr[];
 extern const char OP_1[];
 extern const char OP_2[];
 extern const char OP_3[];

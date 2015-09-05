@@ -11,7 +11,9 @@ using namespace std;
 using namespace firestep;
 
 int help(int rc=0) {
-    cerr << "HELP	: " << FireStepClient::version() << endl;
+	cerr << "HELP	:" << endl;
+	cerr << "HELP	: NAME" << endl;
+    cerr << "HELP	:   " << FireStepClient::version() << endl;
 	cerr << "HELP	:" << endl;
 	cerr << "HELP	: EXAMPLES" << endl;
 	cerr << "HELP	:   Launch interactive console with prompt" << endl;
@@ -57,7 +59,7 @@ int parse_args(int argc, char *argv[], bool &prompt, bool &logging,
 {
     int rc = 0;
     int logLvl = FIRELOG_INFO;
-    for (int iArg=0; iArg<argc; iArg++) {
+    for (int iArg=1; iArg<argc; iArg++) {
         if (strcmp("-h", argv[iArg])==0 || strcmp("--help", argv[iArg])==0) {
             return help(-EAGAIN);
         } else if (strcmp("-e",argv[iArg])==0 || strcmp("--expr", argv[iArg])==0) {
@@ -94,6 +96,9 @@ int parse_args(int argc, char *argv[], bool &prompt, bool &logging,
         } else if (strcmp("--logtrace", argv[iArg])==0) {
             logging = true;
             logLvl = FIRELOG_TRACE;
+		} else {
+			cerr << "ERROR	: invalid argument " << argv[iArg] << endl;
+			return help(-EINVAL);
         }
     }
     if (logging) {
