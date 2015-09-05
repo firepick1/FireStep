@@ -5,6 +5,8 @@ v0.2.5
 ------
 * NEW: [firestep command line client](https://github.com/firepick1/FireStep/wiki/firestep-command-line)
 * NEW: *lib_firestep.so* shared library for Linux 
+* NEW: Infrequent attributes (sysfr, syslp, systc) moved into "dbg" group (dbgfr, dbglp, dbgtc)
+* NEW: "sysv" format changed to MM.NNPP for legibility
 * FIX: empty lines are now echoed so that firestep client doesn't hang
 
 v0.2.4

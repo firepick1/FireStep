@@ -763,10 +763,10 @@ void test_JsonController() {
     const char *fmt = "{'s':%d,'r':{'sys':"\
                       "{'ah':false,'as':false,'ch':1130154407,'eu':false,'hp':3,'jp':false,'lh':false,"\
                       "'mv':12800,'om':0,'pb':2,'pc':2,'pi':11,'sd':800,"\
-                      "'to':0,'tv':0.700,'v':%.3f}"\
+                      "'to':0,'tv':0.700,'v':%.4f}"\
                       "},'t':0.000}\n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
-             STATUS_OK, VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0);
+             STATUS_OK, VERSION_MAJOR + VERSION_MINOR/100.0 + VERSION_PATCH/10000.0);
     ASSERTEQUALS(sysbuf, Serial.output().c_str());
 
     test_JsonController_axis(mt, 'x');
@@ -1293,7 +1293,7 @@ void test_sys() {
     ASSERTEQUALS(JT("{'s':0,'r':"
 					"{'sys':{'ah':false,'as':false,'ch':-2836355,'eu':false,"
 					"'hp':3,'jp':false,'lh':false,'mv':12800,'om':0,"
-					"'pb':3,'pc':2,'pi':57,'sd':400,'to':1,'tv':0.700,'v':2.050}"
+					"'pb':3,'pc':2,'pi':57,'sd':400,'to':1,'tv':0.700,'v':0.0205}"
 					"},'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();

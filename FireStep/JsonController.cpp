@@ -665,7 +665,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp_PS(OP_tv, key) == 0 || strcmp_PS(OP_systv, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.tvMax);
     } else if (strcmp_PS(OP_v, key) == 0 || strcmp_PS(OP_sysv, key) == 0) {
-        jobj[key] = VERSION_MAJOR * 100 + VERSION_MINOR + VERSION_PATCH / 100.0;
+        jobj.at(key).set(VERSION_MAJOR + VERSION_MINOR/100.0 + VERSION_PATCH/10000.0,4);
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
