@@ -109,6 +109,15 @@ enum Status {
     STATUS_LIMIT_MIN = -904,		// Minimum limit switch tripped
     STATUS_LIMIT_MAX = -905,		// Maximum limit switch tripped
     STATUS_PROBE_FAILED = -906,		// Probe never contacted surface
+
+	// Linux errors
+	STATUS_LINUX = -1000,			// Linux error base
+	STATUS_LINUX_EPERM = -1001,		// STATUS_LINUX - EPERM
+	STATUS_LINUX_EINTR = -1004,		// STATUS_LINUX - EINTR
+	STATUS_LINUX_EIO = -1005,		// STATUS_LINUX - EIO
+	STATUS_LINUX_EAGAIN = -1011,	// STATUS_LINUX - EAGAIN
+	STATUS_LINUX_EACCES = -1013,	// STATUS_LINUX - EACCES
+	STATUS_LINUX_EINVAL = -1022,	// STATUS_LINUX - EINVAL
 };
 
 inline bool isProcessing(Status status) {

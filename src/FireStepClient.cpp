@@ -10,10 +10,10 @@
 #include <fstream>
 #include <sstream>
 #include <errno.h>
+#include "FireStepClient.h"
 #include "FireLog.h"
 #include "FireUtils.h"
 #include "version.h"
-#include "FireStepClient.h"
 
 using namespace std;
 using namespace firestep;
@@ -24,6 +24,37 @@ FireStepClient::FireStepClient(bool prompt, const char *serialPath, int32_t msRe
 	cin.unsetf(ios_base::skipws);
 	LOGINFO1("%s", version().c_str());
 }
+
+FireStepClient::~FireStepClient() {
+}
+
+//////////////// IFireStep implementation ///////////////////////
+
+int FireStepClient::startup() {
+    int rc = usb.open();
+	ready = rc == 0 ? true : false;
+	return rc;
+}
+
+int FireStepClient::shutdown() {
+	return usb.close();
+}
+
+string FireStepClient::executeCore(string &json) {
+    if (!ready) {
+        return osError(-EPROTO);
+    }
+
+	string response;
+	int rc = send(json, response);
+	if (rc != 0) {
+		return osError(rc);
+	}
+
+	return response;
+}
+
+////////////////// serial implementation ///////////
 
 string FireStepClient::readLine(istream &is) {
 	string line;
@@ -109,29 +140,42 @@ string FireStepClient::version(bool verbose) {
 	return string(ver);
 }
 
-int FireStepClient::sendJson(string request) {
-    int rc = usb.open();
-    if (rc != 0) {
-        return rc;
+int FireStepClient::send(std::string request, std::string &response) {
+    if (!ready) {
+        return -EPROTO;
     }
 
     usb.writeln(request);
-    LOGINFO2("sendJson() bytes:%ld write:%s", (long) request.size(), request.c_str());
+    LOGINFO2("FireStepClient::send() bytes:%ld write:%s", (long) request.size(), request.c_str());
 
-    string response = usb.readln(msResponse);
+    response = usb.readln(msResponse);
     for (int i=0; response.size()==0 && i<4; i++) {
-        LOGDEBUG1("sendJson() wait %ldms", (long) msResponse);
+        LOGDEBUG1("FireStepClient::send() wait %ldms", (long) msResponse);
         response = usb.readln(msResponse);
     }
     if (response.size() > 0) {
-        cout << response;
-        LOGINFO2("sendJson() bytes:%ld read:%s", (long) response.size(), response.c_str());
+        LOGINFO2("FireStepClient::send() bytes:%ld read:%s", (long) response.size(), response.c_str());
     } else {
-        LOGERROR("sendJson() timeout");
+        LOGERROR("FireStepClient::send() timeout");
         return -ETIME;
     }
 
     return usb.close();
+}
+
+int FireStepClient::sendJson(string request) {
+	int rc = startup();
+	if (rc != 0) {
+		return rc;
+	}
+	string response;
+	rc = send(request, response);
+	if (rc != 0) {
+		return rc;
+	}
+	cout << response;
+
+	return shutdown();
 }
 
 int FireStepClient::console() {
