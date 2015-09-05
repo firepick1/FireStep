@@ -18,29 +18,27 @@
 using namespace std;
 using namespace firestep;
 
-FireStepClient::FireStepClient(bool prompt, const char *serialPath, int32_t msResponse)
-    : prompt(prompt),serialPath(serialPath), msResponse(msResponse), usb(serialPath)
+//////////////// FireStepSerial ///////////////////////
+
+FireStepSerial::FireStepSerial(const char *serialPath, int32_t msResponse)
+    : serialPath(serialPath), msResponse(msResponse), usb(serialPath)
 {
-	cin.unsetf(ios_base::skipws);
-	LOGINFO1("%s", version().c_str());
 }
 
-FireStepClient::~FireStepClient() {
+FireStepSerial::~FireStepSerial() {
 }
 
-//////////////// IFireStep implementation ///////////////////////
-
-int FireStepClient::startup() {
+int FireStepSerial::startup() {
     int rc = usb.open();
 	ready = rc == 0 ? true : false;
 	return rc;
 }
 
-int FireStepClient::shutdown() {
+int FireStepSerial::shutdown() {
 	return usb.close();
 }
 
-string FireStepClient::executeCore(string &json) {
+string FireStepSerial::executeCore(string &json) {
     if (!ready) {
         return osError(-EPROTO);
     }
@@ -54,7 +52,39 @@ string FireStepClient::executeCore(string &json) {
 	return response;
 }
 
-////////////////// serial implementation ///////////
+int FireStepSerial::send(std::string request, std::string &response) {
+    if (!ready) {
+        return -EPROTO;
+    }
+
+    usb.writeln(request);
+    LOGINFO2("FireStepClient::send() bytes:%ld write:%s", (long) request.size(), request.c_str());
+
+    response = usb.readln(msResponse);
+    for (int i=0; response.size()==0 && i<4; i++) {
+        LOGDEBUG1("FireStepClient::send() wait %ldms", (long) msResponse);
+        response = usb.readln(msResponse);
+    }
+    if (response.size() > 0) {
+        LOGINFO2("FireStepClient::send() bytes:%ld read:%s", (long) response.size(), response.c_str());
+    } else {
+        LOGERROR("FireStepClient::send() timeout");
+        return -ETIME;
+    }
+	return 0;
+}
+
+////////////////// FireStepClient ///////////
+
+FireStepClient::FireStepClient(bool prompt, const char *serialPath, int32_t msResponse)
+    : FireStepSerial(serialPath,msResponse), prompt(prompt)
+{
+	cin.unsetf(ios_base::skipws);
+	LOGINFO1("%s", version().c_str());
+}
+
+FireStepClient::~FireStepClient() {
+}
 
 string FireStepClient::readLine(istream &is) {
 	string line;
@@ -138,29 +168,6 @@ string FireStepClient::version(bool verbose) {
 				 VERSION_MAJOR + VERSION_MINOR/100.0 + VERSION_PATCH/10000.0);
 	}
 	return string(ver);
-}
-
-int FireStepClient::send(std::string request, std::string &response) {
-    if (!ready) {
-        return -EPROTO;
-    }
-
-    usb.writeln(request);
-    LOGINFO2("FireStepClient::send() bytes:%ld write:%s", (long) request.size(), request.c_str());
-
-    response = usb.readln(msResponse);
-    for (int i=0; response.size()==0 && i<4; i++) {
-        LOGDEBUG1("FireStepClient::send() wait %ldms", (long) msResponse);
-        response = usb.readln(msResponse);
-    }
-    if (response.size() > 0) {
-        LOGINFO2("FireStepClient::send() bytes:%ld read:%s", (long) response.size(), response.c_str());
-    } else {
-        LOGERROR("FireStepClient::send() timeout");
-        return -ETIME;
-    }
-
-    return usb.close();
 }
 
 int FireStepClient::sendJson(string request) {
