@@ -100,11 +100,11 @@ int FireStepClient::reset() {
 string FireStepClient::version(bool verbose) {
     char ver[100];
 	if (verbose) {
-		snprintf(ver, sizeof(ver), "firestep - command line client v%d.%d.%d",
-				 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+		snprintf(ver, sizeof(ver), "firestep - command line client v%.4f",
+				 VERSION_MAJOR + VERSION_MINOR/100.0 + VERSION_PATCH/10000.0);
 	} else {
-		snprintf(ver, sizeof(ver), "v%02d.%02d.%02d",
-				 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+		snprintf(ver, sizeof(ver), "v%.4f",
+				 VERSION_MAJOR + VERSION_MINOR/100.0 + VERSION_PATCH/10000.0);
 	}
 	return string(ver);
 }
