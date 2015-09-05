@@ -1293,7 +1293,7 @@ void test_sys() {
     ASSERTEQUALS(JT("{'s':0,'r':"
 					"{'sys':{'ah':false,'as':false,'ch':-2836355,'eu':false,"
 					"'hp':3,'jp':false,'lh':false,'mv':12800,'om':0,"
-					"'pb':3,'pc':2,'pi':57,'sd':400,'to':1,'tv':0.700,'v':0.0205}"
+					"'pb':3,'pc':2,'pi':57,'sd':400,'to':1,'tv':0.700,'v':0.0206}"
 					"},'t':0.000}\n"),
                  Serial.output().c_str());
     mt.loop();

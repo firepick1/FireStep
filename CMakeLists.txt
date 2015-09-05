@@ -143,12 +143,12 @@ set(FIRESTEP_INSTALL_INCLUDE_DIR	include CACHE PATH "Installation directory for 
 
 INSTALL(TARGETS _firestep DESTINATION ${FIRESTEP_INSTALL_LIB_DIR})
 INSTALL(TARGETS firestep DESTINATION ${FIRESTEP_INSTALL_BIN_DIR})
-INSTALL(FILES src/FireStep.h DESTINATION ${FIRESTEP_INSTALL_INCLUDE_DIR})
 INSTALL(FILES 
 	FireStep/AnalogRead.h
 	FireStep/DeltaCalculator.h
 	FireStep/Display.h
 	FireStep/FPDController.h
+	FireStep/FireStep.h
 	FireStep/FireUtils.h
 	FireStep/JsonCommand.h
 	FireStep/JsonController.h

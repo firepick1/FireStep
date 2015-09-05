@@ -1,6 +1,11 @@
 FireStep: change log
 ====================
 
+v0.0206 
+------
+* NEW: IFireStep interface implemented by: FireStepSerial, FireStepDuino
+* NEW: IDuino interface implemented by: Mega2560, MockDuino
+
 v0.0205 
 ------
 * NEW: [firestep command line client](https://github.com/firepick1/FireStep/wiki/firestep-command-line)
