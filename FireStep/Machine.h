@@ -217,7 +217,7 @@ public:
         end = posEnd;
         maxDelta = 0;
         for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {
-            maxDelta = max(maxDelta, (StepCoord) absval(end.value[i] - start.value[i]));
+            maxDelta = maxval(maxDelta, (StepCoord) absval(end.value[i] - start.value[i]));
         }
         curDelta = 0;
         dataSource = PDS_NONE;

@@ -602,7 +602,7 @@ Status FPDController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& job
     machine.op.probe.maxDelta = 0;
     for (MotorIndex iMotor=0; iMotor<3; iMotor++) {
         StepCoord delta = machine.op.probe.end.value[iMotor] - machine.op.probe.start.value[iMotor];
-        machine.op.probe.maxDelta = max((StepCoord)absval(machine.op.probe.maxDelta), delta);
+        machine.op.probe.maxDelta = maxval((StepCoord)absval(machine.op.probe.maxDelta), delta);
     }
 
     return status == STATUS_OK ? STATUS_BUSY_CALIBRATING : status;

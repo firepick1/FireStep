@@ -23,10 +23,8 @@
 #endif
 
 // Arduino compatible definitions that avoid contention with stdlib
-#ifndef min
-#define min(a,b) ((a)<(b)?(a):(b))
-#define max(a,b) ((a)>(b)?(a):(b))
-#endif
+#define minval(a,b) ((a)<(b)?(a):(b))
+#define maxval(a,b) ((a)>(b)?(a):(b))
 #define absval(x) ((x)>0?(x):-(x)) 
 #define roundval(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5)) 
 #ifndef radians

@@ -586,7 +586,7 @@ Status Machine::step(const Quad<StepDV> &pulse) {
             Axis &a(*motorAxis[i]);
             digitalWrite(a.pinStep, LOW);
             a.position += pulse.value[i];
-            usDelay = max(usDelay, a.usDelay);
+            usDelay = maxval(usDelay, a.usDelay);
         }
     }
 

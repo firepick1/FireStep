@@ -92,7 +92,7 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
         TESTCOUT1("goalPos:", dEndPos.toString());
         dGoal = dEndPos;
     } else {
-        dt = min(dtTotal, dt);
+        dt = minval(dtTotal, dt);
         Ticks tNum = (dt > dtSegEnd ? dtSegEnd : dt) - dtSegStart;
         for (QuadIndex iMotor = 0; iMotor < QUAD_ELEMENTS; iMotor++) {
             StepCoord v = 0; // segment velocity
@@ -266,9 +266,9 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
             //TESTCOUT1("minSegsK:", minSegsK);
             minSegs = minSegsK;
         }
-        minSegs = max((int16_t)16, min((int16_t)(STROKE_SEGMENTS - 1), minSegs));
+        minSegs = maxval((int16_t)16, minval((int16_t)(STROKE_SEGMENTS - 1), minSegs));
     }
-    N = max(minSegs, min(maxSegments, (int16_t)N));
+    N = maxval(minSegs, minval(maxSegments, (int16_t)N));
     if (N >= STROKE_SEGMENTS) {
         return STATUS_STROKE_MAXLEN;
     }
@@ -298,7 +298,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
             pos /= SCALE;
             StepCoord sNew = pos < 0 ? pos - 0.5 : pos + 0.5;
             StepCoord vNew = sNew - s;
-            stroke.vPeak = max(stroke.vPeak, (int32_t)absval(vNew*SCALE));
+            stroke.vPeak = maxval(stroke.vPeak, (int32_t)absval(vNew*SCALE));
             StepCoord dv = vNew - v;
             //TESTCOUT4("iSeg:", iSeg, " sNew:", sNew, " vNew:", vNew, " dv:", dv);
             if (dv < (StepCoord) - 127 || (StepCoord) 127 < dv) {
@@ -311,7 +311,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         }
     }
 
-    leastFreeRam = min(leastFreeRam, freeRam());
+    leastFreeRam = minval(leastFreeRam, freeRam());
 
     //TESTCOUT3(" N:", N, " tS:", tS, " dEndPos:", stroke.dEndPos.toString());
 

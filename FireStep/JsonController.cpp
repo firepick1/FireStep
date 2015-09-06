@@ -372,7 +372,7 @@ public:
 } PHSelfTest;
 
 Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
-    int16_t minSegs = nSegs ? nSegs : 0; //max(10, min(STROKE_SEGMENTS-1,absval(pulses)/100));
+    int16_t minSegs = nSegs ? nSegs : 0; //maxval(10, minval(STROKE_SEGMENTS-1,absval(pulses)/100));
     int16_t maxSegs = nSegs ? nSegs : 0; // STROKE_SEGMENTS-1;
     if (maxSegs >= STROKE_SEGMENTS) {
         return jcmd.setError(STATUS_STROKE_MAXLEN, "sg");
@@ -618,7 +618,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp_PS(OP_db, key) == 0 || strcmp_PS(OP_sysdb, key) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.debounce);
     } else if (strcmp_PS(OP_fr, key) == 0 || strcmp_PS(OP_sysfr, key) == 0) {
-        leastFreeRam = min(leastFreeRam, freeRam());
+        leastFreeRam = minval(leastFreeRam, freeRam());
         jobj[key] = leastFreeRam;
     } else if (strcmp_PS(OP_hp, key) == 0 || strcmp_PS(OP_syshp, key) == 0) {
         status = processField<int16_t, long>(jobj, key, machine.fastSearchPulses);
@@ -627,7 +627,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp_PS(OP_lb, key) == 0 || strcmp_PS(OP_lb, key + 1) == 0) {
         StepCoord latchBackoff = 0;
         for (AxisIndex i=0; i<AXIS_COUNT; i++) {
-            latchBackoff = max(latchBackoff, machine.axis[i].latchBackoff);
+            latchBackoff = maxval(latchBackoff, machine.axis[i].latchBackoff);
         }
         status = processField<StepCoord, int32_t>(jobj, key, latchBackoff);
         for (AxisIndex i=0; i<AXIS_COUNT; i++) {
@@ -692,7 +692,7 @@ Status JsonController::processDebug(JsonCommand& jcmd, JsonObject& jobj, const c
             }
         }
     } else if (strcmp_PS(OP_fr, key) == 0 || strcmp_PS(OP_dbgfr, key) == 0) {
-        leastFreeRam = min(leastFreeRam, freeRam());
+        leastFreeRam = minval(leastFreeRam, freeRam());
         jobj[key] = leastFreeRam;
     } else if (strcmp_PS(OP_lp, key) == 0 || strcmp_PS(OP_dbglp, key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, nLoops);
