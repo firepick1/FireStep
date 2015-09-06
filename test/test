@@ -5,23 +5,39 @@ CLEAN='sed -e s/"t":[0-9.]*/"t":.../g'
 ACTUAL=`mktemp`
 echo "TMP	: $ACTUAL"
 
+CMD=$1
+if [ "$CMD" == "" ]; then CMD=target/firestep; fi
+echo "CMD	: $CMD"
+
 function verify() {
 	rc=$?; if [ $rc -ne 0 ]; then echo "ERROR	: $1 rc:$rc"; exit $rc; fi
 	diff $ACTUAL test/$1.expected
 	rc=$?; if [ $rc -ne 0 ]; then echo "ERROR	: $1 diff:$rc"; exit $rc; fi
 }
 
-target/firestep -d $DEVICE --logdebug -e '{"pgmx":"dim-fpd"}' |& $CLEAN |tee $ACTUAL
+$CMD -d $DEVICE --logdebug -e '{"pgmx":"dim-fpd"}' |& $CLEAN |tee $ACTUAL
 verify test1
 
-target/firestep -d $DEVICE --logdebug -e '{"hom":""}' |& $CLEAN |tee $ACTUAL
+$CMD -d $DEVICE --logdebug --expr '{"hom":""}' |& $CLEAN |tee $ACTUAL
 verify test2
 
-target/firestep -d $DEVICE --logdebug -e '{"sys":""}' |& $CLEAN |tee $ACTUAL
+$CMD -d $DEVICE --logdebug -e '{"sys":""}' |& $CLEAN |tee $ACTUAL
 verify test3
 
-target/firestep -d $DEVICE --logdebug -p < scripts/config.json |& $CLEAN |tee $ACTUAL
+$CMD -d $DEVICE --logdebug -p < scripts/config.json |& $CLEAN |tee $ACTUAL
 verify test4
+$CMD -d $DEVICE --logdebug --prompt < scripts/config.json |& $CLEAN |tee $ACTUAL
+verify test4
+
+$CMD -d $DEVICE --logdebug -v < scripts/config.json |& $CLEAN |tee $ACTUAL
+verify test5
+$CMD -d $DEVICE --logdebug --version < scripts/config.json |& $CLEAN |tee $ACTUAL
+verify test5
+
+$CMD -d $DEVICE --logdebug -h < scripts/config.json |& $CLEAN |tee $ACTUAL
+verify test6
+$CMD -d $DEVICE --logdebug --help < scripts/config.json |& $CLEAN |tee $ACTUAL
+verify test6
 
 
 echo "SUCCESS	: ALL TESTS PASS!"
