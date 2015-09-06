@@ -133,8 +133,7 @@ void on_signal(int sig) {
 
 int process(bool prompt, string device, bool reset, string json) {
 	int rc = 0;
-	FireStepSerial fss(device.c_str());
-	FireStepClient fsc(&fss, prompt);
+	FireStepClient fsc(prompt, device.c_str());
 
 	pFSC = &fsc;
 

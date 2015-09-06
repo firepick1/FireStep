@@ -26,9 +26,9 @@ ArduinoUSB::~ArduinoUSB() {
 
 int ArduinoUSB::open() {
     resultCode = 0;
-    fd = ::open(FIRESTEP_SERIAL_PATH, O_RDONLY | O_NOCTTY | O_NONBLOCK );
+    fd = ::open(path.c_str(), O_RDONLY | O_NOCTTY | O_NONBLOCK );
     if (fd < 0) {
-        cerr << "ERROR	: could not open " << FIRESTEP_SERIAL_PATH << endl;
+        cerr << "ERROR	: could not open " << path.c_str() << endl;
         resultCode = fd;
 	} else {
 		LOGINFO1("ArduinoUSB::open(%s) opened for read", path.c_str());
