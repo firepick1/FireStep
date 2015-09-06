@@ -149,7 +149,6 @@ INSTALL(FILES
 	FireStep/DeltaCalculator.h
 	FireStep/Display.h
 	FireStep/FPDController.h
-	FireStep/FireStep.h
 	FireStep/FireUtils.h
 	FireStep/JsonCommand.h
 	FireStep/JsonController.h
@@ -167,4 +166,5 @@ INSTALL(FILES
 	FireStep/build.h
 	FireStep/pins.h
 	FireStep/version.h
+	src/FireStep.h
 DESTINATION ${FIRESTEP_INSTALL_INCLUDE_DIR}/firestep)
