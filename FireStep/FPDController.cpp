@@ -12,8 +12,6 @@ using namespace firestep;
 
 //////////////// FPDCalibrateHome ///////////////
 
-#define PI ((PH5TYPE) 3.14159265359)
-
 FPDCalibrateHome::FPDCalibrateHome(Machine& machine)
     : machine(machine), mode(CAL_NONE), saveWeight(1) {
 }
@@ -28,7 +26,7 @@ Status FPDCalibrateHome::calibrate() {
     PH5TYPE zRim60 = (probe.probeData[2]+probe.probeData[5])/2;;
     PH5TYPE zRim120 = (probe.probeData[3]+probe.probeData[6])/2;;
     zRim = (zRim0+zRim60+zRim120)/3;
-    if (abs(zRim-zCenter) > 2) {
+    if (absval(zRim-zCenter) > 2) {
         return STATUS_CAL_HOME1;
     }
     PH5TYPE radius = 50;
@@ -61,7 +59,7 @@ Status FPDCalibrateHome::calibrate() {
         machine.setHomeAngle(homeAngle);
     }
     if (mode&CAL_GEAR) {
-        if (MAX_GEAR_ZBOWL_ERROR < abs(zRim_gearRatio - zCenter)) {
+        if (MAX_GEAR_ZBOWL_ERROR < absval(zRim_gearRatio - zCenter)) {
             return STATUS_ZBOWL_GEAR;
         }
         gearRatio = machine.delta.calcZBowlGearRatio(zCenter, zRim_gearRatio, radius);
@@ -604,7 +602,7 @@ Status FPDController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& job
     machine.op.probe.maxDelta = 0;
     for (MotorIndex iMotor=0; iMotor<3; iMotor++) {
         StepCoord delta = machine.op.probe.end.value[iMotor] - machine.op.probe.start.value[iMotor];
-        machine.op.probe.maxDelta = max((StepCoord)abs(machine.op.probe.maxDelta), delta);
+        machine.op.probe.maxDelta = max((StepCoord)absval(machine.op.probe.maxDelta), delta);
     }
 
     return status == STATUS_OK ? STATUS_BUSY_CALIBRATING : status;
@@ -999,7 +997,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
         if (machine.axis[0].position == 0) {
             return jcmd.setError(STATUS_CAL_POSITION_0, key);
         }
-        PH5TYPE dpp = abs(degrees / machine.axis[0].position);
+        PH5TYPE dpp = absval(degrees / machine.axis[0].position);
         machine.delta.setDegreesPerPulse(dpp, DELTA_AXIS_1);
         cal.mode = CAL_GEAR1;
     } else if (strcmp_PS(OP_calgr2,key) == 0 || strcmp_PS(OP_gr2,key) == 0) {
@@ -1011,7 +1009,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
         if (machine.axis[1].position == 0) {
             return jcmd.setError(STATUS_CAL_POSITION_0, key);
         }
-        PH5TYPE dpp = abs(degrees / machine.axis[1].position);
+        PH5TYPE dpp = absval(degrees / machine.axis[1].position);
         machine.delta.setDegreesPerPulse(dpp, DELTA_AXIS_2);
         cal.mode = CAL_GEAR2;
     } else if (strcmp_PS(OP_calgr3,key) == 0 || strcmp_PS(OP_gr3,key) == 0) {
@@ -1023,7 +1021,7 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
         if (machine.axis[2].position == 0) {
             return jcmd.setError(STATUS_CAL_POSITION_0, key);
         }
-        PH5TYPE dpp = abs(degrees / machine.axis[2].position);
+        PH5TYPE dpp = absval(degrees / machine.axis[2].position);
         machine.delta.setDegreesPerPulse(dpp, DELTA_AXIS_3);
         cal.mode = CAL_GEAR3;
     } else if (strcmp_PS(OP_calge,key) == 0 || strcmp_PS(OP_ge,key) == 0) {

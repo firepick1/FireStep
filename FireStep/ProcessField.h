@@ -16,7 +16,7 @@ Status processField(JsonObject& jobj, const char* key, TF& field) {
         double value = tjValue;
         TF tfValue = (TF) value;
         field = tfValue;
-        float diff = abs(tfValue - tjValue);
+        float diff = absval(tfValue - tjValue);
         if (diff > 1e-7) {
             TESTCOUT3("STATUS_VALUE_RANGE tfValue:", tfValue, " tjValue:", tjValue, " diff:", diff);
             return STATUS_VALUE_RANGE;

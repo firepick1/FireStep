@@ -28,7 +28,7 @@ Status firestep::processProbeField(Machine& machine, MotorIndex iMotor, JsonComm
         if (!a.isEnabled()) {
             return jcmd.setError(STATUS_AXIS_DISABLED, key);
         }
-        StepCoord delta = abs(machine.op.probe.end.value[iMotor] - a.position);
+        StepCoord delta = absval(machine.op.probe.end.value[iMotor] - a.position);
         machine.op.probe.maxDelta = max(machine.op.probe.maxDelta, delta);
     }
     return status;

@@ -372,7 +372,7 @@ public:
 } PHSelfTest;
 
 Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
-    int16_t minSegs = nSegs ? nSegs : 0; //max(10, min(STROKE_SEGMENTS-1,abs(pulses)/100));
+    int16_t minSegs = nSegs ? nSegs : 0; //max(10, min(STROKE_SEGMENTS-1,absval(pulses)/100));
     int16_t maxSegs = nSegs ? nSegs : 0; // STROKE_SEGMENTS-1;
     if (maxSegs >= STROKE_SEGMENTS) {
         return jcmd.setError(STATUS_STROKE_MAXLEN, "sg");

@@ -321,19 +321,19 @@ PH5TYPE DeltaCalculator::calcZBowlETheta(PH5TYPE zCenter, PH5TYPE zRim, PH5TYPE 
     PH5TYPE eDegrees = 0;
     PH5TYPE goal_zErr = zRim - zCenter;
     PH5TYPE dTheta = 0.1;
-    PH5TYPE best_dGoal = abs(goal_zErr);
+    PH5TYPE best_dGoal = absval(goal_zErr);
     PH5TYPE best_eDegrees = eDegrees;
     for (int16_t i=0; i<10; i++) {
         PH5TYPE zErr = calcZBowlErrorFromETheta(center, rim, eDegrees);
         PH5TYPE zErr_delta = calcZBowlErrorFromETheta(center, rim, eDegrees+dTheta);
         PH5TYPE slope = (zErr_delta-zErr)/dTheta;
-        if (abs(slope) < 0.01) {
+        if (absval(slope) < 0.01) {
             break;
         }
         PH5TYPE dGoal = zErr - goal_zErr;
         TESTCOUT3("dGoal:", dGoal, " eDegrees:", eDegrees, " slope:", slope);
-        if (abs(dGoal) < best_dGoal) {
-            best_dGoal = abs(dGoal);
+        if (absval(dGoal) < best_dGoal) {
+            best_dGoal = absval(dGoal);
             best_eDegrees = eDegrees;
             TESTCOUT2("best_dGoal:", best_dGoal, " best_eDegrees:", best_eDegrees);
         }
@@ -381,16 +381,16 @@ PH5TYPE DeltaCalculator::calcZBowlGearRatio(PH5TYPE zCenter, PH5TYPE zRim, PH5TY
     PH5TYPE dGear = 0.01;
     PH5TYPE newGearRatio = getGearRatio();
     PH5TYPE bestGearRatio = newGearRatio;
-    PH5TYPE best_dGoal = abs(goalZError);
+    PH5TYPE best_dGoal = absval(goalZError);
 
     for (int16_t i=0; i<25; i++) {
         PH5TYPE zError = calcZBowlErrorFromGearRatio(center, rim, newGearRatio);
         PH5TYPE zErrorDelta = calcZBowlErrorFromGearRatio(center, rim, newGearRatio+dGear);
         PH5TYPE slope = (zErrorDelta-zError)/dGear;
         PH5TYPE dGoal = zError - goalZError;
-        if (abs(dGoal) < best_dGoal) {
+        if (absval(dGoal) < best_dGoal) {
             bestGearRatio = newGearRatio;
-            best_dGoal = abs(dGoal);
+            best_dGoal = absval(dGoal);
             TESTCOUT2("bestGearRatio:", bestGearRatio, " best_dGoal:", best_dGoal);
         }
         eGear -= dGoal / slope;

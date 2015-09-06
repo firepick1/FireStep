@@ -108,12 +108,6 @@ Quad<StepCoord> Stroke::goalPos(Ticks t) {
     return dGoal;
 }
 
-#ifdef CMAKE
-template<class T> T abs(T a) {
-    return a < 0 ? -a : a;
-};
-#endif
-
 Status Stroke::start(Ticks tStart) {
     this->tStart = tStart;
 
@@ -128,7 +122,7 @@ Status Stroke::start(Ticks tStart) {
     } else {
         Quad<StepCoord> almostEnd = goalPos(tStart + dtTotal - 1);
         for (QuadIndex i = 0; i < 4; i++) {
-            if (STROKE_MAX_END_PULSES < abs(dEndPos.value[i] - almostEnd.value[i])) {
+            if (STROKE_MAX_END_PULSES < absval(dEndPos.value[i] - almostEnd.value[i])) {
                 TESTCOUT4("Stroke::start() STATUS_STROKE_END_ERROR dEndPos[", (int)i,
                           "]:", dEndPos.value[i],
                           " last interpolated value:", almostEnd.value[i],
@@ -228,9 +222,9 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         K[i] = relPos.value[i] / 6400.0;
         //TESTCOUT2("K[", i, "]:", K[i]);
-        Ksqrt[i] = sqrt(abs(K[i]));
-        if (pulses < abs(relPos.value[i])) {
-            pulses = abs(relPos.value[i]);
+        Ksqrt[i] = sqrt(absval(K[i]));
+        if (pulses < absval(relPos.value[i])) {
+            pulses = absval(relPos.value[i]);
             iMax = i;
         }
     }
@@ -265,9 +259,9 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
     int16_t minSegs = minSegments;
     if (minSegs == 0) {
         minSegs = 5; // minimum number of acceleration segments
-        minSegs = (float)minSegs * (float)abs(pulses) / (vMax * vMaxSeconds);
+        minSegs = (float)minSegs * (float)absval(pulses) / (vMax * vMaxSeconds);
         //TESTCOUT4("pulses:", pulses, " minSegs:", minSegs, " vMax:", vMax, " vMaxSeconds:", vMaxSeconds);
-        int16_t minSegsK = abs(pulses) / 200.0;
+        int16_t minSegsK = absval(pulses) / 200.0;
         if (minSegs < minSegsK) {
             //TESTCOUT1("minSegsK:", minSegsK);
             minSegs = minSegsK;
@@ -304,7 +298,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
             pos /= SCALE;
             StepCoord sNew = pos < 0 ? pos - 0.5 : pos + 0.5;
             StepCoord vNew = sNew - s;
-            stroke.vPeak = max(stroke.vPeak, (int32_t)abs(vNew*SCALE));
+            stroke.vPeak = max(stroke.vPeak, (int32_t)absval(vNew*SCALE));
             StepCoord dv = vNew - v;
             //TESTCOUT4("iSeg:", iSeg, " sNew:", sNew, " vNew:", vNew, " dv:", dv);
             if (dv < (StepCoord) - 127 || (StepCoord) 127 < dv) {

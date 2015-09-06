@@ -22,16 +22,13 @@
 #define EULER 2.718281828459045235360287471352
 #endif
 
+// Arduino compatible definitions that avoid contention with stdlib
 #ifndef min
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
 #endif
-#ifndef abs
-#define abs(x) ((x)>0?(x):-(x))
-#endif
-#ifndef round
-#define round(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
-#endif
+#define absval(x) ((x)>0?(x):-(x)) 
+#define roundval(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5)) 
 #ifndef radians
 #define radians(deg) ((deg)*DEG_TO_RAD)
 #define degrees(rad) ((rad)*RAD_TO_DEG)
