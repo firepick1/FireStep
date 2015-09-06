@@ -16,7 +16,6 @@ namespace firestep {
 
 // #define THROTTLE_SPEED /* Throttles driver speed from high (255) to low (0) */
 
-
 #define LATCH_BACKOFF 200
 #define DELTA_COUNT 120
 #define MOTOR_COUNT 4
@@ -277,6 +276,7 @@ typedef class Machine : public QuadStepper {
 
 private:
     PH5TYPE		homeAngle; // recorded home angle
+	IDuinoPtr	pDuino;
 
 public:
     PinConfig	pinConfig;
@@ -318,7 +318,7 @@ protected:
     StepCoord 	stepHome(StepCoord pulsesPerAxis, int16_t delay);
 
 public:
-	Machine();
+	Machine(IDuinoPtr pDuino=NULL);
     void setup(PinConfig cfg);
     int32_t hash();
     virtual	Status step(const Quad<StepDV> &pulse);
