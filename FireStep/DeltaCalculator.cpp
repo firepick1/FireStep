@@ -6,7 +6,7 @@
 #include "Machine.h"
 #include "AnalogRead.h"
 #include "version.h"
-#include "MCU.h"
+#include "IDuino.h"
 #include "DeltaCalculator.h"
 
 using namespace firestep;
@@ -19,7 +19,7 @@ PH5TYPE DeltaCalculator::tan60 = sqrt3;
 PH5TYPE DeltaCalculator::sin30 = 0.5;
 PH5TYPE DeltaCalculator::tan30 = 1 / sqrt3;
 PH5TYPE DeltaCalculator::tan30_half = tan30 / 2.0;
-PH5TYPE DeltaCalculator::pi = 3.14159265359;
+PH5TYPE DeltaCalculator::pi = PI;
 PH5TYPE DeltaCalculator::dtr = pi / 180.0;
 
 StepCoord DeltaCalculator::roundStep(PH5TYPE value) {

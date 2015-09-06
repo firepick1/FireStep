@@ -150,11 +150,13 @@ INSTALL(FILES
 	FireStep/Display.h
 	FireStep/FPDController.h
 	FireStep/FireUtils.h
+	FireStep/IDuino.h
 	FireStep/JsonCommand.h
 	FireStep/JsonController.h
 	FireStep/MCU.h
 	FireStep/Machine.h
 	FireStep/MachineThread.h
+	FireStep/Mega2560.h
 	FireStep/NeoPixel.h
 	FireStep/ProcessField.h
 	FireStep/ProgMem.h
@@ -167,4 +169,5 @@ INSTALL(FILES
 	FireStep/pins.h
 	FireStep/version.h
 	src/FireStep.h
+
 DESTINATION ${FIRESTEP_INSTALL_INCLUDE_DIR}/firestep)

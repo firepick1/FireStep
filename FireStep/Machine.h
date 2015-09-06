@@ -317,7 +317,7 @@ protected:
     StepCoord 	stepHome(StepCoord pulsesPerAxis, int16_t delay);
 
 public:
-    Machine();
+	Machine();
     void setup(PinConfig cfg);
     int32_t hash();
     virtual	Status step(const Quad<StepDV> &pulse);
