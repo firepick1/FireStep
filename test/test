@@ -1,0 +1,27 @@
+#!/bin/bash
+if [ "$DEVICE" == "" ]; then DEVICE=/dev/ttyACM0; fi
+
+CLEAN='sed -e s/"t":[0-9.]*/"t":.../g'
+ACTUAL=`mktemp`
+echo "TMP	: $ACTUAL"
+
+function verify() {
+	rc=$?; if [ $rc -ne 0 ]; then echo "ERROR	: $1 rc:$rc"; exit $rc; fi
+	diff $ACTUAL test/$1.expected
+	rc=$?; if [ $rc -ne 0 ]; then echo "ERROR	: $1 diff:$rc"; exit $rc; fi
+}
+
+target/firestep -d $DEVICE --logdebug -e '{"pgmx":"dim-fpd"}' |& $CLEAN |tee $ACTUAL
+verify test1
+
+target/firestep -d $DEVICE --logdebug -e '{"hom":""}' |& $CLEAN |tee $ACTUAL
+verify test2
+
+target/firestep -d $DEVICE --logdebug -e '{"sys":""}' |& $CLEAN |tee $ACTUAL
+verify test3
+
+target/firestep -d $DEVICE --logdebug -p < scripts/config.json |& $CLEAN |tee $ACTUAL
+verify test4
+
+
+echo "SUCCESS	: ALL TESTS PASS!"

@@ -98,6 +98,7 @@ add_dependencies(_firestep
 add_executable(firestep 
 	src/FireLog.cpp
 	src/ArduinoUSB.cpp
+	src/FireStepSerial.cpp
 	src/FireStepClient.cpp
 	src/MockDuino.cpp
 	src/firestep.cpp

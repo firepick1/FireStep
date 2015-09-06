@@ -102,12 +102,13 @@ enum Status {
     STATUS_MTO_FIELD = -430,		// JSON field is not allowed in current machine topology
 
 	// IFireStep
-	STATUS_OPEN = -500,			// Expected prior call to IFireStep::open() 
+	STATUS_OPEN = -500,				// Expected prior call to IFireStep::open() 
 	STATUS_IFIRESTEP = -501,		// Expected non-null pointer to IFireStep instance
 	STATUS_USB_OPEN = -502,			// ArduinoUSB::open() failed
 	STATUS_USB_CLOSE = -503,		// ArduinoUSB::close() failed
-	STATUS_USB_TIMEOUT = -504,		// ArduinoUSB timed out	
+	STATUS_TIMEOUT = -504,			// IFireStep::execute() timed out	
 	STATUS_USB_CONFIGURE = -505,	// Could not configure serial port
+	STATUS_REQUEST_LF = -506,		// IFireStep::execute() request must end with LF
 
     // events
     STATUS_ESTOP = -900,			// Emergency hardware stop

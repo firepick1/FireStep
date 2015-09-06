@@ -6,6 +6,7 @@
 #include "FireLog.h"
 #include "FireUtils.h"
 #include "FireStepClient.h"
+#include "FireStepSerial.h"
 
 using namespace std;
 using namespace firestep;
@@ -133,7 +134,8 @@ void on_signal(int sig) {
 
 int process(bool prompt, string device, bool reset, string json) {
 	int rc = 0;
-	FireStepClient fsc(prompt, device.c_str());
+	FireStepSerial fss(device.c_str());
+	FireStepClient fsc(&fss, prompt);
 
 	pFSC = &fsc;
 

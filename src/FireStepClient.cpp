@@ -18,9 +18,10 @@
 using namespace std;
 using namespace firestep;
 
-FireStepClient::FireStepClient(bool prompt, const char *serialPath, int32_t msResponse)
-    : prompt(prompt),serialPath(serialPath), msResponse(msResponse), usb(serialPath)
+FireStepClient::FireStepClient(IFireStep *pFireStep, bool prompt, const char *serialPath, int32_t msResponse)
+    : pFireStep(pFireStep), prompt(prompt),serialPath(serialPath), msResponse(msResponse), usb(serialPath)
 {
+	ASSERTNONZERO(pFireStep);
 	cin.unsetf(ios_base::skipws);
 	LOGINFO1("%s", version().c_str());
 }
@@ -50,6 +51,8 @@ string FireStepClient::readLine(istream &is) {
 }
 
 int FireStepClient::reset() {
+	return pFireStep->reset();
+#ifdef LEGACY
     int rc = 0;
     if (usb.isOpen()) {
 		const char *msg ="FireStepClient::reset() sending LF to interrupt FireStep";
@@ -95,6 +98,7 @@ int FireStepClient::reset() {
     }
 	LOGINFO("FireStepClient::reset() complete");
 	return rc;
+#endif
 }
 
 string FireStepClient::version(bool verbose) {
@@ -110,6 +114,33 @@ string FireStepClient::version(bool verbose) {
 }
 
 int FireStepClient::sendJson(string request) {
+    int rc = pFireStep->open();
+    if (rc != 0) {
+        return rc;
+    }
+
+	if (request.size() && request[request.size()-1] != '\n') {
+		request += '\n';
+	}
+	string response;
+	rc = pFireStep->execute(request, response);
+	if (rc != 0) {
+		return rc;
+	}
+    if (response.size() > 0) {
+        cout << response;
+    } else {
+		if (prompt) {
+			cerr << "ERROR	: timeout" << endl;
+		}
+        LOGERROR("sendJson() timeout");
+        return STATUS_TIMEOUT;
+    }
+
+    return usb.close();
+}
+#ifdef LEGACY
+{
     int rc = usb.open();
     if (rc != 0) {
         return rc;
@@ -133,6 +164,7 @@ int FireStepClient::sendJson(string request) {
 
     return usb.close();
 }
+
 
 int FireStepClient::console() {
     int rc = usb.open();
@@ -182,5 +214,49 @@ int FireStepClient::console() {
     LOGINFO("FireStepClient::console() closing serial port");
 
     return usb.close();
+}
+#endif
+
+int FireStepClient::console() {
+    int rc = pFireStep->open();
+    if (rc != 0) {
+        return rc;
+    }
+
+    for (;;) {
+        if (prompt) {
+            cerr << "CMD	: ";
+        }
+        string request = readLine(cin);
+        if (request.size() == 0) { // EOF
+            if (prompt) {
+                cerr << "EOF" << endl;
+            }
+            LOGINFO("FireStepClient::console() EOF");
+            break;
+        }
+		string response;
+		rc = pFireStep->execute(request, response);
+		if (rc != 0) {
+			break;
+		}
+        if (response.size() == 0) {
+            if (prompt) {
+                cerr << "ERROR	: timeout" << endl;
+            }
+            break;
+        }
+		cout << response;
+    }
+
+    if (prompt) {
+        cout << "END	: closing serial port" << endl;
+    }
+    LOGINFO("FireStepClient::console() closing serial port");
+
+	if (rc == 0) {
+		rc = pFireStep->close();
+	}
+    return rc;
 }
 
