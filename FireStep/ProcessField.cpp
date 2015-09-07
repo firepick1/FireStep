@@ -1,4 +1,3 @@
-#include "Arduino.h"
 #ifdef CMAKE
 #include <cstring>
 #include <cstdio>
@@ -22,14 +21,14 @@ Status processField<int32_t, int32_t>(JsonObject& jobj, const char *key, int32_t
 }
 
 Status firestep::processProbeField(Machine& machine, MotorIndex iMotor, JsonCommand &jcmd, JsonObject &jobj, const char *key) {
-    Status status = processField<StepCoord, int32_t>(jobj, key, machine.op.probe.end.value[iMotor]);
+    Status status = processField<StepCoord, int32_t>(jobj, key, machine.probe.end.value[iMotor]);
     if (status == STATUS_OK) {
         Axis &a = machine.getMotorAxis(iMotor);
         if (!a.isEnabled()) {
             return jcmd.setError(STATUS_AXIS_DISABLED, key);
         }
-        StepCoord delta = absval(machine.op.probe.end.value[iMotor] - a.position);
-        machine.op.probe.maxDelta = maxval(machine.op.probe.maxDelta, delta);
+        StepCoord delta = absval(machine.probe.end.value[iMotor] - a.position);
+        machine.probe.maxDelta = maxval(machine.probe.maxDelta, delta);
     }
     return status;
 }

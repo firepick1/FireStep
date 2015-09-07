@@ -1,4 +1,3 @@
-#include "Arduino.h"
 #ifdef CMAKE
 #include <cstring>
 #include <cstdio>
@@ -69,9 +68,9 @@ Status JsonCommand::setError(Status status, const char *err) {
     return status;
 }
 
-Status JsonCommand::parseCore() {
+Status JsonCommand::parseCore(IDuinoPtr pDuino) {
     if (*json == 0) {
-		Serial.println(); // echo EOL
+		pDuino->serial_println(); // echo EOL
         return STATUS_WAIT_IDLE;	// empty command
     }
     JsonObject &jobj = jbRequest.parseObject(json);
@@ -119,7 +118,7 @@ char * JsonCommand::allocate(size_t length) {
     return result;
 }
 
-Status JsonCommand::parseInput(const char *jsonIn, Status status) {
+Status JsonCommand::parseInput(const char *jsonIn, IDuinoPtr pDuino, Status status) {
     //TESTCOUT2("parseInput:", (int) (jsonIn ? jsonIn[0] : 911), " parsed:", parsed);
     if (parsed) {
         return STATUS_BUSY_PARSED;
@@ -132,23 +131,23 @@ Status JsonCommand::parseInput(const char *jsonIn, Status status) {
             return STATUS_JSON_TOO_LONG;
         }
         snprintf(buf, len, "%s", jsonIn);
-        return parseCore();
+        return parseCore(pDuino);
     } else if (pJsonFree == json || status == STATUS_WAIT_EOL) {
-        while (Serial.available()) {
+        while (pDuino->serial_available()) {
             if (pJsonFree - json >= MAX_JSON - 1) {
                 parsed = true;
                 return STATUS_JSON_TOO_LONG;
             }
-            char c = Serial.read();
+            char c = pDuino->serial_read();
             if (c == '\n') {
-                return parseCore();
+                return parseCore(pDuino);
             } else {
                 *pJsonFree++ = c;
             }
         }
         return STATUS_WAIT_EOL;
     } else {
-        return parseCore();
+        return parseCore(pDuino);
     }
 }
 
@@ -157,16 +156,16 @@ Status JsonCommand::parseInput(const char *jsonIn, Status status) {
  * Return true if parsing is complete.
  * Check isValid() and getStatus() for parsing status.
  */
-Status JsonCommand::parse(const char *jsonIn, Status statusIn) {
+Status JsonCommand::parse(const char *jsonIn, IDuinoPtr pDuino, Status statusIn) {
     //TESTCOUT1("parse:", (int) (jsonIn ? jsonIn[0] : 911));
     tStart = ticks();
     //TESTCOUT1("parse:", (int) (jsonIn ? jsonIn[0] : 911));
-    Status status = parseInput(jsonIn, statusIn);
+    Status status = parseInput(jsonIn, pDuino, statusIn);
 
     if (status < 0) {
         char error[100];
         snprintf(error, sizeof(error), "{\"s\":%d}", status);
-        Serial.println(error);
+        pDuino->serial_println(error);
     }
     return status;
 }

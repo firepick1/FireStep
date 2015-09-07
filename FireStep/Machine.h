@@ -89,6 +89,7 @@ typedef class Axis {
     friend class Machine;
 
 private:
+	IDuinoPtr	pDuino;
     bool		enabled; // true: stepper drivers are enabled and powered
 public:
     char		id;		// a single character describing the axis
@@ -137,6 +138,7 @@ public:
         atMax(false),
         homing(false)
     {};
+	void init(IDuinoPtr pDuino) { this->pDuino = pDuino; }
 
     int32_t hash();
     Status enable(bool active);
@@ -148,24 +150,24 @@ public:
         if (pin == NOPIN) {
             return STATUS_NOPIN;
         }
-        ::pinMode(pin, mode);
+        pDuino->pinMode(pin, mode);
         return STATUS_OK;
     }
-    inline void setAdvancing(bool advance) {
-        if (advance != advancing) {
+    inline void setAdvancing(bool advance) { 
+		if (advance != advancing) {
             advancing = advance;
-            digitalWrite(pinDir, (advance == dirHIGH) ? HIGH : LOW);
+            pDuino->digitalWrite(pinDir, (advance == dirHIGH) ? HIGH : LOW);
         }
     }
     inline void pulse(bool advance) {
         setAdvancing(advance);
-        pulseFast(pinStep);
+        pDuino->pulseFast(pinStep);
     }
     inline Status readAtMin(bool invertLim) {
         if (pinMin == NOPIN) {
             return STATUS_NOPIN;
         }
-        bool minHigh = digitalRead(pinMin);
+        bool minHigh = pDuino->digitalRead(pinMin);
         bool atMinNew = (invertLim == !minHigh);
         if (atMinNew != atMin) {
             TESTCOUT2("readAtMin() pinMin:", (int) pinMin, " atMinNew:", atMinNew);
@@ -177,7 +179,7 @@ public:
         if (pinMax == NOPIN) {
             return STATUS_NOPIN;
         }
-        bool maxHigh = digitalRead(pinMax);
+        bool maxHigh = pDuino->digitalRead(pinMax);
         bool atMaxNew = (invertLim == !maxHigh);
         if (atMaxNew != atMax) {
             atMax = atMaxNew;
@@ -205,14 +207,14 @@ public:
     bool			invertProbe; // invert logic sense of probe
     PH5TYPE			probeData[PROBE_DATA];
 
-    OpProbe() : pinProbe(NOPIN), invertProbe(false) {
-        setup(Quad<StepCoord>());
+    OpProbe(IDuinoPtr pDuino) : pinProbe(NOPIN), invertProbe(false) {
+        setup(Quad<StepCoord>(), pDuino);
         memset(probeData, 0, sizeof(probeData));
     }
-    void setup(Quad<StepCoord> posStart) {
-        setup(posStart, posStart);
+    void setup(Quad<StepCoord> posStart, IDuinoPtr pDuino) {
+        setup(posStart, posStart, pDuino);
     }
-    void setup(Quad<StepCoord> posStart, Quad<StepCoord> posEnd) {
+    void setup(Quad<StepCoord> posStart, Quad<StepCoord> posEnd, IDuinoPtr pDuino) {
         start = posStart;
         end = posEnd;
         maxDelta = 0;
@@ -224,7 +226,7 @@ public:
         if (pinProbe == NOPIN) {
             probing = false;
         } else {
-            pinMode(pinProbe, INPUT);
+            pDuino->pinMode(pinProbe, INPUT);
             probing = true;
         }
     }
@@ -276,9 +278,9 @@ typedef class Machine : public QuadStepper {
 
 private:
     PH5TYPE		homeAngle; // recorded home angle
-	IDuinoPtr	pDuino;
 
 public:
+	IDuinoPtr	pDuino;
     PinConfig	pinConfig;
     bool		autoHome;
     bool	 	pinEnableHigh;
@@ -298,9 +300,7 @@ public:
     Topology	topology;
     StepCoord	homePulses; // user provided pulse offset from limit switch as 0
     OutputMode	outputMode;
-    struct {
-        OpProbe		probe;
-    } op;
+	OpProbe		probe;
     int32_t		syncHash;
     ZPlane		bed;
 
@@ -318,37 +318,37 @@ protected:
     StepCoord 	stepHome(StepCoord pulsesPerAxis, int16_t delay);
 
 public:
-	Machine(IDuinoPtr pDuino=NULL);
+	Machine(IDuinoPtr pDuino);
     void setup(PinConfig cfg);
     int32_t hash();
     virtual	Status step(const Quad<StepDV> &pulse);
     bool isCorePin(int16_t pin);
     inline bool isAtLimit(PinType pin) {
-        uint8_t highCount = digitalRead(pin) ? 1 : 0;
+        uint8_t highCount = pDuino->digitalRead(pin) ? 1 : 0;
         for (uint8_t i=0; i<debounce; i++) {
-            highCount += digitalRead(pin) ? 1 : 0;
-        }
+            highCount += pDuino->digitalRead(pin) ? 1 : 0;
+		}
         return (invertLim == !(highCount > debounce/2));
     }
     inline int8_t pulsePin(int16_t pinStep, int8_t n) {
         switch (n) {
         case 0:
-            pulseFast(pinStep);
-            pulseFast(pinStep);
-            pulseFast(pinStep);
-            pulseFast(pinStep);
+            pDuino->pulseFast(pinStep);
+            pDuino->pulseFast(pinStep);
+            pDuino->pulseFast(pinStep);
+            pDuino->pulseFast(pinStep);
             return 4;
         case 3:
-            pulseFast(pinStep);
-            pulseFast(pinStep);
-            pulseFast(pinStep);
+            pDuino->pulseFast(pinStep);
+            pDuino->pulseFast(pinStep);
+            pDuino->pulseFast(pinStep);
             return 3;
         case 2:
-            pulseFast(pinStep);
-            pulseFast(pinStep);
+            pDuino->pulseFast(pinStep);
+            pDuino->pulseFast(pinStep);
             return 2;
         case 1:
-            pulseFast(pinStep);
+            pDuino->pulseFast(pinStep);
             return 1;
         }
     }
@@ -382,7 +382,7 @@ public:
     Quad<StepCoord> getMotorPosition();
     void setMotorPosition(const Quad<StepCoord> &position);
     virtual Status home(Status status);
-    virtual Status probe(Status status, DelayMics delay=-1);
+    virtual Status probeNow(Status status, DelayMics delay=-1);
     Status setAxisIndex(MotorIndex iMotor, AxisIndex iAxis);
     AxisIndex getAxisIndex(MotorIndex iMotor) {
         return motor[iMotor];

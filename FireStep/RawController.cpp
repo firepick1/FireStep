@@ -1,4 +1,3 @@
-#include "Arduino.h"
 #ifdef CMAKE
 #include <cstring>
 #include <cstdio>
@@ -255,7 +254,7 @@ Status RawController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
 {
     Status status = STATUS_OK;
     if (clear) {
-        machine.op.probe.setup(machine.getMotorPosition());
+        machine.probe.setup(machine.getMotorPosition(), machine.pDuino);
     }
     if (strcmp_PS(OP_prb, key) == 0) {
         const char *s;
@@ -277,14 +276,14 @@ Status RawController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
                     return jcmd.setError(status, it->key);
                 }
             }
-            if (status == STATUS_BUSY_CALIBRATING && machine.op.probe.pinProbe==NOPIN) {
+            if (status == STATUS_BUSY_CALIBRATING && machine.probe.pinProbe==NOPIN) {
                 return jcmd.setError(STATUS_FIELD_REQUIRED, "pn");
             }
         }
     } else if (strcmp_PS(OP_prbip, key) == 0 || strcmp_PS(OP_ip, key) == 0) {
-        status = processField<bool, bool>(jobj, key, machine.op.probe.invertProbe);
+        status = processField<bool, bool>(jobj, key, machine.probe.invertProbe);
     } else if (strcmp_PS(OP_prbpn, key) == 0 || strcmp_PS(OP_pn, key) == 0) {
-        status = processField<PinType, int32_t>(jobj, key, machine.op.probe.pinProbe);
+        status = processField<PinType, int32_t>(jobj, key, machine.probe.pinProbe);
     } else if (strcmp_PS(OP_prbsd, key) == 0 || strcmp_PS(OP_sd, key) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else {
@@ -305,7 +304,7 @@ Status RawController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const ch
         break;
     case STATUS_BUSY_OK:
     case STATUS_BUSY_CALIBRATING:
-        status = machine.probe(status);
+        status = machine.probeNow(status);
         if (status == STATUS_OK) {
             JsonObject& kidObj = jobj[key];
             for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {

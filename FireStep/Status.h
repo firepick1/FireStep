@@ -50,7 +50,7 @@ enum Status {
     STATUS_EEPROM_JSON = -138,		// No JSON to execute at EEPROM address
     STATUS_PROBE_PIN = -139,		// No probe pin specified
     STATUS_KINEMATIC_XYZ = -140,	// Could not solve XYZ cartesian kinematics
-    STATUS_USER_EEPROM = -141,		// user EEPROM address out of range [2000,EEPROM_END)
+    STATUS_USER_EEPROM = -141,		// user EEPROM address out of range [2000,EEPROM_SIZE)
     STATUS_CAL_HOME1 = -142,		// Home calibration probe data invalid: zCenter/zRim too far apart
     STATUS_MARK_INDEX = -143,		// Invalid mark index. Expected [1,MARK_COUNT]
     STATUS_MARK_AXIS = -144,		// Invalid mark axis. Expected: 1,2,3,4,x,y,z,a,b, or c

@@ -1,4 +1,3 @@
-#include "Arduino.h"
 #ifdef CMAKE
 #include <cstring>
 #include <cstdio>
@@ -648,7 +647,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             machine.setPinConfig(pc);
         }
     } else if (strcmp_PS(OP_pb, key) == 0 || strcmp_PS(OP_syspb, key) == 0) {
-        status = processPin(jobj, key, machine.op.probe.pinProbe, INPUT);
+        status = processPin(jobj, key, machine.probe.pinProbe, INPUT);
     } else if (strcmp_PS(OP_pi, key) == 0 || strcmp_PS(OP_syspi, key) == 0) {
         PinType pinStatus = machine.pinStatus;
         status = processField<PinType, int32_t>(jobj, key, pinStatus);
@@ -720,17 +719,17 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
         return STATUS_JSON_DIGIT;
     }
     long addrLong = strtol(addr, NULL, 10);
-    if (addrLong<0 || EEPROM_END <= addrLong) {
+    if (addrLong<0 || EEPROM_SIZE <= addrLong) {
         return STATUS_EEPROM_ADDR;
     }
-    char buf[EEPROM_BYTES];
+    char buf[EEPROM_CMD_BYTES];
     buf[0] = 0;
     if (jvalue.is<JsonArray&>()) {
         JsonArray &jeep = jvalue;
-        jeep.printTo(buf, EEPROM_BYTES);
+        jeep.printTo(buf, EEPROM_CMD_BYTES);
     } else if (jvalue.is<JsonObject&>()) {
         JsonObject &jeep = jvalue;
-        jeep.printTo(buf, EEPROM_BYTES);
+        jeep.printTo(buf, EEPROM_CMD_BYTES);
     } else if (jvalue.is<const char *>()) {
         const char *s = jvalue;
         snprintf(buf, sizeof(buf), "%s", s);
@@ -741,11 +740,11 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
     if (buf[0] == 0) { // query
         uint8_t c = eeprom_read_byte((uint8_t*) addrLong);
         if (c && c != 255) {
-            char *buf = jcmd.allocate(EEPROM_BYTES);
+            char *buf = jcmd.allocate(EEPROM_CMD_BYTES);
             if (!buf) {
                 return jcmd.setError(STATUS_JSON_MEM3, key);
             }
-            for (int16_t i=0; i<EEPROM_BYTES; i++) {
+            for (int16_t i=0; i<EEPROM_CMD_BYTES; i++) {
                 c = eeprom_read_byte((uint8_t*) addrLong+i);
                 if (c == 255 || c == 0) {
                     buf[i] = 0;
@@ -757,7 +756,7 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
         }
     } else {
         int16_t len = strlen(buf) + 1;
-        if (len >= EEPROM_BYTES) {
+        if (len >= EEPROM_CMD_BYTES) {
             return jcmd.setError(STATUS_JSON_EEPROM, key);
         }
         for (int16_t i=0; i<len; i++) {
@@ -807,11 +806,11 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
     bool isAnalog = *key == 'a' || strncmp("ioa",key,3)==0;
     if (s && *s == 0) { // read
         if (isAnalog) {
-            pinMode(pin+A0, INPUT);
+            machine.pDuino->pinMode(pin+A0, INPUT);
             jobj[key] = analogRead(pin+A0);
         } else {
-            pinMode(pin, INPUT);
-            jobj[key] = (bool) digitalRead(pin);
+            machine.pDuino->pinMode(pin, INPUT);
+            jobj[key] = (bool) machine.pDuino->digitalRead(pin);
         }
     } else if (isAnalog) {
         if (jobj[key].is<long>()) { // write
@@ -819,7 +818,7 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
             if (value < 0 || 255 < value) {
                 return jcmd.setError(STATUS_JSON_255, key);
             }
-            pinMode(pin+A0, OUTPUT);
+            machine.pDuino->pinMode(pin+A0, OUTPUT);
             analogWrite(pin+A0, (int16_t) value);
         } else {
             return jcmd.setError(STATUS_JSON_255, key);
@@ -827,12 +826,12 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
     } else {
         if (jobj[key].is<bool>()) { // write
             bool value = jobj[key];
-            pinMode(pin, OUTPUT);
-            digitalWrite(pin, value);
+            machine.pDuino->pinMode(pin, OUTPUT);
+            machine.pDuino->digitalWrite(pin, value);
         } else if (jobj[key].is<long>()) { // write
             bool value = (bool) (long)jobj[key];
-            pinMode(pin, OUTPUT);
-            digitalWrite(pin, value);
+            machine.pDuino->pinMode(pin, OUTPUT);
+            machine.pDuino->digitalWrite(pin, value);
         } else {
             return jcmd.setError(STATUS_JSON_BOOL, key);
         }
@@ -845,17 +844,17 @@ Status JsonController::processProgram(JsonCommand& jcmd, JsonObject& jobj, const
     if (strcmp_PS(OP_pgm, key) == 0) {
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {
-            status = prog_dump("help");
+            status = prog_dump("help", machine.pDuino);
         }
         for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
             status = processProgram(jcmd, kidObj, it->key);
         }
     } else if (strcmp_PS(OP_d,key)==0 || strcmp_PS(OP_pgmd,key)==0) {
         const char * name = jobj[key];
-        status = prog_dump(name);
+        status = prog_dump(name, machine.pDuino);
     } else if (strcmp_PS(OP_x,key)==0 || strcmp_PS(OP_pgmx,key)==0) {
         const char * name = jobj[key];
-        status = prog_load_cmd(name, jcmd);
+        status = prog_load_cmd(name, jcmd, machine.pDuino);
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
@@ -892,7 +891,7 @@ Status JsonController::processProbeData(JsonCommand& jcmd, JsonObject& jobj, con
     if ((s = jobj[key]) && *s == 0) {
         JsonArray &jarr = jobj.createNestedArray(key);
         for (int16_t i=0; i<PROBE_DATA; i++) {
-            jarr.add(machine.op.probe.probeData[i]);
+            jarr.add(machine.probe.probeData[i]);
         }
     } else {
         status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
@@ -1040,12 +1039,12 @@ void JsonController::sendResponse(JsonCommand &jcmd, Status status) {
         }
     }
     if (machine.jsonPrettyPrint) {
-        jcmd.response().prettyPrintTo(Serial);
+        jcmd.response().prettyPrintTo(*machine.pDuino);
     } else {
-        jcmd.response().printTo(Serial);
+        jcmd.response().printTo(*machine.pDuino);
     }
     jcmd.responseClear();
-    Serial.println();
+    machine.pDuino->serial_println();
 }
 
 Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
@@ -1094,12 +1093,12 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
         } else if (strcmp_PS(OP_cmt, it->key) == 0) {
             if (OUTPUT_CMT==(machine.outputMode&OUTPUT_CMT)) {
                 const char *s = it->value;
-                Serial.println(s);
+                machine.pDuino->serial_println(s);
             }
             status = STATUS_OK;
         } else if (strcmp_PS(OP_msg, it->key) == 0) {
             const char *s = it->value;
-            Serial.println(s);
+            machine.pDuino->serial_println(s);
             status = STATUS_OK;
             TESTCOUT1("msg:", s);
         } else if (strncmp("pgm", it->key, 3) == 0) {

@@ -100,6 +100,7 @@ add_executable(firestep
 	src/ArduinoUSB.cpp
 	src/FireStepSerial.cpp
 	src/FireStepClient.cpp
+	src/Mockino.cpp
 	src/MockDuino.cpp
 	src/firestep.cpp
 )
@@ -117,6 +118,7 @@ target_link_libraries(firestep
 
 ########## test: MockDuino test program ################
 add_executable(test 
+	src/Mockino.cpp
 	src/MockDuino.cpp
 	src/test.cpp
 )

@@ -2,7 +2,6 @@
 #define JSONCONTROLLER_H
 
 #include "version.h"
-#include "Arduino.h"
 #include "Thread.h"
 #include "Status.h"
 #include "Machine.h"

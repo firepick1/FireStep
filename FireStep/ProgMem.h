@@ -18,12 +18,13 @@
 
 #include "Status.h"
 #include "JsonCommand.h"
+#include "IDuino.h"
 
 namespace firestep {
 
 const char *prog_src(const char *name);
-Status prog_dump(const char *name);
-Status prog_load_cmd(const char *name, JsonCommand &jcmd);
+Status prog_dump(const char *name, IDuinoPtr pDuino);
+Status prog_load_cmd(const char *name, JsonCommand &jcmd, IDuinoPtr pDuino);
 
 extern const char OP_1[];
 extern const char OP_2[];

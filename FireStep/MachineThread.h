@@ -21,7 +21,7 @@ protected:
 
 public:
     Status status;
-    Machine machine;
+    Machine &machine;
     JsonCommand command;
     RawController rawController;
     FPDController fpdController;
@@ -29,7 +29,7 @@ public:
     bool printBannerOnIdle;
 
 public:
-    MachineThread();
+    MachineThread(Machine &machine);
     void setController(JsonController &controller);
     void setup(PinConfig pc);
     void loop();

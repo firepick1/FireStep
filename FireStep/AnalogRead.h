@@ -1,6 +1,8 @@
 #ifndef ANALOGREAD_H
 #define ANALOGREAD_H
 
+#include "Arduino.h"
+
 #define ARDUINO_MEGA
 
 #ifndef PRR

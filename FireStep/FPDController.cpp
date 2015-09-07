@@ -1,4 +1,3 @@
-#include "Arduino.h"
 #ifdef CMAKE
 #include <cstring>
 #include <cstdio>
@@ -20,7 +19,7 @@ FPDCalibrateHome::FPDCalibrateHome(Machine& machine)
 
 Status FPDCalibrateHome::calibrate() {
     machine.loadDeltaCalculator();
-    OpProbe& probe = machine.op.probe;
+    OpProbe& probe = machine.probe;
     zCenter = (probe.probeData[0]+probe.probeData[7])/2;
     PH5TYPE zRim0 = (probe.probeData[1]+probe.probeData[4])/2;;
     PH5TYPE zRim60 = (probe.probeData[2]+probe.probeData[5])/2;;
@@ -233,16 +232,16 @@ Status FPDMoveTo::movePulleyArmToAngle(DeltaAxis axis, PH5TYPE degrees) {
         return STATUS_AXIS_ERROR;
     }
     posEnd.value[axis] = machine.delta.roundStep(degrees / dpp);
-    PinType pinProbe = machine.op.probe.pinProbe; // save syspb
-    machine.op.probe.pinProbe = machine.axis[axis].pinMin;
-    machine.op.probe.setup(posStart, posEnd);
+    PinType pinProbe = machine.probe.pinProbe; // save syspb
+    machine.probe.pinProbe = machine.axis[axis].pinMin;
+    machine.probe.setup(posStart, posEnd, machine.pDuino);
     Status status = STATUS_BUSY_CALIBRATING;
     int32_t stopTicks = ticks() + MS_TICKS(20000); // stop after 20 seconds
 
     while (ticks() < stopTicks && status == STATUS_BUSY_CALIBRATING) {
-        status = machine.probe(status, 0);
+        status = machine.probeNow(status, 0);
     }
-    machine.op.probe.pinProbe = pinProbe; // restore syspb
+    machine.probe.pinProbe = pinProbe; // restore syspb
     if (status == STATUS_PROBE_FAILED) {
         isRaw = true;
         return STATUS_OK; // we're not really probing, so this is good
@@ -528,11 +527,11 @@ Status FPDController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& job
         const char* key, bool clear)
 {
     Status status = STATUS_OK;
-    OpProbe &probe = machine.op.probe;
+    OpProbe &probe = machine.probe;
 
     if (clear) {
         Quad<StepCoord> curPos = machine.getMotorPosition();
-        probe.setup(curPos);
+        probe.setup(curPos, machine.pDuino);
     }
     Step3D probeEnd(probe.end.value[0], probe.end.value[1], probe.end.value[2]);
     XYZ3D xyzEnd = machine.delta.calcXYZ(probeEnd);
@@ -546,7 +545,7 @@ Status FPDController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& job
             jcmd.addQueryAttr(node, OP_3);
             jcmd.addQueryAttr(node, OP_4);
             jcmd.addQueryAttr(node, OP_ip);
-            node["pb"] = machine.op.probe.pinProbe;
+            node["pb"] = machine.probe.pinProbe;
             jcmd.addQueryAttr(node, OP_sd);
             node["x"] = xyzEnd.x;
             node["y"] = xyzEnd.y;
@@ -560,16 +559,16 @@ Status FPDController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& job
                     return jcmd.setError(status, it->key);
                 }
             }
-            if (status == STATUS_BUSY_CALIBRATING && machine.op.probe.pinProbe==NOPIN) {
+            if (status == STATUS_BUSY_CALIBRATING && machine.probe.pinProbe==NOPIN) {
                 return jcmd.setError(STATUS_FIELD_REQUIRED, "pb");
             }
         }
     } else if (strcmp_PS(OP_prbip, key) == 0 || strcmp_PS(OP_ip, key) == 0) {
-        status = processField<bool, bool>(jobj, key, machine.op.probe.invertProbe);
+        status = processField<bool, bool>(jobj, key, machine.probe.invertProbe);
     } else if (strcmp_PS(OP_prbpb, key) == 0 || strcmp_PS(OP_pb, key) == 0) {
-        status = processField<PinType, int32_t>(jobj, key, machine.op.probe.pinProbe);
+        status = processField<PinType, int32_t>(jobj, key, machine.probe.pinProbe);
     } else if (strcmp_PS(OP_prbpn, key) == 0 || strcmp_PS(OP_pn, key) == 0) { // legacy
-        status = processField<PinType, int32_t>(jobj, key, machine.op.probe.pinProbe); // legacy
+        status = processField<PinType, int32_t>(jobj, key, machine.probe.pinProbe); // legacy
     } else if (strcmp_PS(OP_prbsd, key) == 0 || strcmp_PS(OP_sd, key) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else if (strcmp_PS(OP_prbx, key) == 0 || strcmp_PS(OP_x, key) == 0) {
@@ -577,7 +576,7 @@ Status FPDController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& job
     } else if (strcmp_PS(OP_prby, key) == 0 || strcmp_PS(OP_y, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.y);
     } else if (strcmp_PS(OP_prbz, key) == 0 || strcmp_PS(OP_z, key) == 0) {
-        machine.op.probe.dataSource = PDS_Z;
+        machine.probe.dataSource = PDS_Z;
         xyzEnd.z = machine.delta.getMinZ(xyzEnd.x, xyzEnd.y);
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, xyzEnd.z);
     } else {
@@ -595,14 +594,14 @@ Status FPDController::initializeProbe_MTO_FPD(JsonCommand& jcmd, JsonObject& job
 
     // This code only works for probes along a single cartesian axis
     Step3D pEnd = machine.delta.calcPulses(xyzEnd);
-    machine.op.probe.end.value[0] = pEnd.p1;
-    machine.op.probe.end.value[1] = pEnd.p2;
-    machine.op.probe.end.value[2] = pEnd.p3;
+    machine.probe.end.value[0] = pEnd.p1;
+    machine.probe.end.value[1] = pEnd.p2;
+    machine.probe.end.value[2] = pEnd.p3;
     TESTCOUT3("pEnd:", pEnd.p1, ", ", pEnd.p2, ", ", pEnd.p3);
-    machine.op.probe.maxDelta = 0;
+    machine.probe.maxDelta = 0;
     for (MotorIndex iMotor=0; iMotor<3; iMotor++) {
-        StepCoord delta = machine.op.probe.end.value[iMotor] - machine.op.probe.start.value[iMotor];
-        machine.op.probe.maxDelta = maxval((StepCoord)absval(machine.op.probe.maxDelta), delta);
+        StepCoord delta = machine.probe.end.value[iMotor] - machine.probe.start.value[iMotor];
+        machine.probe.maxDelta = maxval((StepCoord)absval(machine.probe.maxDelta), delta);
     }
 
     return status == STATUS_OK ? STATUS_BUSY_CALIBRATING : status;
@@ -639,11 +638,11 @@ Status FPDController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const ch
         break;
     case STATUS_BUSY_OK:
     case STATUS_BUSY_CALIBRATING:
-        status = machine.probe(status);
+        status = machine.probeNow(status);
         if (status == STATUS_OK) {
-            if (machine.op.probe.dataSource == PDS_Z) {
+            if (machine.probe.dataSource == PDS_Z) {
                 XYZ3D xyz = getXYZ3D();
-                machine.op.probe.archiveData(xyz.z);
+                machine.probe.archiveData(xyz.z);
             }
             if (jobj[key].is<JsonObject&>()) {
                 JsonObject &kidObj = jobj[key];
@@ -847,17 +846,17 @@ Status FPDController::finalizeHome(JsonCommand& jcmd, JsonObject& jobj, const ch
     XYZ3D xyzPostHome(0,0,0); // post-home destination
     Step3D oPulses = machine.delta.calcPulses(xyzPostHome);
     TESTCOUT3("finalizeHome x home:", machine.delta.getHomePulses(), " pos:", machine.axis[0].position, " dst:", oPulses.p1);
-    machine.op.probe.setup(limit, Quad<StepCoord>(
+    machine.probe.setup(limit, Quad<StepCoord>(
                                oPulses.p1,
                                oPulses.p2,
                                oPulses.p3,
                                limit.value[3]
-                           ));
+                           ), machine.pDuino);
 
     status = STATUS_BUSY_CALIBRATING;
     do {
         // fast probe because we don't expect to hit anything
-        status = machine.probe(status, 0);
+        status = machine.probeNow(status, 0);
         //TESTCOUT2("finalizeHome status:", (int) status, " 1:", axis[0].position);
     } while (status == STATUS_BUSY_CALIBRATING);
 

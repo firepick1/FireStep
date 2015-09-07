@@ -1,8 +1,6 @@
 #ifdef CMAKE
 #include <cstring>
-#include <cmath>
 #endif
-#include "Arduino.h"
 #include "FireUtils.h"
 #include "Machine.h"
 #include "AnalogRead.h"
@@ -114,7 +112,7 @@ Status Axis::enable(bool active) {
         return STATUS_NOPIN;
     }
     //TESTCOUT2("Axis::enable(", active, ") axis:", id);
-    digitalWrite(pinEnable, active ? PIN_ENABLE : PIN_DISABLE);
+    pDuino->digitalWrite(pinEnable, active ? PIN_ENABLE : PIN_DISABLE);
     setAdvancing(true);
     enabled = active;
     return STATUS_OK;
@@ -214,8 +212,10 @@ Machine::Machine(IDuinoPtr pDuino)
     : pDuino(pDuino), autoHome(false),invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
       tvMax(0.7), fastSearchPulses(FPD_FAST_SEARCH_PULSES),
       searchDelay(FPD_SEARCH_DELAY), pinStatus(NOPIN), topology(MTO_RAW),
-      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0)
+      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0),
+	  probe(pDuino)
 {
+	ASSERTNONZERO(pDuino);
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         setAxisIndex((MotorIndex)i, (AxisIndex)i);
@@ -226,7 +226,7 @@ Machine::Machine(IDuinoPtr pDuino)
     }
 
     for (int16_t i=0; i<PROBE_DATA; i++) {
-        op.probe.probeData[i] = 0;
+        probe.probeData[i] = 0;
     }
 
     for (int16_t i=0; i<MARK_COUNT; i++) {
@@ -239,6 +239,9 @@ Machine::Machine(IDuinoPtr pDuino)
     axis[3].id = 'a';
     axis[4].id = 'b';
     axis[5].id = 'c';
+	for (AxisIndex i=0; i<AXIS_COUNT; i++) {
+		axis[i].init(pDuino);
+	}
     homeAngle = delta.getHomeAngle();
     homePulses = delta.getHomePulses();
 }
@@ -290,7 +293,7 @@ int32_t Machine::hash() {
                      ^ ((uint32_t) outputMode << 8)
                      ^ ((uint32_t) topology << 9)
                      ^ ((uint32_t) pinConfig << 10)
-                     ^ ((uint32_t) op.probe.pinProbe << 11)
+                     ^ ((uint32_t) probe.pinProbe << 11)
                      ^ (invertLim ? (BIT_HASH << 16) : 0)
                      ^ (pinEnableHigh ? (BIT_HASH << 17) : 0)
                      // ^ (autoSync ? (BIT_HASH << 18) : 0)
@@ -338,7 +341,7 @@ Status Machine::setPinConfig_EMC02() {
     Status status = STATUS_OK;
 
     pinStatus = PC1_STATUS_PIN;
-    op.probe.pinProbe = PC1_PROBE_PIN;
+    probe.pinProbe = PC1_PROBE_PIN;
     setPin(axis[0].pinStep, PC1_X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, PC1_X_DIR_PIN, OUTPUT);
     setPin(axis[0].pinMin, PC1_X_MIN_PIN, INPUT);
@@ -365,32 +368,32 @@ Status Machine::setPinConfig_EMC02() {
     setPin(axis[5].pinEnable, PC1_TOOL3_ENABLE_PIN, OUTPUT, HIGH);
 
     //FirePick Delta specific stuff
-    pinMode(PC1_TOOL1_ENABLE_PIN,OUTPUT);
-    pinMode(PC1_TOOL2_ENABLE_PIN,OUTPUT);
-    pinMode(PC1_TOOL3_ENABLE_PIN,OUTPUT);
-    pinMode(PC1_TOOL4_ENABLE_PIN,OUTPUT);
-    pinMode(PC1_PWR_SUPPLY_PIN,OUTPUT);
-    pinMode(PC1_TOOL1_DOUT,OUTPUT);
-    pinMode(PC1_TOOL2_DOUT,OUTPUT);
-    pinMode(PC1_TOOL3_DOUT,OUTPUT);
-    pinMode(PC1_TOOL4_DOUT,OUTPUT);
-    pinMode(PC1_SERVO1,OUTPUT);
-    pinMode(PC1_SERVO2,OUTPUT);
-    pinMode(PC1_SERVO3,OUTPUT);
-    pinMode(PC1_SERVO4,OUTPUT);
-    digitalWrite(PC1_TOOL1_ENABLE_PIN,HIGH);
-    digitalWrite(PC1_TOOL2_ENABLE_PIN,HIGH);
-    digitalWrite(PC1_TOOL3_ENABLE_PIN,HIGH);
-    digitalWrite(PC1_TOOL4_ENABLE_PIN,HIGH);
-    digitalWrite(PC1_PWR_SUPPLY_PIN,LOW);
-    digitalWrite(PC1_TOOL1_DOUT,LOW);
-    digitalWrite(PC1_TOOL2_DOUT,LOW);
-    digitalWrite(PC1_TOOL3_DOUT,LOW);
-    digitalWrite(PC1_TOOL4_DOUT,LOW);
-    digitalWrite(PC1_SERVO1,LOW);
-    digitalWrite(PC1_SERVO2,LOW);
-    digitalWrite(PC1_SERVO3,LOW);
-    digitalWrite(PC1_SERVO4,LOW);
+    pDuino->pinMode(PC1_TOOL1_ENABLE_PIN,OUTPUT);
+    pDuino->pinMode(PC1_TOOL2_ENABLE_PIN,OUTPUT);
+    pDuino->pinMode(PC1_TOOL3_ENABLE_PIN,OUTPUT);
+    pDuino->pinMode(PC1_TOOL4_ENABLE_PIN,OUTPUT);
+    pDuino->pinMode(PC1_PWR_SUPPLY_PIN,OUTPUT);
+    pDuino->pinMode(PC1_TOOL1_DOUT,OUTPUT);
+    pDuino->pinMode(PC1_TOOL2_DOUT,OUTPUT);
+    pDuino->pinMode(PC1_TOOL3_DOUT,OUTPUT);
+    pDuino->pinMode(PC1_TOOL4_DOUT,OUTPUT);
+    pDuino->pinMode(PC1_SERVO1,OUTPUT);
+    pDuino->pinMode(PC1_SERVO2,OUTPUT);
+    pDuino->pinMode(PC1_SERVO3,OUTPUT);
+    pDuino->pinMode(PC1_SERVO4,OUTPUT);
+    pDuino->digitalWrite(PC1_TOOL1_ENABLE_PIN,HIGH);
+    pDuino->digitalWrite(PC1_TOOL2_ENABLE_PIN,HIGH);
+    pDuino->digitalWrite(PC1_TOOL3_ENABLE_PIN,HIGH);
+    pDuino->digitalWrite(PC1_TOOL4_ENABLE_PIN,HIGH);
+    pDuino->digitalWrite(PC1_PWR_SUPPLY_PIN,LOW);
+    pDuino->digitalWrite(PC1_TOOL1_DOUT,LOW);
+    pDuino->digitalWrite(PC1_TOOL2_DOUT,LOW);
+    pDuino->digitalWrite(PC1_TOOL3_DOUT,LOW);
+    pDuino->digitalWrite(PC1_TOOL4_DOUT,LOW);
+    pDuino->digitalWrite(PC1_SERVO1,LOW);
+    pDuino->digitalWrite(PC1_SERVO2,LOW);
+    pDuino->digitalWrite(PC1_SERVO3,LOW);
+    pDuino->digitalWrite(PC1_SERVO4,LOW);
 
     return status;
 }
@@ -398,7 +401,7 @@ Status Machine::setPinConfig_EMC02() {
 Status Machine::setPinConfig_RAMPS1_4() {
     Status status = STATUS_OK;
     pinStatus = PC2_STATUS_PIN;
-    op.probe.pinProbe = PC2_PROBE_PIN;
+    probe.pinProbe = PC2_PROBE_PIN;
     setPin(axis[0].pinStep, PC2_X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, PC2_X_DIR_PIN, OUTPUT);
     setPin(axis[0].pinMin, PC2_X_MIN_PIN, INPUT);
@@ -526,9 +529,9 @@ AxisIndex Machine::axisOfName(const char *name) {
 void Machine::setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value) {
     pinDst = pinSrc;
     if (pinDst != NOPIN) {
-        pinMode(pinDst, mode);
+        pDuino->pinMode(pinDst, mode);
         if (mode == OUTPUT) {
-            digitalWrite(pinDst, value);
+            pDuino->digitalWrite(pinDst, value);
         }
     }
 }
@@ -556,7 +559,7 @@ Status Machine::step(const Quad<StepDV> &pulse) {
                 return STATUS_TRAVEL_MAX;
             }
             a.setAdvancing(true);
-            digitalWrite(a.pinStep, HIGH);
+            pDuino->digitalWrite(a.pinStep, HIGH);
             break;
         case 0:
             break;
@@ -573,7 +576,7 @@ Status Machine::step(const Quad<StepDV> &pulse) {
                 return STATUS_TRAVEL_MIN;
             }
             a.setAdvancing(false);
-            digitalWrite(a.pinStep, HIGH);
+            pDuino->digitalWrite(a.pinStep, HIGH);
             break;
         default:
             return STATUS_STEP_RANGE_ERROR;
@@ -584,7 +587,7 @@ Status Machine::step(const Quad<StepDV> &pulse) {
     for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse trailing edges
         if (pulse.value[i]) {
             Axis &a(*motorAxis[i]);
-            digitalWrite(a.pinStep, LOW);
+            pDuino->digitalWrite(a.pinStep, LOW);
             a.position += pulse.value[i];
             usDelay = maxval(usDelay, a.usDelay);
         }
@@ -700,22 +703,22 @@ Status Machine::home(Status status) {
     return status;
 }
 
-Status Machine::probe(Status status, DelayMics delay) {
-    if (op.probe.pinProbe == NOPIN) {
+Status Machine::probeNow(Status status, DelayMics delay) {
+    if (probe.pinProbe == NOPIN) {
         return STATUS_PROBE_PIN;
     }
     for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         Axis &a(*motorAxis[i]);
-        if (op.probe.start.value[i]!=op.probe.end.value[i] && !a.enabled) {
+        if (probe.start.value[i]!=probe.end.value[i] && !a.enabled) {
             return STATUS_AXIS_DISABLED;
         }
     }
 
-    op.probe.probing = !isAtLimit(op.probe.pinProbe);
-    if (op.probe.invertProbe) {
-        op.probe.probing = !op.probe.probing;
+    probe.probing = !isAtLimit(probe.pinProbe);
+    if (probe.invertProbe) {
+        probe.probing = !probe.probing;
     }
-    if (op.probe.probing) {
+    if (probe.probing) {
         status = stepProbe(delay < 0 ? searchDelay : delay);
     } else {
         status = STATUS_OK;
@@ -728,13 +731,13 @@ Status Machine::stepProbe(int16_t delay) {
     Status status = STATUS_BUSY_CALIBRATING;
     //StepCoord dMax = 0;
 
-    if (op.probe.curDelta >= op.probe.maxDelta) {
+    if (probe.curDelta >= probe.maxDelta) {
         return STATUS_PROBE_FAILED; // done
     }
-    op.probe.curDelta++;
+    probe.curDelta++;
     Quad<StepDV> pulse;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
-        StepCoord dp = op.probe.interpolate(i) - getMotorAxis(i).position;
+        StepCoord dp = probe.interpolate(i) - getMotorAxis(i).position;
         if (dp < -1) {
             pulse.value[i] = -1;
         } else if (dp > 1) {
@@ -788,7 +791,7 @@ StepCoord Machine::stepHome(StepCoord pulsesPerAxis, int16_t delay) {
         for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {
             Axis &a(*motorAxis[i]);
             if (a.homing && !a.atMin) {
-                pulseFast(a.pinStep);
+                pDuino->pulseFast(a.pinStep);
                 pulses++;
             }
         }
@@ -846,7 +849,7 @@ char * Machine::saveSysConfig(char *out, size_t maxLen) {
     out = saveConfigValue("lh", invertLim, out);
     out = saveConfigValue("mv", vMax, out);
     out = saveConfigValue("om", outputMode, out);
-    out = saveConfigValue("pb", op.probe.pinProbe, out);
+    out = saveConfigValue("pb", probe.pinProbe, out);
     out = saveConfigValue("pi", pinStatus, out);
     out = saveConfigValue("tv", tvMax, out);
 

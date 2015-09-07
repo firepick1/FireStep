@@ -479,7 +479,7 @@ const char *firestep::prog_src(const char *name) {
     return src_help;
 }
 
-Status firestep::prog_dump(const char *name) {
+Status firestep::prog_dump(const char *name, IDuinoPtr pDuino) {
     const char *src = prog_src(name);
     TESTCOUT3("prog_dump:", name, " bytes:", (strlen_P(src)+1), " src:", src);
 
@@ -487,9 +487,9 @@ Status firestep::prog_dump(const char *name) {
         char c = pgm_read_byte_near(src + i);
         ASSERT(c == 0 || ' ' <= c && c <= '~');
         if (c) {
-            Serial.print(c);
+            pDuino->serial_print(c);
         } else {
-            Serial.println();
+            pDuino->serial_println();
             break;
         }
     }
@@ -497,7 +497,7 @@ Status firestep::prog_dump(const char *name) {
     return STATUS_OK;
 }
 
-Status firestep::prog_load_cmd(const char *name, JsonCommand &jcmd) {
+Status firestep::prog_load_cmd(const char *name, JsonCommand &jcmd, IDuinoPtr pDuino) {
     char nameBuf[32];
     snprintf(nameBuf, sizeof(nameBuf), "%s", name); // name is volatile
     Status status = STATUS_OK;
@@ -528,7 +528,7 @@ Status firestep::prog_load_cmd(const char *name, JsonCommand &jcmd) {
         return status;
     }
 
-    status = jcmd.parse(buf, STATUS_WAIT_IDLE);
+    status = jcmd.parse(buf, pDuino, STATUS_WAIT_IDLE);
     if (status < 0) {
         TESTCOUT2("prog_load_cmd:", nameBuf, " parse error:", status); // should never happen
     } else {

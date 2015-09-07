@@ -5,12 +5,13 @@
 #include <sstream>
 #include "FireUtils.h"
 #include "Arduino.h"
+#include "IDuino.h"
 #include "Thread.h"
 
 SerialType Serial;
 MockDuino arduino;
 vector<uint8_t> serialbytes;
-int16_t eeprom_data[EEPROM_END];
+int16_t eeprom_data[EEPROM_SIZE];
 
 
 void SerialType::clear() {
@@ -157,7 +158,7 @@ void MockDuino::clear() {
     for (int16_t i = 0; i < ARDUINO_MEM; i++) {
         mem[i] = NOVALUE;
     }
-	for (int16_t i=0; i<EEPROM_END; i++) {
+	for (int16_t i=0; i<EEPROM_SIZE; i++) {
 		eeprom_data[i] = NOVALUE;
 	}
     memset(pinPulses, 0, sizeof(pinPulses));
@@ -275,21 +276,21 @@ void delay(int ms) {
 /////////////// avr/eeprom.h /////////////////
 
 uint8_t eeprom_read_byte(uint8_t *addr) {
-    if ((size_t) addr < 0 || EEPROM_END <= (size_t) addr) {
+    if ((size_t) addr < 0 || EEPROM_SIZE <= (size_t) addr) {
         return 255;
     }
     return eeprom_data[(size_t) addr];
 }
 
 void eeprom_write_byte(uint8_t *addr, uint8_t value) {
-    if (0 <= (size_t) addr && (size_t) addr < EEPROM_END) {
+    if (0 <= (size_t) addr && (size_t) addr < EEPROM_SIZE) {
         eeprom_data[(size_t) addr] = value;
     }
 }
 
 string eeprom_read_string(uint8_t *addr) {
 	string result;
-	for (size_t i=0; i+(size_t)addr<EEPROM_END; i++) {
+	for (size_t i=0; i+(size_t)addr<EEPROM_SIZE; i++) {
 		uint8_t b = eeprom_read_byte(i+addr);
 		if (!b) { break; }
 		result += (char) b;

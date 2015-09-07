@@ -104,11 +104,11 @@ inline void pulseFast(uint8_t pin) {
     SREG = oldSREG;
 }
 #else
-inline void pulseFast(uint8_t pin) {
-    digitalWrite(pin, HIGH);
-    // Arduino digital I/O is so slow there is no need for delay
-    digitalWrite(pin, LOW);
-}
+//inline void pulseFast(uint8_t pin) {
+    //digitalWrite(pin, HIGH);
+    //// Arduino digital I/O is so slow there is no need for delay
+    //digitalWrite(pin, LOW);
+//}
 #endif
 
 inline int16_t freeRam () {
@@ -121,8 +121,8 @@ inline int16_t freeRam () {
 #endif
 }
 
-#define EEPROM_BYTES 512 /* Actual capacity will be less because eeprom buffer is part of MAX_JSON */
-#define EEPROM_END 4096
+//#define EEPROM_CMD_BYTES 512 /* Actual capacity will be less because eeprom buffer is part of MAX_JSON */
+//#define EEPROM_SIZE 4096
 
 #ifdef TEST
 extern uint8_t eeprom_read_byte(uint8_t *addr);

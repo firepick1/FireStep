@@ -1,7 +1,6 @@
 #ifdef CMAKE
 #include <cstring>
 #endif
-#include "Arduino.h"
 #include "AnalogRead.h"
 #include "version.h"
 #include "MachineThread.h"
@@ -19,8 +18,8 @@ void MachineThread::setup(PinConfig pc) {
     displayStatus();
 }
 
-MachineThread::MachineThread()
-    : rawController(machine), fpdController(machine), status(STATUS_BUSY_SETUP), printBannerOnIdle(true) {
+MachineThread::MachineThread(Machine& machine )
+    : machine(machine), rawController(machine), fpdController(machine), status(STATUS_BUSY_SETUP), printBannerOnIdle(true) {
     setController(rawController);
 }
 
@@ -144,18 +143,18 @@ char * MachineThread::buildStartupJson() {
 Status MachineThread::executeEEPROM() {
     char *buf = buildStartupJson();
     TESTCOUT3("executeEEPROM:", buf, " len:", strlen(buf), " status:", (int) status);
-    status = command.parse(buf, status);
+    status = command.parse(buf, machine.pDuino, status);
     TESTCOUT2("executeEEPROM status:", (int) status, " buf:", buf);
     if (status < 0) {
-        Serial.print("{\"s\":");
-        Serial.print(status);
-        Serial.println(",\"r\":");
+        machine.pDuino->serial_print("{\"s\":");
+        machine.pDuino->serial_print(status);
+        machine.pDuino->serial_println(",\"r\":");
         buf = buildStartupJson();
         for (char *s = buf; *s; s++) {
-            Serial.print(*s);
+            machine.pDuino->serial_print(*s);
         }
-        Serial.println();
-        Serial.println("}");
+        machine.pDuino->serial_println();
+        machine.pDuino->serial_println("}");
     }
 
     return status;
@@ -225,12 +224,12 @@ Status MachineThread::syncConfig() {
     eeprom_write_byte(eepAddr, ' '); // disable eeprom
     for (int16_t i=1; i<=len; i++) { // include terminator
         eeprom_write_byte(eepAddr+i, buf[i]);
-        //if (Serial.available()) { return; }
+        //if (machine.pDuino->serial_available()) { return; }
     }
     machine.pDisplay->setStatus(ds);
     TESTCOUT3("syncConfig len:", strlen(buf), " buf:", buf, " status:", (int) status);
     // Commit config JSON to EEPROM iff JSON is valid
-    status = command.parse(buf, status);
+    status = command.parse(buf, machine.pDuino, status);
     if (status == STATUS_BUSY_PARSED) {
         machine.syncHash = machine.hash(); // commit saved
         eeprom_write_byte(eepAddr, buf[0]); // enable eeprom
@@ -247,12 +246,12 @@ void MachineThread::printBanner() {
     machine.syncHash = machine.hash();
     snprintf(msg, sizeof(msg), "FireStep %d.%d.%d sysch:%ld",
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) machine.syncHash);
-    Serial.println(msg);
+    machine.pDuino->serial_println(msg);
 }
 
 void MachineThread::loop() {
 #ifdef THROTTLE_SPEED
-    if (Serial.available()) {
+    if (machine.pDuino->serial_available()) {
         return;
     }
     pController->speed = ADCH;
@@ -276,9 +275,9 @@ void MachineThread::loop() {
     case STATUS_WAIT_MOVING:
     case STATUS_WAIT_BUSY:
     case STATUS_WAIT_CANCELLED:
-        if (Serial.available()) {
+        if (machine.pDuino->serial_available()) {
             command.clear();
-            status = command.parse(NULL, status);
+            status = command.parse(NULL, machine.pDuino, status);
         } else {
             if (printBannerOnIdle) {
                 printBanner();
@@ -288,8 +287,8 @@ void MachineThread::loop() {
         }
         break;
     case STATUS_WAIT_EOL:
-        if (Serial.available()) {
-            status = command.parse(NULL, status);
+        if (machine.pDuino->serial_available()) {
+            status = command.parse(NULL, machine.pDuino, status);
         }
         break;
     case STATUS_BUSY_PARSED:
@@ -297,7 +296,7 @@ void MachineThread::loop() {
     case STATUS_BUSY:
     case STATUS_BUSY_CALIBRATING:
     case STATUS_BUSY_MOVING:
-        if (Serial.available()) {
+        if (machine.pDuino->serial_available()) {
             status = pController->cancel(command, STATUS_SERIAL_CANCEL);
         } else {
             status = process(command);

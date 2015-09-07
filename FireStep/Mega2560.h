@@ -9,8 +9,26 @@
 #include "Arduino.h"
 #include "IDuino.h"
 
-#define EEPROM_BYTES 4096
+#ifdef EEPROM_SIZE
+#undef EEPROM_SIZE
+#endif
+#define EEPROM_SIZE 4096
 
+#define CLOCK_HZ 16000000L	// cycles per second
+#define TIMER_PRESCALE	1024 /* 1, 8, 64, 256, 1024 */
+#define FREQ_CYCLES(freq) (CLOCK_HZ/(freq))
+#define MS_CYCLES(ms) FREQ_CYCLES(1000.0 / (ms))
+#define MS_TICKS_REAL(ms) (FREQ_CYCLES(1000.0 / (ms))/TIMER_PRESCALE)
+#define MS_TICKS(ms) ((int32_t) MS_TICKS_REAL(ms))
+#define MAX_GENERATIONS 50010
+#define GENERATION_RESET 50000
+#define TICK_MICROSECONDS ((TIMER_PRESCALE * 1000L)/(CLOCK_HZ/1000))
+#define TICKS_PER_SECOND ((int32_t)MS_TICKS(1000))
+
+// uint16_t hardware timer
+#define TIMER_CLEAR() TCNT1 = 0
+#define TIMER_SETUP() TCCR1A = 0 /* Timer mode */; TIMSK1 = (0 << TOIE1) /* disable interrupts */
+#define TIMER_VALUE() TCNT1
 
 namespace firestep {
 
@@ -18,18 +36,27 @@ namespace firestep {
  * FireStep hardware implementation for Arduino Mega2560
  */
 typedef class Mega2560 : public IDuino {
+public: // ArduinoJson Print
+	virtual size_t write(uint8_t value) {
+	}
 public: // Serial
-    virtual inline void print(const char value) {
-        print(value);
+	virtual void serial_begin(long baud) {
+		Serial.begin(baud);
+	}
+	virtual int serial_available() {
+		return Serial.available();
+	}
+	virtual byte serial_read() {
+		return Serial.read();
+	}
+    virtual inline void serial_print(const char value) {
+        Serial.print(value);
     }
-    virtual inline void print(const char *value) {
-        print(value);
+    virtual inline void serial_print(const char *value) {
+        Serial.print(value);
     }
-    virtual inline void print(int value, int format = DEC) {
-        print(value, format);
-    }
-    virtual inline void println(const char value, int format = DEC) {
-        println(value, format);
+    virtual inline void serial_print(int value, int format = DEC) {
+        Serial.print(value, format);
     }
 
 public: // Pins
@@ -56,6 +83,16 @@ public: // misc
     virtual inline void delay(int ms) {
         delay(ms);
     }
+	virtual inline void timer_enable(bool enable) {
+		if (enable) {
+			TCCR1B = 1 << CS12 | 0 << CS11 | 1 << CS10; /* Timer prescaler div1024 (15625Hz) */
+		} else {
+			TCCR1B = 0;	/* stop clock */
+		}
+	}
+	virtual inline bool timer_enabled() {
+		return (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10)) ? true : false;
+	}
 
 public: // EEPROM
     virtual inline uint8_t eeprom_read_byte(uint8_t *addr) {

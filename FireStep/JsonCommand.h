@@ -2,7 +2,6 @@
 #define JSONCOMMAND_H
 
 #include "version.h"
-#include "Arduino.h"
 #include "Thread.h"
 #ifdef TEST
 #include "ArduinoJson.h"
@@ -38,8 +37,8 @@ private:
     char error[8];
 
 private:
-    Status parseCore();
-    Status parseInput(const char *jsonIn, Status status);
+    Status parseCore(IDuinoPtr pDuino);
+    Status parseInput(const char *jsonIn, IDuinoPtr pDuino, Status status);
 public:
     JsonCommand();
     JsonVariant jResponseRoot;
@@ -51,7 +50,7 @@ public:
     inline JsonObject & response() {
         return jResponseRoot;
     }
-    Status parse(const char *jsonIn, Status status=STATUS_WAIT_IDLE);
+    Status parse(const char *jsonIn, IDuinoPtr pDuino, Status status=STATUS_WAIT_IDLE);
     bool isValid();
     inline Status getStatus() {
         return (Status) (int32_t) jResponseRoot["s"];
