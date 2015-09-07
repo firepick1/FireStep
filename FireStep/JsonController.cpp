@@ -738,14 +738,14 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
         return STATUS_JSON_STRING;
     }
     if (buf[0] == 0) { // query
-        uint8_t c = eeprom_read_byte((uint8_t*) addrLong);
+        uint8_t c = machine.pDuino->eeprom_read_byte((uint8_t*) addrLong);
         if (c && c != 255) {
             char *buf = jcmd.allocate(EEPROM_CMD_BYTES);
             if (!buf) {
                 return jcmd.setError(STATUS_JSON_MEM3, key);
             }
             for (int16_t i=0; i<EEPROM_CMD_BYTES; i++) {
-                c = eeprom_read_byte((uint8_t*) addrLong+i);
+                c = machine.pDuino->eeprom_read_byte((uint8_t*) addrLong+i);
                 if (c == 255 || c == 0) {
                     buf[i] = 0;
                     break;
@@ -760,11 +760,11 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
             return jcmd.setError(STATUS_JSON_EEPROM, key);
         }
         for (int16_t i=0; i<len; i++) {
-            eeprom_write_byte((uint8_t*)addrLong+i, buf[i]);
+            machine.pDuino->eeprom_write_byte((uint8_t*)addrLong+i, buf[i]);
             TESTCOUT3("EEPROM[", ((int)addrLong+i), "]:",
-                      (char) eeprom_read_byte((uint8_t *) addrLong+i),
+                      (char) machine.pDuino->eeprom_read_byte((uint8_t *) addrLong+i),
                       " ",
-                      (int) eeprom_read_byte((uint8_t *) addrLong+i)
+                      (int) machine.pDuino->eeprom_read_byte((uint8_t *) addrLong+i)
                      );
         }
     }
@@ -807,7 +807,7 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
     if (s && *s == 0) { // read
         if (isAnalog) {
             machine.pDuino->pinMode(pin+A0, INPUT);
-            jobj[key] = analogRead(pin+A0);
+            jobj[key] = machine.pDuino->analogRead(pin+A0);
         } else {
             machine.pDuino->pinMode(pin, INPUT);
             jobj[key] = (bool) machine.pDuino->digitalRead(pin);
@@ -819,7 +819,7 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
                 return jcmd.setError(STATUS_JSON_255, key);
             }
             machine.pDuino->pinMode(pin+A0, OUTPUT);
-            analogWrite(pin+A0, (int16_t) value);
+            machine.pDuino->analogWrite(pin+A0, (int16_t) value);
         } else {
             return jcmd.setError(STATUS_JSON_255, key);
         }

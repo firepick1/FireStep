@@ -59,7 +59,10 @@
 #define DIE() kill(getpid(), SIGABRT)
 #endif
 
+
 namespace firestep {
+
+typedef int32_t Ticks;
 
 /**
  * Abstract hardware interface for FireStep usage of Arduino 
@@ -117,6 +120,7 @@ public: // FireStep
 		 */
 		 digitalWrite(pin, LOW);
 	 }
+	 virtual Ticks ticks() = 0;
 	 
 } IDuino, *IDuinoPtr;
 

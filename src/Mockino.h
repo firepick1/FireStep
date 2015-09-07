@@ -17,6 +17,7 @@ private:
     int32_t			pinPulses[ARDUINO_PINS];
     int16_t			mem[ARDUINO_MEM];
     int32_t			usDelay;
+	Ticks			_ticks;
 	bool			_timer_enabled;
 
 public: // construction
@@ -56,6 +57,7 @@ public: // FireStep
         digitalWrite(pin, HIGH);
         digitalWrite(pin, LOW);
     }
+    virtual Ticks ticks();
 
 public: // Testing: Serial
 	std::string serial_output();

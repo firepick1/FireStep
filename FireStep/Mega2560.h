@@ -2,12 +2,13 @@
 #define MEGA2560_H
 
 /**
- * WARNING: 
+ * WARNING:
  * This file should only be included for use on Arduino Mega2560.
  */
 
 #include "Arduino.h"
 #include "IDuino.h"
+#include "Thread.h"
 
 #ifdef EEPROM_SIZE
 #undef EEPROM_SIZE
@@ -37,18 +38,18 @@ namespace firestep {
  */
 typedef class Mega2560 : public IDuino {
 public: // ArduinoJson Print
-	virtual size_t write(uint8_t value) {
-	}
+    virtual size_t write(uint8_t value) {
+    }
 public: // Serial
-	virtual void serial_begin(long baud) {
-		Serial.begin(baud);
-	}
-	virtual int serial_available() {
-		return Serial.available();
-	}
-	virtual byte serial_read() {
-		return Serial.read();
-	}
+    virtual void serial_begin(long baud) {
+        Serial.begin(baud);
+    }
+    virtual int serial_available() {
+        return Serial.available();
+    }
+    virtual byte serial_read() {
+        return Serial.read();
+    }
     virtual inline void serial_print(const char value) {
         Serial.print(value);
     }
@@ -61,49 +62,59 @@ public: // Serial
 
 public: // Pins
     virtual inline void analogWrite(int16_t dirPin, int16_t value) {
-        analogWrite(dirPin, value);
+        ::analogWrite(dirPin, value);
     }
     virtual inline int16_t analogRead(int16_t dirPin) {
-        return analogRead(dirPin);
+        return ::analogRead(dirPin);
     }
     virtual inline void digitalWrite(int16_t dirPin, int16_t value) {
-        digitalWrite(dirPin, value);
+        ::digitalWrite(dirPin, value);
     }
     virtual inline void delayMicroseconds(uint16_t usDelay) {
-        delayMicroseconds(usDelay);
+        ::delayMicroseconds(usDelay);
     }
     virtual inline int16_t digitalRead(int16_t dirPin) {
-        return digitalRead(dirPin);
+        return ::digitalRead(dirPin);
     }
     virtual inline void pinMode(int16_t pin, int16_t inout) {
-        pinMode(pin, inout);
+        ::pinMode(pin, inout);
     }
 
 public: // misc
     virtual inline void delay(int ms) {
-        delay(ms);
+        ::delay(ms);
     }
-	virtual inline void timer_enable(bool enable) {
-		if (enable) {
-			TCCR1B = 1 << CS12 | 0 << CS11 | 1 << CS10; /* Timer prescaler div1024 (15625Hz) */
-		} else {
-			TCCR1B = 0;	/* stop clock */
-		}
-	}
-	virtual inline bool timer_enabled() {
-		return (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10)) ? true : false;
-	}
+    virtual inline void timer_enable(bool enable) {
+        if (enable) {
+            TCCR1B = 1 << CS12 | 0 << CS11 | 1 << CS10; /* Timer prescaler div1024 (15625Hz) */
+        } else {
+            TCCR1B = 0;	/* stop clock */
+        }
+    }
+    virtual inline bool timer_enabled() {
+        return (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10)) ? true : false;
+    }
 
 public: // EEPROM
     virtual inline uint8_t eeprom_read_byte(uint8_t *addr) {
-        return eeprom_read_byte(addr);
+#ifdef Arduino_H
+        return ::eeprom_read_byte(addr);
+#else
+		return 0;
+#endif
     }
     virtual inline void eeprom_write_byte(uint8_t *addr, uint8_t value) {
-        eeprom_write_byte(addr, value);
+#ifdef Arduino_H
+		::eeprom_write_byte(addr, value);
+#endif
     }
 
     virtual inline string eeprom_read_string(uint8_t *addr) {
-        return eeprom_read_string(addr);
+#ifdef Arduino_H
+        return ::eeprom_read_string(addr);
+#else
+		return "(Not Mega2560)";
+#endif
     }
 
 public: // FireStep
@@ -136,6 +147,9 @@ public: // FireStep
 
         SREG = oldSREG;
 #endif
+    }
+    virtual Ticks ticks() {
+		return firestep::ticks();
     }
 } Mega2560;
 

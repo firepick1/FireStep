@@ -3269,7 +3269,7 @@ void test_autoSync() {
     ASSERTEQUALS(HASH3, buf);
 
     mt.loop();
-    string eeprom3 = eeprom_read_string(0);
+    string eeprom3 = mockino.eeprom_read_string(0);
     ASSERTEQUALS(JT( "["
                      "{'sys':{'ch':" HASH3 ",'pc':2,'to':0,'ah':1,'db':0,'hp':3,'jp':0,"
                      "'lh':0,'mv':12800,'om':3,'pb':2,'pi':11,'tv':0.70}},"
@@ -3306,7 +3306,7 @@ void test_autoSync() {
     mt.loop(); // sys
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTEQUAL(false, machine.autoSync); // autoSync must always be enabled explicitly
-    ASSERTEQUALS(eeprom3.c_str(), eeprom_read_string(0).c_str());
+    ASSERTEQUALS(eeprom3.c_str(), mockino.eeprom_read_string(0).c_str());
     ASSERTEQUALS(JT("{'s':0,'r':"
                     "{'sys':{'ch':" HASH3 ",'pc':2,'to':0,'ah':true,'db':0,'hp':3,"
                     "'jp':false,'lh':false,'mv':12800,'om':3,'pb':2,'pi':11,'tv':0.700}},"
@@ -3354,18 +3354,18 @@ void test_eep() {
 
     uint8_t *eeaddr = 0;
     mockino.clear();
-    eeprom_write_byte(eeaddr++, '{');
-    eeprom_write_byte(eeaddr++, '"');
-    eeprom_write_byte(eeaddr++, 's');
-    eeprom_write_byte(eeaddr++, 'y');
-    eeprom_write_byte(eeaddr++, 's');
-    eeprom_write_byte(eeaddr++, 'f');
-    eeprom_write_byte(eeaddr++, 'r');
-    eeprom_write_byte(eeaddr++, '"');
-    eeprom_write_byte(eeaddr++, ':');
-    eeprom_write_byte(eeaddr++, '"');
-    eeprom_write_byte(eeaddr++, '"');
-    eeprom_write_byte(eeaddr++, '}');
+    mockino.eeprom_write_byte(eeaddr++, '{');
+    mockino.eeprom_write_byte(eeaddr++, '"');
+    mockino.eeprom_write_byte(eeaddr++, 's');
+    mockino.eeprom_write_byte(eeaddr++, 'y');
+    mockino.eeprom_write_byte(eeaddr++, 's');
+    mockino.eeprom_write_byte(eeaddr++, 'f');
+    mockino.eeprom_write_byte(eeaddr++, 'r');
+    mockino.eeprom_write_byte(eeaddr++, '"');
+    mockino.eeprom_write_byte(eeaddr++, ':');
+    mockino.eeprom_write_byte(eeaddr++, '"');
+    mockino.eeprom_write_byte(eeaddr++, '"');
+    mockino.eeprom_write_byte(eeaddr++, '}');
 	Machine machine(&mockino);
     MachineThread mt(machine);
     test_setup(mt,false);
@@ -3450,7 +3450,7 @@ void test_eep() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'eep':{'0':'{\\\"systv\\\":0.700}'}},'t':0.000}\n"), mockino.serial_output().c_str());
     test_ticks(1);
-    ASSERTEQUALS(JT("{'systv':0.700}"), eeprom_read_string(0).c_str());
+    ASSERTEQUALS(JT("{'systv':0.700}"), mockino.eeprom_read_string(0).c_str());
 
     // test restart
     mt.status = STATUS_BUSY_SETUP;

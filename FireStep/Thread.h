@@ -1,15 +1,13 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-//#include "IDuino.h"
 #include "MCU.h"
+#include "IDuino.h"
 //#include "Mega2560.h"
 
 namespace firestep {
 
 extern int16_t leastFreeRam;
-
-typedef int32_t Ticks;
 
 typedef union ThreadClock  {
     Ticks ticks;

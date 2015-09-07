@@ -35,6 +35,7 @@ void Mockino::clear() {
     CLKPR = 0;	// Clock prescale register
 	sei(); // enable interrupts
 	_timer_enabled = true;
+	_ticks = 0;
 }
 
 void Mockino::serial_clear() {
@@ -292,3 +293,7 @@ string Mockino::eeprom_read_string(uint8_t *addr) {
 	}
 	return result;
 }	
+
+Ticks Mockino::ticks() {
+	return _ticks++;
+}
