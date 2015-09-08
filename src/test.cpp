@@ -2343,7 +2343,7 @@ void test_calibrate() {
     {   // with sv == 0, nothing should change
 		Machine machine(&mockino);
 		MachineThread mt(machine);
-		test_setup(mt);
+		test_setup_FPD(mt);
 
         machine.probe.probeData[0] = -62.259;
         machine.probe.probeData[1] = -61.701;
@@ -4883,6 +4883,8 @@ void test_pgm_parse(const char *pgm) {
     ASSERTEQUALS("", mockino.serial_output().c_str());
     ASSERTEQUAL(STATUS_OK, prog_dump(pgm, &mockino));
     s = mockino.serial_output().c_str();
+	ASSERTNONZERO(strlen(s));
+	TESTCOUT1(pgm, s);
     ASSERTEQUAL(true, (strncmp("[{\"msg\":", s, 8) != 0));
     ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(s, &mockino));
 }

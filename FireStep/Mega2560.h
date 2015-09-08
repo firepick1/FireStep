@@ -117,6 +117,20 @@ public: // EEPROM
 #endif
     }
 
+public: // PROGMEM
+	virtual inline int PM_strcmp(const char *a, const char *b) {
+		return -strcmp_P(b, a);
+	}
+	virtual inline char * PM_strcpy(char *dst, const char *src) {
+		return strcpy_P(dst, src);
+	}
+	virtual inline size_t PM_strlen(const char *src) {
+		return strlen_P(src);
+	}
+	virtual inline byte PM_read_byte_near(const void *src) {
+		return pgm_read_byte_near(src);
+	}
+
 public: // FireStep
     virtual inline void pulseFast(uint8_t pin) {
 #ifdef Arduino_H

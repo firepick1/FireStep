@@ -108,6 +108,20 @@ public: // EEPROM
 	virtual void eeprom_write_byte(uint8_t *addr, uint8_t value) = 0;
 	virtual string eeprom_read_string(uint8_t *addr) = 0;
 
+public: // PROGMEM
+	virtual inline int PM_strcmp(const char *a, const char *b) {
+		return -strcmp(b, a);
+	}
+	virtual inline char * PM_strcpy(char *dst, const char *src) {
+		return strcpy(dst, src);
+	}
+	virtual inline size_t PM_strlen(const char *src) {
+		return strlen(src);
+	}
+	virtual inline byte PM_read_byte_near(const void *src) {
+		return * (uint8_t *) src;
+	}
+
 public: // FireStep
 	virtual void pulseFast(uint8_t pin)  {
 		digitalWrite(pin, HIGH);
