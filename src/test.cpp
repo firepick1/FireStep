@@ -2357,11 +2357,11 @@ void test_calibrate() {
         mt.loop();
         ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
         mt.loop();
-        ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
                         "'cal':{'bx':0.0000,'by':0.0000,'bz':0.000,'ha':-67.199,'sv':0.000}},"
                         "'t':0.000}\n"),
                      mockino.serial_output().c_str());
+        ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].home);
         ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[1].home);
         ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[2].home);
