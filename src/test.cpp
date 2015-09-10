@@ -71,10 +71,20 @@ void test_Serial() {
     ASSERTEQUALS("", mockino.serial_output().c_str());
     mockino.write('x');
     ASSERTEQUALS("x", mockino.serial_output().c_str());
-    mockino.serial_print("a");
-    ASSERTEQUALS("a", mockino.serial_output().c_str());
+    mockino.serial_print("abc");
+    ASSERTEQUALS("abc", mockino.serial_output().c_str());
     mockino.serial_println("xyz");
     ASSERTEQUALS("xyz\n", mockino.serial_output().c_str());
+    mockino.serial_print('b');
+    ASSERTEQUALS("b", mockino.serial_output().c_str());
+    mockino.serial_println('c');
+    ASSERTEQUALS("c\n", mockino.serial_output().c_str());
+    mockino.serial_println();
+    ASSERTEQUALS("\n", mockino.serial_output().c_str());
+    mockino.serial_print(33, DEC);
+    ASSERTEQUALS("33", mockino.serial_output().c_str());
+    mockino.serial_println(34, DEC);
+    ASSERTEQUALS("34\n", mockino.serial_output().c_str());
 
     cout << "TEST	: test_Serial() OK " << endl;
 }
@@ -4879,14 +4889,13 @@ void test_msg_cmt_idl() {
 void test_pgm_parse(const char *pgm) {
 	TESTCOUT1("test_pgm_parse:", pgm);
     JsonCommand jc;
-    const char *s;
     ASSERTEQUALS("", mockino.serial_output().c_str());
     ASSERTEQUAL(STATUS_OK, prog_dump(pgm, &mockino));
-    s = mockino.serial_output().c_str();
-	ASSERTNONZERO(strlen(s));
-	TESTCOUT1(pgm, s);
-    ASSERTEQUAL(true, (strncmp("[{\"msg\":", s, 8) != 0));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(s, &mockino));
+    string s = mockino.serial_output();
+	ASSERTNONZERO(s.size());
+	TESTCOUT1(pgm, s.c_str());
+    ASSERTEQUAL(true, (strncmp("[{\"msg\":", s.c_str(), 8) != 0));
+    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(s.c_str(), &mockino));
 }
 
 void test_cal_arm() {
@@ -4941,7 +4950,7 @@ void test_pgm() {
     cout << "TEST	: test_pgm() =====" << endl;
 
     // ProgMem.cpp test
-    ASSERTEQUALS(JT("[{'msg':'test A'},{'msg':'test B'}]"), prog_src("test"));
+    ASSERTEQUALS(JT("[{'msg':'test A'},{'msg':'test B'}]"), prog_src("test", &mockino));
 
     // pgmd: dump program
 	Machine machine(&mockino);

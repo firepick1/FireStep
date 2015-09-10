@@ -69,7 +69,7 @@ public:
     size_t responseCapacity();
     void responseClear();
     char * allocate(size_t length);
-    void addQueryAttr(JsonObject& node, const char *key);
+    void addQueryAttr(JsonObject& node, const char *key, IDuinoPtr pDuino);
 } JsonCommand;
 
 } // namespace firestep

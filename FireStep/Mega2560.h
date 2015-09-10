@@ -10,6 +10,10 @@
 #include "IDuino.h"
 #include "Thread.h"
 
+#ifndef Arduino_h
+#define PROGMEM
+#endif
+
 #ifdef EEPROM_SIZE
 #undef EEPROM_SIZE
 #endif
@@ -117,6 +121,7 @@ public: // EEPROM
 #endif
     }
 
+#ifdef Arduino_H
 public: // PROGMEM
 	virtual inline int PM_strcmp(const char *a, const char *b) {
 		return -strcmp_P(b, a);
@@ -130,6 +135,7 @@ public: // PROGMEM
 	virtual inline byte PM_read_byte_near(const void *src) {
 		return pgm_read_byte_near(src);
 	}
+#endif
 
 public: // FireStep
     virtual inline void pulseFast(uint8_t pin) {

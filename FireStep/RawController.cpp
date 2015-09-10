@@ -100,26 +100,26 @@ Status MTO_RAWMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* k
     Status status = STATUS_OK;
     const char *s;
 
-    if (strcmp_PS(OP_mov, key) == 0) {
+    if (machine.pDuino->PM_strcmp(OP_mov, key) == 0) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            jcmd.addQueryAttr(node, OP_lp);
-            jcmd.addQueryAttr(node, OP_mv);
-            jcmd.addQueryAttr(node, OP_pp);
-            jcmd.addQueryAttr(node, OP_sg);
-            jcmd.addQueryAttr(node, OP_tp);
-            jcmd.addQueryAttr(node, OP_ts);
+            jcmd.addQueryAttr(node, OP_lp, machine.pDuino);
+            jcmd.addQueryAttr(node, OP_mv, machine.pDuino);
+            jcmd.addQueryAttr(node, OP_pp, machine.pDuino);
+            jcmd.addQueryAttr(node, OP_sg, machine.pDuino);
+            jcmd.addQueryAttr(node, OP_tp, machine.pDuino);
+            jcmd.addQueryAttr(node, OP_ts, machine.pDuino);
             if (machine.getMotorAxis(0).isEnabled()) {
-                jcmd.addQueryAttr(node, OP_1);
+                jcmd.addQueryAttr(node, OP_1, machine.pDuino);
             }
             if (machine.getMotorAxis(1).isEnabled()) {
-                jcmd.addQueryAttr(node, OP_2);
+                jcmd.addQueryAttr(node, OP_2, machine.pDuino);
             }
             if (machine.getMotorAxis(2).isEnabled()) {
-                jcmd.addQueryAttr(node, OP_3);
+                jcmd.addQueryAttr(node, OP_3, machine.pDuino);
             }
             if (machine.getMotorAxis(3).isEnabled()) {
-                jcmd.addQueryAttr(node, OP_4);
+                jcmd.addQueryAttr(node, OP_4, machine.pDuino);
             }
         }
         JsonObject& kidObj = jobj[key];
@@ -134,11 +134,11 @@ Status MTO_RAWMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* k
             }
         }
         status = execute(jcmd, &kidObj);
-    } else if (strcmp_PS(OP_movrx,key) == 0 || strcmp_PS(OP_rx,key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_movrx,key) == 0 || machine.pDuino->PM_strcmp(OP_rx,key) == 0) {
         return jcmd.setError(STATUS_MTO_FIELD, key);
-    } else if (strcmp_PS(OP_movry,key) == 0 || strcmp_PS(OP_ry,key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_movry,key) == 0 || machine.pDuino->PM_strcmp(OP_ry,key) == 0) {
         return jcmd.setError(STATUS_MTO_FIELD, key);
-    } else if (strcmp_PS(OP_movrz,key) == 0 || strcmp_PS(OP_rz,key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_movrz,key) == 0 || machine.pDuino->PM_strcmp(OP_rz,key) == 0) {
         return jcmd.setError(STATUS_MTO_FIELD, key);
     } else if (strncmp("mov", key, 3) == 0) { // short form
         // TODO: clean up mov implementation
@@ -151,11 +151,11 @@ Status MTO_RAWMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* k
         if (status == STATUS_OK) {
             status = execute(jcmd, NULL);
         }
-    } else if (strcmp_PS(OP_d, key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_d, key) == 0) {
         if (!jobj.at("a").success()) {
             return jcmd.setError(STATUS_FIELD_REQUIRED,"a");
         }
-    } else if (strcmp_PS(OP_a, key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_a, key) == 0) {
         // polar CCW from X-axis around X0Y0
         if (!jobj.at("d").success()) {
             return jcmd.setError(STATUS_FIELD_REQUIRED,"d");
@@ -169,19 +169,19 @@ Status MTO_RAWMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* k
         TESTCOUT2("x:", x, " y:", y);
         destination.value[0] = x;
         destination.value[1] = y;
-    } else if (strcmp_PS(OP_lp, key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_lp, key) == 0) {
         // output variable
-    } else if (strcmp_PS(OP_mv, key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_mv, key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, machine.vMax);
-    } else if (strcmp_PS(OP_pp, key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_pp, key) == 0) {
         // output variable
-    } else if (strcmp_PS(OP_sg, key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_sg, key) == 0) {
         status = processField<int16_t, int32_t>(jobj, key, nSegs);
-    } else if (strcmp_PS(OP_ts, key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_ts, key) == 0) {
         // output variable
-    } else if (strcmp_PS(OP_tp, key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_tp, key) == 0) {
         // output variable
-    } else if (strcmp_PS(OP_tv, key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_tv, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.tvMax);
     } else {
         MotorIndex iMotor = machine.motorOfName(key);
@@ -212,10 +212,10 @@ Status RawController::processPosition(JsonCommand &jcmd, JsonObject& jobj, const
     if (strlen(key) == 3) {
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            jcmd.addQueryAttr(node, OP_1);
-            jcmd.addQueryAttr(node, OP_2);
-            jcmd.addQueryAttr(node, OP_3);
-            jcmd.addQueryAttr(node, OP_4);
+            jcmd.addQueryAttr(node, OP_1, machine.pDuino);
+            jcmd.addQueryAttr(node, OP_2, machine.pDuino);
+            jcmd.addQueryAttr(node, OP_3, machine.pDuino);
+            jcmd.addQueryAttr(node, OP_4, machine.pDuino);
             if (!node.at("4").success()) {
                 return jcmd.setError(STATUS_JSON_KEY, "4");
             }
@@ -256,17 +256,17 @@ Status RawController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
     if (clear) {
         machine.probe.setup(machine.getMotorPosition(), machine.pDuino);
     }
-    if (strcmp_PS(OP_prb, key) == 0) {
+    if (machine.pDuino->PM_strcmp(OP_prb, key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);
-            jcmd.addQueryAttr(node, OP_1);
-            jcmd.addQueryAttr(node, OP_2);
-            jcmd.addQueryAttr(node, OP_3);
-            jcmd.addQueryAttr(node, OP_4);
-            jcmd.addQueryAttr(node, OP_ip);
-            jcmd.addQueryAttr(node, OP_pn);
-            jcmd.addQueryAttr(node, OP_sd);
+            jcmd.addQueryAttr(node, OP_1, machine.pDuino);
+            jcmd.addQueryAttr(node, OP_2, machine.pDuino);
+            jcmd.addQueryAttr(node, OP_3, machine.pDuino);
+            jcmd.addQueryAttr(node, OP_4, machine.pDuino);
+            jcmd.addQueryAttr(node, OP_ip, machine.pDuino);
+            jcmd.addQueryAttr(node, OP_pn, machine.pDuino);
+            jcmd.addQueryAttr(node, OP_sd, machine.pDuino);
         }
         JsonObject& kidObj = jobj[key];
         if (kidObj.success()) {
@@ -280,11 +280,11 @@ Status RawController::initializeProbe(JsonCommand& jcmd, JsonObject& jobj,
                 return jcmd.setError(STATUS_FIELD_REQUIRED, "pn");
             }
         }
-    } else if (strcmp_PS(OP_prbip, key) == 0 || strcmp_PS(OP_ip, key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_prbip, key) == 0 || machine.pDuino->PM_strcmp(OP_ip, key) == 0) {
         status = processField<bool, bool>(jobj, key, machine.probe.invertProbe);
-    } else if (strcmp_PS(OP_prbpn, key) == 0 || strcmp_PS(OP_pn, key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_prbpn, key) == 0 || machine.pDuino->PM_strcmp(OP_pn, key) == 0) {
         status = processField<PinType, int32_t>(jobj, key, machine.probe.pinProbe);
-    } else if (strcmp_PS(OP_prbsd, key) == 0 || strcmp_PS(OP_sd, key) == 0) {
+    } else if (machine.pDuino->PM_strcmp(OP_prbsd, key) == 0 || machine.pDuino->PM_strcmp(OP_sd, key) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else {
         MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));
@@ -340,7 +340,7 @@ Status RawController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
             machine.getMotorAxis(i).homing = false;
         }
     }
-    if (strcmp_PS(OP_hom, key) == 0) {
+    if (machine.pDuino->PM_strcmp(OP_hom, key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
             JsonObject& node = jobj.createNestedObject(key);

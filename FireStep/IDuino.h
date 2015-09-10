@@ -3,7 +3,10 @@
 
 #include "../ArduinoJson/include/ArduinoJson/Arduino/Print.hpp"
 
+#ifndef Arduino_h
 #include <string>
+#include <string.h>
+#endif
 
 /* IDuino implementations may undef and re-define LARGER values. These are minimums: */
 #define EEPROM_CMD_BYTES	512		/* JsonController command buffer for EEPROM interaction */
@@ -79,14 +82,18 @@ public: // Serial
     virtual void serial_print(const char value) = 0;
     virtual void serial_print(int value, int format = DEC) = 0;
 
-    virtual void serial_println(const char value, int format = DEC) {
-		serial_print(value, format);
+    virtual void serial_println(const char value) {
+		serial_print(value);
 		serial_print('\n');
 	}
 	void serial_println(const char *value="") {
 		if (*value) {
 			serial_print(value);
 		}
+		serial_print('\n');
+	}
+    virtual void serial_println(int value, int format = DEC)  {
+		serial_print(value, format);
 		serial_print('\n');
 	}
 

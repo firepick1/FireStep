@@ -24,10 +24,10 @@ size_t JsonCommand::responseAvailable() {
     return jbResponse.capacity() - jbResponse.size();
 }
 
-void JsonCommand::addQueryAttr(JsonObject& node, const char *key) {
-    char *buf = JsonCommand::allocate(strlen_P(key)+1);
+void JsonCommand::addQueryAttr(JsonObject& node, const char *key, IDuinoPtr pDuino) {
+    char *buf = JsonCommand::allocate(pDuino->PM_strlen(key)+1);
     if (buf) {
-        strcpy_P(buf, key);
+        pDuino->PM_strcpy(buf, key);
         node[buf] = "";
     } else {
         TESTCOUT1("ERROR	: addQueryAttr OUT OF MEMORY ##############", key);

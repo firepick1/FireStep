@@ -1,5 +1,4 @@
-#include "Arduino.h"
-#include "IDuino.h"
+#include "Mega2560.h"
 #include "ProgMem.h"
 #include "Machine.h"
 
@@ -481,12 +480,13 @@ const char *firestep::prog_src(const char *name, IDuinoPtr pDuino) {
 }
 
 Status firestep::prog_dump(const char *name, IDuinoPtr pDuino) {
-    const char *src = prog_src(name);
+    const char *src = prog_src(name, pDuino);
     TESTCOUT3("prog_dump:", name, 
 		" bytes:", (pDuino->PM_strlen(src)+1), " src:", src);
 
     for (size_t i = 0; i<MAX_JSON; i++) {
         char c = pDuino->PM_read_byte_near(src + i);
+		TESTCOUT1("c:",c);
         ASSERT(c == 0 || ' ' <= c && c <= '~');
         if (c) {
             pDuino->serial_print(c);
@@ -503,7 +503,7 @@ Status firestep::prog_load_cmd(const char *name, JsonCommand &jcmd, IDuinoPtr pD
     char nameBuf[32];
     snprintf(nameBuf, sizeof(nameBuf), "%s", name); // name is volatile
     Status status = STATUS_OK;
-    const char *src = prog_src(nameBuf);
+    const char *src = prog_src(nameBuf, pDuino);
     TESTCOUT2("prog_load:", nameBuf, " src:", src);
 
     size_t len = pDuino->PM_strlen(src);
