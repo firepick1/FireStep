@@ -15,6 +15,7 @@ int32_t 		nTardies;
 int16_t			leastFreeRam = 32767;
 };
 
+int __heap_start, *__brkval;
 
 void Thread::setup() {
     bool active = false;

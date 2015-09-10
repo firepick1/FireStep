@@ -3,7 +3,6 @@
 
 #include "MCU.h"
 #include "IDuino.h"
-//#include "Mega2560.h"
 
 namespace firestep {
 

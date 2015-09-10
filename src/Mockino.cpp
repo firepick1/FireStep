@@ -297,3 +297,4 @@ string Mockino::eeprom_read_string(uint8_t *addr) {
 Ticks Mockino::ticks() {
 	return _ticks++;
 }
+

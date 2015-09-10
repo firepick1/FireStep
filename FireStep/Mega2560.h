@@ -98,6 +98,13 @@ public: // misc
     virtual inline bool timer_enabled() {
         return (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10)) ? true : false;
     }
+#ifdef Arduino_h
+	virtual inline size_t freeRam() {
+		extern int __heap_start, *__brkval;
+		int v;
+		return (int)(size_t)&v - (__brkval == 0 ? (int)(size_t)&__heap_start : (int)(size_t)__brkval);
+	}
+#endif
 
 public: // EEPROM
     virtual inline uint8_t eeprom_read_byte(uint8_t *addr) {

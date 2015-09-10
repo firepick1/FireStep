@@ -109,6 +109,9 @@ public: // misc
 	virtual void delay(int ms) = 0;
 	virtual void timer_enable(bool enable) = 0;
 	virtual bool timer_enabled() = 0;
+	virtual size_t freeRam() {
+		return 1000; // free RAM is only an issue for Mega2560 with its 8K of SRAM 
+	}
 
 public: // EEPROM
 	virtual uint8_t eeprom_read_byte(uint8_t *addr) = 0;
@@ -137,7 +140,7 @@ public: // FireStep
 		 * leading and trailing edges. Normal Arduinos typically
 		 * execute digitalWrite LONGER than 2us.
 		 * This method should therefore be rewritten fo individual
-		 * MCUs.
+		 * processors
 		 */
 		 digitalWrite(pin, LOW);
 	 }
