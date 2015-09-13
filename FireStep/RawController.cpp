@@ -51,11 +51,11 @@ Status MTO_RAWMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     float pp = 0;
     int16_t sg = 0;
     if (!dPos.isZero()) {
-        status = sb.buildLine(machine.stroke, dPos);
+        status = sb.buildLine(machine.stroke, dPos, machine.pDuino);
         if (status != STATUS_OK) {
             return status;
         }
-        Ticks tStrokeStart = ticks();
+        Ticks tStrokeStart = machine.pDuino->ticks();
         status = machine.stroke.start(tStrokeStart);
         switch (status) {
         case STATUS_OK:
@@ -67,10 +67,10 @@ Status MTO_RAWMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
         }
         do {
             nLoops++;
-            status = machine.stroke.traverse(ticks(), machine);
+            status = machine.stroke.traverse(machine.pDuino->ticks(), machine);
         } while (status == STATUS_BUSY_MOVING);
         tp = machine.stroke.getTimePlanned();
-        ts = (ticks() - tStrokeStart) / (float) TICKS_PER_SECOND;
+        ts = (machine.pDuino->ticks() - tStrokeStart) / (float) TICKS_PER_SECOND;
         pp = machine.stroke.vPeak * (machine.stroke.length / ts);
         sg = machine.stroke.length;
     }

@@ -1,12 +1,13 @@
 #ifndef STROKE_H
 #define STROKE_H
 
-//#include "FireUtils.h"
 #include "Status.h"
 #include "Thread.h"
 #include "IDuino.h"
 #include "Quad.h"
 #include "ph5.h"
+#include "IDuino.h"
+
 namespace firestep {
 
 #define STROKE_SEGMENTS 100
@@ -74,7 +75,7 @@ public:
 public:
     StrokeBuilder(int32_t vMax = 12800, float vMaxSeconds = 0.5,
                   int16_t minSegments = 0, int16_t maxSegments = 0);
-    Status buildLine(Stroke & stroke, Quad<StepCoord> dPos);
+    Status buildLine(Stroke & stroke, Quad<StepCoord> dPos, IDuinoPtr pDuino);
 } StrokeBuilder;
 
 } // namespace firestep

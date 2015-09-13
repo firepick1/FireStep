@@ -12,8 +12,6 @@ using namespace firestep;
 template class Quad<int16_t>;
 template class Quad<int32_t>;
 
-TESTDECL(int32_t, firestep::delayMicsTotal = 0);
-
 /////////// Silly things done without snprintf (ARDUINO!!!!) /////////////
 char * firestep::saveConfigValue(const char *key, const char *value, char *out) {
     sprintf(out, "\"%s\":%s,", key, value);
@@ -593,7 +591,7 @@ Status Machine::step(const Quad<StepDV> &pulse) {
         }
     }
 
-    delayMics(usDelay); // maximum pulse rate throttle
+    pDuino->delayMicroseconds(usDelay); // maximum pulse rate throttle
 
     return STATUS_OK;
 }
@@ -686,7 +684,7 @@ Status Machine::home(Status status) {
         }
         break;
     case STATUS_BUSY_CALIBRATING:
-        delayMics(100000); // wait 0.1s for machine to settle
+        pDuino->delay(100); // wait 0.1s for machine to settle
         while (stepHome(1, searchDelay) > 0) { }
         backoffHome(searchDelay);
         for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -754,7 +752,7 @@ Status Machine::stepProbe(int16_t delay) {
     if (0 > (status = stepFast(pulse))) {
         return status;
     }
-    delayMics(delay);
+    pDuino->delayMicroseconds(delay);
     return STATUS_BUSY_CALIBRATING;
 }
 
@@ -769,7 +767,7 @@ void Machine::backoffHome(int16_t delay) {
                 backingOff = true;
             }
         }
-        delayMics(delay);
+        pDuino->delayMicroseconds(delay);
     }
 }
 
@@ -785,7 +783,7 @@ StepCoord Machine::stepHome(StepCoord pulsesPerAxis, int16_t delay) {
                 a.setAdvancing(false);
             }
         }
-        delayMics(delay); // maximum pulse rate throttle
+        pDuino->delayMicroseconds(delay); // maximum pulse rate throttle
 
         // Move pulses as synchronously as possible for smoothness
         for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {
@@ -816,7 +814,7 @@ Status Machine::idle(Status status) {
     for (MotorIndex i = 0; i < MOTOR_COUNT; i++) {
         if (motorAxis[i]->enabled && motorAxis[i]->idleSnooze) {
             motorAxis[i]->enable(false);
-            delayMics(motorAxis[i]->idleSnooze);
+            pDuino->delayMicroseconds(motorAxis[i]->idleSnooze);
             motorAxis[i]->enable(true);
         }
     }

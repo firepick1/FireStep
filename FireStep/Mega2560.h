@@ -18,6 +18,7 @@
 #undef EEPROM_SIZE
 #endif
 #define EEPROM_SIZE 4096
+#define SRAM_SIZE 8192
 
 #define CLOCK_HZ 16000000L	// cycles per second
 #define TIMER_PRESCALE	1024 /* 1, 8, 64, 256, 1024 */
@@ -41,6 +42,12 @@ namespace firestep {
  * FireStep hardware implementation for Arduino Mega2560
  */
 typedef class Mega2560 : public IDuino {
+private:
+	int16_t _minFreeRam;
+
+public:
+	Mega2560() : _minFreeRam(SRAM_SIZE) {}
+
 public: // ArduinoJson Print
     virtual size_t write(uint8_t value) {
     }
@@ -74,9 +81,6 @@ public: // Pins
     virtual inline void digitalWrite(int16_t dirPin, int16_t value) {
         ::digitalWrite(dirPin, value);
     }
-    virtual inline void delayMicroseconds(uint16_t usDelay) {
-        ::delayMicroseconds(usDelay);
-    }
     virtual inline int16_t digitalRead(int16_t dirPin) {
         return ::digitalRead(dirPin);
     }
@@ -87,6 +91,14 @@ public: // Pins
 public: // misc
     virtual inline void delay(int ms) {
         ::delay(ms);
+    }
+    virtual inline void delayMicroseconds(uint16_t usDelay) {
+		if (usDelay > 0) {
+			while (usDelay-- > 0) {
+				DELAY500NS;
+				DELAY500NS;
+			}
+		}
     }
     virtual inline void timer_enable(bool enable) {
         if (enable) {
@@ -99,10 +111,14 @@ public: // misc
         return (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10)) ? true : false;
     }
 #ifdef Arduino_h
-	virtual inline size_t freeRam() {
+	virtual inline size_t minFreeRam() {
 		extern int __heap_start, *__brkval;
 		int v;
-		return (int)(size_t)&v - (__brkval == 0 ? (int)(size_t)&__heap_start : (int)(size_t)__brkval);
+		int avail = (int)(size_t)&v - (__brkval == 0 ? (int)(size_t)&__heap_start : (int)(size_t)__brkval);
+		if (avail < _minFreeRam) {
+			_minFreeRam = avail;
+		}
+		return _minFreeRam;
 	}
 #endif
 
@@ -176,8 +192,21 @@ public: // FireStep
 #endif
     }
     virtual Ticks ticks() {
-		return firestep::ticks();
-    }
+		/**
+		 * With the standard ATMEGA 16,000,000 Hz system clock and TCNT1 / 1024 prescaler:
+		 * 1 tick = 1024 clock cycles = 64 microseconds
+		 * Clock overflows in 2^31 * 0.000064 seconds = ~38.1 hours
+		 */
+#ifdef Arduino_h
+		Ticks result = threadRunner.ticks();
+		if (result == 0) {
+		  result = threadRunner.ticks();
+		}
+		return result;
+#else
+		throw "THIS SHOULD NEVER HAPPEN";
+#endif
+	}
 } Mega2560;
 
 extern Mega2560 mega2560;

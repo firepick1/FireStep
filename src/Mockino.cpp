@@ -1,11 +1,8 @@
-#include <vector>
-#include <string.h>
-#include <iostream>
+#include "Mockino.h"
 #include <fstream>
 #include <sstream>
-#include "FireUtils.h"
-#include "Mockino.h"
 //#include "Thread.h"
+#include "FireUtils.h"
 
 using namespace firestep;
 
@@ -30,10 +27,10 @@ void Mockino::clear() {
 	}
     memset(pinPulses, 0, sizeof(pinPulses));
     usDelay = 0;
-    ADCSRA = 0;	// ADC control and status register A (disabled)
-    TCNT1 = 0; 	// Timer/Counter1
-    CLKPR = 0;	// Clock prescale register
-	sei(); // enable interrupts
+    //ADCSRA = 0;	// ADC control and status register A (disabled)
+    //TCNT1 = 0; 	// Timer/Counter1
+    //CLKPR = 0;	// Clock prescale register
+	///sei(); // enable interrupts
 	_timer_enabled = true;
 	_ticks = 0;
 }
@@ -182,7 +179,7 @@ void Mockino::dump() {
 
 void Mockino::timer1(int increment) {
     if (timer_enabled()) {
-        TCNT1 += increment;
+        _ticks += increment;
     }
 }
 
@@ -197,8 +194,8 @@ void Mockino::timer_enable(bool enable) {
 void Mockino::delay500ns() {
 }
 
-void Mockino::delayMicroseconds(uint16_t usDelay) {
-    usDelay += usDelay;
+void Mockino::delayMicroseconds(uint16_t us) {
+    usDelay += us;
 }
 
 void Mockino::analogWrite(int16_t pin, int16_t value) {

@@ -158,7 +158,7 @@ Status JsonCommand::parseInput(const char *jsonIn, IDuinoPtr pDuino, Status stat
  */
 Status JsonCommand::parse(const char *jsonIn, IDuinoPtr pDuino, Status statusIn) {
     //TESTCOUT1("parse:", (int) (jsonIn ? jsonIn[0] : 911));
-    tStart = ticks();
+    tStart = pDuino->ticks();
     //TESTCOUT1("parse:", (int) (jsonIn ? jsonIn[0] : 911));
     Status status = parseInput(jsonIn, pDuino, statusIn);
 

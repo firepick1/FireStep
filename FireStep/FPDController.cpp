@@ -179,11 +179,11 @@ Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
     if (dPos.isZero()) {
         TESTCOUT1("execute:","dPos.isZero()");
     } else {
-        status = sb.buildLine(machine.stroke, dPos);
+        status = sb.buildLine(machine.stroke, dPos, machine.pDuino);
         if (status != STATUS_OK) {
             return status;
         }
-        Ticks tStrokeStart = ticks()-1; // ensure that we always move
+        Ticks tStrokeStart = machine.pDuino->ticks()-1; // ensure that we always move
         status = machine.stroke.start(tStrokeStart);
         switch (status) {
         case STATUS_OK:
@@ -195,10 +195,10 @@ Status FPDMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
         }
         do {
             nLoops++;
-            status = machine.stroke.traverse(ticks(), machine);
+            status = machine.stroke.traverse(machine.pDuino->ticks(), machine);
         } while (status == STATUS_BUSY_MOVING);
         tp = machine.stroke.getTimePlanned();
-        ts = (ticks() - tStrokeStart) / (float) TICKS_PER_SECOND;
+        ts = (machine.pDuino->ticks() - tStrokeStart) / (float) TICKS_PER_SECOND;
         pp = machine.stroke.vPeak * (machine.stroke.length / ts);
         sg = machine.stroke.length;
     }
@@ -236,9 +236,9 @@ Status FPDMoveTo::movePulleyArmToAngle(DeltaAxis axis, PH5TYPE degrees) {
     machine.probe.pinProbe = machine.axis[axis].pinMin;
     machine.probe.setup(posStart, posEnd, machine.pDuino);
     Status status = STATUS_BUSY_CALIBRATING;
-    int32_t stopTicks = ticks() + MS_TICKS(20000); // stop after 20 seconds
+    int32_t stopTicks = machine.pDuino->ticks() + MS_TICKS(20000); // stop after 20 seconds
 
-    while (ticks() < stopTicks && status == STATUS_BUSY_CALIBRATING) {
+    while (machine.pDuino->ticks() < stopTicks && status == STATUS_BUSY_CALIBRATING) {
         status = machine.probeNow(status, 0);
     }
     machine.probe.pinProbe = pinProbe; // restore syspb

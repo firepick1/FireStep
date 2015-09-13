@@ -6,7 +6,6 @@
 
 namespace firestep {
 
-extern int16_t leastFreeRam;
 
 typedef union ThreadClock  {
     Ticks ticks;
@@ -20,13 +19,7 @@ typedef union ThreadClock  {
 extern ThreadClock threadClock;
 
 typedef struct Thread {
-public:
-    Thread() : tardies(0), id(0), pNext(NULL) {
-        nextLoop.ticks = 0;
-    }
-    virtual void setup();
-    virtual void loop() {}
-
+public: // data
     struct Thread *pNext;
 
     // Threads should increment the loop as desired.
@@ -35,8 +28,16 @@ public:
 
     byte tardies;
     char id;
-}
-Thread, *ThreadPtr;
+
+public: // construction
+    Thread() : tardies(0), id(0), pNext(NULL) {
+        nextLoop.ticks = 0;
+    }
+
+public: // invocation
+    virtual void setup();
+    virtual void loop() {}
+} Thread, *ThreadPtr;
 
 // Binary pulse with variable width
 typedef struct PulseThread : Thread {
@@ -55,17 +56,22 @@ typedef class MonitorThread : PulseThread {
     friend class MachineThread;
 
 private:
-    byte	blinkLED;
-    int16_t pinLED; /* PRIVATE */
+	IDuinoPtr	pDuino;
+    byte		blinkLED;
+    int16_t 	pinLED; /* PRIVATE */
 
 private:
-    void 	LED(byte value);
-    void setup(int pinLED = NOPIN); /* PRIVATE */
+    void LED(byte value);
+    void setup(IDuinoPtr pDuino, int pinLED = NOPIN); /* PRIVATE */
     unsigned int Free(); /* PRIVATE */
     void loop(); /* PRIVATE */
 
 public:
     boolean verbose;
+
+public:
+	MonitorThread() {}
+
 public:
     void Error(const char *msg, int value); /* PRIVATE */
 } MonitorThread;
@@ -81,43 +87,40 @@ extern int32_t nLoops;
 extern int32_t nTardies;
 
 typedef class ThreadRunner {
-private:
+private: // Data
+	IDuinoPtr	pDuino;
     uint16_t 	generation;
     uint16_t 	lastAge;
     uint16_t 	age;
     byte		testTardies;
     int16_t		nHB;
     byte		fast;
-public:
+
+public: // Construction
     ThreadRunner();
+
+public: // Invocation
     void resetGenerations();
     void clear();
-    void setup(int pinLED = NOPIN);
-
-public:
+    void setup(IDuinoPtr pDuino, int pinLED = NOPIN);
     void run() {
         // outer loop: bookkeeping
         for (;;) {
             outerLoop();
         }
     }
-public:
     inline uint16_t get_generation() {
         return generation;
     }
-public:
     inline uint16_t get_lastAge() {
         return lastAge;
     }
-public:
     inline uint16_t get_age() {
         return age;
     }
-public:
     inline byte get_testTardies() {
         return testTardies;
     }
-public:
     inline void outerLoop() {
         if (fast-- && innerLoop()) {
             // do nothing
@@ -127,8 +130,8 @@ public:
             fast = 255;
         }
     }
-public:
     inline Ticks ticks() {
+#ifdef Arduino_h
         cli();
         threadClock.age = age = TIMER_VALUE();
         if (age < lastAge) {
@@ -150,6 +153,7 @@ public:
         }
         lastAge = age;
         sei();
+#endif
         return threadClock.ticks;
     }
     inline byte innerLoop() {
@@ -189,13 +193,6 @@ public:
     }
 } ThreadRunner;
 extern ThreadRunner threadRunner;
-
-/**
- * With the standard ATMEGA 16,000,000 Hz system clock and TCNT1 / 1024 prescaler:
- * 1 tick = 1024 clock cycles = 64 microseconds
- * Clock overflows in 2^31 * 0.000064 seconds = ~38.1 hours
- */
-extern Ticks ticks();
 
 } // namespace firestep
 

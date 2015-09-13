@@ -212,7 +212,7 @@ StrokeBuilder::StrokeBuilder(int32_t vMax, float vMaxSeconds,
  * Create a line by scaling a known PH5Curve to match the requested linear
  * offset.
  */
-Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
+Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos, IDuinoPtr pDuino) {
     PH5TYPE K[QUAD_ELEMENTS];
     PH5TYPE Ksqrt[QUAD_ELEMENTS];
     StepCoord pulses = 0;
@@ -311,7 +311,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         }
     }
 
-    leastFreeRam = minval(leastFreeRam, freeRam());
+	pDuino->minFreeRam();
 
     //TESTCOUT3(" N:", N, " tS:", tS, " dEndPos:", stroke.dEndPos.toString());
 

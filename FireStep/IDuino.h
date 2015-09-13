@@ -3,9 +3,11 @@
 
 #include "../ArduinoJson/include/ArduinoJson/Arduino/Print.hpp"
 
-#ifndef Arduino_h
+#ifdef Arduino_h
+#else
 #include <string>
 #include <string.h>
+typedef uint8_t byte;
 #endif
 
 /* IDuino implementations may undef and re-define LARGER values. These are minimums: */
@@ -101,22 +103,26 @@ public: // Pins
 	virtual void analogWrite(int16_t dirPin, int16_t value) = 0;
 	virtual int16_t analogRead(int16_t dirPin) = 0;
 	virtual void digitalWrite(int16_t dirPin, int16_t value) = 0;
-	virtual void delayMicroseconds(uint16_t usDelay) = 0;
 	virtual int16_t digitalRead(int16_t dirPin) = 0;
 	virtual void pinMode(int16_t pin, int16_t inout) = 0;
 
 public: // misc
 	virtual void delay(int ms) = 0;
+	virtual void delayMicroseconds(uint16_t usDelay) = 0;
 	virtual void timer_enable(bool enable) = 0;
 	virtual bool timer_enabled() = 0;
-	virtual size_t freeRam() {
-		return 1000; // free RAM is only an issue for Mega2560 with its 8K of SRAM 
+	virtual size_t minFreeRam() {
+		// Return minimum amount of free ram of all prior calls.
+		// Free RAM is only an issue for Mega2560 with its 8K of SRAM 
+		// The default method just returns 1000 and need only by 
+		// overridden by processors with limited SRAM (e.g., Mega2560.h).
+		return 1000; 
 	}
 
 public: // EEPROM
 	virtual uint8_t eeprom_read_byte(uint8_t *addr) = 0;
 	virtual void eeprom_write_byte(uint8_t *addr, uint8_t value) = 0;
-	virtual string eeprom_read_string(uint8_t *addr) = 0;
+	virtual std::string eeprom_read_string(uint8_t *addr) = 0;
 
 public: // PROGMEM
 	virtual inline int PM_strcmp(const char *a, const char *b) {
@@ -144,7 +150,7 @@ public: // FireStep
 		 */
 		 digitalWrite(pin, LOW);
 	 }
-	 virtual Ticks ticks() = 0;
+	 virtual Ticks ticks() = 0; // 1 Tick is 64 microseconds
 	 
 } IDuino, *IDuinoPtr;
 

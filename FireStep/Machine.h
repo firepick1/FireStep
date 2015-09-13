@@ -54,20 +54,6 @@ enum OutputMode {
     OUTPUT_CMT=2, // Write comments
 };
 
-/**
- * inline replacement for Arduino delayMicroseconds()
- */
-inline void delayMics(int32_t usDelay) {
-    if (usDelay > 0) {
-#ifdef TEST
-        delayMicsTotal += usDelay;
-#endif
-        while (usDelay-- > 0) {
-            DELAY500NS;
-            DELAY500NS;
-        }
-    }
-}
 
 enum Topology {
     MTO_RAW = 0, // Raw stepper coordinates in microstep pulses

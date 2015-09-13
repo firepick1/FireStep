@@ -358,7 +358,7 @@ Status MachineThread::process(JsonCommand& jcmd) {
             if (status == STATUS_OK) {
                 bool isLast = jcmd.cmdIndex >= jarr.size()-1;
                 if (!isLast && OUTPUT_ARRAYN==(machine.outputMode&OUTPUT_ARRAYN)) {
-                    jcmd.setTicks();
+                    jcmd.setTicks(machine.pDuino);
                     pController->sendResponse(jcmd, status);
                 }
                 status = STATUS_BUSY_PARSED;
@@ -371,7 +371,7 @@ Status MachineThread::process(JsonCommand& jcmd) {
         status = STATUS_JSON_CMD;
     }
 
-    jcmd.setTicks();
+    jcmd.setTicks(machine.pDuino);
     jcmd.setStatus(status);
 
     if (!isProcessing(status)) {

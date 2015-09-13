@@ -55,8 +55,8 @@ public:
     inline Status getStatus() {
         return (Status) (int32_t) jResponseRoot["s"];
     }
-    inline void setTicks() {
-        jResponseRoot["t"] = (ticks() - tStart) / (float) TICKS_PER_SECOND;
+    inline void setTicks(IDuinoPtr pDuino) {
+        jResponseRoot["t"] = (pDuino->ticks() - tStart) / (float) TICKS_PER_SECOND;
     }
     inline void setStatus(Status status) {
         jResponseRoot["s"] = status;

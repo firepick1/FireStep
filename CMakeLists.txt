@@ -84,10 +84,10 @@ add_library(_firestep SHARED
 	FireStep/FPDController.cpp
 	FireStep/RawController.cpp
 	FireStep/NeoPixel.cpp
-	FireStep/Thread.cpp
 	FireStep/Stroke.cpp
 	FireStep/Machine.cpp
 	FireStep/MachineThread.cpp
+	FireStep/Thread.cpp
 )
 add_dependencies(_firestep
 	ArduinoJson
@@ -101,7 +101,6 @@ add_executable(firestep
 	src/FireStepSerial.cpp
 	src/FireStepClient.cpp
 	src/Mockino.cpp
-	src/MockDuino.cpp
 	src/firestep.cpp
 )
 
@@ -116,10 +115,9 @@ target_link_libraries(firestep
 	_ph5
 )
 
-########## test: MockDuino test program ################
+########## test: Mockino test program ################
 add_executable(test 
 	src/Mockino.cpp
-	src/MockDuino.cpp
 	src/test.cpp
 )
 add_dependencies(test

@@ -58,36 +58,40 @@ void PulseThread::loop() {
     }
 }
 
-void MonitorThread::setup(int pinLED) {
+void MonitorThread::setup(IDuinoPtr pDuino, int pinLED) {
     id = 'Z';
     // set monitor interval to not coincide with timer overflow
     PulseThread::setup(MS_TICKS(1000), MS_TICKS(250));
     this->pinLED = pinLED;
     verbose = false;
     if (pinLED != NOPIN) {
-        pinMode(pinLED, OUTPUT);
+        pDuino->pinMode(pinLED, OUTPUT);
     }
     blinkLED = true;
 }
 
 void MonitorThread::LED(byte value) {
     if (pinLED != NOPIN) {
-        digitalWrite(pinLED, value ? HIGH : LOW);
+        pDuino->digitalWrite(pinLED, value ? HIGH : LOW);
     }
 }
 
 void MonitorThread::Error(const char *msg, int value) {
+#ifdef Arduino_h
     LED(HIGH);
     for (int i = 0; i < 20; i++) {
         Serial.print('>');
     }
     Serial.print(msg);
     Serial.println(value);
+#endif
 }
 
 void MonitorThread::loop() {
     PulseThread::loop();
+#ifdef Arduino_h
 #define MONITOR
+#endif
 #ifdef MONITOR
     ThreadEnable(false);
     if (blinkLED) {
@@ -158,13 +162,18 @@ void ThreadRunner::clear() {
     nHB = 0;
     testTardies = 0;
     fast = 255;
-    TIMER_CLEAR();
+#ifdef Arduino_h
+	TCNT1 = 0;
+#endif
 }
 
-void ThreadRunner::setup(int pinLED) {
-    monitor.setup(pinLED);
+void ThreadRunner::setup(IDuinoPtr pDuino, int pinLED) {
+    monitor.setup(pDuino, pinLED);
 
-    TIMER_SETUP();
+#ifdef Arduino_h
+	TCCR1A = 0 /* Timer mode */; 
+	TIMSK1 = (0 << TOIE1); /* disable interrupts */
+#endif
     lastAge = 0;
     ThreadEnable(true);
 }
@@ -192,17 +201,23 @@ void firestep::ThreadEnable(boolean enable) {
     }
     DEBUG_EOL();
 #endif
-    TIMER_ENABLE(enable);
-}
-
-firestep::Ticks firestep::ticks() {
-#if defined(TEST)
-    arduino.timer1(1);
-#endif
-    Ticks result = threadRunner.ticks();
-
-    if (result == 0) {
-        result = threadRunner.ticks();
+#ifdef Arduino_h
+    if (enable) {
+        TCCR1B = 1 << CS12 | 0 << CS11 | 1 << CS10; /* Timer prescaler div1024 (15625Hz) */
+    } else {
+        TCCR1B = 0;	/* stop clock */
     }
-    return result;
+#endif
 }
+
+//firestep::Ticks firestep::ticks() {
+//#if defined(TEST)
+    //arduino.timer1(1);
+//#endif
+    //Ticks result = threadRunner.ticks();
+//
+    //if (result == 0) {
+        //result = threadRunner.ticks();
+    //}
+    //return result;
+//}

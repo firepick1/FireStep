@@ -2,7 +2,9 @@
 #define MOCKINO_H
 
 #include <vector>
-#include "Mega2560.h"
+#include "IDuino.h"
+#include "Thread.h"
+//#include "Mega2560.h"
 
 namespace firestep {
 
@@ -38,12 +40,12 @@ public: // Pins
     virtual void analogWrite(int16_t dirPin, int16_t value);
     virtual int16_t analogRead(int16_t dirPin);
     virtual void digitalWrite(int16_t dirPin, int16_t value);
-    virtual void delayMicroseconds(uint16_t usDelay);
     virtual int16_t digitalRead(int16_t dirPin);
     virtual void pinMode(int16_t pin, int16_t inout);
 
 public: // misc
     virtual void delay(int ms);
+    virtual void delayMicroseconds(uint16_t usDelay);
 	virtual void timer_enable(bool enable);
 	virtual bool timer_enabled();
 
