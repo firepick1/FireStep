@@ -157,7 +157,7 @@ public: // Invocation
         return threadClock.ticks;
     }
     inline byte innerLoop() {
-        if (ticks() == 0) {
+        if (pDuino->ticks() == 0) {
             return 0;
         }
 

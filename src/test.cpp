@@ -51,7 +51,7 @@ public:
 } testDisplay;
 
 void test_ticks(int nTicks) {
-    mockino.timer1(nTicks-1);
+    mockino.setTicks(mockino.ticks()+nTicks-1);
     mockino.ticks();
     threadRunner.outerLoop();
 }
@@ -127,7 +127,7 @@ void test_Thread() {
     cout << "TCNT1:" << (uint16_t) TCNT1 << endl;
     uint32_t lastTCNT1 = (uint32_t) (uint16_t) TCNT1;
 
-    mockino.timer1(1);
+    mockino.setTicks(mockino.ticks()+1);
 
     ASSERTEQUAL(lastTCNT1+1L, (uint32_t) (uint16_t) TCNT1);
     ASSERTEQUAL(lastClock+3, mockino.ticks());
@@ -1515,7 +1515,7 @@ void test_MTO_FPD_mov() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     //ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	//mockino.timer1(MS_TICKS(1000));
+	//mockino.setTicks(mockino.ticks()+MS_TICKS(1000));
 	//mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'movzr':10.000},'t':0.347}\n"),
@@ -1540,7 +1540,7 @@ void test_MTO_FPD_mov() {
     mockino.serial_push(JT("{'mov':{'angle':30,'d':10,'zr':-1}}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mockino.timer1(MS_TICKS(1000));
+	mockino.setTicks(mockino.ticks()+MS_TICKS(1000));
 	mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'angle':30,'d':10,'zr':-1.000}},'t':1.198}\n"),
@@ -1568,7 +1568,7 @@ void test_MTO_FPD_mov() {
     mockino.serial_push(JT("{'mov':{'x':10,'y':100,'zb':-1},'mpox':'','mpoy':'','mpoz':''}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mockino.timer1(MS_TICKS(1000));
+	mockino.setTicks(mockino.ticks()+MS_TICKS(1000));
 	mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
 	xyz = mt.fpdController.getXYZ3D();
@@ -4070,7 +4070,7 @@ void test_MachineThread() {
 
     mockino.serial_clear();
     mockino.serial_push("{");
-    //TCNT1 = 100;
+	mockino.setTicks(0);
     test_ticks(100);
     ASSERTEQUAL(STATUS_WAIT_EOL, mt.status);
     ASSERTEQUALS("", mockino.serial_output().c_str());
@@ -4201,7 +4201,7 @@ void test_ph5() {
     Machine machine(&mockino);
     MachineThread mt(machine);
     test_setup(mt);
-    mockino.timer1(1);
+    mockino.setTicks(mockino.ticks()+1);
     StrokeBuilder sb;
     ASSERTQUAD(Quad<StepCoord>(), machine.getMotorPosition());
     Status status = sb.buildLine(machine.stroke,

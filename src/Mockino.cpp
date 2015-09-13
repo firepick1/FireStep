@@ -177,12 +177,6 @@ void Mockino::dump() {
     }
 }
 
-void Mockino::timer1(int increment) {
-    if (timer_enabled()) {
-        _ticks += increment;
-    }
-}
-
 bool Mockino::timer_enabled() {
 	return _timer_enabled;
 }
@@ -265,7 +259,7 @@ void Mockino::setPinMode(int16_t pin, int16_t value) {
 }
 
 void Mockino::delay(int ms) {
-    timer1(MS_TICKS(ms));
+    setTicks(_ticks + MS_TICKS(ms));
 }
 
 uint8_t Mockino::eeprom_read_byte(uint8_t *addr) {
@@ -293,5 +287,9 @@ string Mockino::eeprom_read_string(uint8_t *addr) {
 
 Ticks Mockino::ticks() {
 	return _ticks++;
+}
+
+void Mockino::setTicks(Ticks value) {
+	_ticks = value;
 }
 

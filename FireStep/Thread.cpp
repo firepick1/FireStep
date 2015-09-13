@@ -168,6 +168,7 @@ void ThreadRunner::clear() {
 }
 
 void ThreadRunner::setup(IDuinoPtr pDuino, int pinLED) {
+	this->pDuino = pDuino;
     monitor.setup(pDuino, pinLED);
 
 #ifdef Arduino_h
