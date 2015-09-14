@@ -132,7 +132,7 @@ public: // Invocation
     inline Ticks ticks() {
 #ifdef Arduino_h
         cli();
-        threadClock.age = age = TIMER_VALUE();
+        threadClock.age = age = TCNT1;
         if (age < lastAge) {
             // 1) a generation is 4.194304s
             // 2) generation is incremented when TIMER_VALUE() overflows
