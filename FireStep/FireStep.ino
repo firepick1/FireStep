@@ -28,13 +28,15 @@ Machine machine(&mega2560);
 MachineThread machineThread(machine); 
 namespace firestep {int __heap_start, *__brkval;}
 
-const char msg_startup[] PROGMEM = 			{ "Startup	: FireStep" };
-const char msg_startup_println[] PROGMEM = 	{ "Startup	: mega2560.serial_println()" };
-const char msg_startup_pinMode[] PROGMEM = 	{ "Startup	: mega2560.pinMode(4, OUTPUT)" };
-const char msg_startup_led_on[] PROGMEM = 	{ "Startup	: mega2560.digitalWrite(4, HIGH)" };
-const char msg_startup_ticks[] PROGMEM = 	{ "Startup	: mega2560.ticks()" };
-const char msg_startup_delay[] PROGMEM = 	{ "Startup	: mega2560.delay(5000)" };
-const char msg_startup_led_off[] PROGMEM = 	{ "Startup	: mega2560.digitalWrite(4, LOW)" };
+const char startup[] PROGMEM = 			{ "Startup	: FireStep" };
+const char startup_println[] PROGMEM = 	{ "Startup	: mega2560.serial_println()" };
+const char startup_pinMode[] PROGMEM = 	{ "Startup	: mega2560.pinMode(4, OUTPUT)" };
+const char startup_led_on[] PROGMEM = 	{ "Startup	: mega2560.digitalWrite(4, HIGH)" };
+const char startup_enableTicks[] PROGMEM = 	{ "Startup	: mega2560.enableTicks()" };
+const char startup_ticks[] PROGMEM = 	{ "Startup	: mega2560.ticks()" };
+const char startup_delay[] PROGMEM = 	{ "Startup	: mega2560.delay(5000)" };
+const char startup_led_off[] PROGMEM = 	{ "Startup	: mega2560.digitalWrite(4, LOW)" };
+const char startup_error[] PROGMEM = 	{ "Startup	: ERROR" };
 
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
@@ -43,28 +45,35 @@ void setup() { // run once, when the sketch starts
     Serial.begin(19200); // long USB cables
 
 	char buf[100];
-	strcpy_P(buf, msg_startup1);
+	strcpy_P(buf, startup);
 	Serial.println(buf);
-	strcpy_P(buf, msg_startup_ok);
+	strcpy_P(buf, startup_println);
 	mega2560.serial_println(buf);
-	strcpy_P(buf, msg_startup_pinMode);
+	strcpy_P(buf, startup_pinMode);
 	mega2560.serial_println(buf);
 	mega2560.pinMode(PC1_SERVO1, OUTPUT);
-	strcpy_P(buf, msg_startup_led_on);
+	strcpy_P(buf, startup_led_on);
 	mega2560.serial_println(buf);
 	mega2560.digitalWrite(PC1_SERVO1, HIGH);
-	strcpy_P(buf, msg_startup_ticks);
+	strcpy_P(buf, startup_enableTicks);
 	mega2560.serial_println(buf);
-	mega2560.serial_println(mega2560.ticks());
-	strcpy_P(buf, msg_startup_delay);
+	mega2560.serial_println((int)mega2560.enableTicks(true));
+	if (!mega2560.isTicksEnabled()) {
+		strcpy_P(buf, startup_error);
+		mega2560.serial_println(buf);
+	}
+	strcpy_P(buf, startup_ticks);
+	mega2560.serial_println(buf);
+	mega2560.serial_println((int)mega2560.ticks());
+	strcpy_P(buf, startup_delay);
 	mega2560.serial_println(buf);
 	mega2560.delay(5000);
-	strcpy_P(buf, msg_startup_led_off);
+	strcpy_P(buf, startup_led_off);
 	mega2560.serial_println(buf);
 	mega2560.digitalWrite(PC1_SERVO1, LOW);
-	strcpy_P(buf, msg_startup_ticks);
+	strcpy_P(buf, startup_ticks);
 	mega2560.serial_println(buf);
-	mega2560.serial_println(mega2560.ticks());
+	mega2560.serial_println((int)mega2560.ticks());
 
     // Bind in NeoPixel display driver
     machineThread.machine.pDisplay = &neoPixel;
