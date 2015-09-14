@@ -244,6 +244,7 @@ public: // PROGMEM
     }
 
 public: // FireStep
+	virtual void setup() {}
     virtual Ticks ticks(bool peek=false) = 0; // 1 Tick is 64 microseconds
     virtual void enableTicks(bool enable) = 0;
     virtual bool isTicksEnabled() = 0;

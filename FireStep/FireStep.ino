@@ -34,7 +34,7 @@ const char startup_pinMode[] PROGMEM = 	{ "Startup	: mega2560.pinMode(4, OUTPUT)
 const char startup_led_on[] PROGMEM = 	{ "Startup	: mega2560.digitalWrite(4, HIGH)" };
 const char startup_enableTicks[] PROGMEM = 	{ "Startup	: mega2560.enableTicks()" };
 const char startup_ticks[] PROGMEM = 	{ "Startup	: mega2560.ticks() " };
-const char startup_delay[] PROGMEM = 	{ "Startup	: mega2560.delay(5000)" };
+const char startup_delay[] PROGMEM = 	{ "Startup	: mega2560.delay(1000)" };
 const char startup_led_off[] PROGMEM = 	{ "Startup	: mega2560.digitalWrite(4, LOW)" };
 const char startup_error[] PROGMEM = 	{ "Startup	: ERROR" };
 
@@ -98,6 +98,7 @@ void setup() { // run once, when the sketch starts
     //Serial.begin(38400); // short USB cables
     Serial.begin(19200); // long USB cables
 
+	mega2560.setup();
 	startup_IDuino(&mega2560);
 
     // Bind in NeoPixel display driver

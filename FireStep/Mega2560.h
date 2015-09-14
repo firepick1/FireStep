@@ -45,10 +45,10 @@ namespace firestep {
  */
 typedef class Mega2560 : public IDuino {
 private:
-	int16_t _minFreeRam;
+    int16_t _minFreeRam;
 
 public:
-	Mega2560() : _minFreeRam(SRAM_SIZE) {}
+    Mega2560() : _minFreeRam(SRAM_SIZE) {}
 
 public: // ArduinoJson Print
     virtual size_t write(uint8_t value) {
@@ -85,15 +85,15 @@ public: // Pins
     }
 
 public: // Pulse generation
-	/**
-	 * IMPORTANT!!!
-	 * The digitalWrite/digitalRead methods match the Arduino
-	 * with one critical difference. They must take at least
-	 * 1 microsecond to complete. This constraint ensures that
-	 * pulse generation will generate the 2 microsecond pulse
-	 * required by DRV8825. When implementing IDuino for fast
-	 * CPUs, take care to observe this limitation.
-	 */
+    /**
+     * IMPORTANT!!!
+     * The digitalWrite/digitalRead methods match the Arduino
+     * with one critical difference. They must take at least
+     * 1 microsecond to complete. This constraint ensures that
+     * pulse generation will generate the 2 microsecond pulse
+     * required by DRV8825. When implementing IDuino for fast
+     * CPUs, take care to observe this limitation.
+     */
     virtual inline void digitalWrite(int16_t dirPin, int16_t value) {
         ::digitalWrite(dirPin, value);
     }
@@ -117,12 +117,12 @@ public: // timing
         ::delay(ms);
     }
     virtual inline void delayMicroseconds(uint16_t usDelay) {
-		if (usDelay > 0) {
-			while (usDelay-- > 0) {
-				DELAY500NS;
-				DELAY500NS;
-			}
-		}
+        if (usDelay > 0) {
+            while (usDelay-- > 0) {
+                DELAY500NS;
+                DELAY500NS;
+            }
+        }
     }
 
 public: // EEPROM
@@ -130,36 +130,42 @@ public: // EEPROM
         return ::eeprom_read_byte(addr);
     }
     virtual inline void eeprom_write_byte(uint8_t *addr, uint8_t value) {
-		::eeprom_write_byte(addr, value);
+        ::eeprom_write_byte(addr, value);
     }
 
 public: // PROGMEM
-	virtual inline int PM_strcmp(const char *a, const char *b) {
-		return -strcmp_P(b, a);
-	}
-	virtual inline char * PM_strcpy(char *dst, const char *src) {
-		return strcpy_P(dst, src);
-	}
-	virtual inline size_t PM_strlen(const char *src) {
-		return strlen_P(src);
-	}
-	virtual inline byte PM_read_byte_near(const void *src) {
-		return pgm_read_byte_near(src);
-	}
+    virtual inline int PM_strcmp(const char *a, const char *b) {
+        return -strcmp_P(b, a);
+    }
+    virtual inline char * PM_strcpy(char *dst, const char *src) {
+        return strcpy_P(dst, src);
+    }
+    virtual inline size_t PM_strlen(const char *src) {
+        return strlen_P(src);
+    }
+    virtual inline byte PM_read_byte_near(const void *src) {
+        return pgm_read_byte_near(src);
+    }
 
 public: // FireStep
-    virtual Ticks ticks(bool peek=false) {
-		/**
-		 * With the standard ATMEGA 16,000,000 Hz system clock and TCNT1 / 1024 prescaler:
-		 * 1 tick = 1024 clock cycles = 64 microseconds
-		 * Clock overflows in 2^31 * 0.000064 seconds = ~38.1 hours
-		 */
-		Ticks result = threadRunner.ticks();
-		if (result == 0) {
-		  result = threadRunner.ticks();
-		}
-		return result;
+	virtual void setup() {
+		TCCR1A = 0 /* Timer mode */; 
+		TIMSK1 = (0 << TOIE1); /* disable interrupts */
+		TCNT1 = 1; // allow decrement of 1
+		IDuino::setup();
 	}
+    virtual Ticks ticks(bool peek=false) {
+        /**
+         * With the standard ATMEGA 16,000,000 Hz system clock and TCNT1 / 1024 prescaler:
+         * 1 tick = 1024 clock cycles = 64 microseconds
+         * Clock overflows in 2^31 * 0.000064 seconds = ~38.1 hours
+         */
+        Ticks result = threadRunner.ticks();
+        if (result == 0) {
+            result = threadRunner.ticks();
+        }
+        return result;
+    }
     virtual inline void enableTicks(bool enable) {
         if (enable) {
             TCCR1B = 1 << CS12 | 0 << CS11 | 1 << CS10; /* Timer prescaler div1024 (15625Hz) */
@@ -170,15 +176,15 @@ public: // FireStep
     virtual inline bool isTicksEnabled() {
         return (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10)) ? true : false;
     }
-	virtual inline size_t minFreeRam() {
-		extern int __heap_start, *__brkval;
-		int v;
-		int avail = (int)(size_t)&v - (__brkval == 0 ? (int)(size_t)&__heap_start : (int)(size_t)__brkval);
-		if (avail < _minFreeRam) {
-			_minFreeRam = avail;
-		}
-		return _minFreeRam;
-	}
+    virtual inline size_t minFreeRam() {
+        extern int __heap_start, *__brkval;
+        int v;
+        int avail = (int)(size_t)&v - (__brkval == 0 ? (int)(size_t)&__heap_start : (int)(size_t)__brkval);
+        if (avail < _minFreeRam) {
+            _minFreeRam = avail;
+        }
+        return _minFreeRam;
+    }
 } Mega2560;
 
 } // namespace firestep
