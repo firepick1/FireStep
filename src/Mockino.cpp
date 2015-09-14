@@ -4,6 +4,7 @@
 //#include "Thread.h"
 #include "FireUtils.h"
 
+using namespace std;
 using namespace firestep;
 
 Mockino firestep::mockino;

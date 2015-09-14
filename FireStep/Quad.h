@@ -22,12 +22,12 @@ public:
         value[2] = v3;
         value[3] = v4;
     }
-#ifdef TEST
-    string toString(const char *fmt = "[%d,%d,%d,%d]") const {
+#ifdef CMAKE
+    std::string toString(const char *fmt = "[%d,%d,%d,%d]") const {
         char buf[50];
         snprintf(buf, sizeof(buf), fmt,
                  (T) value[0], (T) value[1], (T) value[2], (T) value[3]);
-        return string(buf);
+        return std::string(buf);
     };
 #endif
     bool isZero() {

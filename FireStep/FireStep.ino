@@ -1,6 +1,7 @@
+#include "ArduinoJson.h"
 #include <Adafruit_NeoPixel.h>
 
-##include "Mega2560.h"
+#include "Mega2560.h"
 //#include <ArduinoJson.h>
 #include <ph5.h>
 //#include "Arduino.h"

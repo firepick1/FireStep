@@ -4,13 +4,12 @@
 #include <vector>
 #include "IDuino.h"
 #include "Thread.h"
-//#include "Mega2560.h"
 
 namespace firestep {
 
 typedef class Mockino : public IDuino {
 private:
-    vector<uint8_t> serialbytes;
+    std::vector<uint8_t> serialbytes;
     std::string		serialout;
     std::string		serialline;
     int16_t			eeprom_data[EEPROM_SIZE];

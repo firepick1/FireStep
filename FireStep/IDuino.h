@@ -13,8 +13,6 @@
 #include <cmath>
 #include <cstring>
 
-using namespace std;
-
 typedef uint8_t byte;
 typedef uint8_t boolean;
 
