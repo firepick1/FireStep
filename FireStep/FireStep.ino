@@ -26,6 +26,7 @@ using namespace firestep;
 Mega2560 mega2560;
 Machine machine(&mega2560);
 MachineThread machineThread(machine); 
+int __heap_start, *__brkval;
 
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
