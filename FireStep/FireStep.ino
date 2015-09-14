@@ -1,18 +1,11 @@
-#include "ArduinoJson.h"
 #include <Adafruit_NeoPixel.h>
-
-#include "Mega2560.h"
-//#include <ArduinoJson.h>
-#include <ph5.h>
-//#include "Arduino.h"
+include "Mega2560.h"
 #include "MachineThread.h"
 #include "NeoPixel.h"
 
 ///////////////////// CHOOSE DEFAULT PIN CONFIGURATION ///////////
 //#define PIN_CONFIG PC2_RAMPS_1_4
 #define PIN_CONFIG PC1_EMC02
-
-firestep::MachineThread machineThread; // FireStep command interpreter
 
 /////////// NeoPixel display driver /////////////
 #define NEOPIXEL_LEDS 16
@@ -24,7 +17,11 @@ firestep::NeoPixel neoPixel(NEOPIXEL_LEDS);
 #define LED_PIN PC2_LED_PIN
 #endif
 
+using namespace firestep;
+
 Mega2560 mega2560;
+Machine machine(&mega2560);
+MachineThread machineThread(&machine); 
 
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
@@ -38,10 +35,10 @@ void setup() { // run once, when the sketch starts
     // Initialize
     machineThread.setup(&mega2560, PIN_CONFIG);
 
-    firestep::threadRunner.setup(LED_PIN);
+    threadRunner.setup(LED_PIN);
 }
 
 void loop() {	// run over and over again
-    firestep::threadRunner.run();
+    threadRunner.run();
 }
 
