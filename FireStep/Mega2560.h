@@ -10,8 +10,8 @@
 #include "IDuino.h"
 #include "Thread.h"
 
-#ifndef Arduino_h
-#define PROGMEM
+#define DELAY500NS \
+  asm("nop");asm("nop");asm("nop");asm("nop"); asm("nop");asm("nop");asm("nop");asm("nop");
 #endif
 
 #ifdef EEPROM_SIZE
@@ -99,7 +99,6 @@ public: // Pulse generation
         return ::digitalRead(dirPin);
     }
     virtual inline void pulseFast(uint8_t pin) {
-#ifdef Arduino_H
         //uint8_t timer = digitalPinToTimer(pin);
         uint8_t bit = digitalPinToBitMask(pin);
         uint8_t port = digitalPinToPort(pin);
@@ -126,7 +125,6 @@ public: // Pulse generation
         *out &= ~bit;
 
         SREG = oldSREG;
-#endif
     }
 
 public: // timing
@@ -144,19 +142,12 @@ public: // timing
 
 public: // EEPROM
     virtual inline uint8_t eeprom_read_byte(uint8_t *addr) {
-#ifdef Arduino_H
         return ::eeprom_read_byte(addr);
-#else
-		return 0;
-#endif
     }
     virtual inline void eeprom_write_byte(uint8_t *addr, uint8_t value) {
-#ifdef Arduino_H
 		::eeprom_write_byte(addr, value);
-#endif
     }
 
-#ifdef Arduino_H
 public: // PROGMEM
 	virtual inline int PM_strcmp(const char *a, const char *b) {
 		return -strcmp_P(b, a);
@@ -170,7 +161,6 @@ public: // PROGMEM
 	virtual inline byte PM_read_byte_near(const void *src) {
 		return pgm_read_byte_near(src);
 	}
-#endif
 
 public: // FireStep
     virtual Ticks ticks(bool peek=false) {
@@ -179,15 +169,11 @@ public: // FireStep
 		 * 1 tick = 1024 clock cycles = 64 microseconds
 		 * Clock overflows in 2^31 * 0.000064 seconds = ~38.1 hours
 		 */
-#ifdef Arduino_h
 		Ticks result = threadRunner.ticks();
 		if (result == 0) {
 		  result = threadRunner.ticks();
 		}
 		return result;
-#else
-		throw "THIS SHOULD NEVER HAPPEN";
-#endif
 	}
     virtual inline void ticksEnable(bool enable) {
         if (enable) {
@@ -199,7 +185,6 @@ public: // FireStep
     virtual inline bool isTicksEnabled() {
         return (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10)) ? true : false;
     }
-#ifdef Arduino_h
 	virtual inline size_t minFreeRam() {
 		extern int __heap_start, *__brkval;
 		int v;
@@ -209,7 +194,6 @@ public: // FireStep
 		}
 		return _minFreeRam;
 	}
-#endif
 } Mega2560;
 
 extern Mega2560 mega2560;
