@@ -5,6 +5,8 @@
 
 namespace firestep {
 
+#define MAX_GENERATIONS 50010
+#define GENERATION_RESET 50000
 
 typedef union ThreadClock  {
     Ticks ticks;

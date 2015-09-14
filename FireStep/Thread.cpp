@@ -4,8 +4,6 @@
 using namespace firestep;
 
 #define MAX_THREADS 32
-#define MAX_GENERATIONS 50010
-#define GENERATION_RESET 50000
 
 namespace firestep {
 ThreadClock 	threadClock;
