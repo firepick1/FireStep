@@ -125,15 +125,6 @@ void MonitorThread::loop() {
         }
     }
     if (isHigh) {
-        if (verbose) {
-            Serial.print(".");
-            //DEBUG_DEC("F", Free());
-            DEBUG_DEC("S", millis() / 1000);
-            DEBUG_DEC("G", threadClock.generation);
-            DEBUG_DEC("H", nLoops);
-            DEBUG_DEC("T", nTardies);
-            DEBUG_EOL();
-        }
         nTardies = 0;
     }
     ThreadEnable(true);
@@ -192,16 +183,6 @@ void ThreadRunner::resetGenerations() {
 }
 
 void firestep::ThreadEnable(boolean enable) {
-#ifdef DEBUG_ThreadENABLE
-    DEBUG_DEC("C", ticks());
-    for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-        Serial.print(pThread->id);
-        Serial.print(":");
-        Serial.print(pThread->nextLoop.ticks, DEC);
-        Serial.print(" ");
-    }
-    DEBUG_EOL();
-#endif
 #ifdef Arduino_h
     if (enable) {
         TCCR1B = 1 << CS12 | 0 << CS11 | 1 << CS10; /* Timer prescaler div1024 (15625Hz) */
@@ -211,14 +192,3 @@ void firestep::ThreadEnable(boolean enable) {
 #endif
 }
 
-//firestep::Ticks firestep::ticks() {
-//#if defined(TEST)
-    //arduino.timer1(1);
-//#endif
-    //Ticks result = threadRunner.ticks();
-//
-    //if (result == 0) {
-        //result = threadRunner.ticks();
-    //}
-    //return result;
-//}

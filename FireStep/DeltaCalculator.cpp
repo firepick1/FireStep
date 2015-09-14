@@ -2,10 +2,10 @@
 #include <cstring>
 #include <cmath>
 #endif
+//#include "IDuino.h"
 #include "Machine.h"
-#include "AnalogRead.h"
+//#include "AnalogRead.h"
 #include "version.h"
-#include "IDuino.h"
 #include "DeltaCalculator.h"
 
 using namespace firestep;

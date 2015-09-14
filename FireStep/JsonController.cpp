@@ -653,7 +653,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
         status = processField<PinType, int32_t>(jobj, key, pinStatus);
         if (pinStatus != machine.pinStatus) {
             machine.pinStatus = pinStatus;
-            machine.pDisplay->setup(pinStatus);
+            machine.pDisplay->setup(machine.pDuino, pinStatus);
         }
     } else if (machine.pDuino->PM_strcmp(OP_sd, key) == 0 || machine.pDuino->PM_strcmp(OP_syssd, key) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);

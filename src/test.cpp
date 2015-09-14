@@ -5115,6 +5115,10 @@ void test_IDuino() {
     ASSERTEQUAL(3, mockino.ticks(true));
     ASSERTEQUAL(3, mockino.ticks());
 
+	ASSERTEQUAL(0, mockino.millis());
+	mockino.setTicks(mockino.ticks(true)+MS_TICKS(10));
+	ASSERTEQUAL(10, mockino.millis());
+
     cout << "TEST	: test_IDuino() OK " << endl;
 }
 

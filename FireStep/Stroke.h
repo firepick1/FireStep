@@ -1,12 +1,11 @@
 #ifndef STROKE_H
 #define STROKE_H
 
-#include "Status.h"
 #include "Thread.h"
-#include "IDuino.h"
+//#include "IDuino.h"
+#include "Status.h"
 #include "Quad.h"
 #include "ph5.h"
-#include "IDuino.h"
 
 namespace firestep {
 

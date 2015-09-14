@@ -1,6 +1,8 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
+#include "IDuino.h"
+
 namespace firestep {
 
 enum DisplayStatus {
@@ -26,14 +28,16 @@ typedef class Display {
     friend class JsonController;
     friend class FPDController;
 protected:
+	IDuinoPtr pDuino;
     uint8_t status;	// DisplayStatus
     uint8_t level; // 0:off, 255:brightest
     uint8_t cameraR; // camera red intensity [0,255]
     uint8_t cameraG; // camera green intensity [0,255]
     uint8_t cameraB; // camera blue intensity [0,255]
 public:
-    Display() : status(DISPLAY_BUSY), level(127), cameraR(127), cameraG(127), cameraB(127) {}
-    virtual void setup(int pin) {
+    Display() : status(DISPLAY_BUSY), level(127), cameraR(127), cameraG(127), cameraB(127), pDuino(NULL) {}
+    virtual void setup(IDuinoPtr pDuino, int pin) {
+		this->pDuino = pDuino;
         show();
     }
     virtual void show() {}
@@ -51,7 +55,7 @@ public:
         this->level = level;
         show();
     }
-} Display;
+} Display, *DisplayPtr;
 
 } // namespace firestep
 

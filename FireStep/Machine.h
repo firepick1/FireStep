@@ -4,11 +4,11 @@
 #ifdef CMAKE
 #include <cmath>
 #endif
+#include "IDuino.h"
 #include "Stroke.h"
 #include "Display.h"
 #include "DeltaCalculator.h"
 #include "pins.h"
-#include "IDuino.h"
 
 extern void test_Home();
 
@@ -292,7 +292,7 @@ public:
 
 public:
     Axis 		axis[AXIS_COUNT];
-    Display*	pDisplay;
+    DisplayPtr	pDisplay;
     Axis *		motorAxis[MOTOR_COUNT];
     Stroke		stroke;
 

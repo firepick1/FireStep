@@ -7,7 +7,8 @@ NeoPixel::NeoPixel(uint16_t ledCount)
     : strip(ledCount, 0, NEO_GRB + NEO_KHZ800)
 {}
 
-void NeoPixel::setup(int pin) {
+void NeoPixel::setup(IDuinoPtr pDuino, int pin) {
+	Display::setup(pDuino, pin);
     // Parameter 1 = number of pixels in strip
     // Parameter 2 = Arduino pin number (most are valid)
     // Parameter 3 = pixel type flags, add together as needed:
@@ -20,6 +21,7 @@ void NeoPixel::setup(int pin) {
         strip.begin();
         strip.show();
     }
+	this->pDuino = pDuino;
     fgIndex = 0;
     fgMillis = 0;
     cameraR = 0;
@@ -32,9 +34,9 @@ void NeoPixel::setup(int pin) {
 
 void NeoPixel::show() {
     bool updateDisplay = curLevel != level || curStatus != status;
-    if (fgMillis < millis() && strip.numPixels()) {
+    if (fgMillis < pDuino->millis() && strip.numPixels()) {
         fgIndex = (fgIndex + 1) % strip.numPixels();
-        fgMillis = millis() + 3000/16;
+        fgMillis = pDuino->millis() + 3000/16;
         updateDisplay = true;
     }
     if (!updateDisplay) {

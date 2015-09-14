@@ -49,8 +49,8 @@ protected:
     uint32_t bg; // background color
 public:
     NeoPixel(uint16_t ledCount);
-    void setup(int pin);
-    void show();
+    virtual void setup(IDuinoPtr pDuino, int pin);
+    virtual void show(); 
 } NeoPixel;
 
 } // namespace firestep
