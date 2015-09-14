@@ -207,9 +207,11 @@ Machine::Machine(IDuinoPtr pDuino)
       outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0),
 	  probe(pDuino)
 {
+#ifdef CMAKE
 	if (pDuino == NULL) {
 		throw "IDuinoPtr cannot be NULL";
 	}
+#endif
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         setAxisIndex((MotorIndex)i, (AxisIndex)i);
