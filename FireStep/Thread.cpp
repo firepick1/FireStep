@@ -154,6 +154,8 @@ void ThreadRunner::clear() {
     testTardies = 0;
     fast = 255;
 #ifdef Arduino_h
+	TCCR1A = 0 /* Timer mode */; 
+	TIMSK1 = (0 << TOIE1); /* disable interrupts */
 	TCNT1 = 0;
 #endif
 }
@@ -162,10 +164,6 @@ void ThreadRunner::setup(IDuinoPtr pDuino, int pinLED) {
 	this->pDuino = pDuino;
     monitor.setup(pDuino, pinLED);
 
-#ifdef Arduino_h
-	TCCR1A = 0 /* Timer mode */; 
-	TIMSK1 = (0 << TOIE1); /* disable interrupts */
-#endif
     lastAge = 0;
     ThreadEnable(true);
 }
