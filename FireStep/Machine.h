@@ -1,12 +1,8 @@
 #ifndef MACHINE_H
 #define MACHINE_H
 
-#ifdef CMAKE
-#include <cmath>
-#endif
-#include "IDuino.h"
-#include "Stroke.h"
 #include "Display.h"
+#include "Stroke.h"
 #include "DeltaCalculator.h"
 #include "pins.h"
 

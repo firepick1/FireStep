@@ -2,13 +2,6 @@
 #define JSONCOMMAND_H
 
 #include "version.h"
-#include "Thread.h"
-#ifdef TEST
-#include "ArduinoJson.h"
-#else
-#include <ArduinoJson.h>
-#endif
-#include "Status.h"
 #include "Machine.h"
 
 namespace firestep {

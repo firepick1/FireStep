@@ -1,16 +1,17 @@
 #ifndef IDUINO_H
 #define IDUINO_H
 
-//#include "Arduino.h"
+#include <ArduinoJson.h>
 
-// DUMMY ARDUINO HEADER
-#ifndef ARDUINO_H
-#define ARDUINO_H
+#ifdef Arduino_h
+// Use Arduino definitions
+#else
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 #include <stdint.h>
-#include "../ArduinoJson/include/ArduinoJson/Arduino/Print.hpp"
+
+
 
 using namespace std;
 
