@@ -1,4 +1,8 @@
+// Arduino Oddness...
+// THe following MUST be included explicitly in FireStep.ino
 #include <Adafruit_NeoPixel.h>
+#include <ArduinoJson.h>
+#include <ph5.h>
 include "Mega2560.h"
 #include "MachineThread.h"
 #include "NeoPixel.h"
@@ -21,7 +25,7 @@ using namespace firestep;
 
 Mega2560 mega2560;
 Machine machine(&mega2560);
-MachineThread machineThread(&machine); 
+MachineThread machineThread(machine); 
 
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
