@@ -227,7 +227,6 @@ public: // misc
 public: // EEPROM
     virtual uint8_t eeprom_read_byte(uint8_t *addr) = 0;
     virtual void eeprom_write_byte(uint8_t *addr, uint8_t value) = 0;
-    virtual std::string eeprom_read_string(uint8_t *addr) = 0;
 
 public: // PROGMEM
     virtual inline int PM_strcmp(const char *a, const char *b) {
