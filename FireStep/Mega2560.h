@@ -10,10 +10,6 @@
 #include "IDuino.h"
 #include "Thread.h"
 
-#define DELAY500NS \
-  asm("nop");asm("nop");asm("nop");asm("nop"); asm("nop");asm("nop");asm("nop");asm("nop");
-#endif
-
 #ifdef EEPROM_SIZE
 #undef EEPROM_SIZE
 #endif
@@ -30,6 +26,8 @@
 #define GENERATION_RESET 50000
 #define TICK_MICROSECONDS ((TIMER_PRESCALE * 1000L)/(CLOCK_HZ/1000))
 #define TICKS_PER_SECOND ((int32_t)MS_TICKS(1000))
+#define DELAY500NS \
+  asm("nop");asm("nop");asm("nop");asm("nop"); asm("nop");asm("nop");asm("nop");asm("nop");
 #define A4988_PULSE_DELAY 	DELAY500NS;DELAY500NS
 #define DRV8825_PULSE_DELAY DELAY500NS;DELAY500NS;DELAY500NS;DELAY500NS
 #define STEPPER_PULSE_DELAY DRV8825_PULSE_DELAY
