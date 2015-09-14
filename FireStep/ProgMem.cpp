@@ -1,5 +1,3 @@
-//#include "Mega2560.h"
-#include "Arduino.h"
 #include "ProgMem.h"
 #include "Machine.h"
 

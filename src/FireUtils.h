@@ -3,6 +3,7 @@
 
 #ifndef ARDUINO
 #include <cstdio>
+#include <cstring>
 #endif
 
 #ifndef FIRELOG_H

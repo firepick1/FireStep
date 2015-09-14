@@ -1,7 +1,3 @@
-#ifdef CMAKE
-#include <cstring>
-#endif
-#include "AnalogRead.h"
 #include "version.h"
 #include "MachineThread.h"
 

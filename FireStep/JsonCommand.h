@@ -1,7 +1,6 @@
 #ifndef JSONCOMMAND_H
 #define JSONCOMMAND_H
 
-#include "version.h"
 #include "Machine.h"
 
 namespace firestep {

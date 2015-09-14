@@ -1,7 +1,6 @@
 #ifndef JSONCONTROLLER_H
 #define JSONCONTROLLER_H
 
-#include "version.h"
 #include "Thread.h"
 #include "Status.h"
 #include "Machine.h"

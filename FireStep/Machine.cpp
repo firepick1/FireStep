@@ -1,10 +1,4 @@
-#ifdef CMAKE
-#include <cstring>
-#endif
-#include "FireUtils.h"
 #include "Machine.h"
-#include "AnalogRead.h"
-#include "version.h"
 #include "ProgMem.h"
 
 using namespace firestep;
@@ -213,7 +207,9 @@ Machine::Machine(IDuinoPtr pDuino)
       outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0),
 	  probe(pDuino)
 {
-	ASSERTNONZERO(pDuino);
+	if (pDuino == NULL) {
+		throw "IDuinoPtr cannot be NULL";
+	}
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
         setAxisIndex((MotorIndex)i, (AxisIndex)i);

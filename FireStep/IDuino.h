@@ -10,8 +10,8 @@
 #include <sstream>
 #include <iomanip>
 #include <stdint.h>
-
-
+#include <cmath>
+#include <cstring>
 
 using namespace std;
 

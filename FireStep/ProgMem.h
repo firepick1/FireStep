@@ -1,24 +1,8 @@
 #ifndef PROGMEM_H
 #define PROGMEM_H
 
-#ifdef CMAKE
-#include <cstring>
-#include <cstdio>
-#endif
-
-//#ifdef ARDUINO
-//#define strcmp_PS(a,b) strcmp_P(b,a)
-//#else
-//#define PROGMEM
-//#define strcpy_P(dst,src) strcpy(dst,src)
-//#define strlen_P(src) strlen(src)
-//#define strcmp_PS(a,b) strcmp(a,b)
-//#define pgm_read_byte_near(src) (*(const char *)(src))
-//#endif
-
 #include "Status.h"
 #include "JsonCommand.h"
-#include "IDuino.h"
 
 namespace firestep {
 

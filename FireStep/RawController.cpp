@@ -1,8 +1,3 @@
-#ifdef CMAKE
-#include <cstring>
-#include <cstdio>
-#endif
-#include "version.h"
 #include "RawController.h"
 #include "ProcessField.h"
 #include "ProgMem.h"
