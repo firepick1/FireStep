@@ -41,7 +41,7 @@ const char startup_error[] PROGMEM = 	{ "Startup	: ERROR" };
 /**
  * Perform some simple startup tests
  */
-bool startup_IDuino(IDuinoPtr pDuino) {
+bool startup_IDuino(firestep::IDuinoPtr pDuino) {
 	char buf[100];
 
 	strcpy_P(buf, startup);
@@ -62,7 +62,7 @@ bool startup_IDuino(IDuinoPtr pDuino) {
 	pDuino->serial_println(buf);
 
 	// Start ticks()
-	pDuino->serial_println((int)pDuino->enableTicks(true));
+	pDuino->enableTicks(true);
 	if (!pDuino->isTicksEnabled()) {
 		strcpy_P(buf, startup_error);
 		pDuino->serial_println(buf);
