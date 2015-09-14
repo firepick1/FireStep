@@ -3,7 +3,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <ArduinoJson.h>
 #include <ph5.h>
-include "Mega2560.h"
+#include "Mega2560.h"
 #include "MachineThread.h"
 #include "NeoPixel.h"
 
@@ -37,9 +37,9 @@ void setup() { // run once, when the sketch starts
     machineThread.machine.pDisplay = &neoPixel;
 
     // Initialize
-    machineThread.setup(&mega2560, PIN_CONFIG);
+    machineThread.setup(PIN_CONFIG);
 
-    threadRunner.setup(LED_PIN);
+    threadRunner.setup(&mega2560, LED_PIN);
 }
 
 void loop() {	// run over and over again
