@@ -24,8 +24,8 @@ firestep::NeoPixel neoPixel(NEOPIXEL_LEDS);
 using namespace firestep;
 
 Mega2560 mega2560;
-Machine machine(&mega2560);
-MachineThread machineThread(machine); 
+//Machine machine(&mega2560);
+//MachineThread machineThread(machine); 
 namespace firestep {int __heap_start, *__brkval;}
 
 const char startup[] PROGMEM = 			{ "Startup	: FireStep" };
@@ -33,7 +33,7 @@ const char startup_println[] PROGMEM = 	{ "Startup	: mega2560.serial_println()" 
 const char startup_pinMode[] PROGMEM = 	{ "Startup	: mega2560.pinMode(4, OUTPUT)" };
 const char startup_led_on[] PROGMEM = 	{ "Startup	: mega2560.digitalWrite(4, HIGH)" };
 const char startup_enableTicks[] PROGMEM = 	{ "Startup	: mega2560.enableTicks()" };
-const char startup_ticks[] PROGMEM = 	{ "Startup	: mega2560.ticks()" };
+const char startup_ticks[] PROGMEM = 	{ "Startup	: mega2560.ticks() " };
 const char startup_delay[] PROGMEM = 	{ "Startup	: mega2560.delay(5000)" };
 const char startup_led_off[] PROGMEM = 	{ "Startup	: mega2560.digitalWrite(4, LOW)" };
 const char startup_error[] PROGMEM = 	{ "Startup	: ERROR" };
@@ -70,12 +70,14 @@ bool startup_IDuino(firestep::IDuinoPtr pDuino) {
 	}
 	Ticks tStart = pDuino->ticks();
 	strcpy_P(buf, startup_delay);
-	pDuino->serial_println(buf);
+	pDuino->serial_print(buf);
+	pDuino->serial_println((int)tStart);
 	pDuino->delay(1000);
-	Ticks tElapsed = pDuino->ticks() - tStart;
-	strcpy_P(buf, startup_ticks);
-	pDuino->serial_println(buf);
-	pDuino->serial_println((int)tElapsed);
+	Ticks tEnd = pDuino->ticks();
+	strcpy_P(buf, startup_delay);
+	pDuino->serial_print(buf);
+	pDuino->serial_println((int)tEnd);
+	Ticks tElapsed = tEnd - tStart;
 	if (tElapsed < MS_TICKS(1000)) {
 		strcpy_P(buf, startup_error);
 		pDuino->serial_println(buf);
@@ -96,18 +98,19 @@ void setup() { // run once, when the sketch starts
     //Serial.begin(38400); // short USB cables
     Serial.begin(19200); // long USB cables
 
-	startup(&mega2560);
+	startup_IDuino(&mega2560);
 
     // Bind in NeoPixel display driver
-    machineThread.machine.pDisplay = &neoPixel;
+    //machineThread.machine.pDisplay = &neoPixel;
 
     // Initialize
-    machineThread.setup(PIN_CONFIG);
+    //machineThread.setup(PIN_CONFIG);
 
-    threadRunner.setup(&mega2560, LED_PIN);
+    //threadRunner.setup(&mega2560, LED_PIN);
 }
 
 void loop() {	// run over and over again
+	mega2560.serial_print('.');
     //threadRunner.run();
 }
 
