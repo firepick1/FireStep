@@ -24,6 +24,8 @@ firestep::NeoPixel neoPixel(NEOPIXEL_LEDS);
 #define LED_PIN PC2_LED_PIN
 #endif
 
+Mega2560 mega2560;
+
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
     // decrease baud rate to fix Serial I/O problems.
@@ -34,7 +36,7 @@ void setup() { // run once, when the sketch starts
     machineThread.machine.pDisplay = &neoPixel;
 
     // Initialize
-    machineThread.setup(PIN_CONFIG);
+    machineThread.setup(&mega2560, PIN_CONFIG);
 
     firestep::threadRunner.setup(LED_PIN);
 }

@@ -30,6 +30,10 @@
 #define GENERATION_RESET 50000
 #define TICK_MICROSECONDS ((TIMER_PRESCALE * 1000L)/(CLOCK_HZ/1000))
 #define TICKS_PER_SECOND ((int32_t)MS_TICKS(1000))
+#define A4988_PULSE_DELAY 	DELAY500NS;DELAY500NS
+#define DRV8825_PULSE_DELAY DELAY500NS;DELAY500NS;DELAY500NS;DELAY500NS
+#define STEPPER_PULSE_DELAY DRV8825_PULSE_DELAY
+
 
 // uint16_t hardware timer
 #define TIMER_CLEAR() TCNT1 = 0
@@ -99,31 +103,14 @@ public: // Pulse generation
         return ::digitalRead(dirPin);
     }
     virtual inline void pulseFast(uint8_t pin) {
-        //uint8_t timer = digitalPinToTimer(pin);
         uint8_t bit = digitalPinToBitMask(pin);
         uint8_t port = digitalPinToPort(pin);
-        volatile uint8_t *out;
-
-        //if (port == NOT_A_PIN) return;
-
-        // If the pin that support PWM output, we need to turn it off
-        // before doing a digital write.
-        //if (timer != NOT_ON_TIMER) turnOffPWM(timer);
-
-        out = portOutputRegister(port);
-
+        volatile uint8_t *out = portOutputRegister(port);
         uint8_t oldSREG = SREG;
         cli();
-
-        //if (val == LOW) {
-        //*out &= ~bit;
-        //} else {
-        //*out |= bit;
-        //}
         *out |= bit;
         STEPPER_PULSE_DELAY;
         *out &= ~bit;
-
         SREG = oldSREG;
     }
 
@@ -175,7 +162,7 @@ public: // FireStep
 		}
 		return result;
 	}
-    virtual inline void ticksEnable(bool enable) {
+    virtual inline void enableTicks(bool enable) {
         if (enable) {
             TCCR1B = 1 << CS12 | 0 << CS11 | 1 << CS10; /* Timer prescaler div1024 (15625Hz) */
         } else {
@@ -195,8 +182,6 @@ public: // FireStep
 		return _minFreeRam;
 	}
 } Mega2560;
-
-extern Mega2560 mega2560;
 
 } // namespace firestep
 
