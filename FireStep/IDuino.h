@@ -1,6 +1,7 @@
 #ifndef IDUINO_H
 #define IDUINO_H
 
+#include <Arduino.h>
 #include <ArduinoJson.h>
 
 #ifdef Arduino_h
