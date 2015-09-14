@@ -36,8 +36,8 @@ typedef uint8_t byte;
 // Arduino compatible definitions that avoid contention with stdlib
 #define minval(a,b) ((a)<(b)?(a):(b))
 #define maxval(a,b) ((a)>(b)?(a):(b))
-#define absval(x) ((x)>0?(x):-(x)) 
-#define roundval(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5)) 
+#define absval(x) ((x)>0?(x):-(x))
+#define roundval(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
 #ifndef radians
 #define radians(deg) ((deg)*DEG_TO_RAD)
 #define degrees(rad) ((rad)*RAD_TO_DEG)
@@ -70,88 +70,88 @@ namespace firestep {
 typedef int32_t Ticks;
 
 /**
- * Abstract hardware interface for FireStep usage of Arduino 
+ * Abstract hardware interface for FireStep usage of Arduino
  */
 typedef class IDuino : public Print {
 public: // ArduinoJson Print
-	virtual size_t write(uint8_t value) = 0;
+    virtual size_t write(uint8_t value) = 0;
 
 public: // Serial
-	virtual byte serial_read() = 0;
-	virtual int serial_available() = 0;
-	virtual void serial_begin(long baud) = 0;
+    virtual byte serial_read() = 0;
+    virtual int serial_available() = 0;
+    virtual void serial_begin(long baud) = 0;
     virtual void serial_print(const char *value) = 0;
     virtual void serial_print(const char value) = 0;
     virtual void serial_print(int value, int format = DEC) = 0;
 
     virtual void serial_println(const char value) {
-		serial_print(value);
-		serial_print('\n');
-	}
-	void serial_println(const char *value="") {
-		if (*value) {
-			serial_print(value);
-		}
-		serial_print('\n');
-	}
+        serial_print(value);
+        serial_print('\n');
+    }
+    void serial_println(const char *value="") {
+        if (*value) {
+            serial_print(value);
+        }
+        serial_print('\n');
+    }
     virtual void serial_println(int value, int format = DEC)  {
-		serial_print(value, format);
-		serial_print('\n');
-	}
+        serial_print(value, format);
+        serial_print('\n');
+    }
 
 public: // Pins
-	virtual void analogWrite(int16_t dirPin, int16_t value) = 0;
-	virtual int16_t analogRead(int16_t dirPin) = 0;
-	virtual void digitalWrite(int16_t dirPin, int16_t value) = 0;
-	virtual int16_t digitalRead(int16_t dirPin) = 0;
-	virtual void pinMode(int16_t pin, int16_t inout) = 0;
+    virtual void analogWrite(int16_t dirPin, int16_t value) = 0;
+    virtual int16_t analogRead(int16_t dirPin) = 0;
+    virtual void digitalWrite(int16_t dirPin, int16_t value) = 0;
+    virtual int16_t digitalRead(int16_t dirPin) = 0;
+    virtual void pinMode(int16_t pin, int16_t inout) = 0;
 
 public: // misc
-	virtual void delay(int ms) = 0;
-	virtual void delayMicroseconds(uint16_t usDelay) = 0;
-	virtual void timer_enable(bool enable) = 0;
-	virtual bool timer_enabled() = 0;
-	virtual size_t minFreeRam() {
-		// Return minimum amount of free ram of all prior calls.
-		// Free RAM is only an issue for Mega2560 with its 8K of SRAM 
-		// The default method just returns 1000 and need only by 
-		// overridden by processors with limited SRAM (e.g., Mega2560.h).
-		return 1000; 
-	}
+    virtual void delay(int ms) = 0;
+    virtual void delayMicroseconds(uint16_t usDelay) = 0;
 
 public: // EEPROM
-	virtual uint8_t eeprom_read_byte(uint8_t *addr) = 0;
-	virtual void eeprom_write_byte(uint8_t *addr, uint8_t value) = 0;
-	virtual std::string eeprom_read_string(uint8_t *addr) = 0;
+    virtual uint8_t eeprom_read_byte(uint8_t *addr) = 0;
+    virtual void eeprom_write_byte(uint8_t *addr, uint8_t value) = 0;
+    virtual std::string eeprom_read_string(uint8_t *addr) = 0;
 
 public: // PROGMEM
-	virtual inline int PM_strcmp(const char *a, const char *b) {
-		return -strcmp(b, a);
-	}
-	virtual inline char * PM_strcpy(char *dst, const char *src) {
-		return strcpy(dst, src);
-	}
-	virtual inline size_t PM_strlen(const char *src) {
-		return strlen(src);
-	}
-	virtual inline byte PM_read_byte_near(const void *src) {
-		return * (uint8_t *) src;
-	}
+    virtual inline int PM_strcmp(const char *a, const char *b) {
+        return -strcmp(b, a);
+    }
+    virtual inline char * PM_strcpy(char *dst, const char *src) {
+        return strcpy(dst, src);
+    }
+    virtual inline size_t PM_strlen(const char *src) {
+        return strlen(src);
+    }
+    virtual inline byte PM_read_byte_near(const void *src) {
+        return * (uint8_t *) src;
+    }
 
 public: // FireStep
-	virtual void pulseFast(uint8_t pin)  {
-		digitalWrite(pin, HIGH);
-		/**
-		 * DRV8825 requires a 2 microsecond delay between
-		 * leading and trailing edges. Normal Arduinos typically
-		 * execute digitalWrite LONGER than 2us.
-		 * This method should therefore be rewritten fo individual
-		 * processors
-		 */
-		 digitalWrite(pin, LOW);
-	 }
-	 virtual Ticks ticks() = 0; // 1 Tick is 64 microseconds
-	 
+    virtual void pulseFast(uint8_t pin)  {
+        digitalWrite(pin, HIGH);
+        /**
+         * DRV8825 requires a 2 microsecond delay between
+         * leading and trailing edges. Normal Arduinos typically
+         * execute digitalWrite LONGER than 2us.
+         * This method should therefore be rewritten fo individual
+         * processors
+         */
+        digitalWrite(pin, LOW);
+    }
+    virtual Ticks ticks(bool peek=false) = 0; // 1 Tick is 64 microseconds
+    virtual void enableTicks(bool enable) = 0;
+    virtual bool isTicksEnabled() = 0;
+    virtual size_t minFreeRam() {
+        // Return minimum amount of free ram of all prior calls.
+        // Free RAM is only an issue for Mega2560 with its 8K of SRAM
+        // The default method just returns 1000 and need only by
+        // overridden by processors with limited SRAM (e.g., Mega2560.h).
+        return 1000;
+    }
+
 } IDuino, *IDuinoPtr;
 
 } // namespace firestep

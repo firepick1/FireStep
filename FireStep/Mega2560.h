@@ -100,14 +100,14 @@ public: // misc
 			}
 		}
     }
-    virtual inline void timer_enable(bool enable) {
+    virtual inline void ticksEnable(bool enable) {
         if (enable) {
             TCCR1B = 1 << CS12 | 0 << CS11 | 1 << CS10; /* Timer prescaler div1024 (15625Hz) */
         } else {
             TCCR1B = 0;	/* stop clock */
         }
     }
-    virtual inline bool timer_enabled() {
+    virtual inline bool ticksEnable() {
         return (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10)) ? true : false;
     }
 #ifdef Arduino_h
@@ -191,7 +191,7 @@ public: // FireStep
         SREG = oldSREG;
 #endif
     }
-    virtual Ticks ticks() {
+    virtual Ticks ticks(bool peek=false) {
 		/**
 		 * With the standard ATMEGA 16,000,000 Hz system clock and TCNT1 / 1024 prescaler:
 		 * 1 tick = 1024 clock cycles = 64 microseconds

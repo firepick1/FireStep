@@ -55,7 +55,7 @@ Status MTO_RAWMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
         if (status != STATUS_OK) {
             return status;
         }
-        Ticks tStrokeStart = machine.pDuino->ticks();
+        Ticks tStrokeStart = machine.pDuino->ticks(true)-1; // ensure that we always move
         status = machine.stroke.start(tStrokeStart);
         switch (status) {
         case STATUS_OK:
@@ -70,7 +70,7 @@ Status MTO_RAWMoveTo::execute(JsonCommand &jcmd, JsonObject *pjobj) {
             status = machine.stroke.traverse(machine.pDuino->ticks(), machine);
         } while (status == STATUS_BUSY_MOVING);
         tp = machine.stroke.getTimePlanned();
-        ts = (machine.pDuino->ticks() - tStrokeStart) / (float) TICKS_PER_SECOND;
+        ts = (machine.pDuino->ticks(true) - tStrokeStart) / (float) TICKS_PER_SECOND;
         pp = machine.stroke.vPeak * (machine.stroke.length / ts);
         sg = machine.stroke.length;
     }

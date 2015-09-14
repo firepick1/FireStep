@@ -20,7 +20,7 @@ private:
     int16_t			mem[ARDUINO_MEM];
     int32_t			usDelay;
     Ticks			_ticks;
-    bool			_timer_enabled;
+    bool			ticksEnabled;
 
 public: // construction
     Mockino();
@@ -46,8 +46,6 @@ public: // Pins
 public: // misc
     virtual void delay(int ms);
     virtual void delayMicroseconds(uint16_t usDelay);
-    virtual void timer_enable(bool enable);
-    virtual bool timer_enabled();
 
 public: // EEPROM
     virtual uint8_t		eeprom_read_byte(uint8_t *addr);
@@ -59,7 +57,9 @@ public: // FireStep
         digitalWrite(pin, HIGH);
         digitalWrite(pin, LOW);
     }
-    virtual Ticks ticks();
+    Ticks ticks(bool peek=false);
+    virtual void enableTicks(bool enable);
+    virtual bool isTicksEnabled();
 
 public: // Testing: Serial
     std::string serial_output();

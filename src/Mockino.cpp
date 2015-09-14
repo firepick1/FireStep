@@ -31,8 +31,8 @@ void Mockino::clear() {
     //TCNT1 = 0; 	// Timer/Counter1
     //CLKPR = 0;	// Clock prescale register
 	///sei(); // enable interrupts
-	_timer_enabled = true;
-	_ticks = 0;
+	ticksEnabled = true;
+	_ticks = 1; // must be >0 so we can subtract one
 }
 
 void Mockino::serial_clear() {
@@ -177,19 +177,12 @@ void Mockino::dump() {
     }
 }
 
-bool Mockino::timer_enabled() {
-	return _timer_enabled;
-}
-
-void Mockino::timer_enable(bool enable) {
-	_timer_enabled = enable;
-}
-
 void Mockino::delay500ns() {
 }
 
 void Mockino::delayMicroseconds(uint16_t us) {
     usDelay += us;
+	_ticks += MS_TICKS(us/1000.0);
 }
 
 void Mockino::analogWrite(int16_t pin, int16_t value) {
@@ -259,7 +252,9 @@ void Mockino::setPinMode(int16_t pin, int16_t value) {
 }
 
 void Mockino::delay(int ms) {
-    setTicks(_ticks + MS_TICKS(ms));
+	if (ticksEnabled) {
+		setTicks(_ticks + MS_TICKS(ms));
+	}
 }
 
 uint8_t Mockino::eeprom_read_byte(uint8_t *addr) {
@@ -285,11 +280,26 @@ string Mockino::eeprom_read_string(uint8_t *addr) {
 	return result;
 }	
 
-Ticks Mockino::ticks() {
-	return _ticks++;
+Ticks Mockino::ticks(bool peek) {
+	if (ticksEnabled && !peek) {
+		return _ticks++;
+	} 
+
+	return _ticks;
 }
 
 void Mockino::setTicks(Ticks value) {
 	_ticks = value;
+}
+
+bool Mockino::isTicksEnabled() {
+	return ticksEnabled;
+}
+
+void Mockino::enableTicks(bool enable) {
+	if (ticksEnabled) {
+		_ticks--; // balance out post-increment for testing
+	}
+	ticksEnabled = enable;
 }
 

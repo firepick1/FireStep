@@ -51,8 +51,7 @@ public:
 } testDisplay;
 
 void test_ticks(int nTicks) {
-    mockino.setTicks(mockino.ticks()+nTicks-1);
-    mockino.ticks();
+    mockino.setTicks(mockino.ticks()+nTicks);
     threadRunner.outerLoop();
 }
 
@@ -155,11 +154,11 @@ void test_Machine() {
     mockino.setPin(PC2_Y_MIN_PIN, 0);
     mockino.setPin(PC2_Z_MIN_PIN, 0);
     Machine machine(&mockino);
-	int32_t hash1 = machine.hash();
-	ASSERT(hash1);
+    int32_t hash1 = machine.hash();
+    ASSERT(hash1);
     machine.setup(PC2_RAMPS_1_4);
-	int32_t hash2 = machine.hash();
-	ASSERT(hash1 != hash2);
+    int32_t hash2 = machine.hash();
+    ASSERT(hash1 != hash2);
     ASSERTEQUAL(OUTPUT, mockino.getPinMode(PC2_X_STEP_PIN));
     ASSERTEQUAL(LOW, mockino.getPin(PC2_X_STEP_PIN));
     ASSERTEQUAL(OUTPUT, mockino.getPinMode(PC2_X_DIR_PIN));
@@ -193,26 +192,26 @@ void test_Machine() {
     ASSERT(machine.axis[0].isEnabled());
     ASSERT(machine.axis[1].isEnabled());
     ASSERT(machine.axis[2].isEnabled());
-	ASSERTEQUAL(hash2, machine.hash());
+    ASSERTEQUAL(hash2, machine.hash());
     ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(1, 1, 1, 0)));
-	ASSERTEQUAL(hash2, machine.hash());
+    ASSERTEQUAL(hash2, machine.hash());
     ASSERTEQUAL(2, mockino.pulses(PC2_X_STEP_PIN));
     ASSERTEQUAL(2, mockino.pulses(PC2_Y_STEP_PIN));
     ASSERTEQUAL(2, mockino.pulses(PC2_Z_STEP_PIN));
 
-	ASSERTEQUAL(hash2, machine.hash());
+    ASSERTEQUAL(hash2, machine.hash());
     ASSERTEQUAL(STATUS_OK, machine.step(Quad<StepDV>(-1, -1, -1, 0)));
-	ASSERTEQUAL(hash2, machine.hash());
+    ASSERTEQUAL(hash2, machine.hash());
     ASSERTEQUAL(3, mockino.pulses(PC2_X_STEP_PIN));
     ASSERTEQUAL(3, mockino.pulses(PC2_Y_STEP_PIN));
     ASSERTEQUAL(3, mockino.pulses(PC2_Z_STEP_PIN));
 
-	MachineThread mt(machine);
-	ASSERTEQUAL(hash2, machine.hash());
+    MachineThread mt(machine);
+    ASSERTEQUAL(hash2, machine.hash());
     mt.setup(PC2_RAMPS_1_4);
-	ASSERTEQUAL(hash2, machine.hash());
+    ASSERTEQUAL(hash2, machine.hash());
     threadRunner.setup(&mockino);
-	ASSERTEQUAL(hash2, machine.hash());
+    ASSERTEQUAL(hash2, machine.hash());
     monitor.verbose = false;
 
     mockino.dump();
@@ -233,29 +232,29 @@ void test_Machine() {
                 ADCSRA & ((1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0)));	// ADC 1MHz prescale
 #endif
 
-	ASSERTEQUAL(hash2, machine.hash());
-	machine.axis[5].pinStep = 3;
-	ASSERTEQUAL(hash2, machine.hash());
+    ASSERTEQUAL(hash2, machine.hash());
+    machine.axis[5].pinStep = 3;
+    ASSERTEQUAL(hash2, machine.hash());
 
-	// Configuration save
-	char buf[255];
-	char *out = machine.axis[0].saveConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
-	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
-	out = machine.saveSysConfig(buf, sizeof(buf));
+    // Configuration save
+    char buf[255];
+    char *out = machine.axis[0].saveConfig(buf, sizeof(buf));
+    ASSERTEQUALS(JT("{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
+    ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
+    out = machine.saveSysConfig(buf, sizeof(buf));
 #define HASH1 "1130154469"
-	ASSERTEQUALS(JT("{'ch':" HASH1 ",'pc':2,'to':0,'ah':0,'db':0,'hp':3,'jp':0,'lh':0,"
-				 "'mv':12800,'om':0,'pb':2,'pi':11,'tv':0.70}"), 
-				 buf);
-	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
-	machine.bed.a = 0.00015;
-	machine.bed.b = -0.00025;
-	out = machine.saveDimConfig(buf, sizeof(buf));
-	ASSERTEQUALS(JT("{'bx':0.0002,'by':-0.0003,'bz':0.00,"
-				 "'e':131.64,'f':190.53,'gr1':"FPD_GEAR_RATIO_S",'gr2':"FPD_GEAR_RATIO_S",'gr3':"FPD_GEAR_RATIO_S","
-				 "'ha':-67.20,'mi':16,'re':270.00,'rf':90.00,'spa':"FPD_SPE_ANGLE_S",'spr':0.00000,'st':200}"),
-				 buf);
-	ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
+    ASSERTEQUALS(JT("{'ch':" HASH1 ",'pc':2,'to':0,'ah':0,'db':0,'hp':3,'jp':0,'lh':0,"
+                    "'mv':12800,'om':0,'pb':2,'pi':11,'tv':0.70}"),
+                 buf);
+    ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
+    machine.bed.a = 0.00015;
+    machine.bed.b = -0.00025;
+    out = machine.saveDimConfig(buf, sizeof(buf));
+    ASSERTEQUALS(JT("{'bx':0.0002,'by':-0.0003,'bz':0.00,"
+                    "'e':131.64,'f':190.53,'gr1':"FPD_GEAR_RATIO_S",'gr2':"FPD_GEAR_RATIO_S",'gr3':"FPD_GEAR_RATIO_S","
+                    "'ha':-67.20,'mi':16,'re':270.00,'rf':90.00,'spa':"FPD_SPE_ANGLE_S",'spr':0.00000,'st':200}"),
+                 buf);
+    ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 
     // ticks should increase with TCNT1
     Ticks lastClock = mockino.ticks();
@@ -264,18 +263,18 @@ void test_Machine() {
     lastClock = mockino.ticks();
     mockino.dump();
 
-	{
-		Machine mach(&mockino);
-		mach.topology = MTO_FPD;
-		mach.delta.setGearRatio(9.5);
-		mach.setHomePulses(-5600);
-		ASSERTEQUALT(-66.316, mach.getHomeAngle(), 0.001);
-		ASSERTEQUAL(mach.getHomePulses(), mach.axis[0].home);
-		mach.delta.setGearRatio(9.375);
-		mach.setHomePulses(-5600);
-		ASSERTEQUALT(-67.2, mach.getHomeAngle(), 0.001);
-		ASSERTEQUAL(mach.getHomePulses(), mach.axis[0].home);
-	}
+    {
+        Machine mach(&mockino);
+        mach.topology = MTO_FPD;
+        mach.delta.setGearRatio(9.5);
+        mach.setHomePulses(-5600);
+        ASSERTEQUALT(-66.316, mach.getHomeAngle(), 0.001);
+        ASSERTEQUAL(mach.getHomePulses(), mach.axis[0].home);
+        mach.delta.setGearRatio(9.375);
+        mach.setHomePulses(-5600);
+        ASSERTEQUALT(-67.2, mach.getHomeAngle(), 0.001);
+        ASSERTEQUAL(mach.getHomePulses(), mach.axis[0].home);
+    }
 
     cout << "TEST	: test_Machine() OK " << endl;
 }
@@ -583,7 +582,13 @@ void test_setup(MachineThread &mt, bool clearArduino=true) {
     mockino.setPin(mt.machine.axis[0].pinMin, 0);
     mockino.setPin(mt.machine.axis[1].pinMin, 0);
     mockino.setPin(mt.machine.axis[2].pinMin, 0);
+    if (clearArduino) {
+        ASSERTEQUAL(1, mockino.ticks(true));
+    }
     mt.loop();
+    if (clearArduino) {
+        ASSERTEQUAL(1, mockino.ticks(true)); // mt.loop() shouldn't call ticks()
+    }
     ASSERTEQUAL(HIGH, mockino.getPin(PC2_X_DIR_PIN));
     ASSERTEQUAL(HIGH, mockino.getPin(PC2_Y_DIR_PIN));
     ASSERTEQUAL(HIGH, mockino.getPin(PC2_Z_DIR_PIN));
@@ -592,11 +597,11 @@ void test_setup(MachineThread &mt, bool clearArduino=true) {
     ASSERTEQUAL(LOW, mockino.getPin(PC2_Z_ENABLE_PIN)); // enabled
     if (clearArduino) {
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-		mt.loop();
+        mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
         char buf[100];
-        snprintf(buf, sizeof(buf), "FireStep %d.%d.%d sysch:%ld\n", 
-			VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) mt.machine.hash());
+        snprintf(buf, sizeof(buf), "FireStep %d.%d.%d sysch:%ld\n",
+                 VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) mt.machine.hash());
         ASSERTEQUALS(buf, mockino.serial_output().c_str());
     }
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
@@ -608,7 +613,7 @@ void test_setup(MachineThread &mt, bool clearArduino=true) {
 void test_mpo() {
     mockino.clear();
     threadRunner.clear();
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     mt.machine.pDisplay = &testDisplay;
     mt.setup(PC1_EMC02);
@@ -645,7 +650,7 @@ void test_mpo() {
 }
 
 void test_JsonController_tst() {
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_setup(mt);
     int32_t xdirpulses;
@@ -756,7 +761,7 @@ void test_JsonController_tst() {
 void test_JsonController() {
     cout << "TEST	: test_JsonController() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     machine.setPinConfig(PC2_RAMPS_1_4);
     JsonController &jc(*mt.pController);
@@ -1104,7 +1109,7 @@ void test_Machine_step() {
 void test_PinConfig() {
     cout << "TEST	: test_PinConfig() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_setup(mt);
 
@@ -1137,7 +1142,7 @@ void test_PinConfig() {
 void test_Move() {
     cout << "TEST	: test_Move() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_setup(mt);
     int32_t xpulses;
@@ -1263,7 +1268,7 @@ void test_Move() {
 void test_sys() {
     cout << "TEST	: test_sys() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_setup(mt);
 
@@ -1275,21 +1280,21 @@ void test_sys() {
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(400, machine.searchDelay);
-	ASSERTEQUAL(11, machine.pinStatus);
+    ASSERTEQUAL(11, machine.pinStatus);
     ASSERTEQUAL(MTO_FPD, machine.topology);
     ASSERTEQUALS(JT("{'s':0,'r':{'systo':1,'syssd':400},'t':0.000}\n"),
                  mockino.serial_output().c_str());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-	// syspi: custom pin status, probe
+    // syspi: custom pin status, probe
     mockino.serial_push(JT("{'syspi':57,'syspb':3}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(400, machine.searchDelay);
-	ASSERTEQUAL(57, machine.pinStatus);
+    ASSERTEQUAL(57, machine.pinStatus);
     ASSERTEQUAL(MTO_FPD, machine.topology);
     ASSERTEQUALS(JT("{'s':0,'r':{'syspi':57,'syspb':3},'t':0.000}\n"),
                  mockino.serial_output().c_str());
@@ -1301,14 +1306,14 @@ void test_sys() {
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(400, machine.searchDelay);
-	ASSERTEQUAL(57, machine.pinStatus);
-	ASSERTEQUAL(3, machine.probe.pinProbe);
+    ASSERTEQUAL(57, machine.pinStatus);
+    ASSERTEQUAL(3, machine.probe.pinProbe);
     ASSERTEQUAL(MTO_FPD, machine.topology);
     ASSERTEQUALS(JT("{'s':0,'r':"
-					"{'sys':{'ah':false,'as':false,'ch':-2836355,'eu':false,"
-					"'hp':3,'jp':false,'lh':false,'mv':12800,'om':0,"
-					"'pb':3,'pc':2,'pi':57,'sd':400,'to':1,'tv':0.700,'v':0.0206}"
-					"},'t':0.000}\n"),
+                    "{'sys':{'ah':false,'as':false,'ch':-2836355,'eu':false,"
+                    "'hp':3,'jp':false,'lh':false,'mv':12800,'om':0,"
+                    "'pb':3,'pc':2,'pi':57,'sd':400,'to':1,'tv':0.700,'v':0.0206}"
+                    "},'t':0.000}\n"),
                  mockino.serial_output().c_str());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -1322,9 +1327,9 @@ void test_MTO_FPD_setup(MachineThread &mt) {
     int32_t ypulses = mockino.pulses(PC2_Y_STEP_PIN);
     int32_t zpulses = mockino.pulses(PC2_Z_STEP_PIN);
 
-	// switch topologies at limit switch
-	Machine &machine = mt.machine;
-    machine.setMotorPosition(Quad<StepCoord>()); 
+    // switch topologies at limit switch
+    Machine &machine = mt.machine;
+    machine.setMotorPosition(Quad<StepCoord>());
 
     mockino.serial_push(JT("{'systo':1}\n"));
     mt.loop();
@@ -1332,41 +1337,41 @@ void test_MTO_FPD_setup(MachineThread &mt) {
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
 
-	// switching topologies does not move anything
+    // switching topologies does not move anything
     ASSERTEQUAL(0, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(0, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
 
-	// but our first 3 axis coordinates have changed
+    // but our first 3 axis coordinates have changed
     ASSERTQUAD(Quad<StepCoord>(FPD_HOME_PULSES,FPD_HOME_PULSES,FPD_HOME_PULSES,0), machine.getMotorPosition());
 
-	// since our home position has changed
+    // since our home position has changed
     ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].home);
     ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[1].home);
     ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[2].home);
 
-	// DeltaCalculator should be in sync with FPD axes
-	StepCoord pulses = machine.delta.getHomePulses();
-	ASSERTEQUAL(machine.axis[0].home, pulses);
-	ASSERTEQUAL(machine.axis[1].home, pulses);
-	ASSERTEQUAL(machine.axis[2].home, pulses);
+    // DeltaCalculator should be in sync with FPD axes
+    StepCoord pulses = machine.delta.getHomePulses();
+    ASSERTEQUAL(machine.axis[0].home, pulses);
+    ASSERTEQUAL(machine.axis[1].home, pulses);
+    ASSERTEQUAL(machine.axis[2].home, pulses);
 
-	// Verify Cartesian coordinates
+    // Verify Cartesian coordinates
     XYZ3D xyz = mt.fpdController.getXYZ3D();
     ASSERTEQUALT(0, xyz.x, 0.01);
     ASSERTEQUALT(0, xyz.y, 0.01);
     ASSERTEQUALT(65.8913, xyz.z, 0.01);
 
-	// Verify that the FPDController is active
-	ASSERTEQUALS("MTO_FPD", mt.pController->name());
+    // Verify that the FPDController is active
+    ASSERTEQUALS("MTO_FPD", mt.pController->name());
     ASSERTEQUALS(JT("{'s':0,'r':{'systo':1},'t':0.000}\n"),
                  mockino.serial_output().c_str());
 
-	// Prepare for next command	
+    // Prepare for next command
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-	// Set coordinate to Cartesian origin and verify
+    // Set coordinate to Cartesian origin and verify
     machine.setMotorPosition(Quad<StepCoord>());
     ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.getMotorPosition());
     xyz = mt.fpdController.getXYZ3D();
@@ -1378,7 +1383,7 @@ void test_MTO_FPD_setup(MachineThread &mt) {
 void test_MTO_FPD_setup() {
     cout << "TEST	: test_MTO_FPD_setup() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_MTO_FPD_setup(mt);
 
@@ -1386,22 +1391,22 @@ void test_MTO_FPD_setup() {
 }
 
 void test_loadDeltaCalculator(Machine & machine) {
-	StepCoord pulses = machine.delta.getHomePulses();
-	ASSERTEQUAL(machine.axis[0].home, pulses);
-	ASSERTEQUAL(machine.axis[1].home, pulses);
-	ASSERTEQUAL(machine.axis[2].home, pulses);
+    StepCoord pulses = machine.delta.getHomePulses();
+    ASSERTEQUAL(machine.axis[0].home, pulses);
+    ASSERTEQUAL(machine.axis[1].home, pulses);
+    ASSERTEQUAL(machine.axis[2].home, pulses);
 }
 
 void test_MTO_FPD_mov() {
     cout << "TEST	: test_MTO_FPD_mov() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_MTO_FPD_setup(mt);
     int32_t xpulses;
     int32_t ypulses;
     int32_t zpulses;
-	int32_t e0pulses;
+    int32_t e0pulses;
 
     // movx short form
     xpulses = mockino.pulses(PC2_X_STEP_PIN);
@@ -1419,7 +1424,7 @@ void test_MTO_FPD_mov() {
     ASSERTQUAD(Quad<StepCoord>(0,-20,20,0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'movx':1.000},'t':0.066}\n"),
                  mockino.serial_output().c_str());
-	test_loadDeltaCalculator( machine);
+    test_loadDeltaCalculator( machine);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -1439,7 +1444,7 @@ void test_MTO_FPD_mov() {
     ASSERTQUAD(Quad<StepCoord>(23,-11,-11,0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'movy':1.000},'t':0.071}\n"),
                  mockino.serial_output().c_str());
-	test_loadDeltaCalculator( machine);
+    test_loadDeltaCalculator( machine);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -1459,7 +1464,7 @@ void test_MTO_FPD_mov() {
     ASSERTQUAD(Quad<StepCoord>(-54,-54,-54,0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'movz':1.000},'t':0.109}\n"),
                  mockino.serial_output().c_str());
-	test_loadDeltaCalculator( machine);
+    test_loadDeltaCalculator( machine);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -1478,7 +1483,7 @@ void test_MTO_FPD_mov() {
     ASSERTQUAD(Quad<StepCoord>(-30,-85,-45,0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'x':1.000,'y':1.000,'z':1.000}},'t':0.082}\n"),
                  mockino.serial_output().c_str());
-	test_loadDeltaCalculator( machine);
+    test_loadDeltaCalculator( machine);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -1495,11 +1500,11 @@ void test_MTO_FPD_mov() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'mpo':{'1':0,'2':-20,'3':20,'4':4,'x':0.998,'y':-0.000,'z':0.002}},'t':0.000}\n"),
                  mockino.serial_output().c_str());
-	test_loadDeltaCalculator( machine);
+    test_loadDeltaCalculator( machine);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-    // movzr 
+    // movzr
     xpulses = mockino.pulses(PC2_X_STEP_PIN);
     ypulses = mockino.pulses(PC2_Y_STEP_PIN);
     zpulses = mockino.pulses(PC2_Z_STEP_PIN);
@@ -1515,8 +1520,8 @@ void test_MTO_FPD_mov() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     //ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	//mockino.setTicks(mockino.ticks()+MS_TICKS(1000));
-	//mt.loop();
+    //mockino.setTicks(mockino.ticks()+MS_TICKS(1000));
+    //mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'movzr':10.000},'t':0.347}\n"),
                  mockino.serial_output().c_str());
@@ -1524,11 +1529,11 @@ void test_MTO_FPD_mov() {
     ASSERTEQUAL(551, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(551, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTQUAD(Quad<StepCoord>(-551,-551,-551,0), machine.getMotorPosition());
-	xyz = mt.fpdController.getXYZ3D();
-	ASSERTEQUALT(0, xyz.x, 0.01);
+    xyz = mt.fpdController.getXYZ3D();
+    ASSERTEQUALT(0, xyz.x, 0.01);
     ASSERTEQUALT(0, xyz.y, 0.01);
     ASSERTEQUALT(10, xyz.z, 0.01);
-	test_loadDeltaCalculator( machine);
+    test_loadDeltaCalculator( machine);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -1540,17 +1545,17 @@ void test_MTO_FPD_mov() {
     mockino.serial_push(JT("{'mov':{'angle':30,'d':10,'zr':-1}}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mockino.setTicks(mockino.ticks()+MS_TICKS(1000));
-	mt.loop();
+    mockino.setTicks(mockino.ticks()+MS_TICKS(1000));
+    mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'angle':30,'d':10,'zr':-1.000}},'t':1.198}\n"),
                  mockino.serial_output().c_str());
     ASSERTQUAD(Quad<StepCoord>(179,-166,179), machine.getMotorPosition());
-	xyz = mt.fpdController.getXYZ3D();
-	ASSERTEQUALT(8.65175, xyz.x, 0.01);
+    xyz = mt.fpdController.getXYZ3D();
+    ASSERTEQUALT(8.65175, xyz.x, 0.01);
     ASSERTEQUALT(5, xyz.y, 0.01);
     ASSERTEQUALT(-1, xyz.z, 0.01);
-	test_loadDeltaCalculator( machine);
+    test_loadDeltaCalculator( machine);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -1559,31 +1564,31 @@ void test_MTO_FPD_mov() {
     mockino.setPin(PC2_Y_MIN_PIN, LOW);
     mockino.setPin(PC2_Z_MIN_PIN, LOW);
     machine.setMotorPosition(Quad<StepCoord>());
-	machine.bed.a = 0.01;
-	machine.bed.b = -0.02;
-	machine.bed.c = 0;
-	machine.loadDeltaCalculator();
-	PH5TYPE zbOrigin = -1.9;
-	ASSERTEQUALT(zbOrigin, machine.bed.calcZ(10,100),0.001);
+    machine.bed.a = 0.01;
+    machine.bed.b = -0.02;
+    machine.bed.c = 0;
+    machine.loadDeltaCalculator();
+    PH5TYPE zbOrigin = -1.9;
+    ASSERTEQUALT(zbOrigin, machine.bed.calcZ(10,100),0.001);
     mockino.serial_push(JT("{'mov':{'x':10,'y':100,'zb':-1},'mpox':'','mpoy':'','mpoz':''}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	mockino.setTicks(mockino.ticks()+MS_TICKS(1000));
-	mt.loop();
+    mockino.setTicks(mockino.ticks()+MS_TICKS(1000));
+    mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
-	xyz = mt.fpdController.getXYZ3D();
-	ASSERTEQUALT(10.0002, xyz.x, 0.001);
+    xyz = mt.fpdController.getXYZ3D();
+    ASSERTEQUALT(10.0002, xyz.x, 0.001);
     ASSERTEQUALT(99.9999, xyz.y, 0.001);
     ASSERTEQUALT(-1.00852, xyz.z-zbOrigin, 0.01);
     ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'x':10.000,'y':100.000,'zb':-1.000},"
-					"'mpox':10.000,'mpoy':100.000,'mpoz':-2.909},'t':1.846}\n"),
+                    "'mpox':10.000,'mpoy':100.000,'mpoz':-2.909},'t':1.846}\n"),
                  mockino.serial_output().c_str());
     ASSERTQUAD(Quad<StepCoord>(3269,-107,290,0), machine.getMotorPosition());
-	test_loadDeltaCalculator( machine);
+    test_loadDeltaCalculator( machine);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-    // movz out of range 
+    // movz out of range
     xpulses = mockino.pulses(PC2_X_STEP_PIN);
     ypulses = mockino.pulses(PC2_Y_STEP_PIN);
     zpulses = mockino.pulses(PC2_Z_STEP_PIN);
@@ -1599,10 +1604,10 @@ void test_MTO_FPD_mov() {
     ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':-140,'r':{'movz':-200.000},'t':0.000}\n"),
                  mockino.serial_output().c_str());
-	test_loadDeltaCalculator( machine);
+    test_loadDeltaCalculator( machine);
     mt.loop();
     ASSERTEQUAL(STATUS_KINEMATIC_XYZ, mt.status);
-	mt.status = STATUS_WAIT_IDLE;
+    mt.status = STATUS_WAIT_IDLE;
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -1677,7 +1682,7 @@ void test_MTO_FPD_mov() {
     xpulses = mockino.pulses(PC2_X_STEP_PIN);
     ypulses = mockino.pulses(PC2_Y_STEP_PIN);
     zpulses = mockino.pulses(PC2_Z_STEP_PIN);
-	e0pulses = mockino.pulses(PC2_E0_STEP_PIN);
+    e0pulses = mockino.pulses(PC2_E0_STEP_PIN);
     machine.setMotorPosition(Quad<StepCoord>());
     mockino.serial_push(JT("{'mova':100}}\n"));
     mt.loop();
@@ -1701,7 +1706,7 @@ void test_MTO_FPD_mov() {
     xpulses = mockino.pulses(PC2_X_STEP_PIN);
     ypulses = mockino.pulses(PC2_Y_STEP_PIN);
     zpulses = mockino.pulses(PC2_Z_STEP_PIN);
-	e0pulses = mockino.pulses(PC2_E0_STEP_PIN);
+    e0pulses = mockino.pulses(PC2_E0_STEP_PIN);
     machine.setMotorPosition(Quad<StepCoord>());
     mockino.serial_push(JT("{'mov':{'a':50}}}\n"));
     mt.loop();
@@ -1727,60 +1732,60 @@ void test_MTO_FPD_mov() {
 void test_gearRatio() {
     cout << "TEST	: test_gearRatio() =====" << endl;
 
-	DeltaCalculator dc;
+    DeltaCalculator dc;
     dc.useEffectorOrigin();
-	XYZ3D xyz10(0,0,-10);
-	Step3D pz10 = dc.calcPulses(xyz10);
-	ASSERTEQUAL(true, pz10.isValid());
-	ASSERTEQUAL(525, pz10.p1);
-	ASSERTEQUAL(525, pz10.p2);
-	ASSERTEQUAL(525, pz10.p3);
-	dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_1)*1.1, DELTA_AXIS_1);
-	pz10 = dc.calcPulses(xyz10);
-	ASSERTEQUAL(true, pz10.isValid());
-	ASSERTEQUALT(10.4213, dc.getGearRatio(DELTA_AXIS_1), 0.0001);
-	ASSERTEQUAL(577, pz10.p1);
-	ASSERTEQUAL(525, pz10.p2);
-	ASSERTEQUAL(525, pz10.p3);
-	dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_2)*1.1, DELTA_AXIS_2);
-	pz10 = dc.calcPulses(xyz10);
-	ASSERTEQUAL(true, pz10.isValid());
-	ASSERTEQUAL(577, pz10.p1);
-	ASSERTEQUAL(577, pz10.p2);
-	ASSERTEQUAL(525, pz10.p3);
-	dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_3)*1.1, DELTA_AXIS_3);
-	pz10 = dc.calcPulses(xyz10);
-	ASSERTEQUAL(true, pz10.isValid());
-	ASSERTEQUAL(577, pz10.p1);
-	ASSERTEQUAL(577, pz10.p2);
-	ASSERTEQUAL(577, pz10.p3);
-	dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_1)*0.9091, DELTA_AXIS_1);
-	pz10 = dc.calcPulses(xyz10);
-	ASSERTEQUAL(true, pz10.isValid());
-	ASSERTEQUAL(525, pz10.p1);
-	ASSERTEQUAL(577, pz10.p2);
-	ASSERTEQUAL(577, pz10.p3);
-	dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_2)*0.9091, DELTA_AXIS_2);
-	pz10 = dc.calcPulses(xyz10);
-	ASSERTEQUAL(true, pz10.isValid());
-	ASSERTEQUAL(525, pz10.p1);
-	ASSERTEQUAL(525, pz10.p2);
-	ASSERTEQUAL(577, pz10.p3);
-	dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_3)*0.9091, DELTA_AXIS_3);
-	pz10 = dc.calcPulses(xyz10);
-	ASSERTEQUAL(true, pz10.isValid());
-	ASSERTEQUAL(525, pz10.p1);
-	ASSERTEQUAL(525, pz10.p2);
-	ASSERTEQUAL(525, pz10.p3);
+    XYZ3D xyz10(0,0,-10);
+    Step3D pz10 = dc.calcPulses(xyz10);
+    ASSERTEQUAL(true, pz10.isValid());
+    ASSERTEQUAL(525, pz10.p1);
+    ASSERTEQUAL(525, pz10.p2);
+    ASSERTEQUAL(525, pz10.p3);
+    dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_1)*1.1, DELTA_AXIS_1);
+    pz10 = dc.calcPulses(xyz10);
+    ASSERTEQUAL(true, pz10.isValid());
+    ASSERTEQUALT(10.4213, dc.getGearRatio(DELTA_AXIS_1), 0.0001);
+    ASSERTEQUAL(577, pz10.p1);
+    ASSERTEQUAL(525, pz10.p2);
+    ASSERTEQUAL(525, pz10.p3);
+    dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_2)*1.1, DELTA_AXIS_2);
+    pz10 = dc.calcPulses(xyz10);
+    ASSERTEQUAL(true, pz10.isValid());
+    ASSERTEQUAL(577, pz10.p1);
+    ASSERTEQUAL(577, pz10.p2);
+    ASSERTEQUAL(525, pz10.p3);
+    dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_3)*1.1, DELTA_AXIS_3);
+    pz10 = dc.calcPulses(xyz10);
+    ASSERTEQUAL(true, pz10.isValid());
+    ASSERTEQUAL(577, pz10.p1);
+    ASSERTEQUAL(577, pz10.p2);
+    ASSERTEQUAL(577, pz10.p3);
+    dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_1)*0.9091, DELTA_AXIS_1);
+    pz10 = dc.calcPulses(xyz10);
+    ASSERTEQUAL(true, pz10.isValid());
+    ASSERTEQUAL(525, pz10.p1);
+    ASSERTEQUAL(577, pz10.p2);
+    ASSERTEQUAL(577, pz10.p3);
+    dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_2)*0.9091, DELTA_AXIS_2);
+    pz10 = dc.calcPulses(xyz10);
+    ASSERTEQUAL(true, pz10.isValid());
+    ASSERTEQUAL(525, pz10.p1);
+    ASSERTEQUAL(525, pz10.p2);
+    ASSERTEQUAL(577, pz10.p3);
+    dc.setGearRatio(dc.getGearRatio(DELTA_AXIS_3)*0.9091, DELTA_AXIS_3);
+    pz10 = dc.calcPulses(xyz10);
+    ASSERTEQUAL(true, pz10.isValid());
+    ASSERTEQUAL(525, pz10.p1);
+    ASSERTEQUAL(525, pz10.p2);
+    ASSERTEQUAL(525, pz10.p3);
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_MTO_FPD_setup(mt);
     int32_t xpulses;
     int32_t ypulses;
     int32_t zpulses;
 
-	// change axis 1 and mov
+    // change axis 1 and mov
     xpulses = mockino.pulses(PC2_X_STEP_PIN);
     ypulses = mockino.pulses(PC2_Y_STEP_PIN);
     zpulses = mockino.pulses(PC2_Z_STEP_PIN);
@@ -1794,14 +1799,14 @@ void test_gearRatio() {
     ASSERTEQUAL(1532, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTQUAD(Quad<StepCoord>(1694, 1532, 1532, 0), mt.machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{'gr1':10.474},'movz':-30.000,"
-					"'mpo':{'1':1694,'2':1532,'3':1532,'4':0,'x':0.000,'y':0.006,'z':-29.993}}"
-					",'t':0.609}\n"),
+                    "'mpo':{'1':1694,'2':1532,'3':1532,'4':0,'x':0.000,'y':0.006,'z':-29.993}}"
+                    ",'t':0.609}\n"),
                  mockino.serial_output().c_str());
-	ASSERTEQUALT(10.4745, machine.delta.getGearRatio(DELTA_AXIS_1), 0.0001);
+    ASSERTEQUALT(10.4745, machine.delta.getGearRatio(DELTA_AXIS_1), 0.0001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-	// return to origin
+    // return to origin
     xpulses = mockino.pulses(PC2_X_STEP_PIN);
     ypulses = mockino.pulses(PC2_Y_STEP_PIN);
     zpulses = mockino.pulses(PC2_Z_STEP_PIN);
@@ -1815,10 +1820,10 @@ void test_gearRatio() {
     ASSERTEQUAL(1532, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'dimgr1':10.474,'movz':0.000,"
-					"'mpo':{'1':0,'2':0,'3':0,'4':0,'x':0.000,'y':-0.000,'z':0.000}}"
-					",'t':0.609}\n"),
+                    "'mpo':{'1':0,'2':0,'3':0,'4':0,'x':0.000,'y':-0.000,'z':0.000}}"
+                    ",'t':0.609}\n"),
                  mockino.serial_output().c_str());
-	ASSERTEQUALT(10.4745, machine.delta.getGearRatio(DELTA_AXIS_1), 0.0001);
+    ASSERTEQUALT(10.4745, machine.delta.getGearRatio(DELTA_AXIS_1), 0.0001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -1828,7 +1833,7 @@ void test_gearRatio() {
 void test_MTO_FPD_prb() {
     cout << "TEST	: test_MTO_FPD_prb() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_MTO_FPD_setup(mt);
     int32_t xpulses;
@@ -1871,12 +1876,12 @@ void test_MTO_FPD_prb() {
     ASSERTEQUAL(996, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(996, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTQUAD(Quad<StepCoord>(1096, 1096, 1096, 100), mt.machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'prbz':-21.253},'t':6.016}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'prbz':-21.253},'t':6.845}\n"),
                  mockino.serial_output().c_str());
     test_ticks(1);	// tripped
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-	// clear out probe data
+    // clear out probe data
     for (int i=0; i<PROBE_DATA; i++) {
         machine.probe.archiveData(i);
     }
@@ -1922,7 +1927,7 @@ void test_MTO_FPD_prb() {
     ASSERTQUAD(Quad<StepCoord>(1096, 1096, 1096, 100), mt.machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'prb':"
                     "{'1':1096,'2':1096,'3':1096,'4':100,'ip':false,"
-                    "'pb':2,'sd':800,'x':0.000,'y':-0.000,'z':-21.253}},'t':6.016}\n"),
+                    "'pb':2,'sd':800,'x':0.000,'y':-0.000,'z':-21.253}},'t':6.845}\n"),
                  mockino.serial_output().c_str());
     test_ticks(1);	// tripped
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -1947,10 +1952,10 @@ void test_MTO_FPD_prb() {
 void test_MTO_FPD_dim() {
     cout << "TEST	: test_MTO_FPD_dim() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_MTO_FPD_setup(mt);
-	DeltaCalculator& dc = machine.delta;
+    DeltaCalculator& dc = machine.delta;
     int32_t xpulses;
     int32_t ypulses;
     int32_t zpulses;
@@ -1963,89 +1968,89 @@ void test_MTO_FPD_dim() {
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
-					"'bx':0.0000,'by':0.0000,'bz':0.000,'e':131.636,'f':190.526,'gr':9.474,"
-				    //"'ha':-67.199,'hp':"FPD_HOME_PULSES_S",'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':"FPD_SPE_RATIO_S",'st':200}"
-				    "'ha':-67.199,'hp':"FPD_HOME_PULSES_S",'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':0.000,'st':200}"
+                    "'bx':0.0000,'by':0.0000,'bz':0.000,'e':131.636,'f':190.526,'gr':9.474,"
+                    //"'ha':-67.199,'hp':"FPD_HOME_PULSES_S",'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':"FPD_SPE_RATIO_S",'st':200}"
+                    "'ha':-67.199,'hp':"FPD_HOME_PULSES_S",'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':0.000,'st':200}"
                     "},'t':0.000}\n"),
                  mockino.serial_output().c_str());
-	ASSERTEQUALT(9.474, dc.getGearRatio(), 0.001);
+    ASSERTEQUALT(9.474, dc.getGearRatio(), 0.001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     // dim set mi, st
     machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
-	ASSERTEQUAL(1, machine.axis[0].position);
-	ASSERTEQUAL(2, machine.axis[1].position);
-	ASSERTEQUAL(3, machine.axis[2].position);
-	ASSERTEQUAL(4, machine.axis[3].position);
+    ASSERTEQUAL(1, machine.axis[0].position);
+    ASSERTEQUAL(2, machine.axis[1].position);
+    ASSERTEQUAL(3, machine.axis[2].position);
+    ASSERTEQUAL(4, machine.axis[3].position);
     mockino.serial_push(JT("{'dim':{"
-                   "'mi':32,'st':400"
-				   "}}\n"));
+                           "'mi':32,'st':400"
+                           "}}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
                     "'mi':32,'st':400"
-				    "}},"
+                    "}},"
                     "'t':0.000}\n"),
                  mockino.serial_output().c_str());
-	ASSERTEQUALT(32, dc.getMicrosteps(), 0.001);
-	ASSERTEQUALT(400.000, dc.getSteps360(), 0.001);
-	ASSERTEQUALT(360/400.000, machine.axis[0].stepAngle, 0.001);
-	ASSERTEQUALT(360/400.000, machine.axis[1].stepAngle, 0.001);
-	ASSERTEQUALT(360/400.000, machine.axis[2].stepAngle, 0.001);
-	ASSERTEQUAL(-22636, machine.axis[0].home);
-	ASSERTEQUAL(-22636, machine.axis[1].home);
-	ASSERTEQUAL(-22636, machine.axis[2].home);
-	ASSERTEQUAL(4, machine.axis[0].position);
-	ASSERTEQUAL(8, machine.axis[1].position);
-	ASSERTEQUAL(12, machine.axis[2].position);
-	ASSERTEQUAL(4, machine.axis[3].position);
+    ASSERTEQUALT(32, dc.getMicrosteps(), 0.001);
+    ASSERTEQUALT(400.000, dc.getSteps360(), 0.001);
+    ASSERTEQUALT(360/400.000, machine.axis[0].stepAngle, 0.001);
+    ASSERTEQUALT(360/400.000, machine.axis[1].stepAngle, 0.001);
+    ASSERTEQUALT(360/400.000, machine.axis[2].stepAngle, 0.001);
+    ASSERTEQUAL(-22636, machine.axis[0].home);
+    ASSERTEQUAL(-22636, machine.axis[1].home);
+    ASSERTEQUAL(-22636, machine.axis[2].home);
+    ASSERTEQUAL(4, machine.axis[0].position);
+    ASSERTEQUAL(8, machine.axis[1].position);
+    ASSERTEQUAL(12, machine.axis[2].position);
+    ASSERTEQUAL(4, machine.axis[3].position);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     // dim set
     machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
-	ASSERTEQUAL(1, machine.axis[0].position);
-	ASSERTEQUAL(2, machine.axis[1].position);
-	ASSERTEQUAL(3, machine.axis[2].position);
-	ASSERTEQUAL(4, machine.axis[3].position);
+    ASSERTEQUAL(1, machine.axis[0].position);
+    ASSERTEQUAL(2, machine.axis[1].position);
+    ASSERTEQUAL(3, machine.axis[2].position);
+    ASSERTEQUAL(4, machine.axis[3].position);
     mockino.serial_push(JT("{'dim':{'bx':0.0010,'by':0.0020,'bz':0.003,'e':131.636,'f':190.526,'gr':9.371,"
-                   "'re':270.000,'rf':90.000,"
-				   "'ha':-67.3}}\n"));
+                           "'re':270.000,'rf':90.000,"
+                           "'ha':-67.3}}\n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
-					"'bx':0.0010,'by':0.0020,'bz':0.003,'e':131.636,'f':190.526,'gr':9.371,"
+                    "'bx':0.0010,'by':0.0020,'bz':0.003,'e':131.636,'f':190.526,'gr':9.371,"
                     "'re':270.000,'rf':90.000,"
-				    "'ha':-67.300}},"
+                    "'ha':-67.300}},"
                     "'t':0.000}\n"),
                  mockino.serial_output().c_str());
-	ASSERTEQUALT(0.0010, machine.bed.a, 0.0001);
-	ASSERTEQUALT(0.0020, machine.bed.b, 0.0001);
-	ASSERTEQUALT(0.003, machine.bed.c, 0.001);
-	ASSERTEQUALT(131.636, dc.getEffectorTriangleSide(), 0.001);
-	ASSERTEQUALT(190.526, dc.getBaseTriangleSide(), 0.001);
-	ASSERTEQUALT(9.371, dc.getGearRatio(), 0.001);
-	ASSERTEQUALT(-67.3, dc.getHomeAngle(), 0.001);
-	ASSERTEQUALT(-67.3, machine.getHomeAngle(), 0.001);
-	ASSERTEQUALT(32, dc.getMicrosteps(), 0.001);
-	ASSERTEQUALT(270.000, dc.getEffectorLength(), 0.001);
-	ASSERTEQUALT(90.000, dc.getBaseArmLength(), 0.001);
-	ASSERTEQUALT(400.000, dc.getSteps360(), 0.001);
-	ASSERTEQUALT(360/400.000, machine.axis[0].stepAngle, 0.001);
-	ASSERTEQUALT(360/400.000, machine.axis[1].stepAngle, 0.001);
-	ASSERTEQUALT(360/400.000, machine.axis[2].stepAngle, 0.001);
-	ASSERTEQUAL(-22424, machine.axis[0].home);
-	ASSERTEQUAL(-22424, machine.axis[1].home);
-	ASSERTEQUAL(-22424, machine.axis[2].home);
-	ASSERTEQUAL(213, machine.axis[0].position);
-	ASSERTEQUAL(214, machine.axis[1].position);
-	ASSERTEQUAL(215, machine.axis[2].position);
-	ASSERTEQUAL(4, machine.axis[3].position);
+    ASSERTEQUALT(0.0010, machine.bed.a, 0.0001);
+    ASSERTEQUALT(0.0020, machine.bed.b, 0.0001);
+    ASSERTEQUALT(0.003, machine.bed.c, 0.001);
+    ASSERTEQUALT(131.636, dc.getEffectorTriangleSide(), 0.001);
+    ASSERTEQUALT(190.526, dc.getBaseTriangleSide(), 0.001);
+    ASSERTEQUALT(9.371, dc.getGearRatio(), 0.001);
+    ASSERTEQUALT(-67.3, dc.getHomeAngle(), 0.001);
+    ASSERTEQUALT(-67.3, machine.getHomeAngle(), 0.001);
+    ASSERTEQUALT(32, dc.getMicrosteps(), 0.001);
+    ASSERTEQUALT(270.000, dc.getEffectorLength(), 0.001);
+    ASSERTEQUALT(90.000, dc.getBaseArmLength(), 0.001);
+    ASSERTEQUALT(400.000, dc.getSteps360(), 0.001);
+    ASSERTEQUALT(360/400.000, machine.axis[0].stepAngle, 0.001);
+    ASSERTEQUALT(360/400.000, machine.axis[1].stepAngle, 0.001);
+    ASSERTEQUALT(360/400.000, machine.axis[2].stepAngle, 0.001);
+    ASSERTEQUAL(-22424, machine.axis[0].home);
+    ASSERTEQUAL(-22424, machine.axis[1].home);
+    ASSERTEQUAL(-22424, machine.axis[2].home);
+    ASSERTEQUAL(213, machine.axis[0].position);
+    ASSERTEQUAL(214, machine.axis[1].position);
+    ASSERTEQUAL(215, machine.axis[2].position);
+    ASSERTEQUAL(4, machine.axis[3].position);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -2056,9 +2061,9 @@ void test_MTO_FPD_hom() {
     cout << "TEST	: test_MTO_FPD() =====" << endl;
 
     {   // hom
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_MTO_FPD_setup(mt);
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_MTO_FPD_setup(mt);
         mockino.setPin(PC2_PROBE_PIN, LOW);
         mockino.serial_push(JT("{'hom':''}}\n"));
         mt.loop();	// parse
@@ -2069,18 +2074,18 @@ void test_MTO_FPD_hom() {
         mockino.setPin(PC2_Y_MIN_PIN, HIGH);
         mockino.setPin(PC2_Z_MIN_PIN, HIGH);
         mt.loop();
-    	int32_t xpulses = mockino.pulses(PC2_X_STEP_PIN);
-    	int32_t ypulses = mockino.pulses(PC2_Y_STEP_PIN);
-    	int32_t zpulses = mockino.pulses(PC2_Z_STEP_PIN);
+        int32_t xpulses = mockino.pulses(PC2_X_STEP_PIN);
+        int32_t ypulses = mockino.pulses(PC2_Y_STEP_PIN);
+        int32_t zpulses = mockino.pulses(PC2_Z_STEP_PIN);
         ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
         mt.loop(); // calibrating
         ASSERTEQUAL(STATUS_OK, mt.status);
-    	ASSERTEQUAL(abs(FPD_HOME_PULSES), mockino.pulses(PC2_X_STEP_PIN)-xpulses-machine.axis[0].latchBackoff);
-    	ASSERTEQUAL(abs(FPD_HOME_PULSES), mockino.pulses(PC2_Y_STEP_PIN)-ypulses-machine.axis[1].latchBackoff);
-    	ASSERTEQUAL(abs(FPD_HOME_PULSES), mockino.pulses(PC2_Z_STEP_PIN)-zpulses-machine.axis[2].latchBackoff);
+        ASSERTEQUAL(abs(FPD_HOME_PULSES), mockino.pulses(PC2_X_STEP_PIN)-xpulses-machine.axis[0].latchBackoff);
+        ASSERTEQUAL(abs(FPD_HOME_PULSES), mockino.pulses(PC2_Y_STEP_PIN)-ypulses-machine.axis[1].latchBackoff);
+        ASSERTEQUAL(abs(FPD_HOME_PULSES), mockino.pulses(PC2_Z_STEP_PIN)-zpulses-machine.axis[2].latchBackoff);
         ASSERTEQUALS(JT("{'s':0,'r':{'hom':{"
-					 "'1':"FPD_HOME_PULSES_S",'2':"FPD_HOME_PULSES_S",'3':"FPD_HOME_PULSES_S",'4':0"
-					 "}},'t':0.000}\n"),
+                        "'1':"FPD_HOME_PULSES_S",'2':"FPD_HOME_PULSES_S",'3':"FPD_HOME_PULSES_S",'4':0"
+                        "}},'t':0.410}\n"),
                      mockino.serial_output().c_str());
         ASSERTQUAD(Quad<StepCoord>(), machine.getMotorPosition());
         XYZ3D xyz = mt.fpdController.getXYZ3D();
@@ -2100,9 +2105,9 @@ void test_MTO_FPD_hom() {
     }
 
     {   // hom and set coordinates
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_MTO_FPD_setup(mt);
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_MTO_FPD_setup(mt);
         machine = mt.machine;
         mockino.setPin(PC2_PROBE_PIN, LOW);
         mockino.serial_push(JT("{'hom':{'1':-5601,'2':-5601,'3':-5601,'4':4}}\n"));
@@ -2118,29 +2123,29 @@ void test_MTO_FPD_hom() {
         ASSERTEQUALT(-5601, machine.axis[1].position, 0.01);
         ASSERTEQUALT(-5601, machine.axis[2].position, 0.01);
         ASSERTEQUALT(4, machine.axis[3].home, 0.01);
-		StepCoord hp = machine.delta.getHomePulses();
-		ASSERTEQUAL(machine.axis[0].home, hp);
-		ASSERTEQUAL(machine.axis[1].home, hp);
-		ASSERTEQUAL(machine.axis[2].home, hp);
+        StepCoord hp = machine.delta.getHomePulses();
+        ASSERTEQUAL(machine.axis[0].home, hp);
+        ASSERTEQUAL(machine.axis[1].home, hp);
+        ASSERTEQUAL(machine.axis[2].home, hp);
         mockino.setPin(PC2_X_MIN_PIN, HIGH);
         mockino.setPin(PC2_Y_MIN_PIN, HIGH);
         mockino.setPin(PC2_Z_MIN_PIN, HIGH);
         mt.loop();	// moving: home and backoff
         ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
-    	int32_t xpulses = mockino.pulses(PC2_X_STEP_PIN);
-    	int32_t ypulses = mockino.pulses(PC2_Y_STEP_PIN);
-    	int32_t zpulses = mockino.pulses(PC2_Z_STEP_PIN);
+        int32_t xpulses = mockino.pulses(PC2_X_STEP_PIN);
+        int32_t ypulses = mockino.pulses(PC2_Y_STEP_PIN);
+        int32_t zpulses = mockino.pulses(PC2_Z_STEP_PIN);
         mt.loop(); // calibrating: rapid probe to post-home destination
         ASSERTEQUAL(STATUS_OK, mt.status);
-        ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':-5601,'2':-5601,'3':-5601,'4':4}},'t':0.000}\n"),
+        ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':-5601,'2':-5601,'3':-5601,'4':4}},'t':0.410}\n"),
                      mockino.serial_output().c_str());
-		hp = machine.delta.getHomePulses();
-		ASSERTEQUAL(machine.axis[0].home, hp);
-		ASSERTEQUAL(machine.axis[1].home, hp);
-		ASSERTEQUAL(machine.axis[2].home, hp);
-    	ASSERTEQUAL(5601, mockino.pulses(PC2_X_STEP_PIN)-xpulses-machine.axis[0].latchBackoff);
-    	ASSERTEQUAL(5601, mockino.pulses(PC2_Y_STEP_PIN)-ypulses-machine.axis[1].latchBackoff);
-    	ASSERTEQUAL(5601, mockino.pulses(PC2_Z_STEP_PIN)-zpulses-machine.axis[2].latchBackoff);
+        hp = machine.delta.getHomePulses();
+        ASSERTEQUAL(machine.axis[0].home, hp);
+        ASSERTEQUAL(machine.axis[1].home, hp);
+        ASSERTEQUAL(machine.axis[2].home, hp);
+        ASSERTEQUAL(5601, mockino.pulses(PC2_X_STEP_PIN)-xpulses-machine.axis[0].latchBackoff);
+        ASSERTEQUAL(5601, mockino.pulses(PC2_Y_STEP_PIN)-ypulses-machine.axis[1].latchBackoff);
+        ASSERTEQUAL(5601, mockino.pulses(PC2_Z_STEP_PIN)-zpulses-machine.axis[2].latchBackoff);
         ASSERTQUAD(Quad<StepCoord>(0,0,0,4), machine.getMotorPosition());
         XYZ3D xyz = mt.fpdController.getXYZ3D();
         ASSERTEQUALT(0, xyz.x, 0.01);
@@ -2159,14 +2164,14 @@ void test_MTO_FPD_hom() {
     }
 
     {   // home single axis
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_MTO_FPD_setup(mt);
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_MTO_FPD_setup(mt);
         machine = mt.machine;
-    	int32_t xpulses = mockino.pulses(PC2_X_STEP_PIN);
-    	int32_t ypulses = mockino.pulses(PC2_Y_STEP_PIN);
-    	int32_t zpulses = mockino.pulses(PC2_Z_STEP_PIN);
-		machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
+        int32_t xpulses = mockino.pulses(PC2_X_STEP_PIN);
+        int32_t ypulses = mockino.pulses(PC2_Y_STEP_PIN);
+        int32_t zpulses = mockino.pulses(PC2_Z_STEP_PIN);
+        machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
         mockino.setPin(PC2_PROBE_PIN, LOW);
         mockino.serial_push(JT("{'hom1':''}\n"));
         mt.loop();	// parse
@@ -2181,7 +2186,7 @@ void test_MTO_FPD_hom() {
         ASSERTEQUALT(2, machine.axis[1].position, 0.01);
         ASSERTEQUALT(3, machine.axis[2].position, 0.01);
         ASSERTEQUALT(4, machine.axis[3].position, 0.01);
-		StepCoord hp = machine.delta.getHomePulses();
+        StepCoord hp = machine.delta.getHomePulses();
         mockino.setPin(PC2_X_MIN_PIN, HIGH);
         mockino.setPin(PC2_Y_MIN_PIN, HIGH);
         mockino.setPin(PC2_Z_MIN_PIN, HIGH);
@@ -2189,30 +2194,30 @@ void test_MTO_FPD_hom() {
         ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
         mt.loop(); // calibrating: rapid probe to post-home destination
         ASSERTEQUAL(STATUS_OK, mt.status);
-        ASSERTEQUALS(JT("{'s':0,'r':{'hom1':"FPD_HOME_PULSES_S"},'t':0.000}\n"),
+        ASSERTEQUALS(JT("{'s':0,'r':{'hom1':"FPD_HOME_PULSES_S"},'t':0.410}\n"),
                      mockino.serial_output().c_str());
-		hp = machine.delta.getHomePulses();
-		ASSERTEQUAL(machine.axis[0].home, hp);
-		ASSERTEQUAL(machine.axis[1].home, hp);
-		ASSERTEQUAL(machine.axis[2].home, hp);
-    	ASSERTEQUAL(2*LATCH_BACKOFF, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
-		TESTCOUT2("ypulses:", ypulses, " lb:", machine.axis[1].latchBackoff);
-    	ASSERTEQUAL(0, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
-    	ASSERTEQUAL(0, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
+        hp = machine.delta.getHomePulses();
+        ASSERTEQUAL(machine.axis[0].home, hp);
+        ASSERTEQUAL(machine.axis[1].home, hp);
+        ASSERTEQUAL(machine.axis[2].home, hp);
+        ASSERTEQUAL(2*LATCH_BACKOFF, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+        TESTCOUT2("ypulses:", ypulses, " lb:", machine.axis[1].latchBackoff);
+        ASSERTEQUAL(0, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
+        ASSERTEQUAL(0, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
         ASSERTQUAD(Quad<StepCoord>(FPD_HOME_PULSES,2,3,4), machine.getMotorPosition());
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
-	
-	{   // autoHome
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_MTO_FPD_setup(mt);
+
+    {   // autoHome
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_MTO_FPD_setup(mt);
         machine = mt.machine;
-    	int32_t xpulses = mockino.pulses(PC2_X_STEP_PIN);
-    	int32_t ypulses = mockino.pulses(PC2_Y_STEP_PIN);
-    	int32_t zpulses = mockino.pulses(PC2_Z_STEP_PIN);
-		machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
+        int32_t xpulses = mockino.pulses(PC2_X_STEP_PIN);
+        int32_t ypulses = mockino.pulses(PC2_Y_STEP_PIN);
+        int32_t zpulses = mockino.pulses(PC2_Z_STEP_PIN);
+        machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
         mockino.setPin(PC2_PROBE_PIN, LOW);
         mockino.serial_push(JT("{'sysah':true,'sysas':true}\n"));
         mt.loop();	// parse
@@ -2223,56 +2228,56 @@ void test_MTO_FPD_hom() {
                      mockino.serial_output().c_str());
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-		// simulate restart
-		mt.status = STATUS_BUSY_SETUP;
-		mt.loop();
-		ASSERTEQUAL(STATUS_BUSY_EEPROM, mt.status);
-		mt.loop(); // parse startup JSON
-		mockino.serial_clear(); // banner
-		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-		mt.loop(); // sys
-		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-		mt.loop(); // x
-		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-		mt.loop(); // y
-		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-		mt.loop(); // z
-		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-		mt.loop(); // a
-		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-		mt.loop(); // b
-		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-		mt.loop(); // c
-		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-		mt.loop(); // home
-		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-		mt.loop(); // home
-		ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    	ASSERTEQUAL(0, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
-    	ASSERTEQUAL(0, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
-    	ASSERTEQUAL(0, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
-		mt.loop(); // home moves up
-		ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    	ASSERTEQUAL(3, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
-    	ASSERTEQUAL(3, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
-    	ASSERTEQUAL(3, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
-		// trip min switch
+        // simulate restart
+        mt.status = STATUS_BUSY_SETUP;
+        mt.loop();
+        ASSERTEQUAL(STATUS_BUSY_EEPROM, mt.status);
+        mt.loop(); // parse startup JSON
+        mockino.serial_clear(); // banner
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // sys
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // x
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // y
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // z
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // a
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // b
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // c
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // home
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // home
+        ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+        ASSERTEQUAL(0, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+        ASSERTEQUAL(0, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
+        ASSERTEQUAL(0, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
+        mt.loop(); // home moves up
+        ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+        ASSERTEQUAL(3, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+        ASSERTEQUAL(3, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
+        ASSERTEQUAL(3, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
+        // trip min switch
         mockino.setPin(PC2_X_MIN_PIN, HIGH);
         mockino.setPin(PC2_Y_MIN_PIN, HIGH);
         mockino.setPin(PC2_Z_MIN_PIN, HIGH);
         mt.loop();	// moving: home and backoff
         ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
-		mt.loop(); // home
-		ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop(); // home
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
         mt.loop(); // calibrating: rapid probe to post-home destination
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{'hom':{"
-					 "'1':"FPD_HOME_PULSES_S",'2':"FPD_HOME_PULSES_S",'3':"FPD_HOME_PULSES_S",'4':0"
-					 "}},'t':0.001}\n"),
+                        "'1':"FPD_HOME_PULSES_S",'2':"FPD_HOME_PULSES_S",'3':"FPD_HOME_PULSES_S",'4':0"
+                        "}},'t':0.411}\n"),
                      mockino.serial_output().c_str());
-    	ASSERTEQUAL(3+abs(FPD_HOME_PULSES)+2*LATCH_BACKOFF, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
-    	ASSERTEQUAL(3+abs(FPD_HOME_PULSES)+2*LATCH_BACKOFF, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
-    	ASSERTEQUAL(3+abs(FPD_HOME_PULSES)+2*LATCH_BACKOFF, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
+        ASSERTEQUAL(3+abs(FPD_HOME_PULSES)+2*LATCH_BACKOFF, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+        ASSERTEQUAL(3+abs(FPD_HOME_PULSES)+2*LATCH_BACKOFF, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
+        ASSERTEQUAL(3+abs(FPD_HOME_PULSES)+2*LATCH_BACKOFF, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
         ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.getMotorPosition());
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -2284,7 +2289,7 @@ void test_MTO_FPD_hom() {
 void test_MTO_FPD() {
     cout << "TEST	: test_MTO_FPD() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_MTO_FPD_setup(mt);
     int32_t xpulses;
@@ -2328,7 +2333,7 @@ void test_MTO_FPD() {
     ASSERTEQUAL(100, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(98, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(99, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
-    ASSERTEQUALS(JT("{'s':0,'r':{'prbz':-51.932},'t':0.766}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'prbz':-51.932},'t':0.842}\n"),
                  mockino.serial_output().c_str());
     xyz = mt.fpdController.getXYZ3D();
     ASSERTEQUALT(5.05, xyz.x, 0.03);
@@ -2353,9 +2358,9 @@ void test_calibrate() {
     cout << "TEST	: test_calibrate() =====" << endl;
 
     {   // with sv == 0, nothing should change
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_setup_FPD(mt);
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_setup_FPD(mt);
 
         machine.probe.probeData[0] = -62.259;
         machine.probe.probeData[1] = -61.701;
@@ -2382,9 +2387,9 @@ void test_calibrate() {
     }
 
     {   // with default sv (0.7) we get coarse adjustment
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_setup_FPD(mt);
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_setup_FPD(mt);
         machine.probe.probeData[0] = -53.510;
         machine.probe.probeData[1] = -53.900;
         machine.probe.probeData[2] = -53.654;
@@ -2410,9 +2415,9 @@ void test_calibrate() {
     }
 
     {   // homeAngle: with default sv (1) we get full non-adaptive adjustment
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_setup_FPD(mt);
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_setup_FPD(mt);
         machine.probe.probeData[0] = -53.510;
         machine.probe.probeData[1] = -53.900;
         machine.probe.probeData[2] = -53.654;
@@ -2439,9 +2444,9 @@ void test_calibrate() {
 
 #ifdef LEGACY
     {   // gearRatio: with default sv (1) we get full non-adaptive adjustment
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_setup_FPD(mt);
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_setup_FPD(mt);
         machine.probe.probeData[0] = -53.510;
         machine.probe.probeData[1] = -53.900;
         machine.probe.probeData[2] = -53.654;
@@ -2468,18 +2473,18 @@ void test_calibrate() {
 #endif
 
     {   // gearRatio: upward facing bowl
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_setup_FPD(mt);
-		PH5TYPE zCenter = -53;
-		PH5TYPE zRim = zCenter + 0.1; // about 0.15 gear ratio error
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_setup_FPD(mt);
+        PH5TYPE zCenter = -53;
+        PH5TYPE zRim = zCenter + 0.1; // about 0.15 gear ratio error
         machine.probe.probeData[0] = zCenter;
-        machine.probe.probeData[1] = 
-        machine.probe.probeData[2] = 
-        machine.probe.probeData[3] =
-        machine.probe.probeData[4] =
-        machine.probe.probeData[5] =
-        machine.probe.probeData[6] = zRim;
+        machine.probe.probeData[1] =
+            machine.probe.probeData[2] =
+                machine.probe.probeData[3] =
+                    machine.probe.probeData[4] =
+                        machine.probe.probeData[5] =
+                            machine.probe.probeData[6] = zRim;
         machine.probe.probeData[7] = zCenter;
         mockino.serial_push(JT("{'cal':{'bx':'','by':'','bz':'','gr':'','ge':'','sv':'','zc':'','zr':''}}\n"));
         mt.loop();
@@ -2498,18 +2503,18 @@ void test_calibrate() {
     }
 
     {   // gearRatio: downward facing bowl
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_setup_FPD(mt);
-		PH5TYPE zCenter = -53;
-		PH5TYPE zRim = zCenter - 0.1; // about 0.15 gear ratio error
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_setup_FPD(mt);
+        PH5TYPE zCenter = -53;
+        PH5TYPE zRim = zCenter - 0.1; // about 0.15 gear ratio error
         machine.probe.probeData[0] = zCenter;
-        machine.probe.probeData[1] = 
-        machine.probe.probeData[2] = 
-        machine.probe.probeData[3] =
-        machine.probe.probeData[4] =
-        machine.probe.probeData[5] =
-        machine.probe.probeData[6] = zRim;
+        machine.probe.probeData[1] =
+            machine.probe.probeData[2] =
+                machine.probe.probeData[3] =
+                    machine.probe.probeData[4] =
+                        machine.probe.probeData[5] =
+                            machine.probe.probeData[6] = zRim;
         machine.probe.probeData[7] = zCenter;
         mockino.serial_push(JT("{'cal':{'bx':'','by':'','bz':'','gr':'','ge':'','sv':'','zc':'','zr':''}}\n"));
         mt.loop();
@@ -2528,18 +2533,18 @@ void test_calibrate() {
     }
 
     {   // gearRatio: downward facing bowl
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_setup_FPD(mt);
-		PH5TYPE zCenter = -53;
-		PH5TYPE zRim = zCenter - 0.5; // excessive z-bowl error
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_setup_FPD(mt);
+        PH5TYPE zCenter = -53;
+        PH5TYPE zRim = zCenter - 0.5; // excessive z-bowl error
         machine.probe.probeData[0] = zCenter;
-        machine.probe.probeData[1] = 
-        machine.probe.probeData[2] = 
-        machine.probe.probeData[3] =
-        machine.probe.probeData[4] =
-        machine.probe.probeData[5] =
-        machine.probe.probeData[6] = zRim;
+        machine.probe.probeData[1] =
+            machine.probe.probeData[2] =
+                machine.probe.probeData[3] =
+                    machine.probe.probeData[4] =
+                        machine.probe.probeData[5] =
+                            machine.probe.probeData[6] = zRim;
         machine.probe.probeData[7] = zCenter;
         mockino.serial_push(JT("{'cal':{'bx':'','by':'','bz':'','gr':'','ge':'','sv':'','zc':'','zr':''}}\n"));
         mt.loop();
@@ -2550,7 +2555,7 @@ void test_calibrate() {
                         "'cal':{'bx':'','by':'','bz':'','gr':'','ge':'','sv':1.000,'zc':'','zr':''}},"
                         "'t':0.000}\n"),
                      mockino.serial_output().c_str());
-		mt.status = STATUS_WAIT_IDLE;
+        mt.status = STATUS_WAIT_IDLE;
         ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].home);
         ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[1].home);
         ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[2].home);
@@ -2560,9 +2565,9 @@ void test_calibrate() {
 
 #ifdef DISCARD
     {   // gearRatio: reversing error should solve for gear ratio
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_setup_FPD(mt);
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_setup_FPD(mt);
         machine.setHomePulses(-5058);
         machine.delta.setGearRatio(9.363);
         machine.probe.probeData[0] = -65.172;
@@ -2588,8 +2593,8 @@ void test_calibrate() {
         ASSERTEQUAL(-5058, machine.axis[2].home);
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-		
-		// Second data
+
+        // Second data
         machine.probe.probeData[0] = -66.945;
         machine.probe.probeData[1] = -66.405;
         machine.probe.probeData[2] = -66.308;
@@ -2618,9 +2623,9 @@ void test_calibrate() {
 #endif // DISCARD
 
     {   // bed Z-plane: with default sv (1) we get full non-adaptive adjustment
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_setup_FPD(mt);
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_setup_FPD(mt);
         machine.probe.probeData[0] = -53.510;
         machine.probe.probeData[1] = -53.900;
         machine.probe.probeData[2] = -53.654;
@@ -2647,9 +2652,9 @@ void test_calibrate() {
     }
 
     {   // gearRatio and homeAngle: should split error
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_setup_FPD(mt);
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_setup_FPD(mt);
         machine.probe.probeData[0] = -53.510;
         machine.probe.probeData[1] = -53.900;
         machine.probe.probeData[2] = -53.654;
@@ -2680,9 +2685,9 @@ void test_calibrate() {
     }
 
     {   // cal should be same as specifying all attributes
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_setup_FPD(mt);
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_setup_FPD(mt);
         machine.probe.probeData[0] = -53.510;
         machine.probe.probeData[1] = -53.900;
         machine.probe.probeData[2] = -53.654;
@@ -2719,9 +2724,9 @@ void test_mark() {
     cout << "TEST	: test_mark() =====" << endl;
 
     {   // MTO_RAW
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_setup(mt);
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_setup(mt);
 
         for (int8_t i=0; i<MARK_COUNT; i++) {
             machine.marks[i] = (i+1)*10;
@@ -2760,9 +2765,9 @@ void test_mark() {
     }
 
     {   // MTO_FPD
-		Machine machine(&mockino);
-		MachineThread mt(machine);
-		test_MTO_FPD_setup(mt);
+        Machine machine(&mockino);
+        MachineThread mt(machine);
+        test_MTO_FPD_setup(mt);
         machine.marks[0] = 10;
         machine.marks[1] = 20;
         machine.marks[2] = 30;
@@ -2874,9 +2879,9 @@ void test_mark() {
 void test_stroke_endpos() {
     cout << "TEST	: test_stroke_endpos() =====" << endl;
 
-	Machine machine(&mockino);
-	MachineThread mt(machine);
-	test_setup(mt);
+    Machine machine(&mockino);
+    MachineThread mt(machine);
+    test_setup(mt);
     int32_t xpulses;
     int32_t ypulses;
     int32_t zpulses;
@@ -2890,11 +2895,13 @@ void test_stroke_endpos() {
     json = "{'dvs':{'us':512,'1':[10,20],'2':[40,50],'3':[70,80]}}\n";
     mockino.serial_push(JT(json));
     test_ticks(1); // parse
+	ASSERTEQUAL(4, mockino.ticks(true));
     ASSERTEQUAL(0, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(0, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1); // initialize
+	ASSERTEQUAL(7, mockino.ticks(true));
     ASSERTEQUAL(0, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(0, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
@@ -2902,22 +2909,24 @@ void test_stroke_endpos() {
     ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.getMotorPosition());
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     test_ticks(1); // moving
+	ASSERTEQUAL(11, mockino.ticks(true));
+    ASSERTQUAD(Quad<StepCoord>(7, 30, 52, 0), machine.getMotorPosition());
     ASSERTEQUAL(7, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(30, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(52, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
-    ASSERTQUAD(Quad<StepCoord>(7,30,52,0), machine.getMotorPosition());
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     test_ticks(1); // moving
-    ASSERTEQUAL(25, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
-    ASSERTEQUAL(85, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
-    ASSERTEQUAL(145, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
-    ASSERTQUAD(Quad<StepCoord>(25,85,145,0), machine.getMotorPosition());
+	ASSERTEQUAL(15, mockino.ticks(true));
+    ASSERTQUAD(Quad<StepCoord>(32,107,182,0), machine.getMotorPosition());
+    ASSERTEQUAL(32, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(107, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(182, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     test_ticks(1); // moving
+    ASSERTQUAD(Quad<StepCoord>(40,130,220,0), machine.getMotorPosition());
     ASSERTEQUAL(40, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(130, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(220, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
-    ASSERTQUAD(Quad<StepCoord>(40,130,220,0), machine.getMotorPosition());
     ASSERTEQUAL(STATUS_OK, mt.status);
 
     test_ticks(1); // idle
@@ -2944,22 +2953,22 @@ void test_stroke_endpos() {
     ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.getMotorPosition());
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     test_ticks(1); // moving
+    ASSERTQUAD(Quad<StepCoord>(7,30,52,0), machine.getMotorPosition());
     ASSERTEQUAL(7, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(30, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(52, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
-    ASSERTQUAD(Quad<StepCoord>(7,30,52,0), machine.getMotorPosition());
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     test_ticks(1); // moving
-    ASSERTEQUAL(25, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
-    ASSERTEQUAL(85, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
-    ASSERTEQUAL(145, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
-    ASSERTQUAD(Quad<StepCoord>(25,85,145,0), machine.getMotorPosition());
+    ASSERTQUAD(Quad<StepCoord>(32,107,182,0), machine.getMotorPosition());
+    ASSERTEQUAL(32, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(107, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(182, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     test_ticks(1); // moving
+    ASSERTQUAD(Quad<StepCoord>(41,132,223,0), machine.getMotorPosition());
     ASSERTEQUAL(41, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(132, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(223, mockino.pulses(PC2_Z_STEP_PIN)-zpulses);
-    ASSERTQUAD(Quad<StepCoord>(41,132,223,0), machine.getMotorPosition());
     ASSERTEQUAL(STATUS_OK, mt.status);
 
     cout << "TEST	: test_stroke_endpos() OK " << endl;
@@ -2968,7 +2977,7 @@ void test_stroke_endpos() {
 void test_pnp() {
     cout << "TEST	: test_pnp() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_setup(mt);
     int32_t xpulses = mockino.pulses(PC2_X_STEP_PIN);
@@ -3002,36 +3011,36 @@ void test_pnp() {
     test_ticks(MS_TICKS(100));
     ASSERTEQUAL(598, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     test_ticks(MS_TICKS(100));
-    ASSERTEQUAL(1432, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(1434, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     test_ticks(MS_TICKS(100));
-    ASSERTEQUAL(2582, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(2584, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
 
     test_ticks(MS_TICKS(100));
-    ASSERTEQUAL(3692, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(3696, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     test_ticks(MS_TICKS(100));
-    ASSERTEQUAL(4334, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(4336, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     test_ticks(MS_TICKS(100));
     ASSERTEQUAL(4514, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     test_ticks(MS_TICKS(100));
-    ASSERTEQUAL(4650, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(4652, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     test_ticks(MS_TICKS(100));
-    ASSERTEQUAL(5022, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(5024, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
 
     test_ticks(MS_TICKS(100));
-    ASSERTEQUAL(5570, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(5574, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     test_ticks(MS_TICKS(100));
-    ASSERTEQUAL(6236, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(6242, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     test_ticks(MS_TICKS(100));
-    ASSERTEQUAL(6998, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(7004, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     test_ticks(MS_TICKS(100));
-    ASSERTEQUAL(7840, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(7848, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     test_ticks(MS_TICKS(100));
-    ASSERTEQUAL(8766, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(8774, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
 
     test_ticks(MS_TICKS(100));
-    ASSERTEQUAL(9708, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(9718, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     test_ticks(MS_TICKS(100));
-    ASSERTEQUAL(10364, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(10368, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     test_ticks(MS_TICKS(100));
     ASSERTEQUAL(10570, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     test_ticks(MS_TICKS(100));
@@ -3042,9 +3051,9 @@ void test_pnp() {
 
     ASSERTEQUAL(10584, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
     ASSERTEQUAL(12038, mockino.pulses(PC2_Y_STEP_PIN) - ypulses);
-    ASSERTEQUAL(10423, mockino.pulses(PC2_Z_STEP_PIN) - zpulses);
+    ASSERTEQUAL(10419, mockino.pulses(PC2_Z_STEP_PIN) - zpulses);
     ASSERTEQUALS(JT("{'s':0,'r':{'dvs':{'1':1556,'2':7742,'3':-4881,"
-                    "'sc':2,'us':1873817,'dp':[1556,7742,-4881]}},'t':1.903}\n"),
+                    "'sc':2,'us':1873817,'dp':[1556,7742,-4881]}},'t':1.904}\n"),
                  mockino.serial_output().c_str());
     ASSERTQUAD(Quad<StepCoord>(11119, 13701, 7347, 100), machine.getMotorPosition());
 
@@ -3054,9 +3063,9 @@ void test_pnp() {
 void test_dvs() {
     cout << "TEST	: test_dvs() =====" << endl;
 
-	Machine machine(&mockino);
-	MachineThread mt(machine);
-	test_setup(mt);
+    Machine machine(&mockino);
+    MachineThread mt(machine);
+    test_setup(mt);
     int32_t xpulses = mockino.pulses(PC2_X_STEP_PIN);
     machine.setMotorPosition(Quad<StepCoord>(100, 100, 100, 100));
 
@@ -3064,11 +3073,15 @@ void test_dvs() {
     test_ticks(1); // parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTEQUAL(xpulses, mockino.pulses(PC2_X_STEP_PIN));
+    ASSERTEQUAL(0, machine.stroke.tStart);
+    ASSERTEQUAL(4, mockino.ticks(true));
 
     test_ticks(1); // initialize
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(xpulses, mockino.pulses(PC2_X_STEP_PIN));
-    ASSERTEQUAL(1, threadClock.ticks - machine.stroke.tStart);
+    ASSERTEQUAL(6, machine.stroke.tStart);
+    ASSERTEQUAL(7, mockino.ticks(true));
+    ASSERTEQUAL(1, mockino.ticks(true) - machine.stroke.tStart);
 
     test_ticks(1); // start moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
@@ -3077,72 +3090,73 @@ void test_dvs() {
     test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(1, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
-    ASSERTEQUAL(MS_TICKS(100) + 6, threadClock.ticks - machine.stroke.tStart);
+    ASSERTEQUAL(MS_TICKS(100) + 8, mockino.ticks(true) - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(2, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
-    ASSERTEQUAL(MS_TICKS(200) + 7, threadClock.ticks - machine.stroke.tStart);
+    ASSERTEQUAL(MS_TICKS(200) + 10, mockino.ticks(true) - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(3, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
-    ASSERTEQUAL(MS_TICKS(300) + 9, threadClock.ticks - machine.stroke.tStart);
+    ASSERTEQUAL(3*MS_TICKS(100) + 14, mockino.ticks(true) - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(4, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
-    ASSERTEQUAL(MS_TICKS(400) + 10, threadClock.ticks - machine.stroke.tStart);
+    ASSERTEQUAL(4*MS_TICKS(100) + 17, mockino.ticks(true) - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(500) - 4 * MS_TICKS(100)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(5, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
-    ASSERTEQUAL(MS_TICKS(500) + 14, threadClock.ticks - machine.stroke.tStart);
+    ASSERTEQUAL(MS_TICKS(500) + 20, mockino.ticks(true) - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(1000) - MS_TICKS(500)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(10, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
-    ASSERTEQUAL(MS_TICKS(1000) + 16, threadClock.ticks - machine.stroke.tStart);
+    ASSERTEQUAL(MS_TICKS(1000) + 23, mockino.ticks(true) - machine.stroke.tStart);
     ASSERTQUAD(Quad<StepCoord>(110, 100, 100, 100), machine.getMotorPosition());
 
     test_ticks(MS_TICKS(500)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(15, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
-    ASSERTEQUAL(MS_TICKS(1500) + 18, threadClock.ticks - machine.stroke.tStart);
+    ASSERTEQUAL(MS_TICKS(1500) + 26, mockino.ticks(true) - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(1000) - MS_TICKS(500)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(20, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
-    ASSERTEQUAL(MS_TICKS(2000) + 20, threadClock.ticks - machine.stroke.tStart);
+    ASSERTEQUAL(MS_TICKS(2000) + 29, mockino.ticks(true) - machine.stroke.tStart);
     ASSERTQUAD(Quad<StepCoord>(120, 100, 100, 100), machine.getMotorPosition());
 
     test_ticks(MS_TICKS(1000)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(30, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
-    ASSERTEQUAL(MS_TICKS(3000) + 22, threadClock.ticks - machine.stroke.tStart);
+    ASSERTEQUAL(MS_TICKS(3000) + 32, mockino.ticks(true) - machine.stroke.tStart);
     ASSERTQUAD(Quad<StepCoord>(130, 100, 100, 100), machine.getMotorPosition());
 
     test_ticks(MS_TICKS(500)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(35, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
-    ASSERTEQUAL(MS_TICKS(3500) + 24, threadClock.ticks - machine.stroke.tStart);
+    ASSERTEQUAL(MS_TICKS(3500) + 35, mockino.ticks(true) - machine.stroke.tStart);
 
     test_ticks(MS_TICKS(600)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUAL(41, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
-    ASSERTEQUAL(MS_TICKS(4100) + 26, threadClock.ticks - machine.stroke.tStart);
+    ASSERTEQUAL(MS_TICKS(4100) + 38, mockino.ticks(true) - machine.stroke.tStart);
     ASSERTQUAD(Quad<StepCoord>(141, 100, 100, 100), machine.getMotorPosition());
 
     test_ticks(MS_TICKS(600)); // moving
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-    ASSERTEQUAL(MS_TICKS(4700) + 28, threadClock.ticks - machine.stroke.tStart);
+    ASSERTEQUAL(MS_TICKS(4700) + 41, mockino.ticks(true) - machine.stroke.tStart);
     ASSERTQUAD(Quad<StepCoord>(147, 100, 100, 100), machine.getMotorPosition());
     ASSERTEQUAL(47, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
 
     test_ticks(MS_TICKS(1000)); // done
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUAL(MS_TICKS(5700) + 30, threadClock.ticks - machine.stroke.tStart);
-    ASSERTEQUALS(JT("{'s':0,'r':{'dvs':{'us':5000000,'x':50}},'t':5.702}\n"), mockino.serial_output().c_str());
+    ASSERTEQUAL(MS_TICKS(5700) + 44, mockino.ticks(true) - machine.stroke.tStart);
+    ASSERTEQUALS(JT("{'s':0,'r':{'dvs':{'us':5000000,'x':50}},'t':5.703}\n"),
+                 mockino.serial_output().c_str());
     ASSERTEQUAL(50, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
     ASSERTQUAD(Quad<StepCoord>(150, 100, 100, 100), machine.getMotorPosition());
 
@@ -3165,7 +3179,7 @@ void test_error(MachineThread &mt, const char * cmd, Status status, const char *
 void test_errors() {
     cout << "TEST	: test_errors() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_setup(mt);
 
@@ -3181,7 +3195,7 @@ void test_errors() {
 void test_Idle() {
     cout << "TEST	: test_Idle() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_setup(mt);
     int32_t xenpulses = mockino.pulses(PC2_X_ENABLE_PIN);
@@ -3204,15 +3218,13 @@ void test_Idle() {
 void test_PrettyPrint() {
     cout << "TEST	: test_PrettyPrint() =====" << endl;
 
-	Machine machine(&mockino);
-	MachineThread mt(machine);
-	test_setup(mt);
+    Machine machine(&mockino);
+    MachineThread mt(machine);
+    test_setup(mt);
 
     mockino.serial_push(JT("{'sysjp':true}\n"));
-    threadClock.ticks++;
     mt.loop(); // parse
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    threadClock.ticks++;
     mt.loop(); // process
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{\r\n  's': 0,\r\n  'r': {\r\n    'sysjp': true\r\n  },\r\n  't': 0.000\r\n}\n"),
@@ -3240,7 +3252,7 @@ void test_autoSync() {
 
     mockino.clear();
     threadRunner.clear();
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     mt.machine.pDisplay = &testDisplay;
     mt.setup(PC1_EMC02);
@@ -3378,7 +3390,7 @@ void test_eep() {
     mockino.eeprom_write_byte(eeaddr++, '"');
     mockino.eeprom_write_byte(eeaddr++, '"');
     mockino.eeprom_write_byte(eeaddr++, '}');
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_setup(mt,false);
     ASSERTEQUAL(STATUS_BUSY_EEPROM, mt.status);
@@ -3539,7 +3551,7 @@ void test_eep() {
 void test_io() {
     cout << "TEST	: test_io() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_setup(mt);
 
@@ -3625,7 +3637,7 @@ void test_io() {
 void test_probe() {
     cout << "TEST	: test_probe() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_setup(mt);
     int32_t xpulses = mockino.pulses(PC2_X_STEP_PIN);
@@ -3709,7 +3721,7 @@ void test_probe() {
     ASSERTEQUAL(3, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(1, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTQUAD(Quad<StepCoord>(99, 97, 94, 100), mt.machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'prb':{'1':99,'2':97,'3':94,'pn':2}},'t':0.001}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'prb':{'1':99,'2':97,'3':94,'pn':2}},'t':0.006}\n"),
                  mockino.serial_output().c_str());
     test_ticks(1);	// tripped
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -3795,7 +3807,7 @@ void test_probe() {
     ASSERTEQUAL(3, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTEQUAL(1, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTQUAD(Quad<StepCoord>(99, 97, 94, 100), mt.machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'prb':{'1':99,'2':97,'3':94,'pn':2,'ip':true}},'t':0.001}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'prb':{'1':99,'2':97,'3':94,'pn':2,'ip':true}},'t':0.006}\n"),
                  mockino.serial_output().c_str());
     test_ticks(1);
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -3842,7 +3854,7 @@ void test_probe() {
 void test_MTO_RAW_hom() {
     cout << "TEST	: test_MTO_RAW_hom() =====" << endl;
 
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     test_setup(mt);
     int32_t xpulses = mockino.pulses(PC2_X_STEP_PIN);
@@ -3955,7 +3967,7 @@ void test_MTO_RAW_hom() {
     ASSERTEQUAL(HIGH, mockino.getPin(PC2_X_DIR_PIN)); // HIGH because we backed off
     ASSERTEQUAL(HIGH, mockino.getPin(PC2_Y_DIR_PIN));
     ASSERTEQUAL(HIGH, mockino.getPin(PC2_Z_DIR_PIN)); // HIGH because we backed off
-    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'x':5,'z':16}},'t':0.000}\n"), mockino.serial_output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'x':5,'z':16}},'t':0.411}\n"), mockino.serial_output().c_str());
     ASSERT(machine.axis[0].atMin);
     ASSERT(!machine.axis[1].atMin);
     ASSERT(machine.axis[2].atMin);
@@ -3999,7 +4011,7 @@ void test_MTO_RAW_hom() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(hPulses * 1 + 2*LATCH_BACKOFF, mockino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTQUAD(Quad<StepCoord>(100, 10, 100, 100), mt.machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'homy':10},'t':0.000}\n"), mockino.serial_output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'homy':10},'t':0.410}\n"), mockino.serial_output().c_str());
 
     // TEST SHORT FORM
     xpulses = mockino.pulses(PC2_X_STEP_PIN);
@@ -4047,7 +4059,7 @@ void test_MTO_RAW_hom() {
     ASSERTEQUAL(hPulses * 1 + 2*LATCH_BACKOFF, mockino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, mockino.pulses(PC2_E0_STEP_PIN)-e0pulses);
     ASSERTQUAD(Quad<StepCoord>(5, 100, 100, 20), mt.machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':5,'2':10,'3':15,'4':20}},'t':0.000}\n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':5,'2':10,'3':15,'4':20}},'t':0.410}\n"),
                  mockino.serial_output().c_str());
     mt.loop(); // hit limit switch
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -4059,7 +4071,7 @@ void test_MachineThread() {
     cout << "TEST	: test_MachineThread() =====" << endl;
 
     threadRunner.clear();
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     mt.setup(PC2_RAMPS_1_4);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
@@ -4070,7 +4082,7 @@ void test_MachineThread() {
 
     mockino.serial_clear();
     mockino.serial_push("{");
-	mockino.setTicks(0);
+    mockino.setTicks(0);
     test_ticks(100);
     ASSERTEQUAL(STATUS_WAIT_EOL, mt.status);
     ASSERTEQUALS("", mockino.serial_output().c_str());
@@ -4093,35 +4105,47 @@ void test_MachineThread() {
     ASSERTEQUALS("", mockino.serial_output().c_str());
     jsonIn = "{'systc':'','dvs':{'us':512,'dp':[100,200],'1':[10,20],'2':[40,50],'3':[7,8]}}\n";
     mockino.serial_push(JT(jsonIn));
+    Ticks tStart = mockino.ticks(true);
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     ASSERTEQUALS("", mockino.serial_output().c_str());
+    ASSERTEQUAL(1, mockino.ticks(true) - tStart);
 
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUALS("", mockino.serial_output().c_str());
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
+    ASSERTEQUAL(2, mockino.ticks(true) - tStart);
 
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUALS("", mockino.serial_output().c_str());
-    ASSERTQUAD(Quad<StepCoord>(5, 20, 3, 0), mt.machine.getMotorPosition());
+    ASSERTQUAD(Quad<StepCoord>(2, 10, 1, 0), mt.machine.getMotorPosition());
+    ASSERTEQUAL(4, mockino.ticks(true) - tStart);
 
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUALS("", mockino.serial_output().c_str());
-    ASSERTQUAD(Quad<StepCoord>(10, 40, 7, 0), mt.machine.getMotorPosition());
+    ASSERTQUAD(Quad<StepCoord>(7, 30, 5, 0), mt.machine.getMotorPosition());
+    ASSERTEQUAL(6, mockino.ticks(true) - tStart);
 
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
     ASSERTEQUALS("", mockino.serial_output().c_str());
-    ASSERTQUAD(Quad<StepCoord>(25, 85, 14, 0), mt.machine.getMotorPosition());
+    ASSERTQUAD(Quad<StepCoord>(17, 62, 10, 0), mt.machine.getMotorPosition());
+    ASSERTEQUAL(8, mockino.ticks(true) - tStart);
+
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
+    ASSERTEQUALS("", mockino.serial_output().c_str());
+    ASSERTQUAD(Quad<StepCoord>(32, 107, 18, 0), mt.machine.getMotorPosition());
+    ASSERTEQUAL(10, mockino.ticks(true) - tStart);
 
     mockino.serial_clear();
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     jsonOut =
-        "{'s':0,'r':{'systc':113,'dvs':{'us':512,'dp':[100,200],'1':100,'2':200,'3':0}},'t':0.001}\n";
+        "{'s':0,'r':{'systc':114,'dvs':{'us':512,'dp':[100,200],'1':100,'2':200,'3':0}},'t':0.001}\n";
     ASSERTEQUALS(JT(jsonOut), mockino.serial_output().c_str());
     ASSERTQUAD(Quad<StepCoord>(100, 200, 0, 0), mt.machine.getMotorPosition());
 
@@ -4166,7 +4190,7 @@ void test_Display() {
 
     pThreadList = NULL;
     threadRunner.setup(&mockino);
-	Machine machine(&mockino);
+    Machine machine(&mockino);
     MachineThread mt(machine);
     mockino.serial_clear();
     testDisplay.clear();
@@ -4274,7 +4298,7 @@ void test_ph5() {
     ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
         JT("{'s':-901,'r':{'tstph':{'pu':3200,'tv':0.700,'sg':16,'mv':12800,"\
-           "'lp':26144,'pp':7611.1,'tp':0.837,'ts':0.837}},'t':3.347}\n"),
+           "'lp':26146,'pp':7611.1,'tp':0.837,'ts':0.837}},'t':3.347}\n"),
         mockino.serial_output().c_str());
     ASSERTEQUAL(0, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
     mt.loop(); // idle
@@ -4301,7 +4325,7 @@ void test_ph5() {
     ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
         JT("{'s':-901,'r':{'tstph':{'pu':6400,'tv':0.010,'sg':99,'mv':12800,"\
-           "'lp':15936,'pp':12811.4,'tp':0.510,'ts':0.510}},'t':1.020}\n"),
+           "'lp':15938,'pp':12811.4,'tp':0.510,'ts':0.510}},'t':1.020}\n"),
         mockino.serial_output().c_str());
     ASSERTEQUAL(0, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
     mt.loop(); // idle
@@ -4330,7 +4354,7 @@ void test_ph5() {
     ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
         JT("{'s':-901,'r':{'tstph':{'pu':6400,'tv':0.100,'sg':32,'mv':40000,"\
-           "'lp':8124,'pp':40118.1,'tp':0.260,'ts':0.260}},'t':0.520}\n"),
+           "'lp':8126,'pp':40118.1,'tp':0.260,'ts':0.260}},'t':0.520}\n"),
         mockino.serial_output().c_str());
     ASSERTEQUAL(0, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
     mt.loop(); // idle
@@ -4359,7 +4383,7 @@ void test_ph5() {
     ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
         JT("{'s':-901,'r':{'tstph':{'pu':1,'tv':0.100,'sg':16,'mv':40000,"\
-           "'lp':98,'pp':0.0,'tp':0.003,'ts':0.003}},'t':0.007}\n"),
+           "'lp':100,'pp':0.0,'tp':0.003,'ts':0.003}},'t':0.006}\n"),
         mockino.serial_output().c_str());
     ASSERTEQUAL(0, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
     mt.loop(); // idle
@@ -4388,7 +4412,7 @@ void test_ph5() {
     ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
         JT("{'s':-901,'r':{'tstph':{'pu':32000,'tv':0.150,'sg':99,'mv':16000,"\
-           "'lp':67186,'pp':16024.1,'tp':2.150,'ts':2.150}},'t':4.300}\n"),
+           "'lp':67188,'pp':16024.1,'tp':2.150,'ts':2.150}},'t':4.300}\n"),
         mockino.serial_output().c_str());
     ASSERTEQUAL(0, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
     mt.loop(); // idle
@@ -4417,7 +4441,7 @@ void test_ph5() {
     ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
         JT("{'s':-901,'r':{'tstph':{'pu':32000,'tv':0.200,'sg':99,'mv':4000,"\
-           "'lp':256250,'pp':4008.3,'tp':8.200,'ts':8.200}},'t':16.400}\n"),
+           "'lp':256252,'pp':4008.3,'tp':8.200,'ts':8.200}},'t':16.400}\n"),
         mockino.serial_output().c_str());
     ASSERTEQUAL(0, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
     mt.loop(); // idle
@@ -4445,7 +4469,7 @@ void test_ph5() {
     mt.loop();	// command.process
     ASSERTEQUAL(STATUS_WAIT_CANCELLED, mt.status);
     ASSERTEQUALS(
-        JT("{'s':-901,'r':{'tstph':{'pu':1600,'tv':0.300,'mv':16000,'lp':10824,"\
+        JT("{'s':-901,'r':{'tstph':{'pu':1600,'tv':0.300,'mv':16000,'lp':10826,"\
            "'pp':9237.0,'sg':16,'tp':0.346,'ts':0.346}},'t':0.693}\n"),
         mockino.serial_output().c_str());
     ASSERTEQUAL(0, mockino.pulses(PC2_X_STEP_PIN) - xpulses);
@@ -4476,7 +4500,7 @@ void test_command_array() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1);
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'ypo':2},'t':0.000}\n"), mockino.serial_output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'ypo':2},'t':0.001}\n"), mockino.serial_output().c_str());
     test_ticks(1); // done
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -4530,7 +4554,7 @@ void test_command_array() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1); // done
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':5,'2':10,'3':15,'4':20}},'t':0.001}\n"), mockino.serial_output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':5,'2':10,'3':15,'4':20}},'t':0.413}\n"), mockino.serial_output().c_str());
     test_ticks(1); // done
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -5068,6 +5092,32 @@ void test_pgm() {
     cout << "TEST	: test_pgm() OK " << endl;
 }
 
+void test_IDuino() {
+    cout << "TEST	: test_IDuino() =====" << endl;
+
+    mockino.clear();
+    ASSERTEQUAL(true, mockino.isTicksEnabled());
+    mockino.setTicks(1);
+    ASSERTEQUAL(1, mockino.ticks(true));
+    ASSERTEQUAL(1, mockino.ticks());
+    ASSERTEQUAL(2, mockino.ticks(true));
+    ASSERTEQUAL(2, mockino.ticks());
+    mockino.enableTicks(false);
+    ASSERTEQUAL(false, mockino.isTicksEnabled());
+    ASSERTEQUAL(2, mockino.ticks(true));
+    ASSERTEQUAL(2, mockino.ticks());
+    ASSERTEQUAL(2, mockino.ticks(true));
+    ASSERTEQUAL(2, mockino.ticks());
+    mockino.enableTicks(true);
+    ASSERTEQUAL(true, mockino.isTicksEnabled());
+    ASSERTEQUAL(2, mockino.ticks(true));
+    ASSERTEQUAL(2, mockino.ticks());
+    ASSERTEQUAL(3, mockino.ticks(true));
+    ASSERTEQUAL(3, mockino.ticks());
+
+    cout << "TEST	: test_IDuino() OK " << endl;
+}
+
 void test_ZPlane() {
     cout << "TEST	: test_ZPlane() =====" << endl;
 
@@ -5116,6 +5166,7 @@ int main(int argc, char *argv[]) {
         //test_autoSync();
         //test_mpo();
     } else {
+        test_IDuino();
         test_Serial();
         test_Thread();
         test_Quad();

@@ -174,7 +174,7 @@ Status JsonController::initializeStroke(JsonCommand &jcmd, JsonObject& stroke) {
     if (machine.stroke.length == 0) {
         return STATUS_STROKE_NULL_ERROR;
     }
-    status = machine.stroke.start(machine.pDuino->ticks());
+    status = machine.stroke.start(machine.pDuino->ticks(true));
     if (status != STATUS_OK) {
         return status;
     }
@@ -395,7 +395,7 @@ Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
     if (status != STATUS_OK) {
         return status;
     }
-    Ticks tStart = machine.pDuino->ticks();
+    Ticks tStart = machine.pDuino->ticks(true);
     status = machine.stroke.start(tStart);
     switch (status) {
     case STATUS_OK:
@@ -416,7 +416,7 @@ Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
         if (nLoops % 500 == 0) {
             cout << "PHSelfTest:execute()"
                  << " t:"
-                 << (machine.pDuino->ticks() - machine.stroke.tStart) /
+                 << (machine.pDuino->ticks(true) - machine.stroke.tStart) /
                  (float) machine.stroke.get_dtTotal()
                  << " pos:"
                  << machine.getMotorPosition().toString() << endl;
@@ -430,7 +430,7 @@ Status PHSelfTest::execute(JsonCommand &jcmd, JsonObject& jobj) {
     if (status == STATUS_OK) {
         status = STATUS_BUSY_MOVING; // repeat indefinitely
     }
-    Ticks tElapsed = machine.pDuino->ticks() - tStart;
+    Ticks tElapsed = machine.pDuino->ticks(true) - tStart;
 
     float ts = tElapsed / (float) TICKS_PER_SECOND;
     float tp = machine.stroke.getTimePlanned();
@@ -660,7 +660,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (machine.pDuino->PM_strcmp(OP_to, key) == 0 || machine.pDuino->PM_strcmp(OP_systo, key) == 0) {
         status = processField<Topology, int32_t>(jobj, key, machine.topology);
     } else if (machine.pDuino->PM_strcmp(OP_tc, key) == 0 || machine.pDuino->PM_strcmp(OP_systc, key) == 0) {
-        jobj[key] = machine.pDuino->ticks();
+        jobj[key] = machine.pDuino->ticks(true);
     } else if (machine.pDuino->PM_strcmp(OP_tv, key) == 0 || machine.pDuino->PM_strcmp(OP_systv, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.tvMax);
     } else if (machine.pDuino->PM_strcmp(OP_v, key) == 0 || machine.pDuino->PM_strcmp(OP_sysv, key) == 0) {
@@ -695,7 +695,7 @@ Status JsonController::processDebug(JsonCommand& jcmd, JsonObject& jobj, const c
     //} else if (machine.pDuino->PM_strcmp(OP_lp, key) == 0 || machine.pDuino->PM_strcmp(OP_dbglp, key) == 0) {
         //status = processField<int32_t, int32_t>(jobj, key, nLoops);
     } else if (machine.pDuino->PM_strcmp(OP_tc, key) == 0 || machine.pDuino->PM_strcmp(OP_dbgtc, key) == 0) {
-        jobj[key] = machine.pDuino->ticks();
+        jobj[key] = machine.pDuino->ticks(true);
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
