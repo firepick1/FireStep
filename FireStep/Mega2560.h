@@ -78,89 +78,26 @@ public: // Pins
     virtual inline int16_t analogRead(int16_t dirPin) {
         return ::analogRead(dirPin);
     }
+    virtual inline void pinMode(int16_t pin, int16_t inout) {
+        ::pinMode(pin, inout);
+    }
+
+public: // Pulse generation
+	/**
+	 * IMPORTANT!!!
+	 * The digitalWrite/digitalRead methods match the Arduino
+	 * with one critical difference. They must take at least
+	 * 1 microsecond to complete. This constraint ensures that
+	 * pulse generation will generate the 2 microsecond pulse
+	 * required by DRV8825. When implementing IDuino for fast
+	 * CPUs, take care to observe this limitation.
+	 */
     virtual inline void digitalWrite(int16_t dirPin, int16_t value) {
         ::digitalWrite(dirPin, value);
     }
     virtual inline int16_t digitalRead(int16_t dirPin) {
         return ::digitalRead(dirPin);
     }
-    virtual inline void pinMode(int16_t pin, int16_t inout) {
-        ::pinMode(pin, inout);
-    }
-
-public: // misc
-    virtual inline void delay(int ms) {
-        ::delay(ms);
-    }
-    virtual inline void delayMicroseconds(uint16_t usDelay) {
-		if (usDelay > 0) {
-			while (usDelay-- > 0) {
-				DELAY500NS;
-				DELAY500NS;
-			}
-		}
-    }
-    virtual inline void ticksEnable(bool enable) {
-        if (enable) {
-            TCCR1B = 1 << CS12 | 0 << CS11 | 1 << CS10; /* Timer prescaler div1024 (15625Hz) */
-        } else {
-            TCCR1B = 0;	/* stop clock */
-        }
-    }
-    virtual inline bool ticksEnable() {
-        return (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10)) ? true : false;
-    }
-#ifdef Arduino_h
-	virtual inline size_t minFreeRam() {
-		extern int __heap_start, *__brkval;
-		int v;
-		int avail = (int)(size_t)&v - (__brkval == 0 ? (int)(size_t)&__heap_start : (int)(size_t)__brkval);
-		if (avail < _minFreeRam) {
-			_minFreeRam = avail;
-		}
-		return _minFreeRam;
-	}
-#endif
-
-public: // EEPROM
-    virtual inline uint8_t eeprom_read_byte(uint8_t *addr) {
-#ifdef Arduino_H
-        return ::eeprom_read_byte(addr);
-#else
-		return 0;
-#endif
-    }
-    virtual inline void eeprom_write_byte(uint8_t *addr, uint8_t value) {
-#ifdef Arduino_H
-		::eeprom_write_byte(addr, value);
-#endif
-    }
-
-    virtual inline string eeprom_read_string(uint8_t *addr) {
-#ifdef Arduino_H
-        return ::eeprom_read_string(addr);
-#else
-		return "(Not Mega2560)";
-#endif
-    }
-
-#ifdef Arduino_H
-public: // PROGMEM
-	virtual inline int PM_strcmp(const char *a, const char *b) {
-		return -strcmp_P(b, a);
-	}
-	virtual inline char * PM_strcpy(char *dst, const char *src) {
-		return strcpy_P(dst, src);
-	}
-	virtual inline size_t PM_strlen(const char *src) {
-		return strlen_P(src);
-	}
-	virtual inline byte PM_read_byte_near(const void *src) {
-		return pgm_read_byte_near(src);
-	}
-#endif
-
-public: // FireStep
     virtual inline void pulseFast(uint8_t pin) {
 #ifdef Arduino_H
         //uint8_t timer = digitalPinToTimer(pin);
@@ -191,6 +128,51 @@ public: // FireStep
         SREG = oldSREG;
 #endif
     }
+
+public: // timing
+    virtual inline void delay(int ms) {
+        ::delay(ms);
+    }
+    virtual inline void delayMicroseconds(uint16_t usDelay) {
+		if (usDelay > 0) {
+			while (usDelay-- > 0) {
+				DELAY500NS;
+				DELAY500NS;
+			}
+		}
+    }
+
+public: // EEPROM
+    virtual inline uint8_t eeprom_read_byte(uint8_t *addr) {
+#ifdef Arduino_H
+        return ::eeprom_read_byte(addr);
+#else
+		return 0;
+#endif
+    }
+    virtual inline void eeprom_write_byte(uint8_t *addr, uint8_t value) {
+#ifdef Arduino_H
+		::eeprom_write_byte(addr, value);
+#endif
+    }
+
+#ifdef Arduino_H
+public: // PROGMEM
+	virtual inline int PM_strcmp(const char *a, const char *b) {
+		return -strcmp_P(b, a);
+	}
+	virtual inline char * PM_strcpy(char *dst, const char *src) {
+		return strcpy_P(dst, src);
+	}
+	virtual inline size_t PM_strlen(const char *src) {
+		return strlen_P(src);
+	}
+	virtual inline byte PM_read_byte_near(const void *src) {
+		return pgm_read_byte_near(src);
+	}
+#endif
+
+public: // FireStep
     virtual Ticks ticks(bool peek=false) {
 		/**
 		 * With the standard ATMEGA 16,000,000 Hz system clock and TCNT1 / 1024 prescaler:
@@ -207,6 +189,27 @@ public: // FireStep
 		throw "THIS SHOULD NEVER HAPPEN";
 #endif
 	}
+    virtual inline void ticksEnable(bool enable) {
+        if (enable) {
+            TCCR1B = 1 << CS12 | 0 << CS11 | 1 << CS10; /* Timer prescaler div1024 (15625Hz) */
+        } else {
+            TCCR1B = 0;	/* stop clock */
+        }
+    }
+    virtual inline bool isTicksEnabled() {
+        return (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10)) ? true : false;
+    }
+#ifdef Arduino_h
+	virtual inline size_t minFreeRam() {
+		extern int __heap_start, *__brkval;
+		int v;
+		int avail = (int)(size_t)&v - (__brkval == 0 ? (int)(size_t)&__heap_start : (int)(size_t)__brkval);
+		if (avail < _minFreeRam) {
+			_minFreeRam = avail;
+		}
+		return _minFreeRam;
+	}
+#endif
 } Mega2560;
 
 extern Mega2560 mega2560;

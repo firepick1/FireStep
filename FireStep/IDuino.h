@@ -220,7 +220,7 @@ public: // Pulse generation
         digitalWrite(pin, LOW);
     }
 
-public: // misc
+public: // timing
 	virtual uint32_t millis() { return (uint32_t)(ticks(true) / MS_TICKS_REAL(1)); }
     virtual void delay(int ms) = 0;
     virtual void delayMicroseconds(uint16_t usDelay) = 0;
