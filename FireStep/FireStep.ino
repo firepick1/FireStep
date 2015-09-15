@@ -46,6 +46,7 @@ const char startup_delay[] PROGMEM = 	{ "Startup	: mega2560.delay(1000)" };
 const char startup_led_off[] PROGMEM = 	{ "Startup	: mega2560.digitalWrite(4, LOW)" };
 const char startup_size_mach[] PROGMEM = 	{ "Startup	: sizeof(Machine) " };
 const char startup_size_mt[] PROGMEM = 	{ "Startup	: sizeof(MachineThread) " };
+const char startup_free[] PROGMEM = 	{ "Startup	: mega2560.minFreeRam() " };
 const char startup_error[] PROGMEM = 	{ "Startup	: ERROR" };
 const char startup_done[] PROGMEM = 	{ "Startup	: complete" };
 
@@ -108,6 +109,10 @@ bool startup_IDuino(firestep::IDuinoPtr pDuino) {
 	pDuino->serial_println(bytes);
 	bytes = (int) sizeof(MachineThread);
 	strcpy_P(buf, startup_size_mt);
+	pDuino->serial_print(buf);
+	pDuino->serial_println(bytes);
+	bytes = (int) pDuino->minFreeRam();
+	strcpy_P(buf, startup_free);
 	pDuino->serial_print(buf);
 	pDuino->serial_println(bytes);
 
