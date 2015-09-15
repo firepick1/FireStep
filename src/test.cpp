@@ -5115,9 +5115,28 @@ void test_IDuino() {
     ASSERTEQUAL(3, mockino.ticks(true));
     ASSERTEQUAL(3, mockino.ticks());
 
-	ASSERTEQUAL(0, mockino.millis());
-	mockino.setTicks(mockino.ticks(true)+MS_TICKS(10));
-	ASSERTEQUAL(10, mockino.millis());
+    ASSERTEQUAL(0, mockino.millis());
+    mockino.setTicks(mockino.ticks(true)+MS_TICKS(10));
+    ASSERTEQUAL(10, mockino.millis());
+
+    mockino.serial_push(JT("hello\n"));
+    ASSERTEQUAL(true, mockino.selftest());
+    ASSERTEQUALS(JT( "\n"
+				 "IDuino	: Self-test begin\n"
+				 "IDuino	: mega2560.serial_println()\n"
+				 "IDuino	: mega2560.pinMode(4, OUTPUT)\n"
+				 "IDuino	: mega2560.digitalWrite(4, HIGH)\n"
+				 "IDuino	: mega2560.enableTicks()\n"
+				 "IDuino	: mega2560.ticks() 159\n"
+				 "IDuino	: mega2560.ticks() 15785\n"
+				 "IDuino	: mega2560.digitalWrite(4, LOW)\n"
+				 "IDuino	: sizeof(Machine) 1024\n"
+				 "IDuino	: sizeof(MachineThread) 6224\n"
+				 "IDuino	: mega2560.minFreeRam() 1000\n"
+				 "IDuino	: mega2569.serialread() => ENTER SOMETHING\n"
+				 "hello\n"
+				 "IDuino	: Self-test complete\n"),
+                 mockino.serial_output().c_str());
 
     cout << "TEST	: test_IDuino() OK " << endl;
 }

@@ -10,6 +10,8 @@
 #include "IDuino.h"
 #include "Thread.h"
 
+size_t freeRam();
+
 #ifdef EEPROM_SIZE
 #undef EEPROM_SIZE
 #endif
@@ -176,10 +178,8 @@ public: // FireStep
     virtual inline bool isTicksEnabled() {
         return (TCCR1B & (1<<CS12 || 1<<CS11 || 1<<CS10)) ? true : false;
     }
-    virtual inline size_t minFreeRam() {
-        extern int __heap_start, *__brkval;
-        int v;
-        int avail = (int)(size_t)&v - (__brkval == 0 ? (int)(size_t)&__heap_start : (int)(size_t)__brkval);
+    virtual size_t minFreeRam() {
+        int avail = freeRam();
         if (avail < _minFreeRam) {
             _minFreeRam = avail;
         }

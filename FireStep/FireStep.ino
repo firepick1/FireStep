@@ -34,100 +34,6 @@ Machine machine(&mega2560);
 MachineThread machineThread(machine); 
 #endif
 
-namespace firestep {int __heap_start, *__brkval;}
-
-const char startup[] PROGMEM = 			{ "Startup	: FireStep" };
-const char startup_println[] PROGMEM = 	{ "Startup	: mega2560.serial_println()" };
-const char startup_pinMode[] PROGMEM = 	{ "Startup	: mega2560.pinMode(4, OUTPUT)" };
-const char startup_led_on[] PROGMEM = 	{ "Startup	: mega2560.digitalWrite(4, HIGH)" };
-const char startup_enableTicks[] PROGMEM = 	{ "Startup	: mega2560.enableTicks()" };
-const char startup_ticks[] PROGMEM = 	{ "Startup	: mega2560.ticks() " };
-const char startup_delay[] PROGMEM = 	{ "Startup	: mega2560.delay(1000)" };
-const char startup_led_off[] PROGMEM = 	{ "Startup	: mega2560.digitalWrite(4, LOW)" };
-const char startup_size_mach[] PROGMEM = 	{ "Startup	: sizeof(Machine) " };
-const char startup_size_mt[] PROGMEM = 	{ "Startup	: sizeof(MachineThread) " };
-const char startup_free[] PROGMEM = 	{ "Startup	: mega2560.minFreeRam() " };
-const char startup_error[] PROGMEM = 	{ "Startup	: ERROR" };
-const char startup_done[] PROGMEM = 	{ "Startup	: complete" };
-
-/**
- * Perform some simple startup tests
- */
-bool startup_IDuino(firestep::IDuinoPtr pDuino) {
-	char buf[100];
-
-	delay(1000);
-	strcpy_P(buf, startup);
-	Serial.println();
-	Serial.println(buf);
-
-	// Test serial 
-	strcpy_P(buf, startup_println);
-	pDuino->serial_println(buf);
-	strcpy_P(buf, startup_pinMode);
-	pDuino->serial_println(buf);
-	pDuino->pinMode(PC1_SERVO1, OUTPUT);
-	strcpy_P(buf, startup_led_on);
-	pDuino->serial_println(buf);
-	delay(1000);
-
-	// Turn on pin #4 (SERVO1) LED
-	pDuino->digitalWrite(PC1_SERVO1, HIGH);
-	strcpy_P(buf, startup_enableTicks);
-	pDuino->serial_println(buf);
-	delay(1000);
-
-	// Start ticks()
-	pDuino->enableTicks(true);
-	if (!pDuino->isTicksEnabled()) {
-		strcpy_P(buf, startup_error);
-		pDuino->serial_println(buf);
-		return false;
-	}
-	Ticks tStart = pDuino->ticks();
-	strcpy_P(buf, startup_delay);
-	pDuino->serial_print(buf);
-	pDuino->serial_println((int)tStart);
-	pDuino->delay(1000);
-	Ticks tEnd = pDuino->ticks();
-	strcpy_P(buf, startup_delay);
-	pDuino->serial_print(buf);
-	pDuino->serial_println((int)tEnd);
-	delay(1000);
-	Ticks tElapsed = tEnd - tStart;
-	if (tElapsed < MS_TICKS(1000)) {
-		strcpy_P(buf, startup_error);
-		pDuino->serial_println(buf);
-		return false;
-	}
-
-	// Turn off pin #4 (SERVO1)
-	strcpy_P(buf, startup_led_off);
-	pDuino->serial_println(buf);
-	pDuino->digitalWrite(PC1_SERVO1, LOW);
-
-	// Sizes
-	strcpy_P(buf, startup_size_mach);
-	pDuino->serial_print(buf);
-	int bytes = (int) sizeof(Machine);
-	pDuino->serial_println(bytes);
-	delay(1000);
-	bytes = (int) sizeof(MachineThread);
-	strcpy_P(buf, startup_size_mt);
-	pDuino->serial_print(buf);
-	pDuino->serial_println(bytes);
-	delay(1000);
-	bytes = (int) pDuino->minFreeRam();
-	strcpy_P(buf, startup_free);
-	pDuino->serial_print(buf);
-	pDuino->serial_println(bytes);
-	delay(1000);
-
-	strcpy_P(buf, startup_done);
-	pDuino->serial_println(buf);
-
-	return true;
-}
 
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
@@ -135,8 +41,9 @@ void setup() { // run once, when the sketch starts
     //Serial.begin(38400); // short USB cables
     Serial.begin(19200); // long USB cables
 
+	delay(5000); // wait for user to open serial window
 	mega2560.setup();
-	startup_IDuino(&mega2560);
+	mega2560.selftest();
 
 #ifdef MACHINE_ACTIVE
     machine.pDisplay = &neoPixel; // Inject NeoPixel driver

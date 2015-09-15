@@ -262,6 +262,20 @@ const char firestep::OP_zb[] PROGMEM = { "zb" };
 const char firestep::OP_zc[] PROGMEM = { "zc" };
 const char firestep::OP_zm[] PROGMEM = { "zm" };
 const char firestep::OP_zr[] PROGMEM = { "zr" };
+const char firestep::iduino_delay[] PROGMEM = 	{ "IDuino	: mega2560.delay(1000)" };
+const char firestep::iduino_done[] PROGMEM = 	{ "IDuino	: Self-test complete" };
+const char firestep::iduino_enableTicks[] PROGMEM = { "IDuino	: mega2560.enableTicks()" };
+const char firestep::iduino_error[] PROGMEM = 	{ "IDuino	: ERROR" };
+const char firestep::iduino_free[] PROGMEM = 	{ "IDuino	: mega2560.minFreeRam() " };
+const char firestep::iduino_led_off[] PROGMEM = { "IDuino	: mega2560.digitalWrite(4, LOW)" };
+const char firestep::iduino_led_on[] PROGMEM = 	{ "IDuino	: mega2560.digitalWrite(4, HIGH)" };
+const char firestep::iduino_pinMode[] PROGMEM = { "IDuino	: mega2560.pinMode(4, OUTPUT)" };
+const char firestep::iduino_println[] PROGMEM = { "IDuino	: mega2560.serial_println()" };
+const char firestep::iduino_read[] PROGMEM ={ "IDuino	: mega2569.serialread() => ENTER SOMETHING" };
+const char firestep::iduino_selftest[] PROGMEM ={ "IDuino	: Self-test begin" };
+const char firestep::iduino_size_mach[] PROGMEM ={ "IDuino	: sizeof(Machine) " };
+const char firestep::iduino_size_mt[] PROGMEM = { "IDuino	: sizeof(MachineThread) " };
+const char firestep::iduino_ticks[] PROGMEM = 	{ "IDuino	: mega2560.ticks() " };
 
 const char src_help[] PROGMEM = {
     "["

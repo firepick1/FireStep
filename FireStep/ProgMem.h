@@ -272,6 +272,20 @@ extern const char OP_zb[];
 extern const char OP_zc[];
 extern const char OP_zm[];
 extern const char OP_zr[];
+extern const char iduino_delay[];
+extern const char iduino_done[];
+extern const char iduino_enableTicks[];
+extern const char iduino_error[];
+extern const char iduino_free[];
+extern const char iduino_led_off[];
+extern const char iduino_led_on[];
+extern const char iduino_pinMode[];
+extern const char iduino_println[];
+extern const char iduino_read[];
+extern const char iduino_selftest[];
+extern const char iduino_size_mach[];
+extern const char iduino_size_mt[];
+extern const char iduino_ticks[];
 
 } // namespace firestep
 

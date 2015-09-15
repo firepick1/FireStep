@@ -77,6 +77,7 @@ link_directories(
 ########## lib_firestep.so: shared library ################
 add_library(_firestep SHARED 
 	FireStep/DeltaCalculator.cpp
+	FireStep/IDuino.cpp
 	FireStep/ProcessField.cpp
 	FireStep/ProgMem.cpp
 	FireStep/JsonCommand.cpp

@@ -255,6 +255,7 @@ public: // FireStep
         // overridden by processors with limited SRAM (e.g., Mega2560.h).
         return 1000;
     }
+	virtual bool selftest(); // Useful for testing new implementations
 
 } IDuino, *IDuinoPtr;
 
