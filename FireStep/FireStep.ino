@@ -6,6 +6,7 @@
 #include "Mega2560.h"
 #include "MachineThread.h"
 #include "NeoPixel.h"
+#include "ProgMem.h"
 
 ///////////////////// CHOOSE DEFAULT PIN CONFIGURATION ///////////
 //#define PIN_CONFIG PC2_RAMPS_1_4
@@ -25,16 +26,10 @@ using namespace firestep;
 
 Mega2560 mega2560;
 
-#define MACHINE_ACTIVE
-#ifdef MACHINE_ACTIVE
 Machine machine(&mega2560);
-#endif
-#define MACHINETHREAD_ACTIVE
-#ifdef MACHINETHREAD_ACTIVE
 MachineThread machineThread(machine); 
-#endif
 
-//#define SELFTEST
+#define SELFTEST
 
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
@@ -44,24 +39,36 @@ void setup() { // run once, when the sketch starts
 
 	mega2560.setup();
 
-#ifdef MACHINE_ACTIVE
     machine.pDisplay = &neoPixel; // Inject NeoPixel driver
-#endif
-#ifdef MACHINETHREAD_ACTIVE
     machineThread.setup(PIN_CONFIG); // Set up FireStep pins
     threadRunner.setup(&mega2560, LED_PIN);
-#endif
-#ifdef SELFTEST
+
 	delay(3000); // wait for user to open serial window
+	machine.pDuino->serial.print("...");
+#ifdef SELFTEST
 	mega2560.selftest();
+	for (ThreadPtr pThread = firestep::pThreadList; pThread; pThread = pThread->pNext) {
+		char buf[100];
+		machine.pDuino->PM_strcpy(buf, firestep::thread_list);
+		machine.pDuino->serial_print(buf);
+		machine.pDuino->serial_println(pThread->id);
+	}
 #endif
 }
 
 void loop() {	// run over and over again
 #ifdef SELFTEST
 	static int secs=0;
-	mega2560.serial_println(secs++);
-	delay(1000);
+	mega2560.serial_print(' ');
+	mega2560.serial_print(secs++);
+	if (secs % 60 == 0) {
+		mega2560.serial_println();
+	}
+	for (int i=0; i<10; i++) {
+		//machineThread.machine.pDisplay->show();
+		machineThread.displayStatus();
+		delay(100);
+	}
 #else
     threadRunner.run();
 #endif

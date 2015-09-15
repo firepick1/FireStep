@@ -1,5 +1,6 @@
 #include "version.h"
 #include "MachineThread.h"
+#include "ProgMem.h"
 
 using namespace firestep;
 
@@ -238,9 +239,11 @@ Status MachineThread::syncConfig() {
 }
 
 void MachineThread::printBanner() {
-    char msg[100];
+    char msg[50];
+	char banner[50];
+	machine.pDuino->PM_strcpy(banner, thread_banner);
     machine.syncHash = machine.hash();
-    snprintf(msg, sizeof(msg), "FireStep %d.%d.%d sysch:%ld",
+    snprintf(msg, sizeof(msg), banner,
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) machine.syncHash);
     machine.pDuino->serial_println(msg);
 }
@@ -304,6 +307,7 @@ void MachineThread::loop() {
         break;
     case STATUS_BUSY_SETUP: {
         uint8_t c = machine.pDuino->eeprom_read_byte((uint8_t*) 0);
+		//c = 0; // TODO: Enable EEPROM
         if (c == '{' || c == '[') {
             status = STATUS_BUSY_EEPROM;
         } else {

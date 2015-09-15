@@ -26,9 +26,8 @@ bool IDuino::selftest() {
 	PM_strcpy(buf, iduino_enableTicks);
 	pDuino->serial_println(buf);
 
-	// Start ticks()
-	TESTCOUT1("IDuino selftest:", "Start ticks()");
-	pDuino->enableTicks(true);
+	// Test ticks()
+	TESTCOUT1("IDuino selftest:", "Test ticks()");
 	if (!pDuino->isTicksEnabled()) {
 		PM_strcpy(buf, iduino_error);
 		pDuino->serial_println(buf);

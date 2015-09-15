@@ -157,7 +157,6 @@ public:
     }
     void setDegreesPerPulse(PH5TYPE value, DeltaAxis axis=DELTA_AXIS_ALL);
     inline PH5TYPE getGearRatio(DeltaAxis axis=DELTA_AXIS_ALL) {
-        PH5TYPE gearRatio = 360/(microsteps*steps360*getDegreesPerPulse(axis));
         if (axis == DELTA_AXIS_ALL) {
             PH5TYPE gearRatio = ( getGearRatio(DELTA_AXIS_1)+
                                   getGearRatio(DELTA_AXIS_2)+

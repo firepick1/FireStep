@@ -13,7 +13,6 @@ typedef class MachineThread : Thread {
     friend void test_Home();
 
 protected:
-    void displayStatus();
     char * buildStartupJson();
     Status executeEEPROM();
     size_t readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen);
@@ -36,6 +35,7 @@ public:
     Status syncConfig();
     Status process(JsonCommand& jcmd);
     const char * updateController();
+    void displayStatus();
 } MachineThread;
 
 } // namespace firestep

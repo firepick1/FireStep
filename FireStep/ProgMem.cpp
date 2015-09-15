@@ -276,6 +276,8 @@ const char firestep::iduino_selftest[] PROGMEM =	{ "IDuino	: Self-test begin" };
 const char firestep::iduino_size_mach[] PROGMEM =	{ "IDuino	: sizeof(Machine) " };
 const char firestep::iduino_size_mt[] PROGMEM = 	{ "IDuino	: sizeof(MachineThread) " };
 const char firestep::iduino_ticks[] PROGMEM = 		{ "IDuino	: ticks() " };
+const char firestep::thread_banner[] PROGMEM = 		{ "FireStep %d.%d.%d sysch:%ld" };
+const char firestep::thread_list[] PROGMEM = 		{ "Thread	: id " };
 
 const char src_help[] PROGMEM = {
     "["

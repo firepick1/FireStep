@@ -286,6 +286,8 @@ extern const char iduino_selftest[];
 extern const char iduino_size_mach[];
 extern const char iduino_size_mt[];
 extern const char iduino_ticks[];
+extern const char thread_banner[];
+extern const char thread_list[];
 
 } // namespace firestep
 
