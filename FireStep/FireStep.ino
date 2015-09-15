@@ -104,10 +104,12 @@ bool startup_IDuino(firestep::IDuinoPtr pDuino) {
 	// Sizes
 	strcpy_P(buf, startup_size_mach);
 	pDuino->serial_print(buf);
-	pDuino->serial_println(sizeof(Machine));
+	int bytes = (int) sizeof(Machine);
+	pDuino->serial_println(bytes);
+	bytes = (int) sizeof(MachineThread);
 	strcpy_P(buf, startup_size_mt);
 	pDuino->serial_print(buf);
-	pDuino->serial_println(sizeof(MachineThread));
+	pDuino->serial_println(bytes);
 
 	strcpy_P(buf, startup_done);
 	pDuino->serial_println(buf);
@@ -139,6 +141,6 @@ void loop() {	// run over and over again
 #else
 	mega2560.serial_print('.');
 	delay(1000);
-#else
+#endif
 }
 
