@@ -24,8 +24,13 @@ firestep::NeoPixel neoPixel(NEOPIXEL_LEDS);
 using namespace firestep;
 
 Mega2560 mega2560;
-//Machine machine(&mega2560);
-//MachineThread machineThread(machine); 
+
+#define FIRESTEP_ACTIVE
+#ifdef FIRESTEP_ACTIVE
+Machine machine(&mega2560);
+MachineThread machineThread(machine); 
+#endif
+
 namespace firestep {int __heap_start, *__brkval;}
 
 const char startup[] PROGMEM = 			{ "Startup	: FireStep" };
@@ -37,6 +42,7 @@ const char startup_ticks[] PROGMEM = 	{ "Startup	: mega2560.ticks() " };
 const char startup_delay[] PROGMEM = 	{ "Startup	: mega2560.delay(1000)" };
 const char startup_led_off[] PROGMEM = 	{ "Startup	: mega2560.digitalWrite(4, LOW)" };
 const char startup_error[] PROGMEM = 	{ "Startup	: ERROR" };
+const char startup_done[] PROGMEM = 	{ "Startup	: complete" };
 
 /**
  * Perform some simple startup tests
@@ -45,6 +51,7 @@ bool startup_IDuino(firestep::IDuinoPtr pDuino) {
 	char buf[100];
 
 	strcpy_P(buf, startup);
+	Serial.println();
 	Serial.println(buf);
 
 	// Test serial 
@@ -89,6 +96,9 @@ bool startup_IDuino(firestep::IDuinoPtr pDuino) {
 	pDuino->serial_println(buf);
 	pDuino->digitalWrite(PC1_SERVO1, LOW);
 
+	strcpy_P(buf, startup_done);
+	pDuino->serial_println(buf);
+
 	return true;
 }
 
@@ -101,17 +111,19 @@ void setup() { // run once, when the sketch starts
 	mega2560.setup();
 	startup_IDuino(&mega2560);
 
-    // Bind in NeoPixel display driver
-    //machineThread.machine.pDisplay = &neoPixel;
-
-    // Initialize
-    //machineThread.setup(PIN_CONFIG);
-
-    //threadRunner.setup(&mega2560, LED_PIN);
+#ifdef FIRESTEP_ACTIVE
+    machineThread.machine.pDisplay = &neoPixel; // Inject NeoPixel driver
+    machineThread.setup(PIN_CONFIG); // Set up FireStep pins
+    threadRunner.setup(&mega2560, LED_PIN);
+#endif
 }
 
 void loop() {	// run over and over again
+#ifdef FIRESTEP_ACTIVE
+    threadRunner.run();
+#else
 	mega2560.serial_print('.');
-    //threadRunner.run();
+	delay(1000);
+#else
 }
 
