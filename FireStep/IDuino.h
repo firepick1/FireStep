@@ -195,6 +195,7 @@ public: // Pins
     virtual void analogWrite(int16_t dirPin, int16_t value) = 0;
     virtual int16_t analogRead(int16_t dirPin) = 0;
     virtual void pinMode(int16_t pin, int16_t inout) = 0;
+    virtual int16_t digitalRead(int16_t dirPin) = 0;
 
 public: // Pulse generation
 	/**
@@ -207,7 +208,6 @@ public: // Pulse generation
 	 * CPUs, take care to observe this limitation.
 	 */
     virtual void digitalWrite(int16_t dirPin, int16_t value) = 0;
-    virtual int16_t digitalRead(int16_t dirPin) = 0;
     virtual void pulseFast(uint8_t pin)  {
         digitalWrite(pin, HIGH);
         /**

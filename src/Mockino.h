@@ -38,11 +38,26 @@ public: // Serial
 public: // Pins
     virtual void analogWrite(int16_t dirPin, int16_t value);
     virtual int16_t analogRead(int16_t dirPin);
-    virtual void digitalWrite(int16_t dirPin, int16_t value);
     virtual int16_t digitalRead(int16_t dirPin);
     virtual void pinMode(int16_t pin, int16_t inout);
 
-public: // misc
+public: // Pulse generation
+	/**
+	 * IMPORTANT!!!
+	 * The digitalWrite/digitalRead methods match the Arduino
+	 * with one critical difference. They must take at least
+	 * 1 microsecond to complete. This constraint ensures that
+	 * pulse generation will generate the 2 microsecond pulse
+	 * required by DRV8825. When implementing IDuino for fast
+	 * CPUs, take care to observe this limitation.
+	 */
+    virtual void digitalWrite(int16_t dirPin, int16_t value);
+    virtual void pulseFast(uint8_t pin) {
+        digitalWrite(pin, HIGH);
+        digitalWrite(pin, LOW);
+    }
+
+public: // timing
     virtual void delay(int ms);
     virtual void delayMicroseconds(uint16_t usDelay);
 
@@ -52,10 +67,6 @@ public: // EEPROM
     virtual std::string eeprom_read_string(uint8_t *addr);
 
 public: // FireStep
-    virtual void pulseFast(uint8_t pin) {
-        digitalWrite(pin, HIGH);
-        digitalWrite(pin, LOW);
-    }
     Ticks ticks(bool peek=false);
     virtual void enableTicks(bool enable);
     virtual bool isTicksEnabled();
@@ -68,8 +79,8 @@ public: // Testing: Serial
 
 public: // Testing: other
     void dump();
+    void clear(); // NOT setup()! clears mock eeprom
     int16_t& MEM(int addr);
-    void clear();
     void delay500ns();
     void setTicks(Ticks value);
     int16_t getPinMode(int16_t pin);
