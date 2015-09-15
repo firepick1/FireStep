@@ -56,6 +56,7 @@ const char startup_done[] PROGMEM = 	{ "Startup	: complete" };
 bool startup_IDuino(firestep::IDuinoPtr pDuino) {
 	char buf[100];
 
+	delay(1000);
 	strcpy_P(buf, startup);
 	Serial.println();
 	Serial.println(buf);
@@ -68,11 +69,13 @@ bool startup_IDuino(firestep::IDuinoPtr pDuino) {
 	pDuino->pinMode(PC1_SERVO1, OUTPUT);
 	strcpy_P(buf, startup_led_on);
 	pDuino->serial_println(buf);
+	delay(1000);
 
 	// Turn on pin #4 (SERVO1) LED
 	pDuino->digitalWrite(PC1_SERVO1, HIGH);
 	strcpy_P(buf, startup_enableTicks);
 	pDuino->serial_println(buf);
+	delay(1000);
 
 	// Start ticks()
 	pDuino->enableTicks(true);
@@ -90,6 +93,7 @@ bool startup_IDuino(firestep::IDuinoPtr pDuino) {
 	strcpy_P(buf, startup_delay);
 	pDuino->serial_print(buf);
 	pDuino->serial_println((int)tEnd);
+	delay(1000);
 	Ticks tElapsed = tEnd - tStart;
 	if (tElapsed < MS_TICKS(1000)) {
 		strcpy_P(buf, startup_error);
@@ -107,14 +111,17 @@ bool startup_IDuino(firestep::IDuinoPtr pDuino) {
 	pDuino->serial_print(buf);
 	int bytes = (int) sizeof(Machine);
 	pDuino->serial_println(bytes);
+	delay(1000);
 	bytes = (int) sizeof(MachineThread);
 	strcpy_P(buf, startup_size_mt);
 	pDuino->serial_print(buf);
 	pDuino->serial_println(bytes);
+	delay(1000);
 	bytes = (int) pDuino->minFreeRam();
 	strcpy_P(buf, startup_free);
 	pDuino->serial_print(buf);
 	pDuino->serial_println(bytes);
+	delay(1000);
 
 	strcpy_P(buf, startup_done);
 	pDuino->serial_println(buf);
