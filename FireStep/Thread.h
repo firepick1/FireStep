@@ -104,12 +104,7 @@ public: // Invocation
     void resetGenerations();
     void clear();
     void setup(IDuinoPtr pDuino, int pinLED = NOPIN);
-    void run() {
-        // outer loop: bookkeeping
-        for (;;) {
-            outerLoop();
-        }
-    }
+    void run();
     inline uint16_t get_generation() {
         return generation;
     }

@@ -34,6 +34,7 @@ Machine machine(&mega2560);
 MachineThread machineThread(machine); 
 #endif
 
+//#define SELFTEST
 
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
@@ -41,9 +42,7 @@ void setup() { // run once, when the sketch starts
     //Serial.begin(38400); // short USB cables
     Serial.begin(19200); // long USB cables
 
-	delay(5000); // wait for user to open serial window
 	mega2560.setup();
-	mega2560.selftest();
 
 #ifdef MACHINE_ACTIVE
     machine.pDisplay = &neoPixel; // Inject NeoPixel driver
@@ -52,14 +51,19 @@ void setup() { // run once, when the sketch starts
     machineThread.setup(PIN_CONFIG); // Set up FireStep pins
     threadRunner.setup(&mega2560, LED_PIN);
 #endif
+#ifdef SELFTEST
+	delay(3000); // wait for user to open serial window
+	mega2560.selftest();
+#endif
 }
 
 void loop() {	// run over and over again
-#ifdef MACHINETHREAD_ACTIVE
-    threadRunner.run();
-#else
-	mega2560.serial_print('.');
+#ifdef SELFTEST
+	static int secs=0;
+	mega2560.serial_println(secs++);
 	delay(1000);
+#else
+    threadRunner.run();
 #endif
 }
 

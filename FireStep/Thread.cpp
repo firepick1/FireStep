@@ -153,6 +153,13 @@ void ThreadRunner::clear() {
     fast = 255;
 }
 
+void ThreadRunner::run() {
+	// outer loop: bookkeeping
+	for (;;) {
+		outerLoop();
+	}
+}
+
 void ThreadRunner::setup(IDuinoPtr pDuino, int pinLED) {
 	this->pDuino = pDuino;
 	pDuino->setup();
