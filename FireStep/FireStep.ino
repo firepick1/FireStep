@@ -25,9 +25,12 @@ using namespace firestep;
 
 Mega2560 mega2560;
 
-#define FIRESTEP_ACTIVE
-#ifdef FIRESTEP_ACTIVE
+#define MACHINE_ACTIVE
+#ifdef MACHINE_ACTIVE
 Machine machine(&mega2560);
+#endif
+#define MACHINETHREAD_ACTIVE
+#ifdef MACHINETHREAD_ACTIVE
 MachineThread machineThread(machine); 
 #endif
 
@@ -41,6 +44,8 @@ const char startup_enableTicks[] PROGMEM = 	{ "Startup	: mega2560.enableTicks()"
 const char startup_ticks[] PROGMEM = 	{ "Startup	: mega2560.ticks() " };
 const char startup_delay[] PROGMEM = 	{ "Startup	: mega2560.delay(1000)" };
 const char startup_led_off[] PROGMEM = 	{ "Startup	: mega2560.digitalWrite(4, LOW)" };
+const char startup_size_mach[] PROGMEM = 	{ "Startup	: sizeof(Machine) " };
+const char startup_size_mt[] PROGMEM = 	{ "Startup	: sizeof(MachineThread) " };
 const char startup_error[] PROGMEM = 	{ "Startup	: ERROR" };
 const char startup_done[] PROGMEM = 	{ "Startup	: complete" };
 
@@ -96,6 +101,14 @@ bool startup_IDuino(firestep::IDuinoPtr pDuino) {
 	pDuino->serial_println(buf);
 	pDuino->digitalWrite(PC1_SERVO1, LOW);
 
+	// Sizes
+	strcpy_P(buf, startup_size_mach);
+	pDuino->serial_print(buf);
+	pDuino->serial_println(sizeof(Machine));
+	strcpy_P(buf, startup_size_mt);
+	pDuino->serial_print(buf);
+	pDuino->serial_println(sizeof(MachineThread));
+
 	strcpy_P(buf, startup_done);
 	pDuino->serial_println(buf);
 
@@ -111,15 +124,17 @@ void setup() { // run once, when the sketch starts
 	mega2560.setup();
 	startup_IDuino(&mega2560);
 
-#ifdef FIRESTEP_ACTIVE
-    machineThread.machine.pDisplay = &neoPixel; // Inject NeoPixel driver
+#ifdef MACHINE_ACTIVE
+    machine.pDisplay = &neoPixel; // Inject NeoPixel driver
+#endif
+#ifdef MACHINETHREAD_ACTIVE
     machineThread.setup(PIN_CONFIG); // Set up FireStep pins
     threadRunner.setup(&mega2560, LED_PIN);
 #endif
 }
 
 void loop() {	// run over and over again
-#ifdef FIRESTEP_ACTIVE
+#ifdef MACHINETHREAD_ACTIVE
     threadRunner.run();
 #else
 	mega2560.serial_print('.');
