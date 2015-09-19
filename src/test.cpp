@@ -4662,11 +4662,11 @@ void test_DeltaCalculator() {
         ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001); 	// CHANGED
 
         dc3.setGearRatio(9.5);
-        ASSERTEQUALT(9.5, dc3.getGearRatio(), 0.001); 		// CHANGED
-        ASSERTEQUALT(-67.0145, dc3.getHomeAngle(), 0.001); 	// CHANGED
+        ASSERTEQUALT(9.5, dc3.getGearRatio(), 0.001); 				// CHANGED
+        ASSERTEQUALT(-67.2, dc3.getHomeAngle(), 0.001); 	
         //ASSERTEQUALT(0.0118421, dc3.getDegreesPerPulse(), 0.00001);
         ASSERTEQUALT(84.444, 1/dc3.getDegreesPerPulse(), 0.001); 	// CHANGED
-        ASSERTEQUAL(FPD_HOME_PULSES, dc3.getHomePulses());
+        ASSERTEQUAL(FPD_HOME_PULSES-16, dc3.getHomePulses()); 		// CHANGED
         ASSERTEQUALT(247.893, dc3.getZOffset(), 0.001);
 
         dc3.setGearRatio(FPD_GEAR_RATIO);
