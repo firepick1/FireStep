@@ -82,7 +82,6 @@ void DeltaCalculator::setGearRatio(PH5TYPE value, DeltaAxis axis) {
 }
 
 void DeltaCalculator::setDegreesPerPulse(PH5TYPE value, DeltaAxis axis) {
-    StepCoord pulses = getHomePulses();
     if (axis == DELTA_AXIS_ALL) {
         degreesPerPulse[0] =
             degreesPerPulse[1] =
