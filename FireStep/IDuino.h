@@ -77,7 +77,6 @@ public: // misc
 public: // EEPROM
 	virtual uint8_t eeprom_read_byte(uint8_t *addr);
 	virtual void eeprom_write_byte(uint8_t *addr, uint8_t value);
-	virtual string eeprom_read_string(uint8_t *addr);
 
 public: // FireStep
 	virtual void pulseFast(uint8_t pin);
