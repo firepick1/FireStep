@@ -24,8 +24,8 @@ cp -r FireStep/ ziptmp/FireStep
 cp CHANGELOG.md LICENSE.md README.md ziptmp/FireStep
 
 cd ziptmp/libraries
-unzip ../ph5*.zip
-unzip ../ArduinoJson*.zip
+unzip -q ../ph5*.zip
+unzip -q ../ArduinoJson*.zip
 
 cd ..
 
