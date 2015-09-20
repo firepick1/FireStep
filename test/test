@@ -1,4 +1,6 @@
 #!/bin/bash
+echo "TITLE	: FireStep client test suite"
+
 if [ "$DEVICE" == "" ]; then DEVICE=/dev/ttyACM0; fi
 
 CLEAN='sed -e s/"t":[0-9.]*/"t":.../g'
@@ -7,9 +9,11 @@ echo "TMP	: $ACTUAL"
 
 CMD=$1
 if [ "$CMD" == "" ]; then CMD=target/firestep; fi
-echo "CMD	: $CMD"
+echo "CMD	: $CMD -r"
+$CMD -r
 
 function verify() {
+	echo "TEST	: verify $1"
 	rc=$?; if [ $rc -ne 0 ]; then echo "ERROR	: $1 rc:$rc"; exit $rc; fi
 	diff $ACTUAL test/$1.expected
 	rc=$?; if [ $rc -ne 0 ]; then echo "ERROR	: $1 diff:$rc"; exit $rc; fi
