@@ -15,12 +15,17 @@ $CMD -r
 function verify() {
 	echo "TEST	: verify $1"
 	rc=$?; if [ $rc -ne 0 ]; then echo "ERROR	: $1 rc:$rc"; exit $rc; fi
-	diff $ACTUAL test/$1.expected
+	diff $ACTUAL test/expected/$1
 	rc=$?; if [ $rc -ne 0 ]; then echo "ERROR	: $1 diff:$rc"; exit $rc; fi
 }
 
 $CMD -d $DEVICE --logdebug -e '{"pgmx":"dim-fpd"}' |& $CLEAN |tee $ACTUAL
 verify test1
+
+$CMD -d $DEVICE --logdebug -e '{"dim":""}' |& $CLEAN |tee $ACTUAL
+verify test1.1
+$CMD -d $DEVICE --logdebug -e '{"dim":""}' |& $CLEAN |tee $ACTUAL
+verify test1.1
 
 $CMD -d $DEVICE --logdebug --expr '{"hom":""}' |& $CLEAN |tee $ACTUAL
 verify test2
