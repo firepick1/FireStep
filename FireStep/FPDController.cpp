@@ -823,6 +823,12 @@ Status FPDController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
                     return status;
                 }
             }
+			if (machine.axis[0].home != machine.axis[1].home ||
+			    machine.axis[0].home != machine.axis[2].home) {
+				return jcmd.setError(STATUS_DELTA_HOME, key);
+			}
+			// home must set home angle as a side effect
+			machine.setHomePulses(machine.axis[0].home);
         }
     } else {
         MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));

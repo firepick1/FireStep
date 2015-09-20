@@ -1942,7 +1942,22 @@ void test_MTO_FPD_dim() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
 					"'bx':0.0000,'by':0.0000,'bz':0.000,'e':131.636,'f':190.526,'gr':9.474,"
-				    //"'ha':-67.199,'hp':"FPD_HOME_PULSES_S",'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':"FPD_SPE_RATIO_S",'st':200}"
+				    "'ha':-67.199,'hp':"FPD_HOME_PULSES_S",'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':0.000,'st':200}"
+                    "},'t':0.000}\n"),
+                 Serial.output().c_str());
+	ASSERTEQUALT(9.474, dc.getGearRatio(), 0.001);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // dim get (should be identical)
+    machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
+    Serial.push(JT("{'dim':''}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
+					"'bx':0.0000,'by':0.0000,'bz':0.000,'e':131.636,'f':190.526,'gr':9.474,"
 				    "'ha':-67.199,'hp':"FPD_HOME_PULSES_S",'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':0.000,'st':200}"
                     "},'t':0.000}\n"),
                  Serial.output().c_str());
@@ -2042,10 +2057,10 @@ void test_MTO_FPD_hom() {
         ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
         mt.loop(); // initializing
         ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
-        arduino.setPin(PC2_X_MIN_PIN, HIGH);
-        arduino.setPin(PC2_Y_MIN_PIN, HIGH);
-        arduino.setPin(PC2_Z_MIN_PIN, HIGH);
-        mt.loop();
+        arduino.setPin(PC2_X_MIN_PIN, HIGH); // trip home switch
+        arduino.setPin(PC2_Y_MIN_PIN, HIGH); // trip home switch
+        arduino.setPin(PC2_Z_MIN_PIN, HIGH); // trip home switch
+        mt.loop(); // latch backoff
     	int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
     	int32_t ypulses = arduino.pulses(PC2_Y_STEP_PIN);
     	int32_t zpulses = arduino.pulses(PC2_Z_STEP_PIN);
@@ -2076,7 +2091,7 @@ void test_MTO_FPD_hom() {
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     }
 
-    {   // hom and set coordinates
+    {   // hom and set home to something other than FPD_HOME_PULSES
         MachineThread mt = test_MTO_FPD_setup();
         Machine &machine = mt.machine;
         machine = mt.machine;
@@ -2087,14 +2102,15 @@ void test_MTO_FPD_hom() {
         mt.loop(); // initializing
         ASSERTEQUAL(STATUS_BUSY_MOVING, mt.status);
         ASSERTEQUALT(-5601, machine.axis[0].home, 0.01);
-        ASSERTEQUALT(-5601, machine.axis[1].home, 0.01);
-        ASSERTEQUALT(-5601, machine.axis[2].home, 0.01);
+        ASSERTEQUALT(machine.axis[0].home, machine.axis[1].home, 0.01);
+        ASSERTEQUALT(machine.axis[0].home, machine.axis[2].home, 0.01);
         ASSERTEQUALT(4, machine.axis[3].position, 0.01);
-        ASSERTEQUALT(-5601, machine.axis[0].position, 0.01);
-        ASSERTEQUALT(-5601, machine.axis[1].position, 0.01);
-        ASSERTEQUALT(-5601, machine.axis[2].position, 0.01);
-        ASSERTEQUALT(4, machine.axis[3].home, 0.01);
+        ASSERTEQUALT(machine.axis[0].home, machine.axis[0].position, 0.01);
+        ASSERTEQUALT(machine.axis[1].home, machine.axis[1].position, 0.01);
+        ASSERTEQUALT(machine.axis[2].home, machine.axis[2].position, 0.01);
+        ASSERTEQUALT(machine.axis[3].home, machine.axis[3].position, 0.01);
 		StepCoord hp = machine.delta.getHomePulses();
+		ASSERTEQUAL(machine.getHomePulses(), hp);
 		ASSERTEQUAL(machine.axis[0].home, hp);
 		ASSERTEQUAL(machine.axis[1].home, hp);
 		ASSERTEQUAL(machine.axis[2].home, hp);

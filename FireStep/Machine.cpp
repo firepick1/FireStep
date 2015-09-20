@@ -892,5 +892,5 @@ bool Machine::isEEUserEnabled() {
 
 void Machine::loadDeltaCalculator() {
     delta.setHomeAngle(homeAngle);
-    delta.setHomePulses((axis[0].home+axis[1].home+axis[2].home)/3);
+    //delta.setHomePulses((axis[0].home+axis[1].home+axis[2].home)/3);
 }
