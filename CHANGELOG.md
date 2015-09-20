@@ -1,10 +1,15 @@
 FireStep: change log
 ====================
 
-v0.0206 
+v2.0 (pending)
 ------
 * NEW: IFireStep interface implemented by: FireStepSerial, FireStepDuino
 * NEW: IDuino interface implemented by: Mega2560, MockDuino
+
+v1.0
+------
+* FIX: MTO_FPD home bug
+* FIX: MTO_FPD dim bug
 
 v0.0205 
 ------
