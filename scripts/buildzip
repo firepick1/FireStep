@@ -10,6 +10,7 @@ echo "STATUS	: creating $OUTPUT"
 rm -rf ziptmp
 mkdir -p ziptmp/libraries
 mkdir -p ziptmp/FireStep
+echo "TAG	: $TAG" | tee ziptmp/FireStep/tag
 
 pushd ../ph5
 scripts/buildzip
