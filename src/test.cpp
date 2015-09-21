@@ -2042,6 +2042,53 @@ void test_MTO_FPD_dim() {
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
+    // pgmx:dim-fpd
+    machine.setMotorPosition(Quad<StepCoord>(0,0,0,0));
+	ASSERTEQUAL(0, machine.axis[0].position);
+	ASSERTEQUAL(0, machine.axis[1].position);
+	ASSERTEQUAL(0, machine.axis[2].position);
+	ASSERTEQUAL(0, machine.axis[3].position);
+    Serial.push(JT("{'pgmx':'dim-fpd'}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // program
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // program
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop(); // program
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{"
+					"'dimst':200,'dimmi':16,"
+                    "'syshp':3,'syssd':800,'dimgr':9.474,'dimha':-67.200,'dime':131.636,"
+					"'dimf':190.526,'dimre':270.000,'dimrf':90.000,'dimspa':"FPD_SPE_ANGLE_S","
+					"'dimspr':"FPD_SPE_RATIO_S"}"
+                    ",'t':0.000}\n"),
+                 Serial.output().c_str());
+	ASSERTEQUALT(0.0010, machine.bed.a, 0.0001);
+	ASSERTEQUALT(0.0020, machine.bed.b, 0.0001);
+	ASSERTEQUALT(0.003, machine.bed.c, 0.001);
+	ASSERTEQUALT(131.636, dc.getEffectorTriangleSide(), 0.001);
+	ASSERTEQUALT(190.526, dc.getBaseTriangleSide(), 0.001);
+	ASSERTEQUALT(FPD_GEAR_RATIO, dc.getGearRatio(), 0.001);
+	ASSERTEQUALT(FPD_HOME_ANGLE, dc.getHomeAngle(), 0.001);
+	ASSERTEQUALT(dc.getHomeAngle(), machine.getHomeAngle(), 0.001);
+	ASSERTEQUALT(FPD_MICROSTEPS, dc.getMicrosteps(), 0.001);
+	ASSERTEQUALT(270.000, dc.getEffectorLength(), 0.001);
+	ASSERTEQUALT(90.000, dc.getBaseArmLength(), 0.001);
+	ASSERTEQUALT(FPD_STEPS360, dc.getSteps360(), 0.001);
+	ASSERTEQUALT(360.0/FPD_STEPS360, machine.axis[0].stepAngle, 0.001);
+	ASSERTEQUALT(360.0/FPD_STEPS360, machine.axis[1].stepAngle, 0.001);
+	ASSERTEQUALT(360.0/FPD_STEPS360, machine.axis[2].stepAngle, 0.001);
+	ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].home);
+	ASSERTEQUAL(machine.axis[0].home, machine.axis[1].home);
+	ASSERTEQUAL(machine.axis[0].home, machine.axis[2].home);
+	ASSERTEQUAL(-53, machine.axis[0].position); // why -53?
+	ASSERTEQUAL(-53, machine.axis[1].position); // why -53?
+	ASSERTEQUAL(-53, machine.axis[2].position); // why -53?
+	ASSERTEQUAL(0, machine.axis[3].position);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
     cout << "TEST	: test_MTO_FPD_dim() OK " << endl;
 }
 

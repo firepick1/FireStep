@@ -32,8 +32,8 @@ DeltaCalculator::DeltaCalculator()
       re(270.000), // effector arm length (mm)
       rf(90.000), // base arm length (mm)
       acr(24.15), // arm clearance radius (mm)
-      steps360(200),
-      microsteps(16),
+      steps360(FPD_STEPS360),
+      microsteps(FPD_MICROSTEPS),
       spAngle(FPD_SPE_ANGLE), // sliced pulley critical angle
       spRatio(0), // sliced pulley angular error per degree beyond critical angle (default is no SPE)
       dz(0)
