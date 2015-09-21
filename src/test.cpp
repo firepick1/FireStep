@@ -2044,6 +2044,9 @@ void test_MTO_FPD_dim() {
 
     // pgmx:dim-fpd
     machine.setMotorPosition(Quad<StepCoord>(0,0,0,0));
+	machine.bed.a = 0;
+	machine.bed.b = 0;
+	machine.bed.c = 0;
 	ASSERTEQUAL(0, machine.axis[0].position);
 	ASSERTEQUAL(0, machine.axis[1].position);
 	ASSERTEQUAL(0, machine.axis[2].position);
@@ -2064,9 +2067,9 @@ void test_MTO_FPD_dim() {
 					"'dimspr':"FPD_SPE_RATIO_S"}"
                     ",'t':0.000}\n"),
                  Serial.output().c_str());
-	ASSERTEQUALT(0.0010, machine.bed.a, 0.0001);
-	ASSERTEQUALT(0.0020, machine.bed.b, 0.0001);
-	ASSERTEQUALT(0.003, machine.bed.c, 0.001);
+	ASSERTEQUALT(0, machine.bed.a, 0.0001);
+	ASSERTEQUALT(0, machine.bed.b, 0.0001);
+	ASSERTEQUALT(0, machine.bed.c, 0.001);
 	ASSERTEQUALT(131.636, dc.getEffectorTriangleSide(), 0.001);
 	ASSERTEQUALT(190.526, dc.getBaseTriangleSide(), 0.001);
 	ASSERTEQUALT(FPD_GEAR_RATIO, dc.getGearRatio(), 0.001);
@@ -2086,6 +2089,23 @@ void test_MTO_FPD_dim() {
 	ASSERTEQUAL(-53, machine.axis[1].position); // why -53?
 	ASSERTEQUAL(-53, machine.axis[2].position); // why -53?
 	ASSERTEQUAL(0, machine.axis[3].position);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // dim get
+    machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
+    Serial.push(JT("{'dim':''}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
+					"'bx':0.0000,'by':0.0000,'bz':0.000,'e':131.636,'f':190.526,'gr':9.474,"
+				    "'ha':-67.200,'hp':"FPD_HOME_PULSES_S",'mi':16,'re':270.000,'rf':90.000,"
+					"'spa':"FPD_SPE_ANGLE_S",'spr':"FPD_SPE_RATIO_S",'st':200}"
+                    "},'t':0.000}\n"),
+                 Serial.output().c_str());
+	ASSERTEQUALT(9.474, dc.getGearRatio(), 0.001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
