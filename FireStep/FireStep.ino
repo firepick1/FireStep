@@ -30,7 +30,7 @@ void setup() { // run once, when the sketch starts
     Serial.begin(19200); // long USB cables
 	char buf[100];
 	strcpy_P(buf, GIT_TAG);
-	Serial.println(GIT_TAG);
+	Serial.println(buf);
 
     // Bind in NeoPixel display driver
     machineThread.machine.pDisplay = &neoPixel;
