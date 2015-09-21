@@ -21,7 +21,7 @@ popd
 mv ArduinoJson*.zip ziptmp
 
 cp -r FireStep/ ziptmp/FireStep
-echo "TAG	: $TAG" | tee ziptmp/FireStep/FireStep/tag
+echo 'const char GIT_TAG[] PROGMEM = { "'$TAG'" };' > ziptmp/FireStep/FireStep/git_tag.h
 cp CHANGELOG.md LICENSE README.md ziptmp/FireStep
 
 cd ziptmp/libraries
