@@ -42,10 +42,20 @@ namespace firestep {
 #define FPD_HOME_ANGLE_S "-67.199"
 #define FPD_HOME_PULSES -5659
 #define FPD_HOME_PULSES_S "-5659"
+#define FPD_SPE_HOME_PULSES -5443
+#define FPD_SPE_HOME_PULSES_S "-5443"
 #define FPD_FAST_SEARCH_PULSES 3
 #define FPD_FAST_SEARCH_PULSES_S "3"
 #define FPD_MICROSTEPS 16
 #define FPD_STEPS360 200
+#define FPD_DELTA_E		131.636 /* effector triangle side */
+#define FPD_DELTA_F		190.526 /* base triangle side */
+#define FPD_DELTA_RE	270.000 /* effector arm length (mm) */
+#define FPD_DELTA_RF	90.000 /* pulley arm length (mm) */
+#define FPD_DELTA_E_S	"131.636"
+#define FPD_DELTA_F_S	"190.526"
+#define FPD_DELTA_RE_S	"270.000"
+#define FPD_DELTA_RF_S	"90.000"
 
 typedef int16_t DelayMics; // delay microseconds
 #ifdef TEST

@@ -664,6 +664,7 @@ Status FPDController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const ch
 
 Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
+	bool updated = false;
     if (strcmp_PS(OP_dim, key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
@@ -730,12 +731,16 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         machine.delta.setGearRatio(value, DELTA_AXIS_3);
     } else if (strcmp_PS(OP_ha, key) == 0 || strcmp_PS(OP_dimha, key) == 0) {
         PH5TYPE homeAngle = machine.getHomeAngle();
-        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngle);
-        machine.setHomeAngle(homeAngle);
+        status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngle, &updated);
+		if (updated) {
+			machine.setHomeAngle(homeAngle);
+		}
     } else if (strcmp_PS(OP_hp, key) == 0 || strcmp_PS(OP_dimhp, key) == 0) {
         StepCoord homePulses = machine.getHomePulses();
-        status = processField<StepCoord, StepCoord>(jobj, key, homePulses);
-        machine.setHomePulses(homePulses);
+        status = processField<StepCoord, StepCoord>(jobj, key, homePulses, &updated);
+		if (updated) {
+			machine.setHomePulses(homePulses);
+		}
     } else if (strcmp_PS(OP_mi, key) == 0 || strcmp_PS(OP_dimmi, key) == 0) {
         int16_t value = machine.delta.getMicrosteps();
         status = processField<int16_t, int16_t>(jobj, key, value);
