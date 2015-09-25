@@ -30,12 +30,12 @@ namespace firestep {
 #define MARK_COUNT 9
 #define MAX_ATTR_BYTES 30
 
-#define FPD_GEAR_RATIO 9.47387
-#define FPD_GEAR_RATIO_S "9.47387"
-#define FPD_SPE_ANGLE -51.581
-#define FPD_SPE_ANGLE_S "-51.581" /* -51.58135 */
-#define FPD_SPE_RATIO -0.196  /* -0.19568 */
-#define FPD_SPE_RATIO_S "-0.196"
+#define FPD_GEAR_RATIO 9.52374
+#define FPD_GEAR_RATIO_S "9.52374"
+#define FPD_SPE_ANGLE -54.617
+#define FPD_SPE_ANGLE_S "-54.617" 
+#define FPD_SPE_RATIO -0.383 
+#define FPD_SPE_RATIO_S "-0.383"
 #define FPD_SEARCH_DELAY 800
 #define FPD_SEARCH_DELAY_S "800"
 #define FPD_HOME_ANGLE -67.199
