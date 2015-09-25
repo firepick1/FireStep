@@ -1,0 +1,40 @@
+HELP	:
+HELP	: NAME
+HELP	:   firestep - command line client v1.0000
+HELP	:
+HELP	: EXAMPLES
+HELP	:   Launch interactive console with prompt
+HELP	:     firestep -p
+HELP	:     firestep --prompt
+HELP	:   Reset FireStep, ignore all commands and return -EAGAIN
+HELP	:     firestep -r
+HELP	:     firestep --reset
+HELP	:   Specify serial device (default is /dev/ttyACM0)
+HELP	:     firestep -d /dev/ttyACM0 
+HELP	:     firestep -device /dev/ttyACM0 
+HELP	:   Process single JSON command 
+HELP	:     firestep -e '{"hom":""}'
+HELP	:     firestep --expr '{"hom":""}'
+HELP	:   Process one command per line from JSON file
+HELP	:     firestep < test/multiline.json
+HELP	:   Show concise version, ignore all commands and return -EAGAIN
+HELP	:     firestep -v
+HELP	:     firestep --version
+HELP	:   Enable logging at given message threshold to firestep.log
+HELP	:     firestep --logerror
+HELP	:     firestep --logwarn
+HELP	:     firestep --loginfo
+HELP	:     firestep --logdebug
+HELP	:     firestep --logtrace
+HELP	:   Show this help text
+HELP	:     firestep -h
+HELP	:     firestep --help
+HELP	: 
+HELP	: DESCRIPTION
+HELP	:   Establish serial connection to FireStep and provide
+HELP	:   extended Firestep commands via command line interface.
+HELP	:   Commands can be executed individually, from a file, 
+HELP	:   or from an optionally prompted interactive session.
+HELP	: 
+HELP	: SEE ALSO
+HELP	:   https://github.com/firepick1/FireStep/wiki/firestep-command-line

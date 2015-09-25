@@ -13,40 +13,41 @@ echo "CMD	: $CMD -r"
 $CMD -r
 
 function verify() {
-	echo "TEST	: verify $1"
+	echo "TEST	: verify $1 $2"
 	rc=$?; if [ $rc -ne 0 ]; then echo "ERROR	: $1 rc:$rc"; exit $rc; fi
-	diff $ACTUAL test/expected/$1
+	echo "TEST	: diff test/expected/$1 $ACTUAL"
+	diff test/expected/$1 $ACTUAL
 	rc=$?; if [ $rc -ne 0 ]; then echo "ERROR	: $1 diff:$rc"; exit $rc; fi
 }
 
 $CMD -d $DEVICE --logdebug -e '{"pgmx":"dim-fpd"}' |& $CLEAN |tee $ACTUAL
-verify test1
+verify test1 "load FPD default dimensions"
 
 $CMD -d $DEVICE --logdebug -e '{"dim":""}' |& $CLEAN |tee $ACTUAL
-verify test1.1
+verify test1.1 "display dimensions"
 $CMD -d $DEVICE --logdebug -e '{"dim":""}' |& $CLEAN |tee $ACTUAL
-verify test1.1
+verify test1.1 "display dimensions (repeat with no changes)"
 
 $CMD -d $DEVICE --logdebug --expr '{"hom":""}' |& $CLEAN |tee $ACTUAL
-verify test2
+verify test2 "home FPD"
 
 $CMD -d $DEVICE --logdebug -e '{"sys":""}' |& $CLEAN |tee $ACTUAL
-verify test3
+verify test3 "display system configuration"
 
 $CMD -d $DEVICE --logdebug -p < scripts/config.json |& $CLEAN |tee $ACTUAL
-verify test4
+verify test4 "configure FPD from file with prompts (short)"
 $CMD -d $DEVICE --logdebug --prompt < scripts/config.json |& $CLEAN |tee $ACTUAL
-verify test4
+verify test4 "configure FPD from file with prompts (long)"
 
-$CMD -d $DEVICE --logdebug -v < scripts/config.json |& $CLEAN |tee $ACTUAL
-verify test5
-$CMD -d $DEVICE --logdebug --version < scripts/config.json |& $CLEAN |tee $ACTUAL
-verify test5
+$CMD -d $DEVICE --logdebug -v |& $CLEAN |tee $ACTUAL
+verify test5 "display FireStep version (short)"
+$CMD -d $DEVICE --logdebug --version |& $CLEAN |tee $ACTUAL
+verify test5 "display FireStep version (long)"
 
-$CMD -d $DEVICE --logdebug -h < scripts/config.json |& $CLEAN |tee $ACTUAL
-verify test6
-$CMD -d $DEVICE --logdebug --help < scripts/config.json |& $CLEAN |tee $ACTUAL
-verify test6
+$CMD -d $DEVICE --logdebug -h |& $CLEAN |tee $ACTUAL
+verify test6 "display help (short)"
+$CMD -d $DEVICE --logdebug --help |& $CLEAN |tee $ACTUAL
+verify test6 "display help (long)"
 
 
 echo "SUCCESS	: ALL TESTS PASS!"

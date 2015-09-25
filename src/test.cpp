@@ -4960,12 +4960,11 @@ void test_msg_cmt_idl() {
 void test_pgm_parse(const char *pgm) {
 	TESTCOUT1("test_pgm_parse:", pgm);
     JsonCommand jc;
-    const char *s;
     ASSERTEQUALS("", Serial.output().c_str());
     ASSERTEQUAL(STATUS_OK, prog_dump(pgm));
-    s = Serial.output().c_str();
-    ASSERTEQUAL(true, (strncmp("[{\"msg\":", s, 8) != 0));
-    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(s));
+    string s = Serial.output();
+    ASSERTEQUAL(true, (strncmp("[{\"msg\":", s.c_str(), 8) != 0));
+    ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(s.c_str()));
 }
 
 void test_cal_arm() {

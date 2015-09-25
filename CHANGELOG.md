@@ -8,8 +8,11 @@ v2.0 (pending)
 
 v1.0
 ------
-* FIX: MTO_FPD home bug
-* FIX: MTO_FPD dim bug
+Bug fixes for stable release (Arduino Mega2560)
+* FIX: MTO_FPD home bug (SPE rouding error)
+* FIX: MTO_FPD dim bug changed home when on query (nasty!)
+* FIX: valgrind PASS (no memory leaks, all values initialized)
+* NEW: firestep command line unit tests added
 
 v0.0205 
 ------
