@@ -30,8 +30,10 @@ FireStepSerial::~FireStepSerial() {
 int FireStepSerial::executeCore(const std::string &request, std::string &response) {
 	int rc = 0;
 	usb.write(request);
+	int nRead = 0;
 	response = usb.readln(msResponse);
-	for (int i=0; response.size()==0 && i<4; i++) {
+	for (int i=0; response.find("} \n")==string::npos && (nRead != response.size() || i<4); i++) {
+		nRead = response.size();
 		LOGDEBUG1("FireStepClient::console() wait %ldms", (long) msResponse);
 		response = usb.readln(msResponse);
 	}
