@@ -166,7 +166,8 @@ Status JsonCommand::parse(const char *jsonIn, Status statusIn) {
     if (status < 0) {
         char error[100];
         snprintf(error, sizeof(error), "{\"s\":%d}", status);
-        Serial.println(error);
+        Serial.print(error);
+		Serial.println(" "); // }-SPACE-LF is terminator
     }
     return status;
 }

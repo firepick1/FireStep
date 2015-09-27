@@ -13,6 +13,7 @@ Bug fixes for stable release (Arduino Mega2560)
 * FIX: MTO_FPD dim bug changed home when on query (nasty!)
 * FIX: valgrind PASS (no memory leaks, all values initialized)
 * NEW: firestep command line unit tests added
+* NEW: Serial output for completed request now ends with three character sequence `}-SPACE-LF`, allowing client to distinguish final output from intermediate output.
 
 v0.0205 
 ------

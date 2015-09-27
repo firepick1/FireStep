@@ -1028,7 +1028,7 @@ Status JsonController::cancel(JsonCommand& jcmd, Status cause) {
     return STATUS_WAIT_CANCELLED;
 }
 
-void JsonController::sendResponse(JsonCommand &jcmd, Status status) {
+void JsonController::sendResponse(JsonCommand &jcmd, Status status, bool final) {
     jcmd.setStatus(status);
     if (status >= 0) {
         if (jcmd.responseAvailable() < 1) {
@@ -1045,7 +1045,11 @@ void JsonController::sendResponse(JsonCommand &jcmd, Status status) {
         jcmd.response().printTo(Serial);
     }
     jcmd.responseClear();
-    Serial.println();
+	if (final){
+		Serial.println(" "); // }-SPACE-LF marks final output before return to STATUS_WAIT_IDLE
+	} else {
+		Serial.println();
+	}
 }
 
 Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {

@@ -50,7 +50,7 @@ public:
     JsonController(Machine& machine);
 
 public:
-    void sendResponse(JsonCommand& jcmd, Status status);
+    void sendResponse(JsonCommand& jcmd, Status status, bool final=true);
     Status processObj(JsonCommand& jcmd, JsonObject&jobj);
     JsonController& operator=(JsonController& that);
     Status cancel(JsonCommand &jcmd, Status cause);
