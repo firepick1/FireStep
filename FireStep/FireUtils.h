@@ -176,8 +176,16 @@ assertEqual(const char * expected, const char * actual, const char* context, int
         if (expected == NULL || *expected == '\0') {
             return;
         }
-    } else if (strcmp(expected, actual)==0) {
-        return;
+    } else {
+		const char *s1 = expected;
+		const char *s2 = actual; 
+		while (*s1 && *s2 && (*s1==*s2 || *s1=='?')) { // ? is expected wildcard
+			s1++;
+			s2++;
+		}
+		if (*s1 == 0 && *s2 == 0) {
+			return;
+		}
     }
 
     char buf[ASSERT_BUFSIZE];

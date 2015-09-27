@@ -427,7 +427,7 @@ const char src_dim_fpd[] PROGMEM = {
 	// STEP 1: set core dimensions
     "\"dimst\":200," // 200 steps/revolution
     "\"dimmi\":16," // 16 microsteps
-    "\"dimgr\":" FPD_GEAR_RATIO_S "," // gear ratio
+    "\"dimgr\":" FPD_GEAR_RATIO_S5 "," // gear ratio
     "\"dime\": " FPD_DELTA_E_S "," // effector triangle side
     "\"dimf\": " FPD_DELTA_F_S "," // base triangle side
     "\"dimre\":" FPD_DELTA_RE_S "," // effector arm length (mm)
