@@ -1,0 +1,10 @@
+#!/bin/bash
+echo "CMD	: release FireStep"
+rm -rf ~/Arduino/FireStep/
+rm ~/Downloads/*.zip
+scripts/buildzip
+mv -v ziptmp/*.zip ~/Downloads
+pushd ~/Arduino >& /dev/null
+unzip -oq ~/Downloads/FireStep-*.zip
+popd >& /dev/null
+echo "STATUS	: Installed"
