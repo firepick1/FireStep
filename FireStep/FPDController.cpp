@@ -658,6 +658,7 @@ Status FPDController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const ch
 
 Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
+	bool updated = false;
     if (machine.pDuino->PM_strcmp(OP_dim, key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
@@ -725,11 +726,15 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
     } else if (machine.pDuino->PM_strcmp(OP_ha, key) == 0 || machine.pDuino->PM_strcmp(OP_dimha, key) == 0) {
         PH5TYPE homeAngle = machine.getHomeAngle();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngle);
-        machine.setHomeAngle(homeAngle);
+		if (updated) {
+			machine.setHomeAngle(homeAngle);
+		}
     } else if (machine.pDuino->PM_strcmp(OP_hp, key) == 0 || machine.pDuino->PM_strcmp(OP_dimhp, key) == 0) {
         StepCoord homePulses = machine.getHomePulses();
         status = processField<StepCoord, StepCoord>(jobj, key, homePulses);
-        machine.setHomePulses(homePulses);
+		if (updated) {
+			machine.setHomePulses(homePulses);
+		}
     } else if (machine.pDuino->PM_strcmp(OP_mi, key) == 0 || machine.pDuino->PM_strcmp(OP_dimmi, key) == 0) {
         int16_t value = machine.delta.getMicrosteps();
         status = processField<int16_t, int16_t>(jobj, key, value);
@@ -817,6 +822,12 @@ Status FPDController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
                     return status;
                 }
             }
+			if (machine.axis[0].home != machine.axis[1].home ||
+			    machine.axis[0].home != machine.axis[2].home) {
+				return jcmd.setError(STATUS_DELTA_HOME, key);
+			}
+			// home must set home angle as a side effect
+			machine.setHomePulses(machine.axis[0].home);
         }
     } else {
         MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));

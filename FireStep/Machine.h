@@ -26,18 +26,38 @@ namespace firestep {
 #define MARK_COUNT 9
 #define MAX_ATTR_BYTES 30
 
-#define FPD_GEAR_RATIO 9.47387
-#define FPD_GEAR_RATIO_S "9.47387"
-#define FPD_SPE_ANGLE -51.581
-#define FPD_SPE_ANGLE_S "-51.581" /* -51.58135 */
-#define FPD_SPE_RATIO -0.196  /* -0.19568 */
-#define FPD_SPE_RATIO_S "-0.196"
+#define FPD_GEAR_RATIO 9.52374 
+#define FPD_GEAR_RATIO_S "9.524"
+#define FPD_GEAR_RATIO_S5 "9.52374"
+#define FPD_SPE_ANGLE -54.617
+#define FPD_SPE_ANGLE_S "-54.617" 
+#define FPD_SPE_RATIO -0.383 
+#define FPD_SPE_RATIO_S "-0.383"
 #define FPD_SEARCH_DELAY 800
 #define FPD_SEARCH_DELAY_S "800"
-#define FPD_HOME_PULSES -5659
-#define FPD_HOME_PULSES_S "-5659"
+#define FPD_HOME_ANGLE -67.202
+#define FPD_HOME_ANGLE_S "-67.202"
+#define FPD_HOME_PULSES -5689
+#define FPD_HOME_PULSES_S "-5689"
+//#define FPD_SPE_HOME_PULSES -5473
+//#define FPD_SPE_HOME_PULSES_S "-5473"
+#define FPD_SPE_HOME_PULSES -5394
+#define FPD_SPE_HOME_PULSES_S "-5394"
+#define FPD_SPE_CRITICAL_PULSES -4624
+#define FPD_SPE_CRITICAL_PULSES_S "-4624"
 #define FPD_FAST_SEARCH_PULSES 3
 #define FPD_FAST_SEARCH_PULSES_S "3"
+#define FPD_MICROSTEPS 16
+#define FPD_STEPS360 200
+#define FPD_MICROSTEPS_PER_DEGREE 84.655
+#define FPD_DELTA_E		131.636 /* effector triangle side */
+#define FPD_DELTA_F		190.526 /* base triangle side */
+#define FPD_DELTA_RE	270.000 /* effector arm length (mm) */
+#define FPD_DELTA_RF	90.000 /* pulley arm length (mm) */
+#define FPD_DELTA_E_S	"131.636"
+#define FPD_DELTA_F_S	"190.526"
+#define FPD_DELTA_RE_S	"270.000"
+#define FPD_DELTA_RF_S	"90.000"
 
 typedef int16_t DelayMics; // delay microseconds
 #ifdef TEST

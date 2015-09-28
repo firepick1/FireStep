@@ -1,0 +1,12 @@
+STATUS	: firestep - command line client v1.0000
+CMD	: {"s":0,"r":{"cmt":"FireStep configuration"},"t":...} 
+CMD	: {"s":0,"r":{"sys":{"ah":false,"as":false,"ch":-2083077910,"eu":false,"hp":3,"jp":false,"lh":false,"mv":20000,"om":0,"pb":25,"pc":1,"pi":7,"sd":800,"to":1,"tv":0.700,"v":1.0000}},"t":...} 
+CMD	: {"s":0,"r":{"dim":{"bx":0.0006,"by":0.0010,"bz":-48.070,"e":131.636,"f":190.526,"gr":9.524,"ha":-67.201,"hp":-5394,"mi":16,"re":270.000,"rf":90.000,"spa":-54.617,"spr":-0.383,"st":200}},"t":...} 
+CMD	: {"s":0,"r":{"x":{"dh":true,"en":true,"ho":-5394,"is":0,"lb":200,"lm":false,"ln":false,"mi":16,"pd":36,"pe":40,"pm":255,"pn":63,"po":0,"ps":38,"sa":1.800,"tm":32000,"tn":-32000,"ud":0}},"t":...} 
+CMD	: {"s":0,"r":{"y":{"dh":true,"en":true,"ho":-5394,"is":0,"lb":200,"lm":false,"ln":false,"mi":16,"pd":57,"pe":54,"pm":255,"pn":64,"po":0,"ps":56,"sa":1.800,"tm":32000,"tn":-32000,"ud":0}},"t":...} 
+CMD	: {"s":0,"r":{"z":{"dh":true,"en":true,"ho":-5394,"is":0,"lb":200,"lm":false,"ln":false,"mi":16,"pd":8,"pe":2,"pm":255,"pn":65,"po":0,"ps":9,"sa":1.800,"tm":32000,"tn":-32000,"ud":0}},"t":...} 
+CMD	: {"s":0,"r":{"a":{"dh":true,"en":true,"ho":0,"is":0,"lb":200,"lm":false,"ln":false,"mi":16,"pd":32,"pe":44,"pm":255,"pn":255,"po":0,"ps":30,"sa":1.800,"tm":32000,"tn":-32000,"ud":0}},"t":...} 
+CMD	: {"s":0,"r":{"b":{"dh":true,"en":true,"ho":0,"is":0,"lb":200,"lm":false,"ln":false,"mi":16,"pd":32,"pe":52,"pm":255,"pn":255,"po":0,"ps":30,"sa":1.800,"tm":32000,"tn":-32000,"ud":0}},"t":...} 
+CMD	: {"s":0,"r":{"c":{"dh":true,"en":true,"ho":0,"is":0,"lb":200,"lm":false,"ln":false,"mi":16,"pd":32,"pe":24,"pm":255,"pn":255,"po":0,"ps":30,"sa":1.800,"tm":32000,"tn":-32000,"ud":0}},"t":...} 
+CMD	: EOF
+END	: closing serial port

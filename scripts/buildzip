@@ -3,32 +3,34 @@
 echo "SCRIPT	: buildzip"
 echo "HELP	: build zip file for Arduino installation"
 
-TAG=`git log --pretty=format:'%H' -n 1`
-OUTPUT="FireStep-$TAG.zip"
-echo "STATUS	: creating $OUTPUT"
-
 rm -rf ziptmp
 mkdir -p ziptmp/libraries
 mkdir -p ziptmp/FireStep
 
-pushd ../ph5
+pushd ../ph5 >& /dev/null
 scripts/buildzip
-popd
+popd >& /dev/null
 mv ../ph5*.zip ziptmp
-pushd ArduinoJson
+pushd ArduinoJson >& /dev/null
 scripts/buildzip
-popd
+popd >& /dev/null
 mv ArduinoJson*.zip ziptmp
 
+TAG=`git log --pretty=format:'%H' -n 1`
+OUTPUT="FireStep-$TAG.zip"
+echo "CMD	: creating $OUTPUT"
+
 cp -r FireStep/ ziptmp/FireStep
+echo 'const char GIT_TAG[] PROGMEM = { "'$TAG'" };' > ziptmp/FireStep/FireStep/git_tag.h
 cp CHANGELOG.md LICENSE README.md ziptmp/FireStep
 
-cd ziptmp/libraries
+pushd ziptmp/libraries >& /dev/null
 unzip -q ../ph5*.zip
 unzip -q ../ArduinoJson*.zip
+popd >& /dev/null
 
-cd ..
-
+pushd ziptmp >& /dev/null
 zip -r -q $OUTPUT \
 	FireStep \
 	libraries
+popd >& /dev/null

@@ -53,10 +53,6 @@ typedef uint8_t boolean;
 #define CS11 1
 #define CS12 2
 
-extern "C" {
-    extern unsigned long millis();
-}
-
 #define ARDUINO_PINS 127
 #define ARDUINO_MEM 1024
 
@@ -76,13 +72,6 @@ extern "C" {
 #define A13 (A12+1)
 #define A14 (A13+1)
 #define A15 (A14+1)
-
-#endif
-
-#ifdef Arduino_h
-#else
-#include <string.h>
-#endif
 
 /* IDuino implementations may undef and re-define LARGER values. These are minimums: */
 #define EEPROM_CMD_BYTES	512		/* JsonController command buffer for EEPROM interaction */
@@ -105,11 +94,13 @@ extern "C" {
 #define MS_TICKS(ms) ((int32_t) MS_TICKS_REAL(ms))
 #define TICK_MICROSECONDS ((TIMER_PRESCALE * 1000L)/(CLOCK_HZ/1000))
 #define TICKS_PER_SECOND ((int32_t)MS_TICKS(1000))
+#endif
 
 /**
  * The following definitions match the Arduino
  * and avoid contention with stdlib
  */
+
 #ifndef HIGH
 #define HIGH 1
 #define LOW 0

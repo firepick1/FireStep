@@ -1026,7 +1026,7 @@ Status JsonController::cancel(JsonCommand& jcmd, Status cause) {
     return STATUS_WAIT_CANCELLED;
 }
 
-void JsonController::sendResponse(JsonCommand &jcmd, Status status) {
+void JsonController::sendResponse(JsonCommand &jcmd, Status status, bool final) {
     jcmd.setStatus(status);
     if (status >= 0) {
         if (jcmd.responseAvailable() < 1) {
@@ -1043,7 +1043,11 @@ void JsonController::sendResponse(JsonCommand &jcmd, Status status) {
         jcmd.response().printTo(*machine.pDuino);
     }
     jcmd.responseClear();
-    machine.pDuino->serial_println();
+	if (final){
+		machine.pDuino->serial_println(" "); // }-SPACE-LF marks final output before return to STATUS_WAIT_IDLE
+	} else {
+		machine.pDuino->serial_println();
+	}
 }
 
 Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {

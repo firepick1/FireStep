@@ -240,6 +240,7 @@ Machine::Machine(IDuinoPtr pDuino)
 	}
     homeAngle = delta.getHomeAngle();
     homePulses = delta.getHomePulses();
+	setPinConfig(PC0_NOPIN);
 }
 
 /**
@@ -285,34 +286,32 @@ int32_t Machine::hash() {
     PH5TYPE gr3 = delta.getGearRatio(DELTA_AXIS_3);
     PH5TYPE spa = delta.getSPEAngle();
     PH5TYPE sps = delta.getSPERatio();
-    int32_t result = 0
-                     ^ ((uint32_t) outputMode << 8)
-                     ^ ((uint32_t) topology << 9)
-                     ^ ((uint32_t) pinConfig << 10)
-                     ^ ((uint32_t) probe.pinProbe << 11)
-                     ^ (invertLim ? (BIT_HASH << 16) : 0)
-                     ^ (pinEnableHigh ? (BIT_HASH << 17) : 0)
-                     // ^ (autoSync ? (BIT_HASH << 18) : 0)
-                     ^ (jsonPrettyPrint ? (BIT_HASH << 19) : 0)
-                     ^ (autoHome ? (BIT_HASH << 20) : 0)
-                     ^ delta.hash()
-                     ^ (vMax)
-                     ^ (*(uint32_t *)(void*)&tvMax)
-                     ^ (debounce)
-                     ^ (fastSearchPulses)
-                     ^ (searchDelay)
-                     ^ (pinStatus)
-                     ^ (delta.getSteps360())
-                     ^ (*(uint32_t *)(void*)&bed.a)
-                     ^ (*(uint32_t *)(void*)&bed.b)
-                     ^ (*(uint32_t *)(void*)&bed.c)
-                     ^ (*(uint32_t *)(void*)&gr1)
-                     ^ (*(uint32_t *)(void*)&gr2)
-                     ^ (*(uint32_t *)(void*)&gr3)
-                     ^ (*(uint32_t *)(void*)&spa)
-                     ^ (*(uint32_t *)(void*)&sps)
-                     //^ (eeUser)
-                     ;
+    int32_t result = 0;
+	result = result ^ ((uint32_t) outputMode << 8);
+	result = result ^ ((uint32_t) topology << 9);
+	result = result ^ ((uint32_t) pinConfig << 10);
+	result = result ^ ((uint32_t) probe.pinProbe << 11);
+	result = result ^ (invertLim ? (BIT_HASH << 16) : 0);
+	result = result ^ (pinEnableHigh ? (BIT_HASH << 17) : 0);
+	// result = result ^ (autoSync ? (BIT_HASH << 18) : 0);
+	result = result ^ (jsonPrettyPrint ? (BIT_HASH << 19) : 0);
+	result = result ^ (autoHome ? (BIT_HASH << 20) : 0);
+	result = result ^ delta.hash();
+	result = result ^ (vMax);
+	result = result ^ (*(uint32_t *)(void*)&tvMax);
+	result = result ^ (debounce);
+	result = result ^ (fastSearchPulses);
+	result = result ^ (searchDelay);
+	result = result ^ (pinStatus);
+	result = result ^ (delta.getSteps360());
+	result = result ^ (*(uint32_t *)(void*)&bed.a);
+	result = result ^ (*(uint32_t *)(void*)&bed.b);
+	result = result ^ (*(uint32_t *)(void*)&bed.c);
+	result = result ^ (*(uint32_t *)(void*)&gr1);
+	result = result ^ (*(uint32_t *)(void*)&gr2);
+	result = result ^ (*(uint32_t *)(void*)&gr3);
+	result = result ^ (*(uint32_t *)(void*)&spa);
+	result = result ^ (*(uint32_t *)(void*)&sps);
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
         result ^= axis[i].hash() << i;
     }
@@ -890,5 +889,5 @@ bool Machine::isEEUserEnabled() {
 
 void Machine::loadDeltaCalculator() {
     delta.setHomeAngle(homeAngle);
-    delta.setHomePulses((axis[0].home+axis[1].home+axis[2].home)/3);
+    //delta.setHomePulses((axis[0].home+axis[1].home+axis[2].home)/3);
 }

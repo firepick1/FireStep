@@ -439,18 +439,22 @@ const char src_fpd_hex_probe[] PROGMEM = {
 const char src_dim_fpd[] PROGMEM = {
     "["
     "{"
+	// STEP 1: set core dimensions
     "\"dimst\":200," // 200 steps/revolution
     "\"dimmi\":16," // 16 microsteps
-    "\"syshp\":" FPD_FAST_SEARCH_PULSES_S "," // fast search pulse group size
-    "\"syssd\":" FPD_SEARCH_DELAY_S "," // fast homing delay
-    "\"dimgr\":" FPD_GEAR_RATIO_S "," // gear ratio
-    "\"dimha\":-67.2," // home angle
-    "\"dime\":131.636," // effector triangle side
-    "\"dimf\":190.526," // base triangle side
-    "\"dimre\":270.000," // effector arm length (mm)
-    "\"dimrf\":90.000," // pulley arm length (mm)
+    "\"dimgr\":" FPD_GEAR_RATIO_S5 "," // gear ratio
+    "\"dime\": " FPD_DELTA_E_S "," // effector triangle side
+    "\"dimf\": " FPD_DELTA_F_S "," // base triangle side
+    "\"dimre\":" FPD_DELTA_RE_S "," // effector arm length (mm)
+    "\"dimrf\":" FPD_DELTA_RF_S "," // pulley arm length (mm)
+	// STEP 2: set sliced pulley dimensions
     "\"dimspa\":" FPD_SPE_ANGLE_S "," // MC:arm critical angle https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
-    "\"dimspr\":" FPD_SPE_RATIO_S // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    "\"dimspr\":" FPD_SPE_RATIO_S "," // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+	// STEP 3: set home angle side effects depend on preceding dimensions
+    "\"dimha\":" FPD_HOME_ANGLE_S "," // home angle
+	// STEP 4: Set miscellaneous values
+    "\"syshp\":" FPD_FAST_SEARCH_PULSES_S "," // fast search pulse group size
+    "\"syssd\":" FPD_SEARCH_DELAY_S // fast homing delay
 	"}"
     "]"
 };

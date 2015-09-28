@@ -160,7 +160,8 @@ Status JsonCommand::parse(const char *jsonIn, IDuinoPtr pDuino, Status statusIn)
     if (status < 0) {
         char error[100];
         snprintf(error, sizeof(error), "{\"s\":%d}", status);
-        pDuino->serial_println(error);
+        pDuino->serial_print(error);
+        pDuino->serial_println(" ");  // }-SPACE-LF is terminator
     }
     return status;
 }
