@@ -14,6 +14,8 @@ Bug fixes for stable release (Arduino Mega2560)
 * FIX: valgrind PASS (no memory leaks, all values initialized)
 * NEW: firestep command line unit tests added
 * NEW: Serial output for completed request now ends with three character sequence `}-SPACE-LF`, allowing client to distinguish final output from intermediate output.
+* FIX: Jason/Reef {"mov":{"a":-88}} bug
+* NEW: startup "FireStep ..." text is now JSON and includes git commit
 
 v0.0205 
 ------
