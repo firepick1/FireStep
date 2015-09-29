@@ -30,12 +30,12 @@ namespace firestep {
 #define MARK_COUNT 9
 #define MAX_ATTR_BYTES 30
 
-#define FPD_GEAR_RATIO 9.52374 
+#define FPD_GEAR_RATIO 9.52374
 #define FPD_GEAR_RATIO_S "9.524"
 #define FPD_GEAR_RATIO_S5 "9.52374"
 #define FPD_SPE_ANGLE -54.617
-#define FPD_SPE_ANGLE_S "-54.617" 
-#define FPD_SPE_RATIO -0.383 
+#define FPD_SPE_ANGLE_S "-54.617"
+#define FPD_SPE_RATIO -0.383
 #define FPD_SPE_RATIO_S "-0.383"
 #define FPD_SEARCH_DELAY 800
 #define FPD_SEARCH_DELAY_S "800"
@@ -296,7 +296,7 @@ typedef class Machine : public QuadStepper {
 
 private:
     PH5TYPE		homeAngle; // recorded home angle
-	IDuinoPtr	pDuino;
+    IDuinoPtr	pDuino;
 
 public:
     PinConfig	pinConfig;
@@ -338,7 +338,7 @@ protected:
     StepCoord 	stepHome(StepCoord pulsesPerAxis, int16_t delay);
 
 public:
-	Machine(IDuinoPtr pDuino=NULL);
+    Machine(IDuinoPtr pDuino=NULL);
     void setup(PinConfig cfg);
     int32_t hash();
     virtual	Status step(const Quad<StepDV> &pulse);

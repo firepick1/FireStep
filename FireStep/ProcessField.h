@@ -11,17 +11,17 @@ Status processField(JsonObject& jobj, const char* key, TF& field, bool *pUpdated
     const char *s;
     if ((s = jobj[key]) && *s == 0) { // query
         status = (jobj[key] = (TJ) field).success() ? status : STATUS_FIELD_ERROR;
-		if (pUpdated) {
-			*pUpdated = false;
-		}
+        if (pUpdated) {
+            *pUpdated = false;
+        }
     } else {
         TJ tjValue = jobj[key];
         double value = tjValue;
         TF tfValue = (TF) value;
         field = tfValue;
-		if (pUpdated) {
-			*pUpdated = true;
-		}
+        if (pUpdated) {
+            *pUpdated = true;
+        }
         float diff = absval(tfValue - tjValue);
         if (diff > 1e-7) {
             TESTCOUT3("STATUS_VALUE_RANGE tfValue:", tfValue, " tjValue:", tjValue, " diff:", diff);

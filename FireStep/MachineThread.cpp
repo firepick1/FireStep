@@ -245,9 +245,9 @@ Status MachineThread::syncConfig() {
 }
 
 void MachineThread::printBanner() {
-	char git[50];
-	strcpy_P(git, GIT_TAG);
-	git[8] = 0;
+    char git[50];
+    strcpy_P(git, GIT_TAG);
+    git[8] = 0;
     char msg[100];
     machine.syncHash = machine.hash();
     snprintf(msg, sizeof(msg), "{\"id\":\"FireStep\",\"ver\":\"%d.%d.%d\",\"sysch\":%ld,\"git\":\"%s\"}",

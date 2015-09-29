@@ -241,26 +241,26 @@ Machine::Machine(IDuinoPtr pDuino)
     axis[5].id = 'c';
     homeAngle = delta.getHomeAngle();
     homePulses = delta.getHomePulses();
-	setPinConfig(PC0_NOPIN);
+    setPinConfig(PC0_NOPIN);
 }
 
 /**
  * Set the home angle and pulses
  */
 void Machine::setHomeAngle(PH5TYPE degrees) {
-	if (topology == MTO_FPD) {
-		delta.setHomeAngle(degrees);
-		homeAngle = degrees;
-		StepCoord newHomePulses = delta.getHomePulses();
-		StepCoord dHome = newHomePulses - homePulses;
-		homePulses = newHomePulses;
-		axis[0].position += newHomePulses - axis[0].home;
-		axis[1].position += newHomePulses - axis[1].home;
-		axis[2].position += newHomePulses - axis[2].home;
+    if (topology == MTO_FPD) {
+        delta.setHomeAngle(degrees);
+        homeAngle = degrees;
+        StepCoord newHomePulses = delta.getHomePulses();
+        StepCoord dHome = newHomePulses - homePulses;
+        homePulses = newHomePulses;
+        axis[0].position += newHomePulses - axis[0].home;
+        axis[1].position += newHomePulses - axis[1].home;
+        axis[2].position += newHomePulses - axis[2].home;
         axis[0].home = newHomePulses;
         axis[1].home = newHomePulses;
         axis[2].home = newHomePulses;
-		TESTCOUT3("setHomeAngle degrees:", degrees, " newHomePulses:", newHomePulses, " dHome:", dHome);
+        TESTCOUT3("setHomeAngle degrees:", degrees, " newHomePulses:", newHomePulses, " dHome:", dHome);
     }
 }
 
@@ -269,7 +269,7 @@ void Machine::setHomeAngle(PH5TYPE degrees) {
  */
 void Machine::setHomePulses(StepCoord pulseCount) {
     homePulses = pulseCount;
-	delta.setHomePulses(homePulses);
+    delta.setHomePulses(homePulses);
     setHomeAngle(delta.getHomeAngle());
 }
 
@@ -295,7 +295,7 @@ int32_t Machine::hash() {
     result = result ^ (invertLim ? (BIT_HASH << 16) : 0);
     result = result ^ (pinEnableHigh ? (BIT_HASH << 17) : 0);
     // result = result  ^ (autoSync ? (BIT_HASH << 18) : 0);
-	result = result ^ (jsonPrettyPrint ? (BIT_HASH << 19) : 0);
+    result = result ^ (jsonPrettyPrint ? (BIT_HASH << 19) : 0);
     result = result ^ (autoHome ? (BIT_HASH << 20) : 0);
     result = result ^ delta.hash();
     result = result ^ (vMax);

@@ -2,7 +2,7 @@
 #define MEGA2560_H
 
 /**
- * WARNING: 
+ * WARNING:
  * This file should only be included for use on Arduino Mega2560.
  */
 

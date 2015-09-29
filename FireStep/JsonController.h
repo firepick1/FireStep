@@ -25,7 +25,7 @@ protected:
     virtual Status initializeStroke(JsonCommand &jcmd, JsonObject& stroke);
     virtual Status processAxis(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
     virtual Status processCalibrate(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-	virtual Status processDebug(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+    virtual Status processDebug(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processDimension(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
     virtual Status processDisplay(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processEEPROM(JsonCommand& jcmd, JsonObject& jobj, const char* key);

@@ -177,15 +177,15 @@ assertEqual(const char * expected, const char * actual, const char* context, int
             return;
         }
     } else {
-		const char *s1 = expected;
-		const char *s2 = actual; 
-		while (*s1 && *s2 && (*s1==*s2 || *s1=='?')) { // ? is expected wildcard
-			s1++;
-			s2++;
-		}
-		if (*s1 == 0 && *s2 == 0) {
-			return;
-		}
+        const char *s1 = expected;
+        const char *s2 = actual;
+        while (*s1 && *s2 && (*s1==*s2 || *s1=='?')) { // ? is expected wildcard
+            s1++;
+            s2++;
+        }
+        if (*s1 == 0 && *s2 == 0) {
+            return;
+        }
     }
 
     char buf[ASSERT_BUFSIZE];

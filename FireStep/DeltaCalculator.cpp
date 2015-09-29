@@ -75,10 +75,10 @@ void DeltaCalculator::setSteps360(int16_t value) {
 
 void DeltaCalculator::setGearRatio(PH5TYPE value, DeltaAxis axis) {
     setDegreesPerPulse(360/(microsteps*steps360*value), axis);
-	// NOTE: setting the gear ratio will affect the home pulses,
-	// and client applications need to be aware of this. This
-	// method should NOT set the home angle, which is an extrinsic
-	// input to FPD kinematics.
+    // NOTE: setting the gear ratio will affect the home pulses,
+    // and client applications need to be aware of this. This
+    // method should NOT set the home angle, which is an extrinsic
+    // input to FPD kinematics.
 }
 
 void DeltaCalculator::setDegreesPerPulse(PH5TYPE value, DeltaAxis axis) {
@@ -89,10 +89,10 @@ void DeltaCalculator::setDegreesPerPulse(PH5TYPE value, DeltaAxis axis) {
     } else {
         degreesPerPulse[axis] = value;
     }
-	// NOTE: setting the degrees per pulse ratio will affect the home pulses,
-	// and client applications need to be aware of this. This
-	// method should NOT set the home angle, which is an extrinsic
-	// input to FPD kinematics.
+    // NOTE: setting the degrees per pulse ratio will affect the home pulses,
+    // and client applications need to be aware of this. This
+    // method should NOT set the home angle, which is an extrinsic
+    // input to FPD kinematics.
 }
 
 PH5TYPE DeltaCalculator::getDefaultHomeAngle() {
@@ -112,17 +112,17 @@ PH5TYPE DeltaCalculator::calcSPEAngle(StepCoord pulses, DeltaAxis axis) {
     StepCoord spePulses = criticalPulses - pulses;
     PH5TYPE angle;
     if (spRatio && spePulses > 0) {
-		PH5TYPE spAngleDigitized = criticalPulses*dpp;
-		PH5TYPE speDegreesPerPulse = (1-spRatio)*dpp;
-		PH5TYPE speDegrees = spePulses * speDegreesPerPulse;
-		angle = spAngleDigitized - speDegrees;
+        PH5TYPE spAngleDigitized = criticalPulses*dpp;
+        PH5TYPE speDegreesPerPulse = (1-spRatio)*dpp;
+        PH5TYPE speDegrees = spePulses * speDegreesPerPulse;
+        angle = spAngleDigitized - speDegrees;
         PH5TYPE angleOld = pulses*dpp - spRatio * spePulses * dpp;
-		TESTCOUT4("calcSPEAngle(SPE) spAngleDigitized:", spAngleDigitized, 
-			" spePulses:", spePulses, " angle:", angle, " speDegrees:", speDegrees);
-			//" spePulses:", spePulses, " angle:", angle, " angleOld:", angleOld);
-	} else {
-		angle = pulses * dpp;
-		TESTCOUT2("calcSPEAngle spePulses:", spePulses, " angle:", angle);
+        TESTCOUT4("calcSPEAngle(SPE) spAngleDigitized:", spAngleDigitized,
+                  " spePulses:", spePulses, " angle:", angle, " speDegrees:", speDegrees);
+        //" spePulses:", spePulses, " angle:", angle, " angleOld:", angleOld);
+    } else {
+        angle = pulses * dpp;
+        TESTCOUT2("calcSPEAngle spePulses:", spePulses, " angle:", angle);
     }
 
     return angle;
@@ -130,20 +130,20 @@ PH5TYPE DeltaCalculator::calcSPEAngle(StepCoord pulses, DeltaAxis axis) {
 
 StepCoord DeltaCalculator::calcSPEPulses(PH5TYPE armAngle, DeltaAxis axis) {
     PH5TYPE dpp = getDegreesPerPulse(axis);
-	StepCoord criticalPulses = roundStep(spAngle/dpp);
-	PH5TYPE spAngleDigitized = criticalPulses*dpp;
-	PH5TYPE speDegrees = spAngleDigitized - armAngle; // positive in SPE zone
-	PH5TYPE pulses;
+    StepCoord criticalPulses = roundStep(spAngle/dpp);
+    PH5TYPE spAngleDigitized = criticalPulses*dpp;
+    PH5TYPE speDegrees = spAngleDigitized - armAngle; // positive in SPE zone
+    PH5TYPE pulses;
     if (spRatio && speDegrees > 0) {
-		PH5TYPE speDegreesPerPulse = (1-spRatio)*dpp;
-		StepCoord spePulses = roundStep(speDegrees/speDegreesPerPulse);
-		pulses = criticalPulses - spePulses;
-		TESTCOUT2("calcSPEPulses(SPE) speDegreesPerPulse:", speDegreesPerPulse, " dpp:", dpp);
-		TESTCOUT4("calcSPEPulses(SPE) speDegrees:", speDegrees, " pulses:", pulses,
-			" spePulses:", spePulses, " criticalPulses:", criticalPulses);
-	} else {
-    	pulses = roundStep(armAngle/dpp);
-		TESTCOUT3("calcSPEPulses speDegrees:", speDegrees, " pulses:", pulses, " criticalPulses:", criticalPulses);
+        PH5TYPE speDegreesPerPulse = (1-spRatio)*dpp;
+        StepCoord spePulses = roundStep(speDegrees/speDegreesPerPulse);
+        pulses = criticalPulses - spePulses;
+        TESTCOUT2("calcSPEPulses(SPE) speDegreesPerPulse:", speDegreesPerPulse, " dpp:", dpp);
+        TESTCOUT4("calcSPEPulses(SPE) speDegrees:", speDegrees, " pulses:", pulses,
+                  " spePulses:", spePulses, " criticalPulses:", criticalPulses);
+    } else {
+        pulses = roundStep(armAngle/dpp);
+        TESTCOUT3("calcSPEPulses speDegrees:", speDegrees, " pulses:", pulses, " criticalPulses:", criticalPulses);
     }
     return pulses;
 }
@@ -156,9 +156,9 @@ void DeltaCalculator::setHomePulses(StepCoord pulses) {
     //PH5TYPE angle = pulses*getDegreesPerPulse();
     //PH5TYPE speAngle = angle - spAngle;
     //if (speAngle < 0) {
-        //angle += speAngle * spRatio;
+    //angle += speAngle * spRatio;
     //}
-	PH5TYPE angle = calcSPEAngle(pulses);
+    PH5TYPE angle = calcSPEAngle(pulses);
     setHomeAngle(angle);
 }
 

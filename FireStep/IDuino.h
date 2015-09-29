@@ -23,8 +23,8 @@
 // Arduino compatible definitions that avoid contention with stdlib
 #define minval(a,b) ((a)<(b)?(a):(b))
 #define maxval(a,b) ((a)>(b)?(a):(b))
-#define absval(x) ((x)>0?(x):-(x)) 
-#define roundval(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5)) 
+#define absval(x) ((x)>0?(x):-(x))
+#define roundval(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
 #ifndef radians
 #define radians(deg) ((deg)*DEG_TO_RAD)
 #define degrees(rad) ((rad)*RAD_TO_DEG)
@@ -52,7 +52,7 @@
 namespace firestep {
 
 /**
- * Abstract hardware interface for FireStep usage of Arduino 
+ * Abstract hardware interface for FireStep usage of Arduino
  */
 typedef class IDuino {
 public: // Serial
@@ -62,22 +62,22 @@ public: // Serial
     virtual void println(const char value, int format = DEC) ;
 
 public: // Pins
-	virtual void analogWrite(int16_t dirPin, int16_t value) = 0;
-	virtual int16_t analogRead(int16_t dirPin) = 0;
-	virtual void digitalWrite(int16_t dirPin, int16_t value) = 0;
-	virtual void delayMicroseconds(uint16_t usDelay) = 0;
-	virtual int16_t digitalRead(int16_t dirPin) = 0;
-	virtual void pinMode(int16_t pin, int16_t inout) = 0;
+    virtual void analogWrite(int16_t dirPin, int16_t value) = 0;
+    virtual int16_t analogRead(int16_t dirPin) = 0;
+    virtual void digitalWrite(int16_t dirPin, int16_t value) = 0;
+    virtual void delayMicroseconds(uint16_t usDelay) = 0;
+    virtual int16_t digitalRead(int16_t dirPin) = 0;
+    virtual void pinMode(int16_t pin, int16_t inout) = 0;
 
 public: // misc
-	virtual void delay(int ms) = 0;
+    virtual void delay(int ms) = 0;
 
 public: // EEPROM
-	virtual uint8_t eeprom_read_byte(uint8_t *addr);
-	virtual void eeprom_write_byte(uint8_t *addr, uint8_t value);
+    virtual uint8_t eeprom_read_byte(uint8_t *addr);
+    virtual void eeprom_write_byte(uint8_t *addr, uint8_t value);
 
 public: // FireStep
-	virtual void pulseFast(uint8_t pin);
+    virtual void pulseFast(uint8_t pin);
 } IDuino, *IDuinoPtr;
 
 } // namespace firestep

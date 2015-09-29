@@ -664,7 +664,7 @@ Status FPDController::processProbe(JsonCommand& jcmd, JsonObject& jobj, const ch
 
 Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
     Status status = STATUS_OK;
-	bool updated = false;
+    bool updated = false;
     if (strcmp_PS(OP_dim, key) == 0) {
         const char *s;
         if ((s = jobj[key]) && *s == 0) {
@@ -732,28 +732,28 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
     } else if (strcmp_PS(OP_ha, key) == 0 || strcmp_PS(OP_dimha, key) == 0) {
         PH5TYPE homeAngle = machine.getHomeAngle();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, homeAngle, &updated);
-		if (updated) {
-			machine.setHomeAngle(homeAngle);
-		}
+        if (updated) {
+            machine.setHomeAngle(homeAngle);
+        }
     } else if (strcmp_PS(OP_hp, key) == 0 || strcmp_PS(OP_dimhp, key) == 0) {
         StepCoord homePulses = machine.getHomePulses();
         status = processField<StepCoord, StepCoord>(jobj, key, homePulses, &updated);
-		if (updated) {
-			machine.setHomePulses(homePulses);
-		}
+        if (updated) {
+            machine.setHomePulses(homePulses);
+        }
     } else if (strcmp_PS(OP_mi, key) == 0 || strcmp_PS(OP_dimmi, key) == 0) {
         int16_t value = machine.delta.getMicrosteps();
         status = processField<int16_t, int16_t>(jobj, key, value);
-		PH5TYPE scale = value/(PH5TYPE)machine.delta.getMicrosteps();
-		machine.axis[0].home *= scale;
-		machine.axis[1].home *= scale;
-		machine.axis[2].home *= scale;
-		TESTCOUT2("mi scale:", scale, " position:", machine.axis[0].position);
-		machine.axis[0].position *= scale;
-		machine.axis[1].position *= scale;
-		machine.axis[2].position *= scale;
-		machine.homePulses *= scale;
-		machine.searchDelay /= scale;
+        PH5TYPE scale = value/(PH5TYPE)machine.delta.getMicrosteps();
+        machine.axis[0].home *= scale;
+        machine.axis[1].home *= scale;
+        machine.axis[2].home *= scale;
+        TESTCOUT2("mi scale:", scale, " position:", machine.axis[0].position);
+        machine.axis[0].position *= scale;
+        machine.axis[1].position *= scale;
+        machine.axis[2].position *= scale;
+        machine.homePulses *= scale;
+        machine.searchDelay /= scale;
         machine.delta.setMicrosteps(value);
     } else if (strcmp_PS(OP_pd, key) == 0 || strcmp_PS(OP_dimpd, key) == 0) {
         status = processProbeData(jcmd, jobj, key);
@@ -777,17 +777,17 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
     } else if (strcmp_PS(OP_st, key) == 0 || strcmp_PS(OP_dimst, key) == 0) {
         int16_t value = machine.delta.getSteps360();
         status = processField<int16_t, int16_t>(jobj, key, value);
-		PH5TYPE scale = value/(PH5TYPE)machine.delta.getSteps360();
+        PH5TYPE scale = value/(PH5TYPE)machine.delta.getSteps360();
         machine.delta.setSteps360(value);
-		machine.axis[0].home *= scale;
-		machine.axis[1].home *= scale;
-		machine.axis[2].home *= scale;
-		TESTCOUT2("st scale:", scale, " position:", machine.axis[0].position);
-		machine.axis[0].position *= scale;
-		machine.axis[1].position *= scale;
-		machine.axis[2].position *= scale;
-		machine.homePulses *= scale;
-		machine.searchDelay /= scale;
+        machine.axis[0].home *= scale;
+        machine.axis[1].home *= scale;
+        machine.axis[2].home *= scale;
+        TESTCOUT2("st scale:", scale, " position:", machine.axis[0].position);
+        machine.axis[0].position *= scale;
+        machine.axis[1].position *= scale;
+        machine.axis[2].position *= scale;
+        machine.homePulses *= scale;
+        machine.searchDelay /= scale;
         PH5TYPE stepAngle = 360.0/value;
         machine.axis[0].stepAngle = stepAngle;
         machine.axis[1].stepAngle = stepAngle;
@@ -828,12 +828,12 @@ Status FPDController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
                     return status;
                 }
             }
-			if (machine.axis[0].home != machine.axis[1].home ||
-			    machine.axis[0].home != machine.axis[2].home) {
-				return jcmd.setError(STATUS_DELTA_HOME, key);
-			}
-			// home must set home angle as a side effect
-			machine.setHomePulses(machine.axis[0].home);
+            if (machine.axis[0].home != machine.axis[1].home ||
+                    machine.axis[0].home != machine.axis[2].home) {
+                return jcmd.setError(STATUS_DELTA_HOME, key);
+            }
+            // home must set home angle as a side effect
+            machine.setHomePulses(machine.axis[0].home);
         }
     } else {
         MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));

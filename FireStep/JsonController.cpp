@@ -1045,11 +1045,11 @@ void JsonController::sendResponse(JsonCommand &jcmd, Status status, bool final) 
         jcmd.response().printTo(Serial);
     }
     jcmd.responseClear();
-	if (final){
-		Serial.println(" "); // }-SPACE-LF marks final output before return to STATUS_WAIT_IDLE
-	} else {
-		Serial.println();
-	}
+    if (final) {
+        Serial.println(" "); // }-SPACE-LF marks final output before return to STATUS_WAIT_IDLE
+    } else {
+        Serial.println();
+    }
 }
 
 Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {

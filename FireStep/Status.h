@@ -60,7 +60,7 @@ enum Status {
     STATUS_ZBOWL_GEAR = -148,		// Z-bowl error exceeds amount allowed for gear ratio error
     STATUS_CAL_DEGREES = -149,		// Specify calibration angle from horizontal (down is positive degrees)
     STATUS_CAL_POSITION_0 = -150,	// Arm position cannot be 0 for arm gear ratio calibration
-	STATUS_DELTA_HOME = -151,		// Delta axis home coordinates must be identical
+    STATUS_DELTA_HOME = -151,		// Delta axis home coordinates must be identical
 
     // stroke
     STATUS_STROKE_SEGPULSES = -200,	// Stroke has too many pulses per segment [-127,127]
@@ -102,14 +102,14 @@ enum Status {
     STATUS_JSON_DIGIT = -429,		// Expected numeric suffix for attribute
     STATUS_MTO_FIELD = -430,		// JSON field is not allowed in current machine topology
 
-	// IFireStep
-	STATUS_OPEN = -500,				// Expected prior call to IFireStep::open() 
-	STATUS_IFIRESTEP = -501,		// Expected non-null pointer to IFireStep instance
-	STATUS_USB_OPEN = -502,			// ArduinoUSB::open() failed
-	STATUS_USB_CLOSE = -503,		// ArduinoUSB::close() failed
-	STATUS_TIMEOUT = -504,			// IFireStep::execute() timed out	
-	STATUS_USB_CONFIGURE = -505,	// Could not configure serial port
-	STATUS_REQUEST_LF = -506,		// IFireStep::execute() request must end with LF
+    // IFireStep
+    STATUS_OPEN = -500,				// Expected prior call to IFireStep::open()
+    STATUS_IFIRESTEP = -501,		// Expected non-null pointer to IFireStep instance
+    STATUS_USB_OPEN = -502,			// ArduinoUSB::open() failed
+    STATUS_USB_CLOSE = -503,		// ArduinoUSB::close() failed
+    STATUS_TIMEOUT = -504,			// IFireStep::execute() timed out
+    STATUS_USB_CONFIGURE = -505,	// Could not configure serial port
+    STATUS_REQUEST_LF = -506,		// IFireStep::execute() request must end with LF
 
     // events
     STATUS_ESTOP = -900,			// Emergency hardware stop
@@ -120,14 +120,14 @@ enum Status {
     STATUS_LIMIT_MAX = -905,		// Maximum limit switch tripped
     STATUS_PROBE_FAILED = -906,		// Probe never contacted surface
 
-	// Linux errors
-	STATUS_LINUX = -1000,			// Linux error base
-	STATUS_LINUX_EPERM = -1001,		// STATUS_LINUX - EPERM
-	STATUS_LINUX_EINTR = -1004,		// STATUS_LINUX - EINTR
-	STATUS_LINUX_EIO = -1005,		// STATUS_LINUX - EIO
-	STATUS_LINUX_EAGAIN = -1011,	// STATUS_LINUX - EAGAIN
-	STATUS_LINUX_EACCES = -1013,	// STATUS_LINUX - EACCES
-	STATUS_LINUX_EINVAL = -1022,	// STATUS_LINUX - EINVAL
+    // Linux errors
+    STATUS_LINUX = -1000,			// Linux error base
+    STATUS_LINUX_EPERM = -1001,		// STATUS_LINUX - EPERM
+    STATUS_LINUX_EINTR = -1004,		// STATUS_LINUX - EINTR
+    STATUS_LINUX_EIO = -1005,		// STATUS_LINUX - EIO
+    STATUS_LINUX_EAGAIN = -1011,	// STATUS_LINUX - EAGAIN
+    STATUS_LINUX_EACCES = -1013,	// STATUS_LINUX - EACCES
+    STATUS_LINUX_EINVAL = -1022,	// STATUS_LINUX - EINVAL
 };
 
 inline bool isProcessing(Status status) {
