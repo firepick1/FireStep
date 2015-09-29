@@ -129,6 +129,8 @@ RC=$?; if [ $RC -ne 0 ]; then
 	echo "ERROR	: cmake failed (RC=$RC)"
 	exit -1
 fi
+TAG=`git log --pretty=format:'%H' -n 1`
+echo 'const char GIT_TAG[] PROGMEM = { "'$TAG'" };' > FireStep/git_tag.h
 make
 RC=$?; if [ $RC -ne 0 ]; then
 	echo "ERROR	: make failed (RC=$RC)"

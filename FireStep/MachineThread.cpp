@@ -5,6 +5,8 @@
 #include "AnalogRead.h"
 #include "version.h"
 #include "MachineThread.h"
+#include "ProgMem.h"
+#include "git_tag.h"
 
 using namespace firestep;
 
@@ -243,10 +245,13 @@ Status MachineThread::syncConfig() {
 }
 
 void MachineThread::printBanner() {
+	char git[50];
+	strcpy_P(git, GIT_TAG);
+	git[8] = 0;
     char msg[100];
     machine.syncHash = machine.hash();
-    snprintf(msg, sizeof(msg), "FireStep %d.%d.%d sysch:%ld",
-             VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) machine.syncHash);
+    snprintf(msg, sizeof(msg), "{\"id\":\"FireStep\",\"ver\":\"%d.%d.%d\",\"sysch\":%ld,\"git\":\"%s\"}",
+             VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) machine.syncHash, git);
     Serial.println(msg);
 }
 

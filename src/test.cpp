@@ -584,7 +584,7 @@ MachineThread test_setup(bool clearArduino=true) {
 		mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
         char buf[100];
-        snprintf(buf, sizeof(buf), "FireStep %d.%d.%d sysch:%ld\n", 
+        snprintf(buf, sizeof(buf), JT("{'id':'FireStep','ver':'%d.%d.%d','sysch':%ld,'git':'????????\"}\n"), 
 			VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) mt.machine.hash());
         ASSERTEQUALS(buf, Serial.output().c_str());
     }
@@ -1130,6 +1130,7 @@ void test_Move() {
     int32_t xpulses;
     int32_t ypulses;
     int32_t zpulses;
+	int32_t apulses;
 
     // mov to (1,10,100)
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -1240,6 +1241,27 @@ void test_Move() {
     ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
     ASSERTQUAD(Quad<StepCoord>(10000,5000,0,0), machine.getMotorPosition());
     ASSERTEQUALS(JT("{'s':0,'r':{'movx':10000.000,'movy':5000.000},'t':2.258} \n"),
+                 Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	
+    // Jason's mov a bug 
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    apulses = arduino.pulses(PC2_E0_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+	Serial.push(JT("{'mov':{'a':-88,'mv':12800}}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(88, arduino.pulses(PC2_E0_STEP_PIN)-apulses);
+    ASSERTQUAD(Quad<StepCoord>(0,0,0,-88), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'a':-88.000,'mv':12800}},'t':0.1??} \n"),
                  Serial.output().c_str());
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -3416,7 +3438,7 @@ void test_autoSync() {
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     mt.loop(); // banner
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-    snprintf(buf, sizeof(buf), "FireStep %d.%d.%d sysch:%s\n",
+	snprintf(buf, sizeof(buf), JT("{'id':'FireStep','ver':'%d.%d.%d','sysch':%s,'git':'????????\"}\n"), 
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, HASH3);
     ASSERTEQUALS(buf, Serial.output().c_str());
 
@@ -5188,12 +5210,13 @@ int main(int argc, char *argv[]) {
     if (argc > 1 && strcmp("-1", argv[1]) == 0) {
         //test_pgm();
         //test_MTO_FPD_hom();
-        test_DeltaCalculator();
+        //test_DeltaCalculator();
         //test_MTO_FPD();
         //test_calibrate();
         //test_eep();
         //test_autoSync();
         //test_mpo();
+		test_Move();
     } else {
         test_Serial();
         test_Thread();

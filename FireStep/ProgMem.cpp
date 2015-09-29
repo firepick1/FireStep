@@ -171,6 +171,7 @@ const char firestep::OP_mrkm9[] PROGMEM = { "mrkm9" };
 const char firestep::OP_mrkwp[] PROGMEM = { "mrkwp" };
 const char firestep::OP_msg[] PROGMEM = { "msg" };
 const char firestep::OP_mv[] PROGMEM = { "mv" };
+const char firestep::OP_n[] PROGMEM = { "n" };
 const char firestep::OP_om[] PROGMEM = { "om" };
 const char firestep::OP_pb[] PROGMEM = { "pb" };
 const char firestep::OP_pc[] PROGMEM = { "pc" };

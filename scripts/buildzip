@@ -21,7 +21,6 @@ OUTPUT="FireStep-$TAG.zip"
 echo "CMD	: creating $OUTPUT"
 
 cp -r FireStep/ ziptmp/FireStep
-echo 'const char GIT_TAG[] PROGMEM = { "'$TAG'" };' > ziptmp/FireStep/FireStep/git_tag.h
 cp CHANGELOG.md LICENSE README.md ziptmp/FireStep
 
 pushd ziptmp/libraries >& /dev/null

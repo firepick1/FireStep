@@ -5,7 +5,6 @@
 #include "Arduino.h"
 #include "MachineThread.h"
 #include "NeoPixel.h"
-#include "git_tag.h"
 
 ///////////////////// CHOOSE DEFAULT PIN CONFIGURATION ///////////
 //#define PIN_CONFIG PC2_RAMPS_1_4
@@ -28,9 +27,6 @@ void setup() { // run once, when the sketch starts
     // decrease baud rate to fix Serial I/O problems.
     //Serial.begin(38400); // short USB cables
     Serial.begin(19200); // long USB cables
-	char buf[100];
-	strcpy_P(buf, GIT_TAG);
-	Serial.println(buf);
 
     // Bind in NeoPixel display driver
     machineThread.machine.pDisplay = &neoPixel;

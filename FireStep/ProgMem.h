@@ -195,6 +195,7 @@ extern const char OP_mrkm9[];
 extern const char OP_mrkwp[];
 extern const char OP_msg[];
 extern const char OP_mv[];
+extern const char OP_n[];
 extern const char OP_om[];
 extern const char OP_pb[];
 extern const char OP_pc[];
