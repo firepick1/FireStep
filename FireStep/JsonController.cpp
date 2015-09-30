@@ -7,6 +7,7 @@
 #include "JsonController.h"
 #include "ProcessField.h"
 #include "ProgMem.h"
+#include "git_tag.h"
 
 using namespace firestep;
 
@@ -243,6 +244,46 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
         status = processField<AxisIndex, int32_t>(jobj, key, iAxis);
         machine.setAxisIndex(iMotor, iAxis);
     }
+    return status;
+}
+
+Status JsonController::process_id(JsonCommand &jcmd, JsonObject& jobj, const char* key) {
+    Status status = STATUS_OK;
+    const char *s;
+    if (strcmp_PS(OP_id, key) == 0) {
+        if ((s = jobj[key]) && *s == 0) {
+            JsonObject& node = jobj.createNestedObject(key);
+            jcmd.addQueryAttr(node, OP_app);
+            jcmd.addQueryAttr(node, OP_ch);
+            jcmd.addQueryAttr(node, OP_git);
+            jcmd.addQueryAttr(node, OP_ver);
+        }
+        JsonObject& kidObj = jobj[key];
+        if (kidObj.success()) {
+            for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
+                status = process_id(jcmd, kidObj, it->key);
+                if (status != STATUS_OK) {
+                    return status;
+                }
+            }
+        }
+    } else if (strcmp_PS(OP_app, key) == 0 || strcmp_PS(OP_app, key + 2) == 0) {
+		jobj[key] =  "FireStep";
+    } else if (strcmp_PS(OP_ch, key) == 0 || strcmp_PS(OP_ch, key + 2) == 0) {
+        int32_t curHash = machine.hash();
+        int32_t jsonHash = curHash;
+        status = processField<int32_t, int32_t>(jobj, key, jsonHash);
+        if (jsonHash != curHash) {
+            machine.syncHash = jsonHash;
+        }
+    } else if (strcmp_PS(OP_git, key) == 0 || strcmp_PS(OP_git, key + 2) == 0) {
+		char *buf = jcmd.allocate(41);
+		strcpy_P(buf, GIT_TAG);
+		jobj[key] = buf;
+    } else if (strcmp_PS(OP_ver, key) == 0 || strcmp_PS(OP_ver, key + 2) == 0) {
+		jobj[key] = VERSION_MAJOR + VERSION_MINOR/10.0 + VERSION_PATCH/1000.0;
+	}
+	
     return status;
 }
 
@@ -602,9 +643,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp_PS(OP_ch, key) == 0 || strcmp_PS(OP_sysch, key) == 0) {
         int32_t curHash = machine.hash();
         int32_t jsonHash = curHash;
-        //TESTCOUT3("A curHash:", curHash, " jsonHash:", jsonHash, " jobj[key]:", (int32_t) jobj[key]);
         status = processField<int32_t, int32_t>(jobj, key, jsonHash);
-        //TESTCOUT3("B curHash:", curHash, " jsonHash:", jsonHash, " jobj[key]:", (int32_t) jobj[key]);
         if (jsonHash != curHash) {
             machine.syncHash = jsonHash;
         }
@@ -665,7 +704,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp_PS(OP_tv, key) == 0 || strcmp_PS(OP_systv, key) == 0) {
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.tvMax);
     } else if (strcmp_PS(OP_v, key) == 0 || strcmp_PS(OP_sysv, key) == 0) {
-        jobj.at(key).set(VERSION_MAJOR + VERSION_MINOR/100.0 + VERSION_PATCH/10000.0,4);
+        jobj.at(key).set(VERSION_MAJOR + VERSION_MINOR/100.0 + VERSION_PATCH/1000.0,3);
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }
@@ -1101,7 +1140,9 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
                 Serial.println(s);
             }
             status = STATUS_OK;
-        } else if (strcmp_PS(OP_msg, it->key) == 0) {
+        } else if (strcmp_PS(OP_id, it->key) == 0) {
+            status = process_id(jcmd, jobj, it->key);
+		} else if (strcmp_PS(OP_msg, it->key) == 0) {
             const char *s = it->value;
             Serial.println(s);
             status = STATUS_OK;

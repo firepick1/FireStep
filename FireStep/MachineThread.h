@@ -17,7 +17,6 @@ protected:
     char * buildStartupJson();
     Status executeEEPROM();
     size_t readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen);
-    void printBanner();
 
 public:
     Status status;

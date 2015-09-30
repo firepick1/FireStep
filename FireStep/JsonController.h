@@ -44,6 +44,7 @@ protected:
     virtual Status processStroke(JsonCommand &jcmd, JsonObject& jobj, const char* key);
     virtual Status processSys(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processTest(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+    virtual Status process_id(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status traverseStroke(JsonCommand &jcmd, JsonObject &stroke);
 
 public:

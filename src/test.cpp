@@ -580,13 +580,22 @@ MachineThread test_setup(bool clearArduino=true) {
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_ENABLE_PIN)); // enabled
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_ENABLE_PIN)); // enabled
     if (clearArduino) {
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+		mt.loop();
+        ASSERTEQUAL(STATUS_OK, mt.status);
+        char buf[200];
+        snprintf(buf, sizeof(buf), JT("{'s':0,'r':{'id':"
+									  "{'app':'FireStep',"
+									  "'ch':%ld,"
+									  "'git':'????????????????????????????????????????\","
+									  "'ver':%d.%02d%d}},'t':0.???} \n"), 
+			(long) mt.machine.hash(),
+			VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH); 
+        ASSERTEQUALS(buf, Serial.output().c_str());
+		mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 		mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-        char buf[100];
-        snprintf(buf, sizeof(buf), JT("{'id':'FireStep','ver':'%d.%d.%d','sysch':%ld,'git':'????????\"}\n"), 
-			VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, (long) mt.machine.hash());
-        ASSERTEQUALS(buf, Serial.output().c_str());
     }
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
     for (int i=0; i<MOTOR_COUNT; i++) {
@@ -763,10 +772,10 @@ void test_JsonController() {
     const char *fmt = "{'s':%d,'r':{'sys':"\
                       "{'ah':false,'as':false,'ch':1128538102,'eu':false,'hp':3,'jp':false,'lh':false,"\
                       "'mv':12800,'om':0,'pb':2,'pc':2,'pi':11,'sd':800,"\
-                      "'to':0,'tv':0.700,'v':%.4f}"\
+                      "'to':0,'tv':0.700,'v':%.3f}"\
                       "},'t':0.000} \n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
-             STATUS_OK, VERSION_MAJOR + VERSION_MINOR/100.0 + VERSION_PATCH/10000.0);
+             STATUS_OK, VERSION_MAJOR + VERSION_MINOR/100.0 + VERSION_PATCH/1000.0);
     ASSERTEQUALS(sysbuf, Serial.output().c_str());
 
     test_JsonController_axis(mt, 'x');
@@ -1315,7 +1324,7 @@ void test_sys() {
     ASSERTEQUALS(JT("{'s':0,'r':"
 					"{'sys':{'ah':false,'as':false,'ch':-3379518,'eu':false,"
 					"'hp':3,'jp':false,'lh':false,'mv':12800,'om':0,"
-					"'pb':3,'pc':2,'pi':57,'sd':400,'to':1,'tv':0.700,'v':1.0000}"
+					"'pb':3,'pc':2,'pi':57,'sd':400,'to':1,'tv':0.700,'v':1.???}"
 					"},'t':0.000} \n"),
                  Serial.output().c_str());
     mt.loop();
@@ -3336,9 +3345,7 @@ void test_autoSync() {
     ASSERTEQUAL(0, machine.syncHash);
     ASSERT(!machine.autoSync);
     ASSERTEQUAL(STATUS_BUSY_SETUP, mt.status);
-    mt.loop();
-    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-    mt.loop();
+    mt.loop(); mt.loop(); mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     Serial.clear(); // banner
     ASSERT(machine.syncHash);
@@ -3438,9 +3445,6 @@ void test_autoSync() {
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     mt.loop(); // banner
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-	snprintf(buf, sizeof(buf), JT("{'id':'FireStep','ver':'%d.%d.%d','sysch':%s,'git':'????????\"}\n"), 
-             VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, HASH3);
-    ASSERTEQUALS(buf, Serial.output().c_str());
 
     cout << "TEST	: test_autoSync() OK " << endl;
 }
@@ -4145,8 +4149,11 @@ void test_MachineThread() {
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
 
     Serial.clear();
-    test_ticks(1);
+    mt.loop(); // STATUS_BUSY_PARSED
+    mt.loop(); // STATUS_OK
+    mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	Serial.output(); // clear output
 
     Serial.clear();
     Serial.push("{");
@@ -4256,6 +4263,8 @@ void test_Display() {
     ASSERTEQUAL(STATUS_BUSY_SETUP, mt.status);
     ASSERTEQUALS("status:30 level:127", testDisplay.message);
 
+    mt.loop(); // STATUS_BUSY_PARSED
+    mt.loop(); // STATUS_OK
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     ASSERTEQUALS("status:10 level:127", testDisplay.message);
@@ -4940,7 +4949,8 @@ void test_msg_cmt_idl() {
     mt.setup(PC1_EMC02);
 
     ASSERTEQUAL(STATUS_BUSY_SETUP, mt.status);
-    mt.loop();
+    mt.loop(); mt.loop(); mt.loop();
+	Serial.clear();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     Serial.push(JT("[{'msg':'quack'},{'cmt':'hello'},{'msg':'duck'}]\n"));
     mt.loop();
