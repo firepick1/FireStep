@@ -281,7 +281,7 @@ Status JsonController::process_id(JsonCommand &jcmd, JsonObject& jobj, const cha
 		strcpy_P(buf, GIT_TAG);
 		jobj[key] = buf;
     } else if (strcmp_PS(OP_ver, key) == 0 || strcmp_PS(OP_ver, key + 2) == 0) {
-		jobj[key] = VERSION_MAJOR + VERSION_MINOR/10.0 + VERSION_PATCH/1000.0;
+		jobj[key] = VERSION_MAJOR + VERSION_MINOR/100.0 + VERSION_PATCH/1000.0;
 	} else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
 	}
