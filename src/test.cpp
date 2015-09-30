@@ -5011,47 +5011,86 @@ void test_pgm_parse(const char *pgm) {
     ASSERTEQUAL(STATUS_BUSY_PARSED, jc.parse(s.c_str()));
 }
 
+void test_id() {
+    cout << "TEST	: test_id() =====" << endl;
+
+    MachineThread mt = test_MTO_FPD_setup();
+    Machine& machine = mt.machine;
+    DeltaCalculator& dc = machine.delta;
+    StepCoord armPos = 7800;
+
+    Serial.push(JT("{'idapp':''}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'idapp':'FireStep'},'t':0.???} \n"), Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    Serial.push(JT("{'idver':''}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'idver':?.???},'t':0.???} \n"), Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    Serial.push(JT("{'idgit':''}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'idgit':'????????????????????????????????????????\"},'t':0.???} \n"), 
+		Serial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    cout << "TEST	: test_id() =====" << endl;
+}
+
 void test_cal_arm() {
     cout << "TEST	: test_cal_arm() =====" << endl;
 
     MachineThread mt = test_MTO_FPD_setup();
-	Machine& machine = mt.machine;
-	DeltaCalculator& dc = machine.delta;
-	StepCoord armPos = 7800;
+    Machine& machine = mt.machine;
+    DeltaCalculator& dc = machine.delta;
+    StepCoord armPos = 7800;
 
     // calgr1: calibrate gear ratio for arm 1
-	machine.axis[0].position = armPos;
+    machine.axis[0].position = armPos;
     Serial.push(JT("{'calgr1':90} \n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
-	ASSERTEQUALT(90.0/armPos, dc.getDegreesPerPulse(DELTA_AXIS_1), 0.001);
-	ASSERTEQUALT(9.750, dc.getGearRatio(DELTA_AXIS_1), 0.001);
+    ASSERTEQUALT(90.0/armPos, dc.getDegreesPerPulse(DELTA_AXIS_1), 0.001);
+    ASSERTEQUALT(9.750, dc.getGearRatio(DELTA_AXIS_1), 0.001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     // calgr2: calibrate gear ratio for arm 2
-	machine.axis[1].position = armPos+10;
+    machine.axis[1].position = armPos+10;
     Serial.push(JT("{'cal':{'gr2':90}} \n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
-	ASSERTEQUALT(90.0/(armPos+10), dc.getDegreesPerPulse(DELTA_AXIS_2), 0.00001);
-	ASSERTEQUALT(9.7625, dc.getGearRatio(DELTA_AXIS_2), 0.00001);
+    ASSERTEQUALT(90.0/(armPos+10), dc.getDegreesPerPulse(DELTA_AXIS_2), 0.00001);
+    ASSERTEQUALT(9.7625, dc.getGearRatio(DELTA_AXIS_2), 0.00001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
     // calgr3: calibrate gear ratio for arm 3
-	machine.axis[2].position = armPos-10;
+    machine.axis[2].position = armPos-10;
     Serial.push(JT("{'calgr3':90} \n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
-	ASSERTEQUALT(90.0/(armPos-10), dc.getDegreesPerPulse(DELTA_AXIS_3), 0.00001);
-	ASSERTEQUALT(9.7375, dc.getGearRatio(DELTA_AXIS_3), 0.00001);
+    ASSERTEQUALT(90.0/(armPos-10), dc.getDegreesPerPulse(DELTA_AXIS_3), 0.00001);
+    ASSERTEQUALT(9.7375, dc.getGearRatio(DELTA_AXIS_3), 0.00001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -5124,15 +5163,15 @@ void test_pgm() {
     machine.delta.setHomeAngle(66); // wrong value
     machine.delta.setSteps360(400); // wrong value
     machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
-	machine.axis[0].stepAngle = 0.9; // wrong value
-	machine.axis[1].stepAngle = 0.9; // wrong value
-	machine.axis[2].stepAngle = 0.9; // wrong value
-	machine.axis[0].home = -10; // wrong value
-	machine.axis[1].home = -20; // wrong value
-	machine.axis[2].home = -30; // wrong value
+    machine.axis[0].stepAngle = 0.9; // wrong value
+    machine.axis[1].stepAngle = 0.9; // wrong value
+    machine.axis[2].stepAngle = 0.9; // wrong value
+    machine.axis[0].home = -10; // wrong value
+    machine.axis[1].home = -20; // wrong value
+    machine.axis[2].home = -30; // wrong value
     machine.homePulses = -1000; // wrong value
-	machine.searchDelay = 700; // wrong value
-	machine.fastSearchPulses = 123; // wrong value
+    machine.searchDelay = 700; // wrong value
+    machine.fastSearchPulses = 123; // wrong value
     Serial.push(JT("{'pgmx':'dim-fpd'} \n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -5154,22 +5193,22 @@ void test_pgm() {
     ASSERTEQUALT(1.8, machine.axis[0].stepAngle, 0.001);
     ASSERTEQUALT(1.8, machine.axis[1].stepAngle, 0.001);
     ASSERTEQUALT(1.8, machine.axis[2].stepAngle, 0.001);
-    ASSERTEQUAL(FPD_SPE_HOME_PULSES, machine.homePulses); 
-    ASSERTEQUAL(machine.homePulses, machine.axis[0].home); 
-    ASSERTEQUAL(machine.homePulses, machine.axis[1].home); 
-    ASSERTEQUAL(machine.homePulses, machine.axis[2].home); 
-    ASSERTEQUAL(-5389, machine.axis[0].position); 
-    ASSERTEQUAL(-5383, machine.axis[1].position); 
-    ASSERTEQUAL(-5378, machine.axis[2].position); 
-    ASSERTEQUAL(FPD_SEARCH_DELAY, machine.searchDelay); 
-    ASSERTEQUAL(FPD_FAST_SEARCH_PULSES, machine.fastSearchPulses); 
+    ASSERTEQUAL(FPD_SPE_HOME_PULSES, machine.homePulses);
+    ASSERTEQUAL(machine.homePulses, machine.axis[0].home);
+    ASSERTEQUAL(machine.homePulses, machine.axis[1].home);
+    ASSERTEQUAL(machine.homePulses, machine.axis[2].home);
+    ASSERTEQUAL(-5389, machine.axis[0].position);
+    ASSERTEQUAL(-5383, machine.axis[1].position);
+    ASSERTEQUAL(-5378, machine.axis[2].position);
+    ASSERTEQUAL(FPD_SEARCH_DELAY, machine.searchDelay);
+    ASSERTEQUAL(FPD_FAST_SEARCH_PULSES, machine.fastSearchPulses);
     ASSERTEQUALS(JT("{'s':0,'r':{"
-					"'dimst':200,'dimmi':16,"
-					"'dimgr':"FPD_GEAR_RATIO_S","
-					"'dime':"FPD_DELTA_E_S",'dimf':"FPD_DELTA_F_S","
-					"'dimre':"FPD_DELTA_RE_S",'dimrf':"FPD_DELTA_RF_S","
-					"'dimspa':"FPD_SPE_ANGLE_S",'dimspr':"FPD_SPE_RATIO_S","
-					"'dimha':"FPD_HOME_ANGLE_S","
+                    "'dimst':200,'dimmi':16,"
+                    "'dimgr':"FPD_GEAR_RATIO_S","
+                    "'dime':"FPD_DELTA_E_S",'dimf':"FPD_DELTA_F_S","
+                    "'dimre':"FPD_DELTA_RE_S",'dimrf':"FPD_DELTA_RF_S","
+                    "'dimspa':"FPD_SPE_ANGLE_S",'dimspr':"FPD_SPE_RATIO_S","
+                    "'dimha':"FPD_HOME_ANGLE_S","
                     "'syshp':3,'syssd':800}"
                     ",'t':0.000} \n"),
                  Serial.output().c_str());
@@ -5226,8 +5265,9 @@ int main(int argc, char *argv[]) {
         //test_eep();
         //test_autoSync();
         //test_mpo();
-		test_Move();
+        test_Move();
     } else {
+        test_id();
         test_Serial();
         test_Thread();
         test_Quad();

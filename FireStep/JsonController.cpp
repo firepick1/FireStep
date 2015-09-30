@@ -282,6 +282,8 @@ Status JsonController::process_id(JsonCommand &jcmd, JsonObject& jobj, const cha
 		jobj[key] = buf;
     } else if (strcmp_PS(OP_ver, key) == 0 || strcmp_PS(OP_ver, key + 2) == 0) {
 		jobj[key] = VERSION_MAJOR + VERSION_MINOR/10.0 + VERSION_PATCH/1000.0;
+	} else {
+        return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
 	}
 	
     return status;
@@ -1140,7 +1142,7 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
                 Serial.println(s);
             }
             status = STATUS_OK;
-        } else if (strcmp_PS(OP_id, it->key) == 0) {
+        } else if (strncmp("id", it->key, 2) == 0) {
             status = process_id(jcmd, jobj, it->key);
 		} else if (strcmp_PS(OP_msg, it->key) == 0) {
             const char *s = it->value;
