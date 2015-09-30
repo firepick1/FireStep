@@ -6,6 +6,11 @@ v2.0 (pending)
 * NEW: IFireStep interface implemented by: FireStepSerial, FireStepDuino
 * NEW: IDuino interface implemented by: Mega2560, MockDuino
 
+v1.010
+------
+* NEW: startup banner replaced with execution of {"id":""} command
+* FIX: dimgr1, dimgr2, dimgr3 now only set their individual axis gear ratio
+
 v1.0
 ------
 Bug fixes for stable release (Arduino Mega2560)
