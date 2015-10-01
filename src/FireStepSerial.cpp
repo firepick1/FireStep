@@ -85,14 +85,13 @@ int FireStepSerial::reset() {
     rc = open(); 
     if (rc == 0) { // clear out startup text
         string ignore = usb.readln(5000);
-		cerr << "RESET	: re-open " << serialPath;
+		cerr << "RESET	: re-open " << serialPath << endl;
         while (ignore.size()) {
             LOGINFO1("FireStepSerial::reset() ignored:%ldB", (long) ignore.size());
             LOGDEBUG1("FireStepSerial::reset() ignore:%s", ignore.c_str());
-			cerr << ".";
+			cerr << ignore ; 
             ignore = usb.readln();
         }
-		cerr << endl;
         rc = close(); // nohup
     }
 	LOGINFO("FireStepSerial::reset() complete");
