@@ -112,9 +112,7 @@ int FireStepClient::console() {
 			break;
 		}
         if (response.size() == 0) {
-            if (prompt) {
-                cerr << "ERROR	: timeout" << endl;
-            }
+			cerr << "ERROR	: timeout" << endl;
             break;
         }
 		cout << response;

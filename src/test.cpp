@@ -5249,6 +5249,84 @@ void test_ZPlane() {
     cout << "TEST	: test_ZPlane() OK " << endl;
 }
 
+void test_cmd(MachineThread &mt, int line, const char *cmd) {
+	TESTCOUT1("line:", line);
+	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	ASSERTEQUALS("", Serial.output().c_str());
+	Serial.push(cmd);
+	mt.loop();
+	ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	do {
+		mt.loop();
+	} while (mt.status == STATUS_BUSY_PARSED);
+	ASSERTEQUAL(STATUS_OK, mt.status);
+	mt.loop();
+	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+}
+
+void test_Armin() {
+    cout << "TEST	: test_Armin() =====" << endl;
+
+    {   
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+
+		test_cmd(mt, __LINE__, JT("{'pgmx':'dim-fpd'}\n"));
+        Serial.output(); // discard
+
+		test_cmd(mt, __LINE__, JT("{'dimst':400}\n"));
+        ASSERTEQUALS(JT("{'s':0,'r':{'dimst':400},'t':0.???} \n"), Serial.output().c_str());
+
+		test_cmd(mt, __LINE__, 
+			     JT("{'prbd':[-17.295,-15.969,-17.086,-18.450,-17.671,-16.213,-15.636,-17.521,0.000]}\n"));
+        ASSERTEQUALS(JT("{'s':0,'r':"
+			         "{'prbd':[-17.295,-15.969,-17.086,-18.450,-17.671,-16.213,-15.636,-17.521,0.000]}"
+					 ",'t':0.???} \n"), Serial.output().c_str());
+		ASSERTEQUALT(-17.295, machine.op.probe.probeData[0], 0.001);
+		ASSERTEQUALT(-17.521, machine.op.probe.probeData[7], 0.001);
+
+        Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','ha':'','sv':0.7,'zr':'','zc':''}} \n"));
+        mt.loop();
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop();
+        ASSERTEQUAL(STATUS_OK, mt.status);
+        ASSERTEQUALS(JT("{'s':0,'r':{"
+                        "'cal':{'bx':0.0005,'by':-0.0149,'bz':-11.786,'ha':-76.191,'sv':0.700,'zr':-16.837,'zc':-17.408}},"
+                        "'t':0.000} \n"),
+                     Serial.output().c_str());
+        ASSERTEQUAL(-11888, machine.axis[0].home);
+        ASSERTEQUAL(machine.axis[0].home, machine.axis[1].home);
+        ASSERTEQUAL(machine.axis[0].home, machine.axis[2].home);
+        mt.loop();
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+		test_cmd(mt, __LINE__, 
+			     JT("{'prbd':[-6.637,-5.465,-6.565,-7.917,-7.262,-5.736,-5.033,-6.695,-17.295]}\n"));
+        ASSERTEQUALS(JT("{'s':0,'r':"
+			         "{'prbd':[-6.637,-5.465,-6.565,-7.917,-7.262,-5.736,-5.033,-6.695,-17.295]}"
+					 ",'t':0.???} \n"), Serial.output().c_str());
+		ASSERTEQUALT(-6.637, machine.op.probe.probeData[0], 0.001);
+		ASSERTEQUALT(-6.695, machine.op.probe.probeData[7], 0.001);
+
+        Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','ha':'','sv':0.7,'zr':'','zc':''}} \n"));
+        mt.loop();
+        ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+        mt.loop();
+        ASSERTEQUAL(STATUS_OK, mt.status);
+        ASSERTEQUALS(JT("{'s':0,'r':{"
+                        "'cal':{'bx':0.0000,'by':0.0000,'bz':0.000,'ha':"FPD_HOME_ANGLE_S",'sv':0.700,'zr':-16.837,'zc':-17.408}},"
+                        "'t':0.000} \n"),
+                     Serial.output().c_str());
+        ASSERTEQUAL(-11378, machine.axis[0].home);
+        ASSERTEQUAL(machine.axis[0].home, machine.axis[1].home);
+        ASSERTEQUAL(machine.axis[0].home, machine.axis[2].home);
+        mt.loop();
+        ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    }
+
+    cout << "TEST	: test_Armin() OK " << endl;
+}
+
 int main(int argc, char *argv[]) {
     LOGINFO3("INFO	: FireStep test v%d.%d.%d",
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -5269,7 +5347,8 @@ int main(int argc, char *argv[]) {
         //test_eep();
         //test_autoSync();
         //test_mpo();
-        test_Move();
+        //test_Move();
+		test_Armin();
     } else {
         test_id();
         test_Serial();

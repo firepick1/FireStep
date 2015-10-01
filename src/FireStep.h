@@ -97,6 +97,7 @@ public:
 				LOGINFO2("IFireStep::execute() bytes:%ld read:%s", (long) response.size(), response.c_str());
 			} else {
 				LOGERROR("IFireStep::execute() timeout");
+				std::cerr << "IFireSTep::execute() timeout" << std::endl;
 				rc = STATUS_TIMEOUT;
 			}
 		}

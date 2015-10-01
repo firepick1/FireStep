@@ -124,6 +124,7 @@ extern const char OP_eep[];
 extern const char OP_en[];
 extern const char OP_eu[];
 extern const char OP_f[];
+extern const char OP_fpd_axis_probe[];
 extern const char OP_fpd_hex_probe[];
 extern const char OP_fr[];
 extern const char OP_ge[];

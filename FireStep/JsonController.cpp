@@ -935,6 +935,13 @@ Status JsonController::processProbeData(JsonCommand& jcmd, JsonObject& jobj, con
         for (int16_t i=0; i<PROBE_DATA; i++) {
             jarr.add(machine.op.probe.probeData[i]);
         }
+    } else if (jobj.at(key).is<JsonArray&>()) {
+        JsonArray &jarr = jobj[key];
+		for (int16_t i=0; i<PROBE_DATA; i++) {
+			if (jarr[i].success()) {
+				machine.op.probe.probeData[i] = jarr[i];
+			}
+		}
     } else {
         status = jcmd.setError(STATUS_OUTPUT_FIELD, key);
     }

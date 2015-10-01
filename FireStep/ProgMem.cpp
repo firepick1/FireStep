@@ -100,6 +100,7 @@ const char firestep::OP_eep[] PROGMEM = { "eep" };
 const char firestep::OP_en[] PROGMEM = { "en" };
 const char firestep::OP_eu[] PROGMEM = { "eu" };
 const char firestep::OP_f[] PROGMEM = { "f" };
+const char firestep::OP_fpd_axis_probe[] PROGMEM = { "fpd-axis-probe" };
 const char firestep::OP_fpd_hex_probe[] PROGMEM = { "fpd-hex-probe" };
 const char firestep::OP_fr[] PROGMEM = { "fr" };
 const char firestep::OP_ge[] PROGMEM = { "ge" };
@@ -287,6 +288,7 @@ const char src_help[] PROGMEM = {
     "{\"msg\":\"  cal-fpd-bed-medium   Use hex probe to calibrate FPD Z-bed plane (adaptive medium)\"}"
     "{\"msg\":\"  cal-fpd-bed-fine     Use hex probe to calibrate FPD Z-bed plane (adaptive fine)\"}"
     "{\"msg\":\"  fpd-hex-probe        Perform hex probe and return probe Z-data\"}"
+    "{\"msg\":\"  fpd-axis-probe       Perform axis probe and return probe Z-data\"}"
     "]"
 };
 
@@ -426,6 +428,39 @@ const char src_fpd_hex_probe[] PROGMEM = {
     "[" HEX_PROBE "]"
 };
 
+const char src_fpd_axis_probe[] PROGMEM = {
+    "[" \
+    "{\"hom\":\"\"},"\
+    "{\"prbz\":\"\"},"\
+    "{\"movzr\":10},"\
+    "{\"mrkwp\":1},"\
+    "{\"prbz\":\"\"},"\
+    "{\"movwp\":1},"\
+    "{\"prbz\":\"\"},"\
+    "{\"movwp\":1},"\
+    "{\"mova1\":-30},"\
+    "{\"mrkwp\":4},"\
+    "{\"movwp\":1},"\
+    "{\"prbz\":\"\"},"\
+    "{\"movwp\":4},"\
+    "{\"prbz\":\"\"},"\
+    "{\"mova2\":-30},"\
+    "{\"mrkwp\":4},"\
+    "{\"movwp\":1},"\
+    "{\"prbz\":\"\"},"\
+    "{\"movwp\":4},"\
+    "{\"prbz\":\"\"},"\
+    "{\"mova3\":-30},"\
+    "{\"mrkwp\":4},"\
+    "{\"movwp\":1},"\
+    "{\"prbz\":\"\"},"\
+    "{\"movwp\":4},"\
+    "{\"prbz\":\"\"},"\
+    "{\"movwp\":1},"\
+    "{\"prbd\":\"\"}"\
+	"]"
+};
+
 const char src_dim_fpd[] PROGMEM = {
     "["
     "{"
@@ -474,6 +509,8 @@ const char *firestep::prog_src(const char *name) {
         return src_cal_fpd_home_medium;
     } else if (strcmp_PS(OP_dim_fpd, name) == 0) {
         return src_dim_fpd;
+    } else if (strcmp_PS(OP_fpd_axis_probe, name) == 0) {
+        return src_fpd_axis_probe;
     } else if (strcmp_PS(OP_fpd_hex_probe, name) == 0) {
         return src_fpd_hex_probe;
     } else if (strcmp_PS(OP_help, name) == 0) {

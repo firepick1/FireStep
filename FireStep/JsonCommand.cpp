@@ -48,7 +48,7 @@ size_t JsonCommand::requestAvailable() {
 }
 
 void JsonCommand::clear() {
-    TESTCOUT1("JsonCommand::", "clear");
+    //TESTCOUT1("JsonCommand::", "clear");
     parsed = false;
     cmdIndex = 0;
     memset(json, 0, sizeof(json));
@@ -90,7 +90,7 @@ Status JsonCommand::parseCore() {
         }
         jRequestRoot = jobj;
         jResponseRoot["r"] = jRequestRoot;
-        TESTCOUT1("parseCore:", "object");
+        //TESTCOUT1("parseCore:", "object");
     } else {
         JsonArray &jarr = jbRequest.parseArray(json);
         if (!jarr.success()) {
