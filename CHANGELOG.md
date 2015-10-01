@@ -9,7 +9,8 @@ v2.0 (pending)
 v1.010
 ------
 * NEW: startup banner replaced with execution of {"id":""} command
-* FIX: dimgr1, dimgr2, dimgr3 now only set their individual axis gear ratio
+* FIX: "dimgr1", "dimgr2", "dimgr3" now only set their individual axis gear ratio
+* NEW: "sysch" output deprecated as redundant with "idch"
 
 v1.0
 ------

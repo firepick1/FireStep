@@ -770,7 +770,7 @@ void test_JsonController() {
     mt.process(jcmd);
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
-                      "{'ah':false,'as':false,'ch':1128538102,'eu':false,'hp':3,'jp':false,'lh':false,"\
+                      "{'ah':false,'as':false,'eu':false,'hp':3,'jp':false,'lh':false,"\
                       "'mv':12800,'om':0,'pb':2,'pc':2,'pi':11,'sd':800,"\
                       "'to':0,'tv':0.700,'v':%.3f}"\
                       "},'t':0.000} \n";
@@ -1322,7 +1322,7 @@ void test_sys() {
 	ASSERTEQUAL(3, machine.op.probe.pinProbe);
     ASSERTEQUAL(MTO_FPD, machine.topology);
     ASSERTEQUALS(JT("{'s':0,'r':"
-					"{'sys':{'ah':false,'as':false,'ch':-3379518,'eu':false,"
+					"{'sys':{'ah':false,'as':false,'eu':false,"
 					"'hp':3,'jp':false,'lh':false,'mv':12800,'om':0,"
 					"'pb':3,'pc':2,'pi':57,'sd':400,'to':1,'tv':0.700,'v':1.???}"
 					"},'t':0.000} \n"),

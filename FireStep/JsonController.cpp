@@ -614,7 +614,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             JsonObject& node = jobj.createNestedObject(key);
             jcmd.addQueryAttr(node, OP_ah);
             jcmd.addQueryAttr(node, OP_as);
-            jcmd.addQueryAttr(node, OP_ch);
+            //jcmd.addQueryAttr(node, OP_ch); // Deprecated
             jcmd.addQueryAttr(node, OP_eu);
             jcmd.addQueryAttr(node, OP_hp);
             jcmd.addQueryAttr(node, OP_jp);
