@@ -716,7 +716,9 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
     } else if (strcmp_PS(OP_gr, key) == 0 || strcmp_PS(OP_dimgr, key) == 0) {
         PH5TYPE value = machine.delta.getGearRatio();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setGearRatio(value);
+		if (value != machine.delta.getGearRatio()) {
+			machine.delta.setGearRatio(value);
+		}
     } else if (strcmp_PS(OP_gr1, key) == 0 || strcmp_PS(OP_dimgr1, key) == 0) {
         PH5TYPE value = machine.delta.getGearRatio(DELTA_AXIS_1);
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);

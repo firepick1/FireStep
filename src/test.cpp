@@ -2145,6 +2145,9 @@ void test_MTO_FPD_dim() {
 	TESTCOUT1("TEST--------:", "REPEAT dim get");
     // dim get (repeated should change nothing and return exactly same values)
     machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
+	machine.delta.setGearRatio(FPD_GEAR_RATIO+1,DELTA_AXIS_1);
+	machine.delta.setGearRatio(FPD_GEAR_RATIO-1,DELTA_AXIS_2);
+	ASSERTEQUALT(FPD_GEAR_RATIO+1,machine.delta.getGearRatio(DELTA_AXIS_1),0.001);
     Serial.push(JT("{'dim':''} \n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -2157,6 +2160,7 @@ void test_MTO_FPD_dim() {
                     "},'t':0.000} \n"),
                  Serial.output().c_str());
 	ASSERTEQUALT(FPD_GEAR_RATIO, dc.getGearRatio(), 0.001);
+	ASSERTEQUALT(FPD_GEAR_RATIO+1,machine.delta.getGearRatio(DELTA_AXIS_1),0.001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
