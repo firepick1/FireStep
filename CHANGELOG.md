@@ -6,6 +6,10 @@ v2.0 (pending)
 * NEW: IFireStep interface implemented by: FireStepSerial, FireStepDuino
 * NEW: IDuino interface implemented by: Mega2560, MockDuino
 
+v1.020
+------
+* NEW: {"pgmx":"fpd-axis-probe"} tests z-probe repeatability
+
 v1.011
 ------
 * FIX: "dimgr" read no longer overwrites gear ratios
