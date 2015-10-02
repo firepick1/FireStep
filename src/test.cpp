@@ -2066,8 +2066,8 @@ void test_MTO_FPD_dim() {
 	ASSERTEQUAL(-22424, machine.axis[1].home);
 	ASSERTEQUAL(-22424, machine.axis[2].home);
 	ASSERTEQUAL(333, machine.axis[0].position);
-	ASSERTEQUAL(334, machine.axis[1].position);
-	ASSERTEQUAL(335, machine.axis[2].position);
+	ASSERTEQUAL(machine.axis[0].position+1, machine.axis[1].position);
+	ASSERTEQUAL(machine.axis[0].position+2, machine.axis[2].position);
 	ASSERTEQUAL(4, machine.axis[3].position);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -2118,7 +2118,7 @@ void test_MTO_FPD_dim() {
 	ASSERTEQUAL(FPD_SPE_HOME_PULSES, machine.axis[0].home);
 	ASSERTEQUAL(machine.axis[0].home, machine.axis[1].home);
 	ASSERTEQUAL(machine.axis[0].home, machine.axis[2].home);
-	ASSERTEQUAL(212, machine.axis[0].position); // why 163?
+	ASSERTEQUALT(0, machine.axis[0].position, 212);  // why 212?
 	ASSERTEQUAL(machine.axis[0].position, machine.axis[1].position); 
 	ASSERTEQUAL(machine.axis[0].position, machine.axis[2].position); 
 	ASSERTEQUAL(0, machine.axis[3].position);
@@ -2462,6 +2462,9 @@ MachineThread test_setup_FPD() {
     mt.loop(); // STATUS_OK
     mt.loop(); // STATUS_WAIT_IDLE
     Serial.clear();
+	ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].position);
+	ASSERTEQUAL(machine.axis[0].position, machine.axis[1].position);
+	ASSERTEQUAL(machine.axis[0].position, machine.axis[2].position);
 	return mt;
 }
 
@@ -5249,7 +5252,7 @@ void test_ZPlane() {
     cout << "TEST	: test_ZPlane() OK " << endl;
 }
 
-void test_cmd(MachineThread &mt, int line, const char *cmd) {
+string test_cmd(MachineThread &mt, int line, const char *cmd) {
 	TESTCOUT1("line:", line);
 	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 	ASSERTEQUALS("", Serial.output().c_str());
@@ -5259,31 +5262,101 @@ void test_cmd(MachineThread &mt, int line, const char *cmd) {
 	do {
 		mt.loop();
 	} while (mt.status == STATUS_BUSY_PARSED);
+	if (mt.status != STATUS_OK) {
+		cerr << Serial.output() << endl;
+	}
 	ASSERTEQUAL(STATUS_OK, mt.status);
 	mt.loop();
 	ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+	return Serial.output();
+}
+
+void test_calho() {
+    cout << "TEST	: test_calho() =====" << endl;
+
+    { // Manual calibration with SPE (normal)
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        string response;
+        response = test_cmd(mt, __LINE__, JT("{'pgmx':'dim-fpd'}\n"));
+        response = test_cmd(mt, __LINE__, JT("{'mova1':-1}\n"));
+        response = test_cmd(mt, __LINE__, JT("{'mova2':-1}\n"));
+        response = test_cmd(mt, __LINE__, JT("{'mova3':-1}\n"));
+		StepCoord degreePulses = DeltaCalculator::roundStep(-FPD_MICROSTEPS_PER_DEGREE);
+		ASSERTEQUALT(degreePulses, machine.axis[0].position, 3); // ~85
+		ASSERTEQUALT(FPD_SPE_RATIO, machine.delta.getSPERatio(), 0.001);
+		ASSERTEQUALT(machine.axis[0].position, machine.axis[1].position, 1);
+		ASSERTEQUALT(machine.axis[1].position, machine.axis[2].position, 1);
+		// machine is at SPE home even though we turned off SPE
+		ASSERTEQUALT(FPD_SPE_HOME_PULSES, machine.axis[0].home, 0);
+		ASSERTEQUALT(machine.axis[0].home, machine.axis[1].home, 0);
+		ASSERTEQUALT(machine.axis[0].home, machine.axis[2].home, 0);
+        response = test_cmd(mt, __LINE__, JT("{'calho':''}\n"));
+		ASSERTEQUALT(0, machine.axis[0].position, 0);
+		ASSERTEQUALT(machine.axis[0].position, machine.axis[1].position, 1);
+		ASSERTEQUALT(machine.axis[0].position, machine.axis[2].position, 2);
+		StepCoord fudge = 2; // abs(fudge) <= 3
+		StepCoord expectedHome = FPD_SPE_HOME_PULSES - degreePulses - fudge;
+		char expected[100];
+		snprintf(expected, sizeof(expected), JT("{'s':0,'r':{'calho':%d},'t':0.???} \n"), 
+				 expectedHome);
+        ASSERTEQUALS(expected, response.c_str());
+		ASSERTEQUAL(expectedHome, machine.axis[0].home);
+		ASSERTEQUAL(machine.axis[0].home, machine.axis[1].home);
+		ASSERTEQUAL(machine.axis[0].home, machine.axis[2].home);
+    }
+
+    { // Manual calibration without SPE
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        string response;
+        response = test_cmd(mt, __LINE__, JT("{'pgmx':'dim-fpd'}\n"));
+        response = test_cmd(mt, __LINE__, JT("{'dimspr':0}\n")); // NO SPE
+        response = test_cmd(mt, __LINE__, JT("{'mova1':-1}\n"));
+        response = test_cmd(mt, __LINE__, JT("{'mova2':-1}\n"));
+        response = test_cmd(mt, __LINE__, JT("{'mova3':-1}\n"));
+		StepCoord degreePulses = DeltaCalculator::roundStep(-FPD_MICROSTEPS_PER_DEGREE);
+		ASSERTEQUALT(degreePulses, machine.axis[0].position, 3); // ~85
+		ASSERTEQUALT(0, machine.delta.getSPERatio(), 0.001);
+		ASSERTEQUALT(machine.axis[0].position, machine.axis[1].position, 1);
+		ASSERTEQUALT(machine.axis[1].position, machine.axis[2].position, 1);
+		// machine is at SPE home even though we turned off SPE
+		ASSERTEQUALT(FPD_SPE_HOME_PULSES, machine.axis[0].home, 0);
+		ASSERTEQUALT(machine.axis[0].home, machine.axis[1].home, 0);
+		ASSERTEQUALT(machine.axis[0].home, machine.axis[2].home, 0);
+        response = test_cmd(mt, __LINE__, JT("{'calho':''}\n"));
+		ASSERTEQUALT(0, machine.axis[0].position, 0);
+		ASSERTEQUALT(machine.axis[0].position, machine.axis[1].position, 1);
+		ASSERTEQUALT(machine.axis[0].position, machine.axis[2].position, 2);
+		StepCoord fudge = 2; // abs(fudge) <= 3
+		StepCoord expectedHome = FPD_SPE_HOME_PULSES - degreePulses - fudge;
+		char expected[100];
+		snprintf(expected, sizeof(expected), JT("{'s':0,'r':{'calho':%d},'t':0.???} \n"), 
+				 expectedHome);
+        ASSERTEQUALS(expected, response.c_str());
+		ASSERTEQUAL(expectedHome, machine.axis[0].home);
+		ASSERTEQUAL(machine.axis[0].home, machine.axis[1].home);
+		ASSERTEQUAL(machine.axis[0].home, machine.axis[2].home);
+    }
+
+    cout << "TEST	: test_calho() OK " << endl;
 }
 
 void test_Armin() {
     cout << "TEST	: test_Armin() =====" << endl;
 
-    {   
+    {
         MachineThread mt = test_setup_FPD();
         Machine& machine = mt.machine;
-
-		test_cmd(mt, __LINE__, JT("{'pgmx':'dim-fpd'}\n"));
-        Serial.output(); // discard
-
-		test_cmd(mt, __LINE__, JT("{'dimst':400}\n"));
-        ASSERTEQUALS(JT("{'s':0,'r':{'dimst':400},'t':0.???} \n"), Serial.output().c_str());
-
-		test_cmd(mt, __LINE__, 
-			     JT("{'prbd':[-17.295,-15.969,-17.086,-18.450,-17.671,-16.213,-15.636,-17.521,0.000]}\n"));
+        string response;
+        response = test_cmd(mt, __LINE__, JT("{'pgmx':'dim-fpd-400'}\n"));
+        response = test_cmd(mt, __LINE__,
+                            JT("{'prbd':[-17.295,-15.969,-17.086,-18.450,-17.671,-16.213,-15.636,-17.521,0.000]}\n"));
         ASSERTEQUALS(JT("{'s':0,'r':"
-			         "{'prbd':[-17.295,-15.969,-17.086,-18.450,-17.671,-16.213,-15.636,-17.521,0.000]}"
-					 ",'t':0.???} \n"), Serial.output().c_str());
-		ASSERTEQUALT(-17.295, machine.op.probe.probeData[0], 0.001);
-		ASSERTEQUALT(-17.521, machine.op.probe.probeData[7], 0.001);
+                        "{'prbd':[-17.295,-15.969,-17.086,-18.450,-17.671,-16.213,-15.636,-17.521,0.000]}"
+                        ",'t':0.???} \n"), response.c_str());
+        ASSERTEQUALT(-17.295, machine.op.probe.probeData[0], 0.001);
+        ASSERTEQUALT(-17.521, machine.op.probe.probeData[7], 0.001);
 
         Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','ha':'','sv':0.7,'zr':'','zc':''}} \n"));
         mt.loop();
@@ -5300,13 +5373,13 @@ void test_Armin() {
         mt.loop();
         ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
-		test_cmd(mt, __LINE__, 
-			     JT("{'prbd':[-6.637,-5.465,-6.565,-7.917,-7.262,-5.736,-5.033,-6.695,-17.295]}\n"));
+        response = test_cmd(mt, __LINE__,
+                            JT("{'prbd':[-6.637,-5.465,-6.565,-7.917,-7.262,-5.736,-5.033,-6.695,-17.295]}\n"));
         ASSERTEQUALS(JT("{'s':0,'r':"
-			         "{'prbd':[-6.637,-5.465,-6.565,-7.917,-7.262,-5.736,-5.033,-6.695,-17.295]}"
-					 ",'t':0.???} \n"), Serial.output().c_str());
-		ASSERTEQUALT(-6.637, machine.op.probe.probeData[0], 0.001);
-		ASSERTEQUALT(-6.695, machine.op.probe.probeData[7], 0.001);
+                        "{'prbd':[-6.637,-5.465,-6.565,-7.917,-7.262,-5.736,-5.033,-6.695,-17.295]}"
+                        ",'t':0.???} \n"), response.c_str());
+        ASSERTEQUALT(-6.637, machine.op.probe.probeData[0], 0.001);
+        ASSERTEQUALT(-6.695, machine.op.probe.probeData[7], 0.001);
 
         Serial.push(JT("{'cal':{'bx':'','by':'','bz':'','ha':'','sv':0.7,'zr':'','zc':''}} \n"));
         mt.loop();
@@ -5314,10 +5387,10 @@ void test_Armin() {
         mt.loop();
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{"
-                        "'cal':{'bx':0.0000,'by':0.0000,'bz':0.000,'ha':"FPD_HOME_ANGLE_S",'sv':0.700,'zr':-16.837,'zc':-17.408}},"
+                        "'cal':{'bx':0.0003,'by':-0.0195,'bz':-7.967,'ha':-82.860,'sv':0.700,'zr':-6.330,'zc':-6.666}},"
                         "'t':0.000} \n"),
                      Serial.output().c_str());
-        ASSERTEQUAL(-11378, machine.axis[0].home);
+        ASSERTEQUAL(-12705, machine.axis[0].home);
         ASSERTEQUAL(machine.axis[0].home, machine.axis[1].home);
         ASSERTEQUAL(machine.axis[0].home, machine.axis[2].home);
         mt.loop();
@@ -5348,7 +5421,8 @@ int main(int argc, char *argv[]) {
         //test_autoSync();
         //test_mpo();
         //test_Move();
-		test_Armin();
+        //test_Armin();
+        test_calho();
     } else {
         test_id();
         test_Serial();
@@ -5394,6 +5468,8 @@ int main(int argc, char *argv[]) {
         test_pgm();
         test_gearRatio();
         test_cal_arm();
+        test_Armin();
+        test_calho();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;

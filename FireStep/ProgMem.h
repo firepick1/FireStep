@@ -70,6 +70,7 @@ extern const char OP_calgr3[];
 extern const char OP_calgr[];
 extern const char OP_calha[];
 extern const char OP_calhe[];
+extern const char OP_calho[];
 extern const char OP_calsv[];
 extern const char OP_calzc[];
 extern const char OP_calzr[];

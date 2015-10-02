@@ -249,14 +249,19 @@ Machine::Machine(IDuinoPtr pDuino)
  */
 void Machine::setHomeAngle(PH5TYPE degrees) {
     if (topology == MTO_FPD) {
+		StepCoord oldHomePulses = delta.getHomePulses();
         delta.setHomeAngle(degrees);
-        homeAngle = degrees;
         StepCoord newHomePulses = delta.getHomePulses();
-        StepCoord dHome = newHomePulses - homePulses;
+        StepCoord dHome = newHomePulses - oldHomePulses;
+        homeAngle = degrees;
+		TESTCOUT4("homePulses:", homePulses, 
+			" axis[0]:", axis[0].home,
+			" axis[1]:", axis[1].home,
+			" axis[2]:", axis[2].home);
         homePulses = newHomePulses;
-        axis[0].position += newHomePulses - axis[0].home;
-        axis[1].position += newHomePulses - axis[1].home;
-        axis[2].position += newHomePulses - axis[2].home;
+		axis[0].position += newHomePulses - axis[0].home;
+		axis[1].position += newHomePulses - axis[1].home;
+		axis[2].position += newHomePulses - axis[2].home;
         axis[0].home = newHomePulses;
         axis[1].home = newHomePulses;
         axis[2].home = newHomePulses;

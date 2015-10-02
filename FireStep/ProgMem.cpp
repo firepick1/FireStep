@@ -46,6 +46,7 @@ const char firestep::OP_calgr3[] PROGMEM = { "calgr3" };
 const char firestep::OP_calgr[] PROGMEM = { "calgr" };
 const char firestep::OP_calha[] PROGMEM = { "calha" };
 const char firestep::OP_calhe[] PROGMEM = { "calhe" };
+const char firestep::OP_calho[] PROGMEM = { "calho" };
 const char firestep::OP_calsv[] PROGMEM = { "calsv" };
 const char firestep::OP_calzc[] PROGMEM = { "calzc" };
 const char firestep::OP_calzr[] PROGMEM = { "calzr" };

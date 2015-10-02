@@ -1070,6 +1070,21 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
             }
         }
         cal.mode = (CalibrateMode)((cal.mode&CAL_GEAR) | CAL_HOME);
+    } else if (strcmp_PS(OP_calho,key) == 0 || strcmp_PS(OP_ho,key) == 0) {
+		if (output) {
+			machine.loadDeltaCalculator();
+			StepCoord newHomePulses = machine.axis[1].home - machine.axis[0].position ;
+            status = processField<StepCoord, StepCoord>(jobj, key, newHomePulses);
+			if (status < 0) {
+				return status;
+			}
+			PH5TYPE newHomeAngle = machine.delta.calcSPEAngle(newHomePulses);
+			machine.setHomeAngle(newHomeAngle);
+			TESTCOUT4("newHomePulses:", newHomePulses,
+				"axis[0]:", machine.axis[0].home,
+				"axis[1]:", machine.axis[1].home,
+				"axis[2]:", machine.axis[2].home);
+		}
     } else if (strcmp_PS(OP_calzc,key) == 0 || strcmp_PS(OP_zc,key) == 0) {
         if (output) {
             PH5TYPE value = cal.zCenter;

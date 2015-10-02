@@ -6,13 +6,14 @@ v2.0 (pending)
 * NEW: IFireStep interface implemented by: FireStepSerial, FireStepDuino
 * NEW: IDuino interface implemented by: Mega2560, MockDuino
 
-v1.020
+v1.030
 ------
 * FIX: {"pmgx":"help"} now works
 * NEW: {"pmgx":"dim-fpd-400"} support for 400 steps/rev stepper motors
+* NEW: {"calho":""} sets home angle manually https://github.com/firepick1/FireStep/wiki/Delta-Home
 * DOC: Added documentation for "pgmx" and "pgmd" https://github.com/firepick1/FireStep/wiki/MTO_FPD
 
-v1.C
+v1.020
 ------
 * NEW: {"pgmx":"fpd-axis-probe"} tests z-probe repeatability
 
