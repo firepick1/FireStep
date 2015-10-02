@@ -63,6 +63,7 @@ const char firestep::OP_dbgtc[] PROGMEM = { "dbgtc" };
 const char firestep::OP_dh[] PROGMEM = { "dh" };
 const char firestep::OP_dim[] PROGMEM = { "dim" };
 const char firestep::OP_dim_fpd[] PROGMEM = { "dim-fpd" };
+const char firestep::OP_dim_fpd_400[] PROGMEM = { "dim-fpd-400" };
 const char firestep::OP_dimbx[] PROGMEM = { "dimbx" };
 const char firestep::OP_dimby[] PROGMEM = { "dimby" };
 const char firestep::OP_dimbz[] PROGMEM = { "dimbz" };
@@ -272,23 +273,7 @@ const char firestep::OP_zr[] PROGMEM = { "zr" };
 
 const char src_help[] PROGMEM = {
     "["
-    "{\"msg\":\"Program names are:\"},"
-    "{\"msg\":\"  help             print this help text\"},"
-    "{\"msg\":\"  test             print test message\"},"
-    //"{\"msg\":\"  cal              Use hex probe to calibrate home angle, gear ratio and Z-bed plane (non-adaptive)\"}"
-    //"{\"msg\":\"  cal-coarse       Use hex probe to calibrate home angle, gear ratio and Z-bed plane (adaptive coarse)\"}"
-    //"{\"msg\":\"  cal-fine         Use hex probe to calibrate home angle, gear ratio and Z-bed plane (adaptive fine)\"}"
-    //"{\"msg\":\"  cal-gear         Use hex probe to calibrate gear ratio and Z-bed plane (non-adaptive)\"}"
-    //"{\"msg\":\"  cal-gear-coarse  Use hex probe to calibrate gear ratio and Z-bed plane (adaptive coarse)\"}"
-    //"{\"msg\":\"  cal-gear-fine    Use hex probe to calibrate gear ratio and Z-bed plane (adaptive fine)\"}"
-    "{\"msg\":\"  cal-fpd-home-coarse  Use hex probe to calibrate FPD home angle and Z-bed plane (adaptive coarse)\"}"
-    "{\"msg\":\"  cal-fpd-home-medium  Use hex probe to calibrate FPD home angle and Z-bed plane (adaptive medium)\"}"
-    "{\"msg\":\"  cal-fpd-home-fine    Use hex probe to calibrate FPD home angle and Z-bed plane (adaptive fine)\"}"
-    "{\"msg\":\"  cal-fpd-bed-coarse   Use hex probe to calibrate FPD Z-bed plane (adaptive coarse)\"}"
-    "{\"msg\":\"  cal-fpd-bed-medium   Use hex probe to calibrate FPD Z-bed plane (adaptive medium)\"}"
-    "{\"msg\":\"  cal-fpd-bed-fine     Use hex probe to calibrate FPD Z-bed plane (adaptive fine)\"}"
-    "{\"msg\":\"  fpd-hex-probe        Perform hex probe and return probe Z-data\"}"
-    "{\"msg\":\"  fpd-axis-probe       Perform axis probe and return probe Z-data\"}"
+    "{\"msg\":\"https://goo.gl/ZXEN3t\"}"
     "]"
 };
 
@@ -471,7 +456,30 @@ const char src_dim_fpd[] PROGMEM = {
     "["
     "{"
     // STEP 1: set core dimensions
-    "\"dimst\":200," // 200 steps/revolution
+    "\"dimst\":200," // steps/revolution
+    "\"dimmi\":16," // 16 microsteps
+    "\"dimgr\":" FPD_GEAR_RATIO_S5 "," // gear ratio
+    "\"dime\": " FPD_DELTA_E_S "," // effector triangle side
+    "\"dimf\": " FPD_DELTA_F_S "," // base triangle side
+    "\"dimre\":" FPD_DELTA_RE_S "," // effector arm length (mm)
+    "\"dimrf\":" FPD_DELTA_RF_S "," // pulley arm length (mm)
+    // STEP 2: set sliced pulley dimensions
+    "\"dimspa\":" FPD_SPE_ANGLE_S "," // MC:arm critical angle https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    "\"dimspr\":" FPD_SPE_RATIO_S "," // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    // STEP 3: set home angle side effects depend on preceding dimensions
+    "\"dimha\":" FPD_HOME_ANGLE_S "," // home angle
+    // STEP 4: Set miscellaneous values
+    "\"syshp\":" FPD_FAST_SEARCH_PULSES_S "," // fast search pulse group size
+    "\"syssd\":" FPD_SEARCH_DELAY_S // fast homing delay
+    "}"
+    "]"
+};
+
+const char src_dim_fpd_400[] PROGMEM = {
+    "["
+    "{"
+    // STEP 1: set core dimensions
+    "\"dimst\":400," // steps/revolution
     "\"dimmi\":16," // 16 microsteps
     "\"dimgr\":" FPD_GEAR_RATIO_S5 "," // gear ratio
     "\"dime\": " FPD_DELTA_E_S "," // effector triangle side
@@ -515,6 +523,8 @@ const char *firestep::prog_src(const char *name) {
         return src_cal_fpd_home_medium;
     } else if (strcmp_PS(OP_dim_fpd, name) == 0) {
         return src_dim_fpd;
+    } else if (strcmp_PS(OP_dim_fpd_400, name) == 0) {
+        return src_dim_fpd_400;
     } else if (strcmp_PS(OP_fpd_axis_probe, name) == 0) {
         return src_fpd_axis_probe;
     } else if (strcmp_PS(OP_fpd_hex_probe, name) == 0) {
@@ -557,8 +567,11 @@ Status firestep::prog_load_cmd(const char *name, JsonCommand &jcmd) {
     TESTCOUT2("prog_load:", nameBuf, " src:", src);
 
     size_t len = strlen_P(src);
-    if (len <= 0 || MAX_JSON <= len+1) {
+    if (MAX_JSON <= len+1) {
         return STATUS_PROGRAM_SIZE;
+    }
+    if (len <= 0) {
+        return STATUS_UNKNOWN_PROGRAM;
     }
 
     ///////// DANGER /////////

@@ -87,6 +87,7 @@ extern const char OP_dbgtc[];
 extern const char OP_dh[];
 extern const char OP_dim[];
 extern const char OP_dim_fpd[];
+extern const char OP_dim_fpd_400[];
 extern const char OP_dimbx[];
 extern const char OP_dimby[];
 extern const char OP_dimbz[];

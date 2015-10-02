@@ -8,6 +8,12 @@ v2.0 (pending)
 
 v1.020
 ------
+* FIX: {"pmgx":"help"} now works
+* NEW: {"pmgx":"dim-fpd-400"} support for 400 steps/rev stepper motors
+* DOC: Added documentation for "pgmx" and "pgmd" https://github.com/firepick1/FireStep/wiki/MTO_FPD
+
+v1.C
+------
 * NEW: {"pgmx":"fpd-axis-probe"} tests z-probe repeatability
 
 v1.011
