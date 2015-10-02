@@ -494,7 +494,7 @@ const char src_dim_fpd_400[] PROGMEM = {
     "\"dimha\":" FPD_HOME_ANGLE_S "," // home angle
     // STEP 4: Set miscellaneous values
     "\"syshp\":" FPD_FAST_SEARCH_PULSES_S "," // fast search pulse group size
-    "\"syssd\":" FPD_SEARCH_DELAY_S // fast homing delay
+    "\"syssd\":400" // fast homing delay
     "}"
     "]"
 };
