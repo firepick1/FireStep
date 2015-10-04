@@ -5361,7 +5361,7 @@ void test_calho() {
         ASSERTEQUAL(machine.axis[0].home, machine.axis[2].home);
     }
 
-    {   // Custom calibration
+    {   // Custom calibration Tin Whiskers
         MachineThread mt = test_setup_FPD();
         Machine& machine = mt.machine;
         string response;
@@ -5373,7 +5373,7 @@ void test_calho() {
 
         response = test_cmd(mt, __LINE__, JT("{'dimspr':0}\n")); // NO SPE
 
-        //response = test_cmd(mt, __LINE__, JT("{'dimre':268.0}\n")); // Tin Whiskers
+        response = test_cmd(mt, __LINE__, JT("{'dimre':268.0}\n")); 
 
         response = test_cmd(mt, __LINE__, JT("{'calho':-5000}\n"));
 		StepCoord dHome = FPD_SPE_HOME_PULSES + 5000;

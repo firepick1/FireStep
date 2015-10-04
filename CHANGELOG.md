@@ -6,6 +6,9 @@ v2.0 (pending)
 * NEW: IFireStep interface implemented by: FireStepSerial, FireStepDuino
 * NEW: IDuino interface implemented by: Mega2560, MockDuino
 
+v1.031
+* FIX: setting any of the core dimensions (dimf, dime, dimrf, dimre) should update the delta calculator zoffset
+
 v1.030
 ------
 * FIX: {"pmgx":"help"} now works

@@ -767,11 +767,11 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
     } else if (strcmp_PS(OP_re, key) == 0 || strcmp_PS(OP_dimre, key) == 0) {
         PH5TYPE value = machine.delta.getEffectorLength();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setEffectorLength(value);
+		machine.delta.setEffectorLength(value);
     } else if (strcmp_PS(OP_rf, key) == 0 || strcmp_PS(OP_dimrf, key) == 0) {
         PH5TYPE value = machine.delta.getBaseArmLength();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-        machine.delta.setBaseArmLength(value);
+		machine.delta.setBaseArmLength(value);
     } else if (strcmp_PS(OP_spa, key) == 0 || strcmp_PS(OP_dimspa, key) == 0) {
         PH5TYPE value = machine.delta.getSPEAngle();
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);

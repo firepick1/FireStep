@@ -110,25 +110,37 @@ public:
         return f;
     }
     inline void setBaseTriangleSide(PH5TYPE value) {
-        f = value;
+		if (f != value) {
+			f = value;
+			useEffectorOrigin();
+		}
     }
     inline PH5TYPE getEffectorTriangleSide() {
         return e;
     }
     inline void setEffectorTriangleSide(PH5TYPE value) {
-        e = value;
+		if (e != value) {
+			e = value;
+			useEffectorOrigin();
+		}
     }
     inline PH5TYPE getBaseArmLength() {
         return rf;
     }
     inline void setBaseArmLength(PH5TYPE value) {
-        rf = value;
+		if (rf != value) {
+			rf = value;
+			useEffectorOrigin();
+		}
     }
     inline PH5TYPE getEffectorLength() {
         return re;
     }
     inline void setEffectorLength(PH5TYPE value) {
-        re = value;
+		if (re != value) {
+			re = value;
+			useEffectorOrigin();
+		}
     }
     inline PH5TYPE getArmClearanceRadius() {
         return acr;
