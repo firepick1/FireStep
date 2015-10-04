@@ -6,7 +6,14 @@ v2.0 (pending)
 * NEW: IFireStep interface implemented by: FireStepSerial, FireStepDuino
 * NEW: IDuino interface implemented by: Mega2560, MockDuino
 
+v1.040
+------
+* NEW: {"calgr":""} sets gear ratio from arm #1 at 90 degrees https://github.com/firepick1/FireStep/wiki/Gear-Ratio
+* NEW: {"pgmx":"dim-tw-200"} sets dimensions for Tin Whiskers FirePick Delta (200 steps/revolution steppers)
+* NEW: {"pgmx":"dim-tw-400"} sets dimensions for Tin Whiskers FirePick Delta (400 steps/revolution steppers)
+
 v1.031
+------
 * FIX: setting any of the core dimensions (dimf, dime, dimrf, dimre) should update the delta calculator zoffset
 
 v1.030

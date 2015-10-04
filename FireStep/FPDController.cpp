@@ -951,7 +951,6 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
             jcmd.addQueryAttr(node, OP_bx);
             jcmd.addQueryAttr(node, OP_by);
             jcmd.addQueryAttr(node, OP_bz);
-            jcmd.addQueryAttr(node, OP_gr);
             jcmd.addQueryAttr(node, OP_ge);
             jcmd.addQueryAttr(node, OP_ha);
             jcmd.addQueryAttr(node, OP_he);
@@ -997,14 +996,17 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
             }
         }
     } else if (strcmp_PS(OP_calgr,key) == 0 || strcmp_PS(OP_gr,key) == 0) {
-        if (output) {
-            PH5TYPE value = machine.delta.getGearRatio();
-            status = processField<PH5TYPE, PH5TYPE>(jobj, key, value);
-            if (value != machine.delta.getGearRatio()) {
-                return jcmd.setError(STATUS_OUTPUT_FIELD, key);
-            }
-        }
-        cal.mode = (CalibrateMode)((cal.mode&CAL_HOME) | CAL_GEAR);
+		if (output) {
+			machine.loadDeltaCalculator();
+			StepCoord newPos90 = machine.axis[0].position;
+            status = processField<StepCoord, StepCoord>(jobj, key, newPos90);
+			if (status < 0) {
+				return status;
+			}
+			PH5TYPE degreesPerPulse = newPos90/90.0;
+			machine.delta.setDegreesPerPulse(degreesPerPulse);
+			TESTCOUT2("degreesPerPulse:", degreesPerPulse, " gearRatio:", machine.delta.getGearRatio());
+		}
     } else if (strcmp_PS(OP_calgr1,key) == 0 || strcmp_PS(OP_gr1,key) == 0) {
         PH5TYPE degrees = 0;
         status = processField<PH5TYPE, PH5TYPE>(jobj, key, degrees);

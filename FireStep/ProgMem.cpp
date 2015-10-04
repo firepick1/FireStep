@@ -25,17 +25,12 @@ const char firestep::OP_by[] PROGMEM = { "by" };
 const char firestep::OP_bz[] PROGMEM = { "bz" };
 const char firestep::OP_c[] PROGMEM = { "c" };
 const char firestep::OP_cal[] PROGMEM = { "cal" };
-const char firestep::OP_cal_coarse[] PROGMEM = { "cal-coarse" };
-const char firestep::OP_cal_fine[] PROGMEM = { "cal-fine" };
 const char firestep::OP_cal_fpd_bed_coarse[] PROGMEM = { "cal-fpd-bed-coarse" };
 const char firestep::OP_cal_fpd_bed_fine[] PROGMEM = { "cal-fpd-bed-fine" };
 const char firestep::OP_cal_fpd_bed_medium[] PROGMEM = { "cal-fpd-bed-medium" };
 const char firestep::OP_cal_fpd_home_coarse[] PROGMEM = { "cal-fpd-home-coarse" };
 const char firestep::OP_cal_fpd_home_fine[] PROGMEM = { "cal-fpd-home-fine" };
 const char firestep::OP_cal_fpd_home_medium[] PROGMEM = { "cal-fpd-home-medium" };
-const char firestep::OP_cal_gear[] PROGMEM = { "cal-gear" };
-const char firestep::OP_cal_gear_coarse[] PROGMEM = { "cal-gear-coarse" };
-const char firestep::OP_cal_gear_fine[] PROGMEM = { "cal-gear-fine" };
 const char firestep::OP_calbx[] PROGMEM = { "calbx" };
 const char firestep::OP_calby[] PROGMEM = { "calby" };
 const char firestep::OP_calbz[] PROGMEM = { "calbz" };
@@ -65,6 +60,8 @@ const char firestep::OP_dh[] PROGMEM = { "dh" };
 const char firestep::OP_dim[] PROGMEM = { "dim" };
 const char firestep::OP_dim_fpd[] PROGMEM = { "dim-fpd" };
 const char firestep::OP_dim_fpd_400[] PROGMEM = { "dim-fpd-400" };
+const char firestep::OP_dim_tw_200[] PROGMEM = { "dim_tw_200" };
+const char firestep::OP_dim_tw_400[] PROGMEM = { "dim_tw_400" };
 const char firestep::OP_dimbx[] PROGMEM = { "dimbx" };
 const char firestep::OP_dimby[] PROGMEM = { "dimby" };
 const char firestep::OP_dimbz[] PROGMEM = { "dimbz" };
@@ -350,18 +347,6 @@ const char src_calibrate[] PROGMEM = {
     "]"
 };
 
-const char src_cal_fine[] PROGMEM = {
-    "[" HEX_PROBE ","
-    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"gr\":\"\",\"ge\":\"\",\"ha\":\"\",\"he\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
-    "]"
-};
-
-const char src_cal_coarse[] PROGMEM = {
-    "[" HEX_PROBE ","
-    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"gr\":\"\",\"ge\":\"\",\"ha\":\"\",\"he\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
-    "]"
-};
-
 const char src_cal_fpd_bed_fine[] PROGMEM = {
     "[" HEX_PROBE ","
     "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"he\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
@@ -390,24 +375,6 @@ const char src_cal_fpd_home_coarse[] PROGMEM = {
 
 const char src_cal_fpd_home_fine[] PROGMEM = {
     "[" CAL_FPD_HOME_FINE "]"
-};
-
-const char src_cal_gear[] PROGMEM = {
-    "[" HEX_PROBE ","
-    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"gr\":\"\",\"ge\":\"\",\"sv\":1.0,\"zr\":\"\",\"zc\":\"\"}}"
-    "]"
-};
-
-const char src_cal_gear_coarse[] PROGMEM = {
-    "[" HEX_PROBE ","
-    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"gr\":\"\",\"ge\":\"\",\"sv\":0.7,\"zr\":\"\",\"zc\":\"\"}}"
-    "]"
-};
-
-const char src_cal_gear_fine[] PROGMEM = {
-    "[" HEX_PROBE ","
-    "{\"cal\":{\"bx\":\"\",\"by\":\"\",\"bz\":\"\",\"gr\":\"\",\"ge\":\"\",\"sv\":0.3,\"zr\":\"\",\"zc\":\"\"}}"
-    "]"
 };
 
 const char src_fpd_hex_probe[] PROGMEM = {
@@ -453,6 +420,55 @@ const char src_fpd_axis_probe[] PROGMEM = {
 	"]"
 };
 
+#define TW_DELTA_RE_S "268.000"
+#define TW_DELTA_RE 268.000
+
+const char src_dim_tw_200[] PROGMEM = {
+    "["
+    "{"
+    // STEP 1: set core dimensions
+    "\"dimst\":200," // steps/revolution
+    "\"dimmi\":16," // 16 microsteps
+    "\"dimgr\":" FPD_GEAR_RATIO_S5 "," // gear ratio
+    "\"dime\": " FPD_DELTA_E_S "," // effector triangle side
+    "\"dimf\": " FPD_DELTA_F_S "," // base triangle side
+    "\"dimre\":" TW_DELTA_RE_S "," // effector arm length (mm)
+    "\"dimrf\":" FPD_DELTA_RF_S "," // pulley arm length (mm)
+    // STEP 2: set sliced pulley dimensions
+    "\"dimspa\":" FPD_SPE_ANGLE_S "," // MC:arm critical angle https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    "\"dimspr\":" FPD_SPE_RATIO_S "," // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    // STEP 3: set home angle side effects depend on preceding dimensions
+    "\"dimha\":" FPD_HOME_ANGLE_S "," // home angle
+    // STEP 4: Set miscellaneous values
+    "\"syshp\":" FPD_FAST_SEARCH_PULSES_S "," // fast search pulse group size
+    "\"syssd\":" FPD_SEARCH_DELAY_S // fast homing delay
+    "}"
+    "]"
+};
+
+const char src_dim_tw_400[] PROGMEM = {
+    "["
+    "{"
+    // STEP 1: set core dimensions
+    "\"dimst\":400," // steps/revolution
+    "\"dimmi\":16," // 16 microsteps
+    "\"dimgr\":" FPD_GEAR_RATIO_S5 "," // gear ratio
+    "\"dime\": " FPD_DELTA_E_S "," // effector triangle side
+    "\"dimf\": " FPD_DELTA_F_S "," // base triangle side
+    "\"dimre\":" FPD_DELTA_RE_S "," // effector arm length (mm)
+    "\"dimrf\":" FPD_DELTA_RF_S "," // pulley arm length (mm)
+    // STEP 2: set sliced pulley dimensions
+    "\"dimspa\":" FPD_SPE_ANGLE_S "," // MC:arm critical angle https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    "\"dimspr\":" FPD_SPE_RATIO_S "," // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    // STEP 3: set home angle side effects depend on preceding dimensions
+    "\"dimha\":" FPD_HOME_ANGLE_S "," // home angle
+    // STEP 4: Set miscellaneous values
+    "\"syshp\":" FPD_FAST_SEARCH_PULSES_S "," // fast search pulse group size
+    "\"syssd\":" FPD_SEARCH_DELAY_400_S // fast homing delay
+    "}"
+    "]"
+};
+
 const char src_dim_fpd[] PROGMEM = {
     "["
     "{"
@@ -494,7 +510,7 @@ const char src_dim_fpd_400[] PROGMEM = {
     "\"dimha\":" FPD_HOME_ANGLE_S "," // home angle
     // STEP 4: Set miscellaneous values
     "\"syshp\":" FPD_FAST_SEARCH_PULSES_S "," // fast search pulse group size
-    "\"syssd\":400" // fast homing delay
+    "\"syssd\":" FPD_SEARCH_DELAY_400_S "" // fast homing delay
     "}"
     "]"
 };
@@ -504,12 +520,6 @@ const char *firestep::prog_src(const char *name) {
 
     } else if (strcmp_PS(OP_test, name) == 0) {
         return src_test2;
-        //} else if (strcmp_PS(OP_cal, name) == 0) { return src_calibrate;
-        //} else if (strcmp_PS(OP_cal_coarse, name) == 0) { return src_cal_coarse;
-        //} else if (strcmp_PS(OP_cal_fine, name) == 0) { return src_cal_fine;
-        //} else if (strcmp_PS(OP_cal_gear, name) == 0) { return src_cal_gear;
-        //} else if (strcmp_PS(OP_cal_gear_coarse, name) == 0) { return src_cal_gear_coarse;
-        //} else if (strcmp_PS(OP_cal_gear_fine, name) == 0) { return src_cal_gear_fine;
     } else if (strcmp_PS(OP_cal_fpd_bed_coarse, name) == 0) {
         return src_cal_fpd_bed_coarse;
     } else if (strcmp_PS(OP_cal_fpd_bed_fine, name) == 0) {
@@ -526,6 +536,10 @@ const char *firestep::prog_src(const char *name) {
         return src_dim_fpd;
     } else if (strcmp_PS(OP_dim_fpd_400, name) == 0) {
         return src_dim_fpd_400;
+    } else if (strcmp_PS(OP_dim_tw_200, name) == 0) {
+        return src_dim_tw_200;
+    } else if (strcmp_PS(OP_dim_tw_400, name) == 0) {
+        return src_dim_tw_400;
     } else if (strcmp_PS(OP_fpd_axis_probe, name) == 0) {
         return src_fpd_axis_probe;
     } else if (strcmp_PS(OP_fpd_hex_probe, name) == 0) {

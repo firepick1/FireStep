@@ -39,6 +39,8 @@ namespace firestep {
 #define FPD_SPE_RATIO_S "-0.383"
 #define FPD_SEARCH_DELAY 800
 #define FPD_SEARCH_DELAY_S "800"
+#define FPD_SEARCH_DELAY_400 400
+#define FPD_SEARCH_DELAY_400_S "400"
 #define FPD_HOME_ANGLE -67.202
 #define FPD_HOME_ANGLE_S "-67.202"
 #define FPD_HOME_PULSES -5689

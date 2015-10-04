@@ -75,6 +75,7 @@ void DeltaCalculator::setSteps360(int16_t value) {
 
 void DeltaCalculator::setGearRatio(PH5TYPE value, DeltaAxis axis) {
     setDegreesPerPulse(360/(microsteps*steps360*value), axis);
+	//useEffectorOrigin();
     // NOTE: setting the gear ratio will affect the home pulses,
     // and client applications need to be aware of this. This
     // method should NOT set the home angle, which is an extrinsic
