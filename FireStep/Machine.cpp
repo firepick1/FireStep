@@ -240,7 +240,6 @@ Machine::Machine(IDuinoPtr pDuino)
     axis[4].id = 'b';
     axis[5].id = 'c';
     homeAngle = delta.getHomeAngle();
-    homePulses = delta.getHomePulses();
     setPinConfig(PC0_NOPIN);
 }
 
@@ -254,11 +253,10 @@ void Machine::setHomeAngle(PH5TYPE degrees) {
         StepCoord newHomePulses = delta.getHomePulses();
         StepCoord dHome = newHomePulses - oldHomePulses;
         homeAngle = degrees;
-		TESTCOUT4("homePulses:", homePulses, 
+		TESTCOUT4("newHomePulses:", newHomePulses, 
 			" axis[0]:", axis[0].home,
 			" axis[1]:", axis[1].home,
 			" axis[2]:", axis[2].home);
-        homePulses = newHomePulses;
 		axis[0].position += newHomePulses - axis[0].home;
 		axis[1].position += newHomePulses - axis[1].home;
 		axis[2].position += newHomePulses - axis[2].home;
@@ -272,9 +270,8 @@ void Machine::setHomeAngle(PH5TYPE degrees) {
 /**
  * Set the home pulses and angle.
  */
-void Machine::setHomePulses(StepCoord pulseCount) {
-    homePulses = pulseCount;
-    delta.setHomePulses(homePulses);
+void Machine::setHomeAngleFromPulses(StepCoord pulseCount) {
+    delta.setHomePulses(pulseCount);
     setHomeAngle(delta.getHomeAngle());
 }
 
@@ -897,5 +894,4 @@ bool Machine::isEEUserEnabled() {
 
 void Machine::loadDeltaCalculator() {
     delta.setHomeAngle(homeAngle);
-    //delta.setHomePulses((axis[0].home+axis[1].home+axis[2].home)/3);
 }

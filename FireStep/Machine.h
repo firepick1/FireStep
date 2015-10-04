@@ -316,7 +316,6 @@ public:
     DelayMics 	searchDelay; // limit switch search velocity (pulse delay microseconds)
     PinType		pinStatus;
     Topology	topology;
-    StepCoord	homePulses; // user provided pulse offset from limit switch as 0
     OutputMode	outputMode;
     struct {
         OpProbe		probe;
@@ -427,10 +426,7 @@ public:
         return homeAngle;
     }
     void setHomeAngle(PH5TYPE degrees);
-    StepCoord getHomePulses() {
-        return homePulses;
-    }
-    void setHomePulses(StepCoord pulseCount);
+    void setHomeAngleFromPulses(StepCoord pulseCount);
 } Machine;
 
 #ifdef TEST

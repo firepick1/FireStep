@@ -744,10 +744,10 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
             machine.setHomeAngle(homeAngle);
         }
     } else if (strcmp_PS(OP_hp, key) == 0 || strcmp_PS(OP_dimhp, key) == 0) {
-        StepCoord homePulses = machine.getHomePulses();
+        StepCoord homePulses = machine.delta.getHomePulses();
         status = processField<StepCoord, StepCoord>(jobj, key, homePulses, &updated);
         if (updated) {
-            machine.setHomePulses(homePulses);
+            machine.setHomeAngleFromPulses(homePulses);
         }
     } else if (strcmp_PS(OP_mi, key) == 0 || strcmp_PS(OP_dimmi, key) == 0) {
         int16_t value = machine.delta.getMicrosteps();
@@ -760,7 +760,6 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         machine.axis[0].position *= scale;
         machine.axis[1].position *= scale;
         machine.axis[2].position *= scale;
-        machine.homePulses *= scale;
         machine.searchDelay /= scale;
         machine.delta.setMicrosteps(value);
     } else if (strcmp_PS(OP_pd, key) == 0 || strcmp_PS(OP_dimpd, key) == 0) {
@@ -794,7 +793,6 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         machine.axis[0].position *= scale;
         machine.axis[1].position *= scale;
         machine.axis[2].position *= scale;
-        machine.homePulses *= scale;
         machine.searchDelay /= scale;
         PH5TYPE stepAngle = 360.0/value;
         machine.axis[0].stepAngle = stepAngle;
@@ -841,7 +839,7 @@ Status FPDController::initializeHome(JsonCommand& jcmd, JsonObject& jobj,
                 return jcmd.setError(STATUS_DELTA_HOME, key);
             }
             // home must set home angle as a side effect
-            machine.setHomePulses(machine.axis[0].home);
+            machine.setHomeAngleFromPulses(machine.axis[0].home);
         }
     } else {
         MotorIndex iMotor = machine.motorOfName(key + (strlen(key) - 1));

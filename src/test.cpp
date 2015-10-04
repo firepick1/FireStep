@@ -255,13 +255,13 @@ void test_Machine() {
         Machine mach;
         mach.topology = MTO_FPD;
         mach.delta.setGearRatio(9.5);
-        mach.setHomePulses(-5600);
+        mach.setHomeAngleFromPulses(-5600);
         ASSERTEQUALT(-66.316, mach.getHomeAngle(), 0.001);
-        ASSERTEQUAL(mach.getHomePulses(), mach.axis[0].home);
+        ASSERTEQUAL(mach.delta.getHomePulses(), mach.axis[0].home);
         mach.delta.setGearRatio(9.375);
-        mach.setHomePulses(-5600);
+        mach.setHomeAngleFromPulses(-5600);
         ASSERTEQUALT(-67.2, mach.getHomeAngle(), 0.001);
-        ASSERTEQUAL(mach.getHomePulses(), mach.axis[0].home);
+        ASSERTEQUAL(mach.delta.getHomePulses(), mach.axis[0].home);
     }
 
     cout << "TEST	: test_Machine() OK " << endl;
@@ -2145,9 +2145,6 @@ void test_MTO_FPD_dim() {
     TESTCOUT1("TEST--------:", "REPEAT dim get");
     // dim get (repeated should change nothing and return exactly same values)
     machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
-    machine.delta.setGearRatio(FPD_GEAR_RATIO+1,DELTA_AXIS_1);
-    machine.delta.setGearRatio(FPD_GEAR_RATIO-1,DELTA_AXIS_2);
-    ASSERTEQUALT(FPD_GEAR_RATIO+1,machine.delta.getGearRatio(DELTA_AXIS_1),0.001);
     Serial.push(JT("{'dim':''} \n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
@@ -2160,7 +2157,6 @@ void test_MTO_FPD_dim() {
                     "},'t':0.000} \n"),
                  Serial.output().c_str());
     ASSERTEQUALT(FPD_GEAR_RATIO, dc.getGearRatio(), 0.001);
-    ASSERTEQUALT(FPD_GEAR_RATIO+1,machine.delta.getGearRatio(DELTA_AXIS_1),0.001);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
@@ -2232,7 +2228,7 @@ void test_MTO_FPD_hom() {
         ASSERTEQUALT(machine.axis[2].home, machine.axis[2].position, 0.01);
         ASSERTEQUALT(machine.axis[3].home, machine.axis[3].position, 0.01);
         StepCoord hp = machine.delta.getHomePulses();
-        ASSERTEQUAL(machine.getHomePulses(), hp);
+        ASSERTEQUAL(machine.delta.getHomePulses(), hp);
         ASSERTEQUAL(machine.axis[0].home, hp);
         ASSERTEQUAL(machine.axis[1].home, hp);
         ASSERTEQUAL(machine.axis[2].home, hp);
@@ -5180,7 +5176,7 @@ void test_pgm() {
     machine.axis[0].home = -10; // wrong value
     machine.axis[1].home = -20; // wrong value
     machine.axis[2].home = -30; // wrong value
-    machine.homePulses = -1000; // wrong value
+    machine.setHomeAngleFromPulses(-1000); // wrong value
     machine.searchDelay = 700; // wrong value
     machine.fastSearchPulses = 123; // wrong value
     Serial.push(JT("{'pgmx':'dim-fpd'} \n"));
@@ -5204,13 +5200,11 @@ void test_pgm() {
     ASSERTEQUALT(1.8, machine.axis[0].stepAngle, 0.001);
     ASSERTEQUALT(1.8, machine.axis[1].stepAngle, 0.001);
     ASSERTEQUALT(1.8, machine.axis[2].stepAngle, 0.001);
-    ASSERTEQUAL(FPD_SPE_HOME_PULSES, machine.homePulses);
-    ASSERTEQUAL(machine.homePulses, machine.axis[0].home);
-    ASSERTEQUAL(machine.homePulses, machine.axis[1].home);
-    ASSERTEQUAL(machine.homePulses, machine.axis[2].home);
-    ASSERTEQUAL(-5389, machine.axis[0].position);
-    ASSERTEQUAL(-5383, machine.axis[1].position);
-    ASSERTEQUAL(-5378, machine.axis[2].position);
+    ASSERTEQUAL(FPD_SPE_HOME_PULSES, machine.delta.getHomePulses());
+    ASSERTEQUAL(FPD_SPE_HOME_PULSES, machine.axis[0].home);
+    ASSERTEQUAL(machine.axis[0].home, machine.axis[1].home);
+    ASSERTEQUAL(machine.axis[0].home, machine.axis[2].home);
+    ASSERTQUAD(Quad<StepCoord>(-5388, -5383, -5377, 4), machine.getMotorPosition());
     ASSERTEQUAL(FPD_SEARCH_DELAY, machine.searchDelay);
     ASSERTEQUAL(FPD_FAST_SEARCH_PULSES, machine.fastSearchPulses);
     ASSERTEQUALS(JT("{'s':0,'r':{"
@@ -5378,6 +5372,8 @@ void test_calho() {
 		machine.axis[0].position = 50; // arbitrary non-zero pos
 
         response = test_cmd(mt, __LINE__, JT("{'dimspr':0}\n")); // NO SPE
+
+        //response = test_cmd(mt, __LINE__, JT("{'dimre':268.0}\n")); // Tin Whiskers
 
         response = test_cmd(mt, __LINE__, JT("{'calho':-5000}\n"));
 		StepCoord dHome = FPD_SPE_HOME_PULSES + 5000;
