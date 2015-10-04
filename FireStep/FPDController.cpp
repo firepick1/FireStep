@@ -1003,9 +1003,9 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
 			if (status < 0) {
 				return status;
 			}
-			PH5TYPE degreesPerPulse = newPos90/90.0;
-			machine.delta.setDegreesPerPulse(degreesPerPulse);
-			TESTCOUT2("degreesPerPulse:", degreesPerPulse, " gearRatio:", machine.delta.getGearRatio());
+			PH5TYPE stepsPerDegree = newPos90/90.0;
+			machine.delta.setDegreesPerPulse(1/stepsPerDegree);
+			TESTCOUT3("newPos90:", newPos90, " stepsPerDegree:", stepsPerDegree, " gearRatio:", machine.delta.getGearRatio());
 		}
     } else if (strcmp_PS(OP_calgr1,key) == 0 || strcmp_PS(OP_gr1,key) == 0) {
         PH5TYPE degrees = 0;

@@ -5054,6 +5054,40 @@ string test_cmd(MachineThread &mt, int line, const char *cmd, int homeLoops=-1, 
     return Serial.output();
 }
 
+void test_calgr() {
+    cout << "TEST	: test_calgr() =====" << endl;
+
+    {   // Manual calibration with SPE (normal)
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        string response;
+        response = test_cmd(mt, __LINE__, JT("{'pgmx':'dim-fpd'}\n"));
+        response = test_cmd(mt, __LINE__, JT("{'mova1':89}\n")); // simulate off 1 degree
+		ASSERTEQUALT(DeltaCalculator::roundStep(FPD_MICROSTEPS_PER_DEGREE*89),
+					 machine.axis[0].position, 0.001); 
+        response = test_cmd(mt, __LINE__, JT("{'calgr':''}\n"));
+        ASSERTEQUALT(9.4175, machine.delta.getGearRatio(), 0.001);
+        ASSERTEQUALS(JT("{'s':0,'r':{'calgr':7534},'t':0.???} \n"), response.c_str());
+    }
+
+    {   // Custom calibration Tin Whiskers
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        string response;
+
+        response = test_cmd(mt, __LINE__, JT("{'pgmx':'dim-tw-200'}\n"));
+
+		machine.axis[0].position = 50; // arbitrary non-zero pos
+
+        response = test_cmd(mt, __LINE__, JT("{'calgr':7534}\n"));
+		StepCoord dHome = FPD_SPE_HOME_PULSES + 5000;
+        ASSERTEQUALT(9.4175, machine.delta.getGearRatio(), 0.001);
+        ASSERTEQUALS(JT("{'s':0,'r':{'calgr':7534},'t':0.???} \n"), response.c_str());
+    }
+
+    cout << "TEST	: test_calgr() OK " << endl;
+}
+
 void test_calho() {
     cout << "TEST	: test_calho() =====" << endl;
 
@@ -5136,15 +5170,9 @@ void test_calho() {
         response = test_cmd(mt, __LINE__, JT("{'hom':''}\n"), 500, -1);
 		machine.axis[0].position = 50; // arbitrary non-zero pos
 
-        //response = test_cmd(mt, __LINE__, JT("{'dimspr':0}\n")); // NO SPE
-
         response = test_cmd(mt, __LINE__, JT("{'calho':-5000}\n"));
 		StepCoord dHome = FPD_SPE_HOME_PULSES + 5000;
 		TESTCOUT1("dHome:", dHome);
-        //ASSERTEQUALT(50, machine.axis[0].position+dHome, 0);
-        //ASSERTEQUALT(0, machine.axis[1].position+dHome, 0);
-        //ASSERTEQUALT(0, machine.axis[2].position+dHome, 0);
-        //ASSERTEQUALT(0, machine.axis[3].position, 0);
         ASSERTEQUALS(JT("{'s':0,'r':{'calho':-5000},'t':0.???} \n"), response.c_str());
         ASSERTEQUAL(-5000, machine.axis[0].home);
         ASSERTEQUAL(machine.axis[0].home, machine.axis[1].home);
@@ -5287,6 +5315,7 @@ int main(int argc, char *argv[]) {
         test_cal_arm();
         test_Armin();
         test_calho();
+        test_calgr();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;
