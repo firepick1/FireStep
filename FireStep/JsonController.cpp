@@ -894,9 +894,15 @@ Status JsonController::processProgram(JsonCommand& jcmd, JsonObject& jobj, const
     } else if (strcmp_PS(OP_d,key)==0 || strcmp_PS(OP_pgmd,key)==0) {
         const char * name = jobj[key];
         status = prog_dump(name);
+		if (status < 0) {
+			return jcmd.setError(status, name);
+		}
     } else if (strcmp_PS(OP_x,key)==0 || strcmp_PS(OP_pgmx,key)==0) {
         const char * name = jobj[key];
         status = prog_load_cmd(name, jcmd);
+		if (status < 0) {
+			return jcmd.setError(status, name);
+		}
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }

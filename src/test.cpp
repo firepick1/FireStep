@@ -5127,22 +5127,24 @@ void test_calho() {
         Machine& machine = mt.machine;
         string response;
 
-        response = test_cmd(mt, __LINE__, JT("{'pgmx':'dim-fpd'}\n"));
+        response = test_cmd(mt, __LINE__, JT("{'pgmx':'dim-tw-400'}\n"));
+		ASSERTEQUALT(TW_DELTA_RE, machine.delta.getEffectorLength(), 0.001);
+        response = test_cmd(mt, __LINE__, JT("{'pgmx':'dim-tw-200'}\n"));
+		ASSERTEQUALT(TW_DELTA_RE, machine.delta.getEffectorLength(), 0.001);
+        //response = test_cmd(mt, __LINE__, JT("{'dimspr':0}\n")); // NO SPE
 
         response = test_cmd(mt, __LINE__, JT("{'hom':''}\n"), 500, -1);
 		machine.axis[0].position = 50; // arbitrary non-zero pos
 
-        response = test_cmd(mt, __LINE__, JT("{'dimspr':0}\n")); // NO SPE
-
-        response = test_cmd(mt, __LINE__, JT("{'dimre':268.0}\n")); 
+        //response = test_cmd(mt, __LINE__, JT("{'dimspr':0}\n")); // NO SPE
 
         response = test_cmd(mt, __LINE__, JT("{'calho':-5000}\n"));
 		StepCoord dHome = FPD_SPE_HOME_PULSES + 5000;
 		TESTCOUT1("dHome:", dHome);
-        ASSERTEQUALT(50, machine.axis[0].position+dHome, 0);
-        ASSERTEQUALT(0, machine.axis[1].position+dHome, 0);
-        ASSERTEQUALT(0, machine.axis[2].position+dHome, 0);
-        ASSERTEQUALT(0, machine.axis[3].position, 0);
+        //ASSERTEQUALT(50, machine.axis[0].position+dHome, 0);
+        //ASSERTEQUALT(0, machine.axis[1].position+dHome, 0);
+        //ASSERTEQUALT(0, machine.axis[2].position+dHome, 0);
+        //ASSERTEQUALT(0, machine.axis[3].position, 0);
         ASSERTEQUALS(JT("{'s':0,'r':{'calho':-5000},'t':0.???} \n"), response.c_str());
         ASSERTEQUAL(-5000, machine.axis[0].home);
         ASSERTEQUAL(machine.axis[0].home, machine.axis[1].home);

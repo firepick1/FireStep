@@ -57,12 +57,15 @@ namespace firestep {
 #define FPD_STEPS360 200
 #define FPD_MICROSTEPS_PER_DEGREE 84.655
 #define FPD_DELTA_E		131.636 /* effector triangle side */
-#define FPD_DELTA_F		190.526 /* base triangle side */
-#define FPD_DELTA_RE	270.000 /* effector arm length (mm) */
-#define FPD_DELTA_RF	90.000 /* pulley arm length (mm) */
 #define FPD_DELTA_E_S	"131.636"
+#define FPD_DELTA_F		190.526 /* base triangle side */
 #define FPD_DELTA_F_S	"190.526"
 #define FPD_DELTA_RE_S	"270.000"
+#define FPD_DELTA_RE	270.000 /* effector arm length (mm) */
+#define FPD_DELTA_RE_S	"270.000"
+#define TW_DELTA_RE 	268.000
+#define TW_DELTA_RE_S 	"268.000"
+#define FPD_DELTA_RF	90.000 /* pulley arm length (mm) */
 #define FPD_DELTA_RF_S	"90.000"
 
 typedef int16_t DelayMics; // delay microseconds

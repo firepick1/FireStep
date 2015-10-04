@@ -60,8 +60,8 @@ const char firestep::OP_dh[] PROGMEM = { "dh" };
 const char firestep::OP_dim[] PROGMEM = { "dim" };
 const char firestep::OP_dim_fpd[] PROGMEM = { "dim-fpd" };
 const char firestep::OP_dim_fpd_400[] PROGMEM = { "dim-fpd-400" };
-const char firestep::OP_dim_tw_200[] PROGMEM = { "dim_tw_200" };
-const char firestep::OP_dim_tw_400[] PROGMEM = { "dim_tw_400" };
+const char firestep::OP_dim_tw_200[] PROGMEM = { "dim-tw-200" };
+const char firestep::OP_dim_tw_400[] PROGMEM = { "dim-tw-400" };
 const char firestep::OP_dimbx[] PROGMEM = { "dimbx" };
 const char firestep::OP_dimby[] PROGMEM = { "dimby" };
 const char firestep::OP_dimbz[] PROGMEM = { "dimbz" };
@@ -420,9 +420,6 @@ const char src_fpd_axis_probe[] PROGMEM = {
 	"]"
 };
 
-#define TW_DELTA_RE_S "268.000"
-#define TW_DELTA_RE 268.000
-
 const char src_dim_tw_200[] PROGMEM = {
     "["
     "{"
@@ -455,7 +452,7 @@ const char src_dim_tw_400[] PROGMEM = {
     "\"dimgr\":" FPD_GEAR_RATIO_S5 "," // gear ratio
     "\"dime\": " FPD_DELTA_E_S "," // effector triangle side
     "\"dimf\": " FPD_DELTA_F_S "," // base triangle side
-    "\"dimre\":" FPD_DELTA_RE_S "," // effector arm length (mm)
+    "\"dimre\":" TW_DELTA_RE_S "," // effector arm length (mm)
     "\"dimrf\":" FPD_DELTA_RF_S "," // pulley arm length (mm)
     // STEP 2: set sliced pulley dimensions
     "\"dimspa\":" FPD_SPE_ANGLE_S "," // MC:arm critical angle https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
@@ -550,14 +547,16 @@ const char *firestep::prog_src(const char *name) {
         return src_test1;
     } else if (strcmp_PS(OP_test2, name) == 0) {
         return src_test2;
-
     }
 
-    return src_help;
+    return NULL;
 }
 
 Status firestep::prog_dump(const char *name) {
     const char *src = prog_src(name);
+	if (src == NULL) {
+		return STATUS_UNKNOWN_PROGRAM;
+	}
     TESTCOUT3("prog_dump:", name, " bytes:", (strlen_P(src)+1), " src:", src);
 
     for (size_t i = 0; i<MAX_JSON; i++) {
@@ -579,6 +578,9 @@ Status firestep::prog_load_cmd(const char *name, JsonCommand &jcmd) {
     snprintf(nameBuf, sizeof(nameBuf), "%s", name); // name is volatile
     Status status = STATUS_OK;
     const char *src = prog_src(nameBuf);
+	if (src == NULL) {
+		return STATUS_UNKNOWN_PROGRAM;
+	}
     TESTCOUT2("prog_load:", nameBuf, " src:", src);
 
     size_t len = strlen_P(src);
