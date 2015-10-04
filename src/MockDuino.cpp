@@ -236,6 +236,9 @@ void digitalWrite(int16_t pin, int16_t value) {
 
 int16_t digitalRead(int16_t pin) {
     ASSERT(0 <= pin && pin < ARDUINO_PINS);
+	if (arduino.pin[pin] == NOVALUE) {
+		cerr << "digitalRead(" << pin << ") NOVALUE" << endl;
+	}
     ASSERT(arduino.pin[pin] != NOVALUE);
     return arduino.pin[pin];
 }

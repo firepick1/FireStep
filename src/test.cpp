@@ -5256,16 +5256,40 @@ void test_ZPlane() {
     cout << "TEST	: test_ZPlane() OK " << endl;
 }
 
-string test_cmd(MachineThread &mt, int line, const char *cmd) {
+string test_cmd(MachineThread &mt, int line, const char *cmd, int homeLoops=-1, int probeLoops=-1) {
     TESTCOUT1("line:", line);
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     ASSERTEQUALS("", Serial.output().c_str());
     Serial.push(cmd);
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	arduino.setPin(PC2_X_MIN_PIN, LOW); 
+	arduino.setPin(PC2_Y_MIN_PIN, LOW);
+	arduino.setPin(PC2_Z_MIN_PIN, LOW);
+	arduino.setPin(PC2_PROBE_PIN, LOW);
     do {
         mt.loop();
     } while (mt.status == STATUS_BUSY_PARSED);
+	for (int i=0; i<5000; i++) {
+		if (homeLoops >= 0 && i >= homeLoops) {
+			arduino.setPin(PC2_X_MIN_PIN, HIGH); // trip home switch
+			arduino.setPin(PC2_Y_MIN_PIN, HIGH); // trip home switch
+			arduino.setPin(PC2_Z_MIN_PIN, HIGH); // trip home switch
+		}
+		if (probeLoops >= 0 && i >= probeLoops) {
+			arduino.setPin(PC2_PROBE_PIN, HIGH); // no contact probe
+		}
+		if (mt.status == STATUS_BUSY_MOVING) {
+			cerr << ".";
+			mt.loop();
+		} else if (mt.status == STATUS_BUSY_CALIBRATING) {
+			cerr << "*";
+			mt.loop();
+		} else {
+			cerr << endl;
+			break;
+		}
+	}
     if (mt.status != STATUS_OK) {
         cerr << Serial.output() << endl;
     }
@@ -5347,24 +5371,30 @@ void test_calho() {
         MachineThread mt = test_setup_FPD();
         Machine& machine = mt.machine;
         string response;
+
         response = test_cmd(mt, __LINE__, JT("{'pgmx':'dim-fpd'}\n"));
-        machine.setMotorPosition(Quad<StepCoord>(FPD_SPE_HOME_PULSES+1,
-                                 FPD_SPE_HOME_PULSES+2,
-                                 FPD_SPE_HOME_PULSES+3,
-                                 4));
-        // machine is at SPE home even though we turned off SPE
-        ASSERTEQUALT(FPD_SPE_HOME_PULSES, machine.axis[0].home, 0);
-        ASSERTEQUALT(machine.axis[0].home, machine.axis[1].home, 0);
-        ASSERTEQUALT(machine.axis[0].home, machine.axis[2].home, 0);
+
+        response = test_cmd(mt, __LINE__, JT("{'hom':''}\n"), 500, -1);
+		machine.axis[0].position = 50; // arbitrary non-zero pos
+
+        response = test_cmd(mt, __LINE__, JT("{'dimspr':0}\n")); // NO SPE
+
         response = test_cmd(mt, __LINE__, JT("{'calho':-5000}\n"));
-        ASSERTEQUALT(1, machine.axis[0].position+5000, 0);
-        ASSERTEQUALT(2, machine.axis[1].position+5000, 0);
-        ASSERTEQUALT(3, machine.axis[2].position+5000, 0);
-        ASSERTEQUALT(4, machine.axis[3].position, 0);
+		StepCoord dHome = FPD_SPE_HOME_PULSES + 5000;
+		TESTCOUT1("dHome:", dHome);
+        ASSERTEQUALT(50, machine.axis[0].position+dHome, 0);
+        ASSERTEQUALT(0, machine.axis[1].position+dHome, 0);
+        ASSERTEQUALT(0, machine.axis[2].position+dHome, 0);
+        ASSERTEQUALT(0, machine.axis[3].position, 0);
         ASSERTEQUALS(JT("{'s':0,'r':{'calho':-5000},'t':0.???} \n"), response.c_str());
         ASSERTEQUAL(-5000, machine.axis[0].home);
         ASSERTEQUAL(machine.axis[0].home, machine.axis[1].home);
         ASSERTEQUAL(machine.axis[0].home, machine.axis[2].home);
+
+        response = test_cmd(mt, __LINE__, JT("{'hom':''}\n"), 500, -1);
+        ASSERTEQUALT(0, machine.axis[0].position, 0);
+        ASSERTEQUALT(0, machine.axis[1].position, 0);
+        ASSERTEQUALT(0, machine.axis[2].position, 0);
     }
 
     cout << "TEST	: test_calho() OK " << endl;
