@@ -426,7 +426,7 @@ const char src_dim_tw_200[] PROGMEM = {
     // STEP 1: set core dimensions
     "\"dimst\":200," // steps/revolution
     "\"dimmi\":16," // 16 microsteps
-    "\"dimgr\":" FPD_GEAR_RATIO_S5 "," // gear ratio
+    "\"dimgr\":" TW_GEAR_RATIO_S "," // gear ratio
     "\"dime\": " FPD_DELTA_E_S "," // effector triangle side
     "\"dimf\": " FPD_DELTA_F_S "," // base triangle side
     "\"dimre\":" TW_DELTA_RE_S "," // effector arm length (mm)
@@ -449,7 +449,7 @@ const char src_dim_tw_400[] PROGMEM = {
     // STEP 1: set core dimensions
     "\"dimst\":400," // steps/revolution
     "\"dimmi\":16," // 16 microsteps
-    "\"dimgr\":" FPD_GEAR_RATIO_S5 "," // gear ratio
+    "\"dimgr\":" TW_GEAR_RATIO_S "," // gear ratio
     "\"dime\": " FPD_DELTA_E_S "," // effector triangle side
     "\"dimf\": " FPD_DELTA_F_S "," // base triangle side
     "\"dimre\":" TW_DELTA_RE_S "," // effector arm length (mm)

@@ -32,6 +32,8 @@ namespace firestep {
 
 #define FPD_GEAR_RATIO 9.52374
 #define FPD_GEAR_RATIO_S "9.524"
+#define TW_GEAR_RATIO	9.460206
+#define TW_GEAR_RATIO_S	"9.460206"
 #define FPD_GEAR_RATIO_S5 "9.52374"
 #define FPD_SPE_ANGLE -54.617
 #define FPD_SPE_ANGLE_S "-54.617"
