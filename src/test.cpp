@@ -5129,9 +5129,7 @@ void test_calho() {
         string response;
         response = test_cmd(mt, __LINE__, JT("{'pgmx':'dim-fpd'}\n"));
         response = test_cmd(mt, __LINE__, JT("{'dimspr':0}\n")); // NO SPE
-        response = test_cmd(mt, __LINE__, JT("{'mova1':-1}\n"));
-        response = test_cmd(mt, __LINE__, JT("{'mova2':-1}\n"));
-        response = test_cmd(mt, __LINE__, JT("{'mova3':-1}\n"));
+        response = test_cmd(mt, __LINE__, JT("{'movaa':-1}\n"));
         StepCoord degreePulses = DeltaCalculator::roundStep(-FPD_MICROSTEPS_PER_DEGREE);
         ASSERTEQUALT(degreePulses, machine.axis[0].position, 3); // ~85
         ASSERTEQUALT(0, machine.delta.getSPERatio(), 0.001);

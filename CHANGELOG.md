@@ -8,9 +8,10 @@ v2.0 (pending)
 
 v1.040
 ------
-* NEW: {"calgr":""} sets gear ratio from arm #1 at 90 degrees https://github.com/firepick1/FireStep/wiki/Gear-Ratio
-* NEW: {"pgmx":"dim-tw-200"} sets dimensions for Tin Whiskers FirePick Delta (200 steps/revolution steppers)
-* NEW: {"pgmx":"dim-tw-400"} sets dimensions for Tin Whiskers FirePick Delta (400 steps/revolution steppers)
+* NEW: MTO_FPD: "movaa" moves all arms to given angle
+* NEW: MTO_FPD: {"calgr":""} sets gear ratio from arm #1 at 90 degrees https://github.com/firepick1/FireStep/wiki/Gear-Ratio
+* NEW: MTO_FPD: {"pgmx":"dim-tw-200"} sets dimensions for Tin Whiskers FirePick Delta (200 steps/revolution steppers)
+* NEW: MTO_FPD: {"pgmx":"dim-tw-400"} sets dimensions for Tin Whiskers FirePick Delta (400 steps/revolution steppers)
 
 v1.031
 ------

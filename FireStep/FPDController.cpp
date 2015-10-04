@@ -305,6 +305,14 @@ Status FPDMoveTo::process(JsonCommand& jcmd, JsonObject& jobj, const char* key) 
         if (keyLen > 2) {
             status = execute(jcmd, NULL);
         }
+    } else if (strcmp_PS(OP_movaa,key) == 0 || strcmp_PS(OP_aa,key) == 0) {
+        status =  movePulleyArmToAngle(DELTA_AXIS_1, (PH5TYPE) jobj[key]);
+		if (status == STATUS_OK) {
+			status =  movePulleyArmToAngle(DELTA_AXIS_2, (PH5TYPE) jobj[key]);
+		}
+		if (status == STATUS_OK) {
+			status =  movePulleyArmToAngle(DELTA_AXIS_3, (PH5TYPE) jobj[key]);
+		}
     } else if (strcmp_PS(OP_mova1,key) == 0 || strcmp_PS(OP_a1,key) == 0) {
         return movePulleyArmToAngle(DELTA_AXIS_1, (PH5TYPE) jobj[key]);
     } else if (strcmp_PS(OP_mova2,key) == 0 || strcmp_PS(OP_a2,key) == 0) {
