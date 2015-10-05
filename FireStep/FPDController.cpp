@@ -1011,9 +1011,15 @@ Status FPDController::processCalibrateCore(JsonCommand &jcmd, JsonObject& jobj, 
 			if (status < 0) {
 				return status;
 			}
+			StepCoord homePulses = machine.delta.getHomePulses();
 			PH5TYPE stepsPerDegree = newPos90/90.0;
 			machine.delta.setDegreesPerPulse(1/stepsPerDegree);
-			TESTCOUT3("newPos90:", newPos90, " stepsPerDegree:", stepsPerDegree, " gearRatio:", machine.delta.getGearRatio());
+			machine.delta.useEffectorOrigin();
+			PH5TYPE homeAngle = machine.delta.calcSPEAngle(homePulses);
+			machine.delta.setHomeAngle(homeAngle);
+			TESTCOUT4("newPos90:", newPos90, " stepsPerDegree:", stepsPerDegree, 
+					  " gearRatio:", machine.delta.getGearRatio(),
+					  " homeAngle:", machine.delta.getHomeAngle());
 		}
     } else if (strcmp_PS(OP_calgr1,key) == 0 || strcmp_PS(OP_gr1,key) == 0) {
         PH5TYPE degrees = 0;

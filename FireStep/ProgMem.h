@@ -85,6 +85,8 @@ extern const char OP_dh[];
 extern const char OP_dim[];
 extern const char OP_dim_fpd[];
 extern const char OP_dim_fpd_400[];
+extern const char OP_dim_lc_200[];
+extern const char OP_dim_lc_400[];
 extern const char OP_dim_tw_200[];
 extern const char OP_dim_tw_400[];
 extern const char OP_dimbx[];

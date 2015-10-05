@@ -61,6 +61,8 @@ const char firestep::OP_dh[] PROGMEM = { "dh" };
 const char firestep::OP_dim[] PROGMEM = { "dim" };
 const char firestep::OP_dim_fpd[] PROGMEM = { "dim-fpd" };
 const char firestep::OP_dim_fpd_400[] PROGMEM = { "dim-fpd-400" };
+const char firestep::OP_dim_lc_200[] PROGMEM = { "dim-lc-200" };
+const char firestep::OP_dim_lc_400[] PROGMEM = { "dim-lc-400" };
 const char firestep::OP_dim_tw_200[] PROGMEM = { "dim-tw-200" };
 const char firestep::OP_dim_tw_400[] PROGMEM = { "dim-tw-400" };
 const char firestep::OP_dimbx[] PROGMEM = { "dimbx" };
@@ -422,6 +424,52 @@ const char src_fpd_axis_probe[] PROGMEM = {
 	"]"
 };
 
+const char src_dim_lc_200[] PROGMEM = {
+    "["
+    "{"
+    // STEP 1: set core dimensions
+    "\"dimst\":200," // steps/revolution
+    "\"dimmi\":16," // 16 microsteps
+    "\"dimgr\":" LC_GEAR_RATIO_S "," // gear ratio
+    "\"dime\": " FPD_DELTA_E_S "," // effector triangle side
+    "\"dimf\": " FPD_DELTA_F_S "," // base triangle side
+    "\"dimre\":" LC_DELTA_RE_S "," // effector arm length (mm)
+    "\"dimrf\":" LC_DELTA_RF_S "," // pulley arm length (mm)
+    // STEP 2: set sliced pulley dimensions
+    "\"dimspa\":" FPD_SPE_ANGLE_S "," // MC:arm critical angle https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    "\"dimspr\":" FPD_SPE_RATIO_S "," // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    // STEP 3: set home angle side effects depend on preceding dimensions
+    "\"dimha\":" FPD_HOME_ANGLE_S "," // home angle
+    // STEP 4: Set miscellaneous values
+    "\"syshp\":" FPD_FAST_SEARCH_PULSES_S "," // fast search pulse group size
+    "\"syssd\":" FPD_SEARCH_DELAY_S // fast homing delay
+    "}"
+    "]"
+};
+
+const char src_dim_lc_400[] PROGMEM = {
+    "["
+    "{"
+    // STEP 1: set core dimensions
+    "\"dimst\":400," // steps/revolution
+    "\"dimmi\":16," // 16 microsteps
+    "\"dimgr\":" LC_GEAR_RATIO_S "," // gear ratio
+    "\"dime\": " FPD_DELTA_E_S "," // effector triangle side
+    "\"dimf\": " FPD_DELTA_F_S "," // base triangle side
+    "\"dimre\":" LC_DELTA_RE_S "," // effector arm length (mm)
+    "\"dimrf\":" LC_DELTA_RF_S "," // pulley arm length (mm)
+    // STEP 2: set sliced pulley dimensions
+    "\"dimspa\":" FPD_SPE_ANGLE_S "," // MC:arm critical angle https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    "\"dimspr\":" FPD_SPE_RATIO_S "," // SPE Ratio https://github.com/firepick1/FireStep/wiki/Sliced-Pulley-Error
+    // STEP 3: set home angle side effects depend on preceding dimensions
+    "\"dimha\":" FPD_HOME_ANGLE_S "," // home angle
+    // STEP 4: Set miscellaneous values
+    "\"syshp\":" FPD_FAST_SEARCH_PULSES_S "," // fast search pulse group size
+    "\"syssd\":" FPD_SEARCH_DELAY_400_S // fast homing delay
+    "}"
+    "]"
+};
+
 const char src_dim_tw_200[] PROGMEM = {
     "["
     "{"
@@ -535,6 +583,10 @@ const char *firestep::prog_src(const char *name) {
         return src_dim_fpd;
     } else if (strcmp_PS(OP_dim_fpd_400, name) == 0) {
         return src_dim_fpd_400;
+    } else if (strcmp_PS(OP_dim_lc_200, name) == 0) {
+        return src_dim_lc_200;
+    } else if (strcmp_PS(OP_dim_lc_400, name) == 0) {
+        return src_dim_lc_400;
     } else if (strcmp_PS(OP_dim_tw_200, name) == 0) {
         return src_dim_tw_200;
     } else if (strcmp_PS(OP_dim_tw_400, name) == 0) {

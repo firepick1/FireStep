@@ -5068,6 +5068,8 @@ void test_calgr() {
         response = test_cmd(mt, __LINE__, JT("{'calgr':''}\n"));
         ASSERTEQUALT(9.4175, machine.delta.getGearRatio(), 0.001);
         ASSERTEQUALS(JT("{'s':0,'r':{'calgr':7534},'t':0.???} \n"), response.c_str());
+		ASSERTEQUALT(FPD_SPE_HOME_PULSES, machine.delta.getHomePulses(), 0.001);
+		ASSERTEQUALT(-0.995, machine.delta.getHomeAngle()-FPD_HOME_ANGLE, 0.001);
     }
 
     {   // Custom calibration Tin Whiskers
@@ -5076,13 +5078,15 @@ void test_calgr() {
         string response;
 
         response = test_cmd(mt, __LINE__, JT("{'pgmx':'dim-tw-200'}\n"));
+		StepCoord homePulses = machine.delta.getHomePulses();
 
 		machine.axis[0].position = 50; // arbitrary non-zero pos
 
         response = test_cmd(mt, __LINE__, JT("{'calgr':7534}\n"));
-		StepCoord dHome = FPD_SPE_HOME_PULSES + 5000;
         ASSERTEQUALT(9.4175, machine.delta.getGearRatio(), 0.001);
         ASSERTEQUALS(JT("{'s':0,'r':{'calgr':7534},'t':0.???} \n"), response.c_str());
+		ASSERTEQUALT(homePulses, machine.delta.getHomePulses(), 0.001);
+		ASSERTEQUALT(-0.400, machine.delta.getHomeAngle()-FPD_HOME_ANGLE, 0.001);
     }
 
     cout << "TEST	: test_calgr() OK " << endl;

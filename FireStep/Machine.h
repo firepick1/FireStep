@@ -32,6 +32,8 @@ namespace firestep {
 
 #define FPD_GEAR_RATIO 9.52374
 #define FPD_GEAR_RATIO_S "9.524"
+#define LC_GEAR_RATIO	9.58600
+#define LC_GEAR_RATIO_S	"9.58600"
 #define TW_GEAR_RATIO	9.460206
 #define TW_GEAR_RATIO_S	"9.460206"
 #define FPD_GEAR_RATIO_S5 "9.52374"
@@ -67,8 +69,12 @@ namespace firestep {
 #define FPD_DELTA_RE_S	"270.000"
 #define TW_DELTA_RE 	268.000
 #define TW_DELTA_RE_S 	"268.000"
+#define LC_DELTA_RE 	270.669
+#define LC_DELTA_RE_S 	"270.669"
 #define FPD_DELTA_RF	90.000 /* pulley arm length (mm) */
 #define FPD_DELTA_RF_S	"90.000"
+#define LC_DELTA_RF		89.750 /* pulley arm length (mm) */
+#define LC_DELTA_RF_S	"89.750"
 
 typedef int16_t DelayMics; // delay microseconds
 #ifdef TEST
