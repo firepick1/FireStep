@@ -31,8 +31,8 @@ protected:
     virtual Status processEEPROM(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, const char* key, const char *addr);
     virtual Status processHome(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;
-    virtual Status processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key);
-    virtual Status processIOPin(JsonCommand& jcmd, JsonObject& jobj, const char* key);
+    virtual Status processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool pullUp=false);
+    virtual Status processIOPin(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool pullUp);
     virtual Status processMark(JsonCommand& jcmd, JsonObject& jobj, const char* key);
     virtual Status processMotor(JsonCommand &jcmd, JsonObject& jobj, const char* key, char group);
     virtual Status processMove(JsonCommand& jcmd, JsonObject& jobj, const char* key) = 0;

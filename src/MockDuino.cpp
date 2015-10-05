@@ -246,6 +246,9 @@ int16_t digitalRead(int16_t pin) {
 void pinMode(int16_t pin, int16_t inout) {
     ASSERT(0 <= pin && pin < ARDUINO_PINS);
     arduino._pinMode[pin] = inout;
+	if (inout == INPUT_PULLUP) {
+		arduino.pin[pin] = HIGH;
+	}
 }
 
 int16_t MockDuino::getPinMode(int16_t pin) {

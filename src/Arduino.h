@@ -23,6 +23,7 @@ typedef uint8_t boolean;
 #define LOW 0
 #define INPUT 0
 #define OUTPUT 1
+#define INPUT_PULLUP 2
 
 #define ADEN 7
 #define ADSC 6

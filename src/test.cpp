@@ -28,6 +28,49 @@ void replaceChar(string &s, char cmatch, char creplace) {
     }
 }
 
+string test_cmd(MachineThread &mt, int line, const char *cmd, int homeLoops=-1, int probeLoops=-1) {
+    TESTCOUT1("line:", line);
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    ASSERTEQUALS("", Serial.output().c_str());
+    Serial.push(cmd);
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+	arduino.setPin(PC2_X_MIN_PIN, LOW); 
+	arduino.setPin(PC2_Y_MIN_PIN, LOW);
+	arduino.setPin(PC2_Z_MIN_PIN, LOW);
+	arduino.setPin(PC2_PROBE_PIN, LOW);
+    do {
+        mt.loop();
+    } while (mt.status == STATUS_BUSY_PARSED);
+	for (int i=0; i<5000; i++) {
+		if (homeLoops >= 0 && i >= homeLoops) {
+			arduino.setPin(PC2_X_MIN_PIN, HIGH); // trip home switch
+			arduino.setPin(PC2_Y_MIN_PIN, HIGH); // trip home switch
+			arduino.setPin(PC2_Z_MIN_PIN, HIGH); // trip home switch
+		}
+		if (probeLoops >= 0 && i >= probeLoops) {
+			arduino.setPin(PC2_PROBE_PIN, HIGH); // no contact probe
+		}
+		if (mt.status == STATUS_BUSY_MOVING) {
+			cerr << ".";
+			mt.loop();
+		} else if (mt.status == STATUS_BUSY_CALIBRATING) {
+			cerr << "*";
+			mt.loop();
+		} else {
+			cerr << endl;
+			break;
+		}
+	}
+    if (mt.status != STATUS_OK) {
+        cerr << Serial.output() << endl;
+    }
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    return Serial.output();
+}
+
 string jsonTemplate(const char *jsonIn, string replace = "'\"") {
     string ji(jsonIn);
     for (int i = 0; i < replace.size(); i += 2) {
@@ -3394,26 +3437,32 @@ void test_io() {
 
     MachineThread mt = test_setup();
     Machine &machine = mt.machine;
+	string response;
 
-    arduino.setPin(22, HIGH);
-    Serial.push(JT("{'io':{'d22':''}} \n"));
-    test_ticks(1);
-    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    test_ticks(1);
-    ASSERTEQUAL(STATUS_OK, mt.status);
+    arduino.setPin(22, LOW); // without this input is indeterminate
+	response = test_cmd(mt, __LINE__, JT("{'io':{'d22':''}}\n"));
+    ASSERTEQUALS(JT("{'s':0,'r':{'io':{'d22':false}},'t':0.000} \n"), response.c_str());
     ASSERTEQUAL(INPUT, arduino.getPinMode(22));
-    ASSERTEQUALS(JT("{'s':0,'r':{'io':{'d22':true}},'t':0.000} \n"), Serial.output().c_str());
-    test_ticks(1);
 
+	// pu false is default
+	response = test_cmd(mt, __LINE__, JT("{'io':{'d22':'','pu':false}}\n"));
+    ASSERTEQUALS(JT("{'s':0,'r':{'io':{'d22':false,'pu':false}},'t':0.000} \n"), response.c_str());
+    ASSERTEQUAL(INPUT, arduino.getPinMode(22));
+
+	// INPUT_PULLUP
+	response = test_cmd(mt, __LINE__, JT("{'io':{'d22':'','pu':true}}\n"));
+    ASSERTEQUALS(JT("{'s':0,'r':{'io':{'d22':true,'pu':true}},'t':0.000} \n"), response.c_str());
+    ASSERTEQUAL(INPUT_PULLUP, arduino.getPinMode(22));
+
+	// retest HIGH/LOW read
     arduino.setPin(22, LOW);
-    Serial.push(JT("{'iod22':''} \n"));
-    test_ticks(1);
-    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    test_ticks(1);
-    ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'iod22':false},'t':0.000} \n"), Serial.output().c_str());
+	response = test_cmd(mt, __LINE__, JT("{'io':{'d22':''}}\n"));
+    ASSERTEQUALS(JT("{'s':0,'r':{'io':{'d22':false}},'t':0.000} \n"), response.c_str());
     ASSERTEQUAL(INPUT, arduino.getPinMode(22));
-    test_ticks(1);
+    arduino.setPin(22, HIGH);
+	response = test_cmd(mt, __LINE__, JT("{'io':{'d22':''}}\n"));
+    ASSERTEQUALS(JT("{'s':0,'r':{'io':{'d22':true}},'t':0.000} \n"), response.c_str());
+    ASSERTEQUAL(INPUT, arduino.getPinMode(22));
 
     Serial.push(JT("{'io':{'d220':''}} \n"));
     test_ticks(1);
@@ -5009,49 +5058,6 @@ void test_ZPlane() {
     ASSERTEQUALT(8.5, plane2.getZOffset(), e);
 
     cout << "TEST	: test_ZPlane() OK " << endl;
-}
-
-string test_cmd(MachineThread &mt, int line, const char *cmd, int homeLoops=-1, int probeLoops=-1) {
-    TESTCOUT1("line:", line);
-    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-    ASSERTEQUALS("", Serial.output().c_str());
-    Serial.push(cmd);
-    mt.loop();
-    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	arduino.setPin(PC2_X_MIN_PIN, LOW); 
-	arduino.setPin(PC2_Y_MIN_PIN, LOW);
-	arduino.setPin(PC2_Z_MIN_PIN, LOW);
-	arduino.setPin(PC2_PROBE_PIN, LOW);
-    do {
-        mt.loop();
-    } while (mt.status == STATUS_BUSY_PARSED);
-	for (int i=0; i<5000; i++) {
-		if (homeLoops >= 0 && i >= homeLoops) {
-			arduino.setPin(PC2_X_MIN_PIN, HIGH); // trip home switch
-			arduino.setPin(PC2_Y_MIN_PIN, HIGH); // trip home switch
-			arduino.setPin(PC2_Z_MIN_PIN, HIGH); // trip home switch
-		}
-		if (probeLoops >= 0 && i >= probeLoops) {
-			arduino.setPin(PC2_PROBE_PIN, HIGH); // no contact probe
-		}
-		if (mt.status == STATUS_BUSY_MOVING) {
-			cerr << ".";
-			mt.loop();
-		} else if (mt.status == STATUS_BUSY_CALIBRATING) {
-			cerr << "*";
-			mt.loop();
-		} else {
-			cerr << endl;
-			break;
-		}
-	}
-    if (mt.status != STATUS_OK) {
-        cerr << Serial.output() << endl;
-    }
-    ASSERTEQUAL(STATUS_OK, mt.status);
-    mt.loop();
-    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
-    return Serial.output();
 }
 
 void test_homz() {

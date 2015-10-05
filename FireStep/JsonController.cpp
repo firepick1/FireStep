@@ -834,7 +834,7 @@ Status JsonController::processEEPROM(JsonCommand& jcmd, JsonObject& jobj, const 
     return status;
 }
 
-Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
+Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool pullUp) {
     const char *pinStr = *key == 'd' || *key == 'a' ? key+1 : key+3;
     long pinLong = strtol(pinStr, NULL, 10);
     if (machine.isCorePin(pinLong)) {
@@ -848,10 +848,10 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
     bool isAnalog = *key == 'a' || strncmp("ioa",key,3)==0;
     if (s && *s == 0) { // read
         if (isAnalog) {
-            pinMode(pin+A0, INPUT);
+            pinMode(pin+A0, pullUp ? INPUT_PULLUP : INPUT); // maybe INPUT_PULLUP should be error
             jobj[key] = analogRead(pin+A0);
         } else {
-            pinMode(pin, INPUT);
+            pinMode(pin, pullUp ? INPUT_PULLUP : INPUT);
             jobj[key] = (bool) digitalRead(pin);
         }
     } else if (isAnalog) {
@@ -909,20 +909,31 @@ Status JsonController::processProgram(JsonCommand& jcmd, JsonObject& jobj, const
     return status;
 }
 
-Status JsonController::processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key) {
-    Status status = STATUS_NOT_IMPLEMENTED;
+Status JsonController::processIO(JsonCommand& jcmd, JsonObject& jobj, const char* key, bool pullUp) {
+    Status status = STATUS_OK;
     if (strcmp_PS(OP_io, key) == 0) {
         JsonObject& kidObj = jobj[key];
         if (!kidObj.success()) {
             return jcmd.setError(STATUS_JSON_OBJECT, key);
         }
+		char pu[10];
+		strcpy_P(pu, OP_pu);
+		if (kidObj.at(pu).success()) {
+			pullUp = kidObj[pu];
+			TESTCOUT1("iopu:", pullUp);
+		}
         for (JsonObject::iterator it = kidObj.begin(); it != kidObj.end(); ++it) {
-            status = processIO(jcmd, kidObj, it->key);
+            status = processIO(jcmd, kidObj, it->key, pullUp);
+			if (status < 0) {
+				return status;
+			}
         }
+    } else if (strcmp_PS(OP_pu,key)==0) {
+		// handled above
     } else if (strncmp("d",key,1)==0 || strncmp("iod",key,3)==0) {
-        status = processIOPin(jcmd, jobj, key);
+        status = processIOPin(jcmd, jobj, key, pullUp);
     } else if (strncmp("a",key,1)==0 || strncmp("ioa",key,3)==0) {
-        status = processIOPin(jcmd, jobj, key);
+        status = processIOPin(jcmd, jobj, key, pullUp);
     } else {
         return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
     }

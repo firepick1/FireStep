@@ -6,6 +6,10 @@ v2.0 (pending)
 * NEW: IFireStep interface implemented by: FireStepSerial, FireStepDuino
 * NEW: IDuino interface implemented by: Mega2560, MockDuino
 
+v1.050
+------
+* NEW: "iod" now has "pu" boolean attribute for INPUT_PULLUP
+
 v1.040
 ------
 * NEW: MTO_FPD: "movaa" moves all arms to given angle
