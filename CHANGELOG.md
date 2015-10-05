@@ -14,6 +14,7 @@ v1.040
 * NEW: MTO_FPD: {"pgmx":"dim-lc-400"} sets dimensions for Loose Canon FirePick Delta (400 steps/revolution steppers)
 * NEW: MTO_FPD: {"pgmx":"dim-tw-200"} sets dimensions for Tin Whiskers FirePick Delta (200 steps/revolution steppers)
 * NEW: MTO_FPD: {"pgmx":"dim-tw-400"} sets dimensions for Tin Whiskers FirePick Delta (400 steps/revolution steppers)
+* NEW: MTO_FPD: "hom" now has an optional attribute "hz" to set the homing Z, which defaults to 0.
 
 v1.031
 ------

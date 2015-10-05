@@ -330,6 +330,7 @@ public:
     PinType		pinStatus;
     Topology	topology;
     OutputMode	outputMode;
+	PH5TYPE		homeZ;
     struct {
         OpProbe		probe;
     } op;

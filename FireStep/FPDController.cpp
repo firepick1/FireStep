@@ -685,6 +685,7 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
             jcmd.addQueryAttr(node, OP_gr);
             jcmd.addQueryAttr(node, OP_ha);
             jcmd.addQueryAttr(node, OP_hp);
+            jcmd.addQueryAttr(node, OP_hz);
             jcmd.addQueryAttr(node, OP_mi);
             jcmd.addQueryAttr(node, OP_re);
             jcmd.addQueryAttr(node, OP_rf);
@@ -770,6 +771,8 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         machine.axis[2].position *= scale;
         machine.searchDelay /= scale;
         machine.delta.setMicrosteps(value);
+    } else if (strcmp_PS(OP_hz, key) == 0 || strcmp_PS(OP_hz, key+3) == 0) {
+		status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.homeZ);
     } else if (strcmp_PS(OP_pd, key) == 0 || strcmp_PS(OP_dimpd, key) == 0) {
         status = processProbeData(jcmd, jobj, key);
     } else if (strcmp_PS(OP_re, key) == 0 || strcmp_PS(OP_dimre, key) == 0) {
@@ -869,7 +872,7 @@ Status FPDController::finalizeHome(JsonCommand& jcmd, JsonObject& jobj, const ch
     // calculate distance to post-home destination
     machine.loadDeltaCalculator();
     Quad<StepCoord> limit = machine.getMotorPosition();
-    XYZ3D xyzPostHome(0,0,0); // post-home destination
+    XYZ3D xyzPostHome(0,0,machine.homeZ); // post-home destination
     Step3D oPulses = machine.delta.calcPulses(xyzPostHome);
     TESTCOUT3("finalizeHome x home:", machine.delta.getHomePulses(), " pos:", machine.axis[0].position, " dst:", oPulses.p1);
     machine.op.probe.setup(limit, Quad<StepCoord>(

@@ -214,7 +214,7 @@ Machine::Machine(IDuinoPtr pDuino)
     : pDuino(pDuino), autoHome(false),invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
       tvMax(0.7), fastSearchPulses(FPD_FAST_SEARCH_PULSES),
       searchDelay(FPD_SEARCH_DELAY), pinStatus(NOPIN), topology(MTO_RAW),
-      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0)
+      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0), homeZ(0)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -307,6 +307,7 @@ int32_t Machine::hash() {
     result = result ^ (searchDelay);
     result = result ^ (pinStatus);
     result = result ^ (delta.getSteps360());
+    result = result ^ (*(uint32_t *)(void*)&homeZ);
     result = result ^ (*(uint32_t *)(void*)&bed.a);
     result = result ^ (*(uint32_t *)(void*)&bed.b);
     result = result ^ (*(uint32_t *)(void*)&bed.c);
@@ -870,6 +871,7 @@ char * Machine::saveDimConfig(char *out, size_t maxLen) {
     out = saveConfigValue("gr2", delta.getGearRatio(DELTA_AXIS_2), out, 5);
     out = saveConfigValue("gr3", delta.getGearRatio(DELTA_AXIS_3), out, 5);
     out = saveConfigValue("ha", homeAngle, out);
+    out = saveConfigValue("hz", homeZ, out);
     out = saveConfigValue("mi", delta.getMicrosteps(), out);
     out = saveConfigValue("re", delta.getEffectorLength(), out);
     out = saveConfigValue("rf", delta.getBaseArmLength(), out);

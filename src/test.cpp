@@ -240,7 +240,7 @@ void test_Machine() {
     out = machine.saveDimConfig(buf, sizeof(buf));
     ASSERTEQUALS(JT("{'bx':0.0002,'by':-0.0003,'bz':0.00,"
                     "'e':131.64,'f':190.53,'gr1':"FPD_GEAR_RATIO_S5",'gr2':"FPD_GEAR_RATIO_S5",'gr3':"FPD_GEAR_RATIO_S5","
-                    "'ha':-67.20,'mi':16,'re':270.00,'rf':90.00,'spa':"FPD_SPE_ANGLE_S",'spr':0.00000,'st':200}"),
+                    "'ha':-67.20,'hz':0.00,'mi':16,'re':270.00,'rf':90.00,'spa':"FPD_SPE_ANGLE_S",'spr':0.00000,'st':200}"),
                  buf);
     ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
 
@@ -1972,7 +1972,7 @@ void test_MTO_FPD_dim() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
                     "'bx':0.0000,'by':0.0000,'bz':0.000,'e':131.636,'f':190.526,'gr':"FPD_GEAR_RATIO_S","
-                    "'ha':-67.202,'hp':"FPD_HOME_PULSES_S",'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':0.000,'st':200}"
+                    "'ha':-67.202,'hp':"FPD_HOME_PULSES_S",'hz':0.000,'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':0.000,'st':200}"
                     "},'t':0.000} \n"),
                  Serial.output().c_str());
     ASSERTEQUALT(FPD_GEAR_RATIO, dc.getGearRatio(), 0.001);
@@ -1988,7 +1988,7 @@ void test_MTO_FPD_dim() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
                     "'bx':0.0000,'by':0.0000,'bz':0.000,'e':131.636,'f':190.526,'gr':"FPD_GEAR_RATIO_S","
-                    "'ha':"FPD_HOME_ANGLE_S",'hp':"FPD_HOME_PULSES_S",'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':0.000,'st':200}"
+                    "'ha':"FPD_HOME_ANGLE_S",'hp':"FPD_HOME_PULSES_S",'hz':0.000,'mi':16,'re':270.000,'rf':90.000,'spa':"FPD_SPE_ANGLE_S",'spr':0.000,'st':200}"
                     "},'t':0.000} \n"),
                  Serial.output().c_str());
     ASSERTEQUALT(FPD_GEAR_RATIO, dc.getGearRatio(), 0.001);
@@ -2134,7 +2134,7 @@ void test_MTO_FPD_dim() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
                     "'bx':0.0000,'by':0.0000,'bz':0.000,'e':"FPD_DELTA_E_S",'f':"FPD_DELTA_F_S",'gr':"FPD_GEAR_RATIO_S","
-                    "'ha':"FPD_HOME_ANGLE_S",'hp':"FPD_SPE_HOME_PULSES_S",'mi':16,'re':"FPD_DELTA_RE_S",'rf':"FPD_DELTA_RF_S","
+                    "'ha':"FPD_HOME_ANGLE_S",'hp':"FPD_SPE_HOME_PULSES_S",'hz':0.000,'mi':16,'re':"FPD_DELTA_RE_S",'rf':"FPD_DELTA_RF_S","
                     "'spa':"FPD_SPE_ANGLE_S",'spr':"FPD_SPE_RATIO_S",'st':200}"
                     "},'t':0.000} \n"),
                  Serial.output().c_str());
@@ -2152,7 +2152,7 @@ void test_MTO_FPD_dim() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'dim':{"
                     "'bx':0.0000,'by':0.0000,'bz':0.000,'e':"FPD_DELTA_E_S",'f':"FPD_DELTA_F_S",'gr':"FPD_GEAR_RATIO_S","
-                    "'ha':"FPD_HOME_ANGLE_S",'hp':"FPD_SPE_HOME_PULSES_S",'mi':16,'re':"FPD_DELTA_RE_S",'rf':"FPD_DELTA_RF_S","
+                    "'ha':"FPD_HOME_ANGLE_S",'hp':"FPD_SPE_HOME_PULSES_S",'hz':0.000,'mi':16,'re':"FPD_DELTA_RE_S",'rf':"FPD_DELTA_RF_S","
                     "'spa':"FPD_SPE_ANGLE_S",'spr':"FPD_SPE_RATIO_S",'st':200}"
                     "},'t':0.000} \n"),
                  Serial.output().c_str());
@@ -5054,6 +5054,25 @@ string test_cmd(MachineThread &mt, int line, const char *cmd, int homeLoops=-1, 
     return Serial.output();
 }
 
+void test_homz() {
+    cout << "TEST	: test_homz() =====" << endl;
+
+    {   
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        string response;
+
+        response = test_cmd(mt, __LINE__, JT("{'dimhz':10.5}\n"));
+		ASSERTEQUALS(JT("{'s':0,'r':{'dimhz':10.500},'t':0.???} \n"), response.c_str());
+        ASSERTEQUALT(10.5, machine.homeZ, 0.001);
+
+        response = test_cmd(mt, __LINE__, JT("{'hom':''}\n"), 500, -1);
+		ASSERTQUAD(Quad<StepCoord>(-582, -582, -582, 0), machine.getMotorPosition());
+    }
+
+    cout << "TEST	: test_homz() OK " << endl;
+}
+
 void test_calgr() {
     cout << "TEST	: test_calgr() =====" << endl;
 
@@ -5318,6 +5337,7 @@ int main(int argc, char *argv[]) {
         test_Armin();
         test_calho();
         test_calgr();
+		test_homz();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;
