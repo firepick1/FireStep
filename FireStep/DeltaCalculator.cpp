@@ -144,7 +144,7 @@ StepCoord DeltaCalculator::calcSPEPulses(PH5TYPE armAngle, DeltaAxis axis) {
                   " spePulses:", spePulses, " criticalPulses:", criticalPulses);
     } else {
         pulses = roundStep(armAngle/dpp);
-        TESTCOUT3("calcSPEPulses speDegrees:", speDegrees, " pulses:", pulses, " criticalPulses:", criticalPulses);
+        //TESTCOUT3("calcSPEPulses speDegrees:", speDegrees, " pulses:", pulses, " criticalPulses:", criticalPulses);
     }
     return pulses;
 }

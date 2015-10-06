@@ -6,6 +6,10 @@ v2.0 (pending)
 * NEW: IFireStep interface implemented by: FireStepSerial, FireStepDuino
 * NEW: IDuino interface implemented by: Mega2560, MockDuino
 
+v1.060
+------
+* NEW: "syspu" sets pullup flags for limit switches and probe
+
 v1.050
 ------
 * NEW: "iod" now has "pu" boolean attribute for INPUT_PULLUP

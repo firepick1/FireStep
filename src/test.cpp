@@ -35,10 +35,20 @@ string test_cmd(MachineThread &mt, int line, const char *cmd, int homeLoops=-1, 
     Serial.push(cmd);
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-	arduino.setPin(PC2_X_MIN_PIN, LOW); 
-	arduino.setPin(PC2_Y_MIN_PIN, LOW);
-	arduino.setPin(PC2_Z_MIN_PIN, LOW);
-	arduino.setPin(PC2_PROBE_PIN, LOW);
+	if (arduino.getPin(PC2_X_MIN_PIN) == NOVALUE) {
+		arduino.setPin(PC2_X_MIN_PIN, mt.machine.pullups & PULLUP_LIMIT_MIN ? HIGH : LOW); 
+	}
+	if (arduino.getPin(PC2_Y_MIN_PIN) == NOVALUE) {
+		arduino.setPin(PC2_Y_MIN_PIN, mt.machine.pullups & PULLUP_LIMIT_MIN ? HIGH : LOW);
+	}
+	if (arduino.getPin(PC2_Z_MIN_PIN) == NOVALUE) {
+		arduino.setPin(PC2_Z_MIN_PIN, mt.machine.pullups & PULLUP_LIMIT_MIN ? HIGH : LOW);
+	}
+	if (arduino.getPin(PC2_PROBE_PIN) == NOVALUE) {
+		arduino.setPin(PC2_PROBE_PIN, mt.machine.pullups & PULLUP_PROBE ? HIGH : LOW);
+		//TESTCOUT2("PC2_PROBE_PIN mode:", (int) arduino.getPinMode(PC2_PROBE_PIN), 
+				  //" value:", arduino.getPin(PC2_PROBE_PIN));
+	}
     do {
         mt.loop();
     } while (mt.status == STATUS_BUSY_PARSED);
@@ -49,16 +59,16 @@ string test_cmd(MachineThread &mt, int line, const char *cmd, int homeLoops=-1, 
 			arduino.setPin(PC2_Z_MIN_PIN, HIGH); // trip home switch
 		}
 		if (probeLoops >= 0 && i >= probeLoops) {
+			TESTCOUT1("PC2_PROBE_PIN:", "HIGH");
 			arduino.setPin(PC2_PROBE_PIN, HIGH); // no contact probe
 		}
 		if (mt.status == STATUS_BUSY_MOVING) {
-			cerr << ".";
+			cerr << "STATUS_BUSY_MOVING" << endl;
 			mt.loop();
 		} else if (mt.status == STATUS_BUSY_CALIBRATING) {
-			cerr << "*";
+			cerr << "STATUS_BUSY_CALIBRATING" << endl;
 			mt.loop();
 		} else {
-			cerr << endl;
 			break;
 		}
 	}
@@ -275,7 +285,7 @@ void test_Machine() {
     out = machine.saveSysConfig(buf, sizeof(buf));
 #define HASH1 "1128538036"
     ASSERTEQUALS(JT("{'ch':" HASH1 ",'pc':2,'to':0,'ah':0,'db':0,'hp':3,'jp':0,'lh':0,"
-                    "'mv':12800,'om':0,'pb':2,'pi':11,'tv':0.70}"),
+                    "'mv':12800,'om':0,'pb':2,'pi':11,'pu':0,'tv':0.70}"),
                  buf);
     ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
     machine.bed.a = 0.00015;
@@ -622,6 +632,7 @@ MachineThread test_setup(bool clearArduino=true) {
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_ENABLE_PIN)); // enabled
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Y_ENABLE_PIN)); // enabled
     ASSERTEQUAL(LOW, arduino.getPin(PC2_Z_ENABLE_PIN)); // enabled
+    ASSERTEQUAL(NOVALUE, arduino.getPin(PC2_PROBE_PIN)); 
     if (clearArduino) {
         ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
         mt.loop();
@@ -814,7 +825,7 @@ void test_JsonController() {
     char sysbuf[500];
     const char *fmt = "{'s':%d,'r':{'sys':"\
                       "{'ah':false,'as':false,'eu':false,'hp':3,'jp':false,'lh':false,"\
-                      "'mv':12800,'om':0,'pb':2,'pc':2,'pi':11,'sd':800,"\
+                      "'mv':12800,'om':0,'pb':2,'pc':2,'pi':11,'pu':0,'sd':800,"\
                       "'to':0,'tv':0.700,'v':%.3f}"\
                       "},'t':0.000} \n";
     snprintf(sysbuf, sizeof(sysbuf), JT(fmt),
@@ -1367,7 +1378,7 @@ void test_sys() {
     ASSERTEQUALS(JT("{'s':0,'r':"
                     "{'sys':{'ah':false,'as':false,'eu':false,"
                     "'hp':3,'jp':false,'lh':false,'mv':12800,'om':0,"
-                    "'pb':3,'pc':2,'pi':57,'sd':400,'to':1,'tv':0.700,'v':1.???}"
+                    "'pb':3,'pc':2,'pi':57,'pu':0,'sd':400,'to':1,'tv':0.700,'v':1.???}"
                     "},'t':0.000} \n"),
                  Serial.output().c_str());
     mt.loop();
@@ -3184,7 +3195,7 @@ void test_autoSync() {
     string eeprom3 = eeprom_read_string(0);
     ASSERTEQUALS(JT( "["
                      "{'sys':{'ch':" HASH3 ",'pc':2,'to':0,'ah':1,'db':0,'hp':3,'jp':0,"
-                     "'lh':0,'mv':12800,'om':3,'pb':2,'pi':11,'tv':0.70}},"
+                     "'lh':0,'mv':12800,'om':3,'pb':2,'pi':11,'pu':0,'tv':0.70}},"
                      "{'x':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'y':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'z':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
@@ -3221,7 +3232,7 @@ void test_autoSync() {
     ASSERTEQUALS(eeprom3.c_str(), eeprom_read_string(0).c_str());
     ASSERTEQUALS(JT("{'s':0,'r':"
                     "{'sys':{'ch':" HASH3 ",'pc':2,'to':0,'ah':true,'db':0,'hp':3,"
-                    "'jp':false,'lh':false,'mv':12800,'om':3,'pb':2,'pi':11,'tv':0.700}},"
+                    "'jp':false,'lh':false,'mv':12800,'om':3,'pb':2,'pi':11,'pu':0,'tv':0.700}},"
                     "'t':0.000} \n"),
                  Serial.output().c_str());
     mt.loop(); // x
@@ -3450,6 +3461,7 @@ void test_io() {
     ASSERTEQUAL(INPUT, arduino.getPinMode(22));
 
 	// INPUT_PULLUP
+	arduino.setPin(22, NOVALUE);
 	response = test_cmd(mt, __LINE__, JT("{'io':{'d22':'','pu':true}}\n"));
     ASSERTEQUALS(JT("{'s':0,'r':{'io':{'d22':true,'pu':true}},'t':0.000} \n"), response.c_str());
     ASSERTEQUAL(INPUT_PULLUP, arduino.getPinMode(22));
@@ -5079,6 +5091,72 @@ void test_homz() {
     cout << "TEST	: test_homz() OK " << endl;
 }
 
+void test_probe_pullup() {
+    cout << "TEST	: test_probe_pullup() =====" << endl;
+
+    {   // INPUT default pin value
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        string response;
+
+        response = test_cmd(mt, __LINE__, JT("{'prbz':''}\n"), -1, 2);
+		ASSERTEQUALS(JT("{'s':0,'r':{'prbz':65.884},'t':0.???} \n"), response.c_str());
+        ASSERTEQUAL(INPUT, arduino.getPinMode(PC2_PROBE_PIN));
+    }
+
+    {   // INPUT initially LOW
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        string response;
+
+		arduino.setPin(PC2_PROBE_PIN, LOW);
+        response = test_cmd(mt, __LINE__, JT("{'prbz':''}\n"), -1, 2);
+		ASSERTEQUALS(JT("{'s':0,'r':{'prbz':65.884},'t':0.???} \n"), response.c_str());
+        ASSERTEQUAL(INPUT, arduino.getPinMode(PC2_PROBE_PIN));
+    }
+
+    {   // INPUT initially HIGH
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        string response;
+
+		arduino.setPin(PC2_PROBE_PIN, HIGH);
+        response = test_cmd(mt, __LINE__, JT("{'prbz':''}\n"), -1, 2);
+		ASSERTEQUALS(JT("{'s':0,'r':{'prbz':65.892},'t':0.???} \n"), response.c_str());
+        ASSERTEQUAL(INPUT, arduino.getPinMode(PC2_PROBE_PIN));
+    }
+
+    {   // INPUT_PULLUP forced LOW
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        string response;
+
+        response = test_cmd(mt, __LINE__, JT("{'syspu':1}\n"));
+		ASSERTEQUALS(JT("{'s':0,'r':{'syspu':1},'t':0.???} \n"), response.c_str());
+		ASSERTEQUAL(1, machine.pullups);
+		arduino.setPin(PC2_PROBE_PIN, LOW);
+        response = test_cmd(mt, __LINE__, JT("{'prbz':''}\n"), -1, 2);
+		ASSERTEQUALS(JT("{'s':0,'r':{'prbz':65.884},'t':0.???} \n"), response.c_str());
+        ASSERTEQUAL(INPUT_PULLUP, arduino.getPinMode(PC2_PROBE_PIN));
+    }
+
+    {   // INPUT_PULLUP forced HIGH
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        string response;
+
+        response = test_cmd(mt, __LINE__, JT("{'syspu':1}\n"));
+		ASSERTEQUALS(JT("{'s':0,'r':{'syspu':1},'t':0.???} \n"), response.c_str());
+		ASSERTEQUAL(1, machine.pullups);
+		arduino.setPin(PC2_PROBE_PIN, HIGH);
+        response = test_cmd(mt, __LINE__, JT("{'prbz':''}\n"), -1, 2);
+		ASSERTEQUALS(JT("{'s':0,'r':{'prbz':65.892},'t':0.???} \n"), response.c_str());
+        ASSERTEQUAL(INPUT_PULLUP, arduino.getPinMode(PC2_PROBE_PIN));
+    }
+
+    cout << "TEST	: test_probe_pullup() OK " << endl;
+}
+
 void test_calgr() {
     cout << "TEST	: test_calgr() =====" << endl;
 
@@ -5344,6 +5422,7 @@ int main(int argc, char *argv[]) {
         test_calho();
         test_calgr();
 		test_homz();
+		test_probe_pullup();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;

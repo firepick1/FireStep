@@ -264,6 +264,7 @@ extern const char OP_sysom[];
 extern const char OP_syspb[];
 extern const char OP_syspc[];
 extern const char OP_syspi[];
+extern const char OP_syspu[];
 extern const char OP_syssd[];
 extern const char OP_systc[];
 extern const char OP_systo[];

@@ -257,7 +257,6 @@ public:
         if (pinProbe == NOPIN) {
             probing = false;
         } else {
-            pinMode(pinProbe, INPUT);
             probing = true;
         }
     }
@@ -304,6 +303,11 @@ public:
     }
 } ZPlane;
 
+
+#define PULLUP_PROBE 		0x1
+#define PULLUP_LIMIT_MIN	0x2
+#define PULLUP_LIMIT_MAX 	0x3
+
 typedef class Machine : public QuadStepper {
     friend void ::test_Home();
 
@@ -318,6 +322,7 @@ public:
     bool		invertLim;
     bool		jsonPrettyPrint;
     bool		autoSync; // auto-save configuration to EEPROM
+    uint8_t		pullups;
     uint8_t		debounce;
     AxisIndex	motor[MOTOR_COUNT];
     Display 	nullDisplay;
@@ -330,7 +335,7 @@ public:
     PinType		pinStatus;
     Topology	topology;
     OutputMode	outputMode;
-	PH5TYPE		homeZ;
+    PH5TYPE		homeZ;
     struct {
         OpProbe		probe;
     } op;
@@ -441,6 +446,9 @@ public:
     }
     void setHomeAngle(PH5TYPE degrees);
     void setHomeAngleFromPulses(StepCoord pulseCount);
+    uint8_t pullupMode(uint8_t mask) {
+        return (pullups & mask) ? INPUT_PULLUP : INPUT;
+    }
 } Machine;
 
 #ifdef TEST

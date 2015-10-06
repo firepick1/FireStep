@@ -19,6 +19,7 @@ TESTDECL(int32_t, firestep::delayMicsTotal = 0);
 /////////// Silly things done without snprintf (ARDUINO!!!!) /////////////
 char * firestep::saveConfigValue(const char *key, const char *value, char *out) {
     sprintf(out, "\"%s\":%s,", key, value);
+	//TESTCOUT2("saveConfigValue char* key:", key, " value:", value);
     return out+strlen(out);
 }
 
@@ -28,11 +29,13 @@ char * firestep::saveConfigValue(const char *key, bool value, char *out) {
 
 char * firestep::saveConfigValue(const char *key, int16_t value, char *out) {
     sprintf(out, "\"%s\":%d,", key, value);
+	//TESTCOUT2("saveConfigValue int16 key:", key, " value:", value);
     return out+strlen(out);
 }
 
 char * firestep::saveConfigValue(const char *key, int32_t value, char *out) {
     sprintf(out, "\"%s\":%ld,", key, (long) value);
+	//TESTCOUT2("saveConfigValue int32 key:", key, " value:", value);
     return out+strlen(out);
 }
 
@@ -42,7 +45,7 @@ char * firestep::saveConfigValue(const char *key, PH5TYPE value, char *out, uint
         value = -value;
     }
     int32_t ivalue = value;
-    TESTCOUT3("key:", key, " value:", value, " ivalue:", ivalue);
+    //TESTCOUT3("key:", key, " value:", value, " ivalue:", ivalue);
     if (minus) {
         sprintf(out, "\"%s\":-%ld,", key, (long) ivalue);
     } else {
@@ -214,7 +217,7 @@ Machine::Machine(IDuinoPtr pDuino)
     : pDuino(pDuino), autoHome(false),invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
       tvMax(0.7), fastSearchPulses(FPD_FAST_SEARCH_PULSES),
       searchDelay(FPD_SEARCH_DELAY), pinStatus(NOPIN), topology(MTO_RAW),
-      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0), homeZ(0)
+      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0), homeZ(0), pullups(0)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -300,6 +303,7 @@ int32_t Machine::hash() {
     result = result ^ (jsonPrettyPrint ? (BIT_HASH << 19) : 0);
     result = result ^ (autoHome ? (BIT_HASH << 20) : 0);
     result = result ^ delta.hash();
+	result = result ^ (pullups);
     result = result ^ (vMax);
     result = result ^ (*(uint32_t *)(void*)&tvMax);
     result = result ^ (debounce);
@@ -344,27 +348,27 @@ Status Machine::setPinConfig_EMC02() {
     op.probe.pinProbe = PC1_PROBE_PIN;
     setPin(axis[0].pinStep, PC1_X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, PC1_X_DIR_PIN, OUTPUT);
-    setPin(axis[0].pinMin, PC1_X_MIN_PIN, INPUT);
+    setPin(axis[0].pinMin, PC1_X_MIN_PIN, pullupMode(PULLUP_LIMIT_MIN));
     setPin(axis[0].pinEnable, PC1_X_ENABLE_PIN, OUTPUT, HIGH);
     setPin(axis[1].pinStep, PC1_Y_STEP_PIN, OUTPUT);
     setPin(axis[1].pinDir, PC1_Y_DIR_PIN, OUTPUT);
-    setPin(axis[1].pinMin, PC1_Y_MIN_PIN, INPUT);
+    setPin(axis[1].pinMin, PC1_Y_MIN_PIN, pullupMode(PULLUP_LIMIT_MIN));
     setPin(axis[1].pinEnable, PC1_Y_ENABLE_PIN, OUTPUT, HIGH);
     setPin(axis[2].pinStep, PC1_Z_STEP_PIN, OUTPUT);
     setPin(axis[2].pinDir, PC1_Z_DIR_PIN, OUTPUT);
-    setPin(axis[2].pinMin, PC1_Z_MIN_PIN, INPUT);
+    setPin(axis[2].pinMin, PC1_Z_MIN_PIN, pullupMode(PULLUP_LIMIT_MIN));
     setPin(axis[2].pinEnable, PC1_Z_ENABLE_PIN, OUTPUT, HIGH);
     setPin(axis[3].pinStep, PC1_TOOL_STEP_PIN, OUTPUT);
     setPin(axis[3].pinDir, PC1_TOOL_DIR_PIN, OUTPUT);
-    setPin(axis[3].pinMin, NOPIN, INPUT);
+    setPin(axis[3].pinMin, NOPIN, pullupMode(PULLUP_LIMIT_MIN));
     setPin(axis[3].pinEnable, PC1_TOOL1_ENABLE_PIN, OUTPUT, HIGH);
     setPin(axis[4].pinStep, PC1_TOOL_STEP_PIN, OUTPUT);
     setPin(axis[4].pinDir, PC1_TOOL_DIR_PIN, OUTPUT);
-    setPin(axis[4].pinMin, NOPIN, INPUT);
+    setPin(axis[4].pinMin, NOPIN, pullupMode(PULLUP_LIMIT_MIN));
     setPin(axis[4].pinEnable, PC1_TOOL2_ENABLE_PIN, OUTPUT, HIGH);
     setPin(axis[5].pinStep, PC1_TOOL_STEP_PIN, OUTPUT);
     setPin(axis[5].pinDir, PC1_TOOL_DIR_PIN, OUTPUT);
-    setPin(axis[5].pinMin, NOPIN, INPUT);
+    setPin(axis[5].pinMin, NOPIN, pullupMode(PULLUP_LIMIT_MIN));
     setPin(axis[5].pinEnable, PC1_TOOL3_ENABLE_PIN, OUTPUT, HIGH);
 
     //FirePick Delta specific stuff
@@ -404,15 +408,15 @@ Status Machine::setPinConfig_RAMPS1_4() {
     op.probe.pinProbe = PC2_PROBE_PIN;
     setPin(axis[0].pinStep, PC2_X_STEP_PIN, OUTPUT);
     setPin(axis[0].pinDir, PC2_X_DIR_PIN, OUTPUT);
-    setPin(axis[0].pinMin, PC2_X_MIN_PIN, INPUT);
+    setPin(axis[0].pinMin, PC2_X_MIN_PIN, pullupMode(PULLUP_LIMIT_MIN));
     setPin(axis[0].pinEnable, PC2_X_ENABLE_PIN, OUTPUT, HIGH);
     setPin(axis[1].pinStep, PC2_Y_STEP_PIN, OUTPUT);
     setPin(axis[1].pinDir, PC2_Y_DIR_PIN, OUTPUT);
-    setPin(axis[1].pinMin, PC2_Y_MIN_PIN, INPUT);
+    setPin(axis[1].pinMin, PC2_Y_MIN_PIN, pullupMode(PULLUP_LIMIT_MIN));
     setPin(axis[1].pinEnable, PC2_Y_ENABLE_PIN, OUTPUT, HIGH);
     setPin(axis[2].pinStep, PC2_Z_STEP_PIN, OUTPUT);
     setPin(axis[2].pinDir, PC2_Z_DIR_PIN, OUTPUT);
-    setPin(axis[2].pinMin, PC2_Z_MIN_PIN, INPUT);
+    setPin(axis[2].pinMin, PC2_Z_MIN_PIN, pullupMode(PULLUP_LIMIT_MIN));
     setPin(axis[2].pinEnable, PC2_Z_ENABLE_PIN, OUTPUT, HIGH);
     setPin(axis[3].pinStep, PC2_E0_STEP_PIN, OUTPUT);
     setPin(axis[3].pinDir, PC2_E0_DIR_PIN, OUTPUT);
@@ -707,6 +711,7 @@ Status Machine::probe(Status status, DelayMics delay) {
     if (op.probe.pinProbe == NOPIN) {
         return STATUS_PROBE_PIN;
     }
+	pinMode(op.probe.pinProbe, pullupMode(PULLUP_PROBE));
     for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         Axis &a(*motorAxis[i]);
         if (op.probe.start.value[i]!=op.probe.end.value[i] && !a.enabled) {
@@ -851,6 +856,7 @@ char * Machine::saveSysConfig(char *out, size_t maxLen) {
     out = saveConfigValue("om", outputMode, out);
     out = saveConfigValue("pb", op.probe.pinProbe, out);
     out = saveConfigValue("pi", pinStatus, out);
+    out = saveConfigValue("pu", pullups, out);
     out = saveConfigValue("tv", tvMax, out);
 
     out--;

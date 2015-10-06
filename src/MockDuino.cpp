@@ -236,6 +236,10 @@ void digitalWrite(int16_t pin, int16_t value) {
 
 int16_t digitalRead(int16_t pin) {
     ASSERT(0 <= pin && pin < ARDUINO_PINS);
+	if (arduino._pinMode[pin] == NOVALUE) {
+		cerr << "digitalRead(" << pin << ") pinMode:NOVALUE" << endl;
+	}
+    ASSERT(arduino._pinMode[pin] != NOVALUE);
 	if (arduino.pin[pin] == NOVALUE) {
 		cerr << "digitalRead(" << pin << ") NOVALUE" << endl;
 	}
@@ -247,7 +251,12 @@ void pinMode(int16_t pin, int16_t inout) {
     ASSERT(0 <= pin && pin < ARDUINO_PINS);
     arduino._pinMode[pin] = inout;
 	if (inout == INPUT_PULLUP) {
-		arduino.pin[pin] = HIGH;
+		if (arduino.pin[pin] == NOVALUE) {
+			arduino.pin[pin] = HIGH;
+			TESTCOUT2("pinMode INPUT_PULLUP pin:", pin, " value:", arduino.pin[pin]);
+		} else {
+			//TESTCOUT3("pinMode pin:", pin, " mode:", inout, " value:", arduino.pin[pin]);
+		}
 	}
 }
 
@@ -263,6 +272,7 @@ int16_t MockDuino::getPin(int16_t pin) {
 
 void MockDuino::setPin(int16_t pin, int16_t value) {
     if (pin != NOPIN) {
+		//TESTCOUT2("setPin pin:", pin, " value:", value);
 		ASSERT(0 <= pin && pin < ARDUINO_PINS);
         arduino.pin[pin] = value;
     }

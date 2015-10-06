@@ -239,6 +239,7 @@ const char firestep::OP_sysom[] PROGMEM = { "sysom" };
 const char firestep::OP_syspb[] PROGMEM = { "syspb" };
 const char firestep::OP_syspc[] PROGMEM = { "syspc" };
 const char firestep::OP_syspi[] PROGMEM = { "syspi" };
+const char firestep::OP_syspu[] PROGMEM = { "syspu" };
 const char firestep::OP_syssd[] PROGMEM = { "syssd" };
 const char firestep::OP_systc[] PROGMEM = { "systc" };
 const char firestep::OP_systo[] PROGMEM = { "systo" };

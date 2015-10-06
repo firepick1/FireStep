@@ -375,9 +375,11 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
         status = processPin(jobj, key, axis.pinEnable, OUTPUT,
                             axis.isEnabled() ? PIN_ENABLE : PIN_DISABLE);
     } else if (strcmp_PS(OP_pm, key) == 0 || strcmp_PS(OP_pm, key + 1) == 0) {
-        status = processPin(jobj, key, axis.pinMax, INPUT);
+        status = processPin(jobj, key, axis.pinMax, 
+							machine.pullupMode(PULLUP_LIMIT_MAX));
     } else if (strcmp_PS(OP_pn, key) == 0 || strcmp_PS(OP_pn, key + 1) == 0) {
-        status = processPin(jobj, key, axis.pinMin, INPUT);
+        status = processPin(jobj, key, axis.pinMin, 
+							machine.pullupMode(PULLUP_LIMIT_MIN));
     } else if (strcmp_PS(OP_po, key) == 0 || strcmp_PS(OP_po, key + 1) == 0) {
         status = processField<StepCoord, int32_t>(jobj, key, axis.position);
     } else if (strcmp_PS(OP_ps, key) == 0 || strcmp_PS(OP_ps, key + 1) == 0) {
@@ -624,6 +626,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             jcmd.addQueryAttr(node, OP_pb);
             jcmd.addQueryAttr(node, OP_pc);
             jcmd.addQueryAttr(node, OP_pi);
+            jcmd.addQueryAttr(node, OP_pu);
             jcmd.addQueryAttr(node, OP_sd);
             jcmd.addQueryAttr(node, OP_to);
             jcmd.addQueryAttr(node, OP_tv);
@@ -689,7 +692,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             machine.setPinConfig(pc);
         }
     } else if (strcmp_PS(OP_pb, key) == 0 || strcmp_PS(OP_syspb, key) == 0) {
-        status = processPin(jobj, key, machine.op.probe.pinProbe, INPUT);
+        status = processPin(jobj, key, machine.op.probe.pinProbe, machine.pullupMode(PULLUP_PROBE));
     } else if (strcmp_PS(OP_pi, key) == 0 || strcmp_PS(OP_syspi, key) == 0) {
         PinType pinStatus = machine.pinStatus;
         status = processField<PinType, int32_t>(jobj, key, pinStatus);
@@ -697,6 +700,11 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
             machine.pinStatus = pinStatus;
             machine.pDisplay->setup(pinStatus);
         }
+    } else if (strcmp_PS(OP_pu, key) == 0 || strcmp_PS(OP_syspu, key) == 0) {
+        status = processField<uint8_t, long>(jobj, key, machine.pullups);
+		if (machine.op.probe.pinProbe != NOPIN) {
+			pinMode(machine.op.probe.pinProbe, machine.pullupMode(PULLUP_PROBE));
+		}
     } else if (strcmp_PS(OP_sd, key) == 0 || strcmp_PS(OP_syssd, key) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
     } else if (strcmp_PS(OP_to, key) == 0 || strcmp_PS(OP_systo, key) == 0) {
