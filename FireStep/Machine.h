@@ -306,7 +306,7 @@ public:
 
 #define PULLUP_PROBE 		0x1
 #define PULLUP_LIMIT_MIN	0x2
-#define PULLUP_LIMIT_MAX 	0x3
+#define PULLUP_LIMIT_MAX 	0x4
 
 typedef class Machine : public QuadStepper {
     friend void ::test_Home();
