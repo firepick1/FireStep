@@ -2,6 +2,7 @@
 #define MOCKDUINO_H
 
 #include <stdint.h>
+#include "fireduino_types.h"
 
 namespace mockduino { // fireduino implementation
 	int16_t	digitalRead(int16_t pin);
@@ -13,6 +14,12 @@ namespace mockduino { // fireduino implementation
 	void delayMicroseconds(uint16_t usDelay);
 	uint8_t eeprom_read_byte(uint8_t *addr);
 	void eeprom_write_byte(uint8_t *addr, uint8_t value);
+	uint8_t serial_read();
+	int16_t serial_available();
+	void serial_begin(int32_t baud);
+	void serial_print(const char *value);
+	void serial_print(const char value);
+	void serial_print(int16_t value, int16_t format = DEC);
 }
 
 #define MOCKDUINO_PINS 127

@@ -17,14 +17,6 @@ typedef uint8_t boolean;
 #define NOVALUESTR "32767"
 
 
-#define DEC 1
-#define BYTE 0
-#define HEX 2
-#define HIGH 1
-#define LOW 0
-#define INPUT 0
-#define OUTPUT 1
-#define INPUT_PULLUP 2
 
 #define ADEN 7
 #define ADSC 6

@@ -11,12 +11,18 @@ inline int16_t digitalRead(int16_t pin) {
 #include "MockDuino.h"
 namespace fireduino {
 
-    //virtual byte serial_read();
-    //virtual int serial_available();
-    //virtual void serial_begin(long baud);
-    //virtual void serial_print(const char *value);
-    //virtual void serial_print(const char value);
-    //virtual void serial_print(int value, int format = DEC);
+inline uint8_t serial_read() {
+}
+inline int16_t serial_available() {
+}
+inline void serial_begin(int32_t baud) {
+}
+inline void serial_print(const char *value) {
+}
+inline void serial_print(const char value) {
+}
+inline void serial_print(int16_t value, int16_t format = DEC) {
+}
 //
 //public: // Pins
 inline void pinMode(int16_t pin, int16_t inout) {

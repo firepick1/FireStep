@@ -135,6 +135,25 @@ void SerialType::println(const char *value) {
     write('\n');
 }
 
+uint8_t mockduino::serial_read() {
+	return Serial.read();
+}
+int16_t mockduino::serial_available() {
+	return Serial.available();
+}
+void mockduino::serial_begin(int32_t baud) {
+	Serial.begin(baud);
+}
+void mockduino::serial_print(const char *value) {
+	Serial.print(value);
+}
+void mockduino::serial_print(const char value) {
+	Serial.print(value);
+}
+void mockduino::serial_print(int16_t value, int16_t format) {
+	Serial.print(value, format);
+}
+
 ///////////////////// MockDuino ///////////////////
 
 int __heap_start, *__brkval;
