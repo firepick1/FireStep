@@ -892,12 +892,12 @@ char * Machine::saveDimConfig(char *out, size_t maxLen) {
 
 void Machine::enableEEUser(bool enable) {
     if (isEEUserEnabled() != enable) {
-        eeprom_write_byte((uint8_t *)EEUSER_ENABLED, (uint8_t)(enable ? 'y' : 'n'));
+        fireduino::eeprom_write_byte((uint8_t *)EEUSER_ENABLED, (uint8_t)(enable ? 'y' : 'n'));
     }
 }
 
 bool Machine::isEEUserEnabled() {
-    return 'y' == eeprom_read_byte((uint8_t *)EEUSER_ENABLED);
+    return 'y' == fireduino::eeprom_read_byte((uint8_t *)EEUSER_ENABLED);
 }
 
 void Machine::loadDeltaCalculator() {

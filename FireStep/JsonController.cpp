@@ -577,10 +577,10 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
             Quad<StepCoord> steps1(steps);
             status = machine.pulse(steps1);
             if (status == STATUS_OK) {
-                delay(250);
+                fireduino::delay(250);
                 Quad<StepCoord> steps2(steps.absoluteValue());
                 status = machine.pulse(steps2);
-                delay(250);
+                fireduino::delay(250);
             }
             if (status == STATUS_OK) {
                 status = STATUS_BUSY_MOVING;
@@ -788,14 +788,14 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
         return STATUS_JSON_STRING;
     }
     if (buf[0] == 0) { // query
-        uint8_t c = eeprom_read_byte((uint8_t*) addrLong);
+        uint8_t c = fireduino::eeprom_read_byte((uint8_t*) addrLong);
         if (c && c != 255) {
             char *buf = jcmd.allocate(EEPROM_BYTES);
             if (!buf) {
                 return jcmd.setError(STATUS_JSON_MEM3, key);
             }
             for (int16_t i=0; i<EEPROM_BYTES; i++) {
-                c = eeprom_read_byte((uint8_t*) addrLong+i);
+                c = fireduino::eeprom_read_byte((uint8_t*) addrLong+i);
                 if (c == 255 || c == 0) {
                     buf[i] = 0;
                     break;
@@ -810,11 +810,11 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
             return jcmd.setError(STATUS_JSON_EEPROM, key);
         }
         for (int16_t i=0; i<len; i++) {
-            eeprom_write_byte((uint8_t*)addrLong+i, buf[i]);
+            fireduino::eeprom_write_byte((uint8_t*)addrLong+i, buf[i]);
             TESTCOUT3("EEPROM[", ((int)addrLong+i), "]:",
-                      (char) eeprom_read_byte((uint8_t *) addrLong+i),
+                      (char) fireduino::eeprom_read_byte((uint8_t *) addrLong+i),
                       " ",
-                      (int) eeprom_read_byte((uint8_t *) addrLong+i)
+                      (int) fireduino::eeprom_read_byte((uint8_t *) addrLong+i)
                      );
         }
     }
@@ -1167,7 +1167,7 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
             status = processProbe(jcmd, jobj, it->key);
         } else if (strcmp_PS(OP_idl, it->key) == 0) {
             int16_t ms = it->value;
-            delay(ms);
+            fireduino::delay(ms);
         } else if (strcmp_PS(OP_cmt, it->key) == 0) {
             if (OUTPUT_CMT==(machine.outputMode&OUTPUT_CMT)) {
                 const char *s = it->value;

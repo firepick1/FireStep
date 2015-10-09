@@ -50,13 +50,16 @@ inline int16_t analogRead(int16_t dirPin) {
         //digitalWrite(pin, LOW);
     //}
 //
-//public: // timing
-    //virtual void delay(int ms);
+inline void delay(int ms) {
+	mockduino::delay(ms);
+}
     //virtual void delayMicroseconds(uint16_t usDelay);
-//
-//public: // EEPROM
-    //virtual uint8_t		eeprom_read_byte(uint8_t *addr);
-    //virtual void		eeprom_write_byte(uint8_t *addr, uint8_t value);
+inline uint8_t eeprom_read_byte(uint8_t *addr) {
+	return mockduino::eeprom_read_byte(addr);
+}
+inline void	eeprom_write_byte(uint8_t *addr, uint8_t value) {
+	mockduino::eeprom_write_byte(addr, value);
+}
     //virtual std::string eeprom_read_string(uint8_t *addr);
 //
 //public: // FireStep

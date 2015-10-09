@@ -285,20 +285,20 @@ void MockDuino::setPinMode(int16_t pin, int16_t value) {
     }
 }
 
-void delay(int ms) {
+void mockduino::delay(int ms) {
     arduino.timer1(MS_TICKS(ms));
 }
 
 /////////////// avr/eeprom.h /////////////////
 
-uint8_t eeprom_read_byte(uint8_t *addr) {
+uint8_t mockduino::eeprom_read_byte(uint8_t *addr) {
     if ((size_t) addr < 0 || EEPROM_END <= (size_t) addr) {
         return 255;
     }
     return eeprom_data[(size_t) addr];
 }
 
-void eeprom_write_byte(uint8_t *addr, uint8_t value) {
+void mockduino::eeprom_write_byte(uint8_t *addr, uint8_t value) {
     if (0 <= (size_t) addr && (size_t) addr < EEPROM_END) {
         eeprom_data[(size_t) addr] = value;
     }
@@ -307,7 +307,7 @@ void eeprom_write_byte(uint8_t *addr, uint8_t value) {
 string eeprom_read_string(uint8_t *addr) {
 	string result;
 	for (size_t i=0; i+(size_t)addr<EEPROM_END; i++) {
-		uint8_t b = eeprom_read_byte(i+addr);
+		uint8_t b = mockduino::eeprom_read_byte(i+addr);
 		if (!b) { break; }
 		result += (char) b;
 	}

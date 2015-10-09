@@ -81,14 +81,14 @@ void MachineThread::displayStatus() {
 size_t MachineThread::readEEPROM(uint8_t *eeprom_addr, char *dst, size_t maxLen) {
     DisplayStatus ds = machine.pDisplay->getStatus();
     machine.pDisplay->setStatus(DISPLAY_EEPROM);
-    uint8_t c = eeprom_read_byte(eeprom_addr);
+    uint8_t c = fireduino::eeprom_read_byte(eeprom_addr);
     if (!dst || (c != '{' && c != '[')) {
         return 0;
     }
 
     size_t len = 0;
     for (len=0; len<maxLen-2; len++) {
-        c = eeprom_read_byte(eeprom_addr+len);
+        c = fireduino::eeprom_read_byte(eeprom_addr+len);
         if (c == 255 || c == 0) {
             break;
         }
@@ -222,9 +222,9 @@ Status MachineThread::syncConfig() {
     machine.pDisplay->setStatus(DISPLAY_EEPROM);
     size_t len = strlen(buf);
     uint8_t *eepAddr = 0;
-    eeprom_write_byte(eepAddr, ' '); // disable eeprom
+    fireduino::eeprom_write_byte(eepAddr, ' '); // disable eeprom
     for (int16_t i=1; i<=len; i++) { // include terminator
-        eeprom_write_byte(eepAddr+i, buf[i]);
+        fireduino::eeprom_write_byte(eepAddr+i, buf[i]);
         //if (Serial.available()) { return; }
     }
     machine.pDisplay->setStatus(ds);
@@ -233,8 +233,8 @@ Status MachineThread::syncConfig() {
     status = command.parse(buf, status);
     if (status == STATUS_BUSY_PARSED) {
         machine.syncHash = machine.hash(); // commit saved
-        eeprom_write_byte(eepAddr, buf[0]); // enable eeprom
-        eeprom_write_byte(eepAddr+len-1, 0); // remove EOL
+        fireduino::eeprom_write_byte(eepAddr, buf[0]); // enable eeprom
+        fireduino::eeprom_write_byte(eepAddr+len-1, 0); // remove EOL
         status = STATUS_WAIT_IDLE;
     } else {
         machine.autoSync = false; // no point trying again
@@ -296,7 +296,7 @@ void MachineThread::loop() {
         status = executeEEPROM();
         break;
     case STATUS_BUSY_SETUP: {
-        uint8_t c = eeprom_read_byte((uint8_t*) 0);
+        uint8_t c = fireduino::eeprom_read_byte((uint8_t*) 0);
         if (c == '{' || c == '[') {
             status = STATUS_BUSY_EEPROM;
         } else {
