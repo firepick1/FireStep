@@ -122,12 +122,6 @@ void MonitorThread::loop() {
     if (isHigh) {
         if (verbose) {
             fireduino::serial_print(".");
-            //DEBUG_DEC("F", Free());
-            DEBUG_DEC("S", millis() / 1000);
-            DEBUG_DEC("G", threadClock.generation);
-            DEBUG_DEC("H", nLoops);
-            DEBUG_DEC("T", nTardies);
-            DEBUG_EOL();
         }
         nTardies = 0;
     }
@@ -182,14 +176,12 @@ void ThreadRunner::resetGenerations() {
 
 void firestep::ThreadEnable(boolean enable) {
 #ifdef DEBUG_ThreadENABLE
-    DEBUG_DEC("C", ticks());
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
         fireduino::serial_print(pThread->id);
         fireduino::serial_print(":");
         fireduino::serial_print(pThread->nextLoop.ticks, DEC);
         fireduino::serial_print(" ");
     }
-    DEBUG_EOL();
 #endif
     TIMER_ENABLE(enable);
 }

@@ -4,14 +4,11 @@
 #include "Arduino.h"
 
 namespace fireduino {
-inline int16_t digitalRead(int16_t pin) {
-	return ::digitalRead(pin);
-}
 inline Print& get_Print() {
 	return Serial;
 }
-inline uint8_t serial_read() {
-	return Serial.read
+inline int16_t serial_read() {
+	return Serial.read();
 }
 inline int16_t serial_available() {
 	return Serial.available();

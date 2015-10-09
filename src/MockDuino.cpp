@@ -129,7 +129,7 @@ Print& mockduino::get_Print() {
 	return mockSerial;
 }
 
-uint8_t mockduino::serial_read() {
+int16_t mockduino::serial_read() {
 	return mockSerial.read();
 }
 int16_t mockduino::serial_available() {

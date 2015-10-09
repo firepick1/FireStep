@@ -18,7 +18,7 @@ namespace mockduino { // fireduino implementation
 	uint8_t eeprom_read_byte(uint8_t *addr);
 	void eeprom_write_byte(uint8_t *addr, uint8_t value);
 	Print& get_Print();
-	uint8_t serial_read();
+	int16_t serial_read();
 	int16_t serial_available();
 	void serial_begin(int32_t baud);
 	void serial_print(const char *value);
@@ -84,13 +84,17 @@ typedef class MockDuino {
 		int32_t pulses(int16_t pin);
 		uint32_t get_usDelay() {return usDelay;}
 } MockDuino;
+#define DELAY500NS arduino.delay500ns();
+extern MockDuino arduino;
+
+//extern MockDuino arduino;
 
 namespace fireduino {
 
 inline Print& get_Print() {
 	return mockduino::get_Print();
 }
-inline uint8_t serial_read() {
+inline int16_t serial_read() {
 	return mockduino::serial_read();
 }
 inline int16_t serial_available() {

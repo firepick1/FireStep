@@ -86,8 +86,5 @@ extern "C" {
 #define A14 (A13+1)
 #define A15 (A14+1)
 
-#define DELAY500NS arduino.delay500ns();
-
-extern MockDuino arduino;
 
 #endif
