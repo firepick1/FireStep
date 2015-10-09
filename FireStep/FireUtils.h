@@ -1,6 +1,7 @@
 #ifndef FIREUTILS_H
 #define FIREUTILS_H
 
+#include "fireduino.h"
 #ifndef ARDUINO
 #include <cstdio>
 #endif
