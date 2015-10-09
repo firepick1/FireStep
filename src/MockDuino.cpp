@@ -206,7 +206,7 @@ void MockDuino::timer1(int increment) {
 void MockDuino::delay500ns() {
 }
 
-void delayMicroseconds(uint16_t usDelay) {
+void mockduino::delayMicroseconds(uint16_t usDelay) {
     arduino.usDelay += usDelay;
 }
 

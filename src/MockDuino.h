@@ -3,13 +3,14 @@
 
 #include <stdint.h>
 
-namespace mockduino {
+namespace mockduino { // fireduino implementation
 	int16_t	digitalRead(int16_t pin);
 	void digitalWrite(int16_t dirPin, int16_t value);
 	int16_t analogRead(int16_t pin);
 	void analogWrite(int16_t pin, int16_t value);
 	void pinMode(int16_t pin, int16_t inout);
 	void delay(int ms);
+	void delayMicroseconds(uint16_t usDelay);
 	uint8_t eeprom_read_byte(uint8_t *addr);
 	void eeprom_write_byte(uint8_t *addr, uint8_t value);
 }
@@ -18,7 +19,7 @@ namespace mockduino {
 #define MOCKDUINO_MEM 1024
 
 typedef class MockDuino {
-	friend void delayMicroseconds(uint16_t us);
+	friend void mockduino::delayMicroseconds(uint16_t us);
 	friend void mockduino::digitalWrite(int16_t pin, int16_t value);
 	friend void mockduino::analogWrite(int16_t pin, int16_t value);
 	friend int16_t mockduino::digitalRead(int16_t pin);
