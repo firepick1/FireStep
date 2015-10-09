@@ -64,7 +64,7 @@ void MonitorThread::setup(int pinLED) {
     this->pinLED = pinLED;
     verbose = false;
     if (pinLED != NOPIN) {
-        pinMode(pinLED, OUTPUT);
+        fireduino::pinMode(pinLED, OUTPUT);
     }
     blinkLED = true;
 }

@@ -372,19 +372,19 @@ Status Machine::setPinConfig_EMC02() {
     setPin(axis[5].pinEnable, PC1_TOOL3_ENABLE_PIN, OUTPUT, HIGH);
 
     //FirePick Delta specific stuff
-    pinMode(PC1_TOOL1_ENABLE_PIN,OUTPUT);
-    pinMode(PC1_TOOL2_ENABLE_PIN,OUTPUT);
-    pinMode(PC1_TOOL3_ENABLE_PIN,OUTPUT);
-    pinMode(PC1_TOOL4_ENABLE_PIN,OUTPUT);
-    pinMode(PC1_PWR_SUPPLY_PIN,OUTPUT);
-    pinMode(PC1_TOOL1_DOUT,OUTPUT);
-    pinMode(PC1_TOOL2_DOUT,OUTPUT);
-    pinMode(PC1_TOOL3_DOUT,OUTPUT);
-    pinMode(PC1_TOOL4_DOUT,OUTPUT);
-    pinMode(PC1_SERVO1,OUTPUT);
-    pinMode(PC1_SERVO2,OUTPUT);
-    pinMode(PC1_SERVO3,OUTPUT);
-    pinMode(PC1_SERVO4,OUTPUT);
+    fireduino::pinMode(PC1_TOOL1_ENABLE_PIN,OUTPUT);
+    fireduino::pinMode(PC1_TOOL2_ENABLE_PIN,OUTPUT);
+    fireduino::pinMode(PC1_TOOL3_ENABLE_PIN,OUTPUT);
+    fireduino::pinMode(PC1_TOOL4_ENABLE_PIN,OUTPUT);
+    fireduino::pinMode(PC1_PWR_SUPPLY_PIN,OUTPUT);
+    fireduino::pinMode(PC1_TOOL1_DOUT,OUTPUT);
+    fireduino::pinMode(PC1_TOOL2_DOUT,OUTPUT);
+    fireduino::pinMode(PC1_TOOL3_DOUT,OUTPUT);
+    fireduino::pinMode(PC1_TOOL4_DOUT,OUTPUT);
+    fireduino::pinMode(PC1_SERVO1,OUTPUT);
+    fireduino::pinMode(PC1_SERVO2,OUTPUT);
+    fireduino::pinMode(PC1_SERVO3,OUTPUT);
+    fireduino::pinMode(PC1_SERVO4,OUTPUT);
     fireduino::digitalWrite(PC1_TOOL1_ENABLE_PIN,HIGH);
     fireduino::digitalWrite(PC1_TOOL2_ENABLE_PIN,HIGH);
     fireduino::digitalWrite(PC1_TOOL3_ENABLE_PIN,HIGH);
@@ -533,7 +533,7 @@ AxisIndex Machine::axisOfName(const char *name) {
 void Machine::setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t value) {
     pinDst = pinSrc;
     if (pinDst != NOPIN) {
-        pinMode(pinDst, mode);
+        fireduino::pinMode(pinDst, mode);
         if (mode == OUTPUT) {
             fireduino::digitalWrite(pinDst, value);
         }
@@ -711,7 +711,7 @@ Status Machine::probe(Status status, DelayMics delay) {
     if (op.probe.pinProbe == NOPIN) {
         return STATUS_PROBE_PIN;
     }
-	pinMode(op.probe.pinProbe, pullupMode(PULLUP_PROBE));
+	fireduino::pinMode(op.probe.pinProbe, pullupMode(PULLUP_PROBE));
     for (MotorIndex i = 0; i < QUAD_ELEMENTS; i++) {
         Axis &a(*motorAxis[i]);
         if (op.probe.start.value[i]!=op.probe.end.value[i] && !a.enabled) {

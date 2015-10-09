@@ -19,12 +19,21 @@ namespace fireduino {
     //virtual void serial_print(int value, int format = DEC);
 //
 //public: // Pins
-    //virtual void analogWrite(int16_t dirPin, int16_t value);
-    //virtual int16_t analogRead(int16_t dirPin);
+inline void pinMode(int16_t pin, int16_t inout) {
+	mockduino::pinMode(pin, inout);
+}
 inline int16_t digitalRead(int16_t pin) {
 	return mockduino::digitalRead(pin);
 }
-    //virtual void pinMode(int16_t pin, int16_t inout);
+inline void digitalWrite(int16_t dirPin, int16_t value) {
+	mockduino::digitalWrite(dirPin, value);
+}
+inline void analogWrite(int16_t dirPin, int16_t value) {
+	mockduino::analogWrite(dirPin, value);
+}
+inline int16_t analogRead(int16_t dirPin) {
+	return mockduino::analogRead(dirPin);
+}
 //
 //public: // Pulse generation
 	///**
@@ -36,9 +45,6 @@ inline int16_t digitalRead(int16_t pin) {
 	 //* required by DRV8825. When implementing IDuino for fast
 	 //* CPUs, take care to observe this limitation.
 	 //*/
-inline void digitalWrite(int16_t dirPin, int16_t value) {
-	mockduino::digitalWrite(dirPin, value);
-}
     //virtual void pulseFast(uint8_t pin) {
         //digitalWrite(pin, HIGH);
         //digitalWrite(pin, LOW);

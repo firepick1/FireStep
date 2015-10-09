@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <stdint.h>
 #include "../ArduinoJson/include/ArduinoJson/Arduino/Print.hpp"
+#include "MockDuino.h"
 
 using namespace std;
 
@@ -96,15 +97,10 @@ typedef class SerialType : public Print {
 } SerialType;
 
 
-namespace mockduino {
-	int16_t digitalRead(int16_t dirPin);
-	void digitalWrite(int16_t dirPin, int16_t value);
-}
-
-void analogWrite(int16_t dirPin, int16_t value);
-int16_t analogRead(int16_t dirPin);
+//void analogWrite(int16_t dirPin, int16_t value);
+//int16_t analogRead(int16_t dirPin);
 void delayMicroseconds(uint16_t usDelay);
-void pinMode(int16_t pin, int16_t inout);
+//void pinMode(int16_t pin, int16_t inout);
 void delay(int ms);
 
 extern SerialType Serial;
@@ -132,10 +128,10 @@ extern SerialType Serial;
 typedef class MockDuino {
 	friend void delayMicroseconds(uint16_t us);
 	friend void mockduino::digitalWrite(int16_t pin, int16_t value);
-	friend void analogWrite(int16_t pin, int16_t value);
+	friend void mockduino::analogWrite(int16_t pin, int16_t value);
 	friend int16_t mockduino::digitalRead(int16_t pin);
-	friend int16_t analogRead(int16_t pin);
-	friend void pinMode(int16_t pin, int16_t inout);
+	friend int16_t mockduino::analogRead(int16_t pin);
+	friend void mockduino::pinMode(int16_t pin, int16_t inout);
 	private: 
 		int16_t pin[ARDUINO_PINS];
         int16_t _pinMode[ARDUINO_PINS];

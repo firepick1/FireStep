@@ -703,7 +703,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp_PS(OP_pu, key) == 0 || strcmp_PS(OP_syspu, key) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.pullups);
 		if (machine.op.probe.pinProbe != NOPIN) {
-			pinMode(machine.op.probe.pinProbe, machine.pullupMode(PULLUP_PROBE));
+			fireduino::pinMode(machine.op.probe.pinProbe, machine.pullupMode(PULLUP_PROBE));
 		}
     } else if (strcmp_PS(OP_sd, key) == 0 || strcmp_PS(OP_syssd, key) == 0) {
         status = processField<DelayMics, int32_t>(jobj, key, machine.searchDelay);
@@ -856,10 +856,10 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
     bool isAnalog = *key == 'a' || strncmp("ioa",key,3)==0;
     if (s && *s == 0) { // read
         if (isAnalog) {
-            pinMode(pin+A0, pullUp ? INPUT_PULLUP : INPUT); // maybe INPUT_PULLUP should be error
-            jobj[key] = analogRead(pin+A0);
+            fireduino::pinMode(pin+A0, pullUp ? INPUT_PULLUP : INPUT); // maybe INPUT_PULLUP should be error
+            jobj[key] = fireduino::analogRead(pin+A0);
         } else {
-            pinMode(pin, pullUp ? INPUT_PULLUP : INPUT);
+            fireduino::pinMode(pin, pullUp ? INPUT_PULLUP : INPUT);
             jobj[key] = (bool) fireduino::digitalRead(pin);
         }
     } else if (isAnalog) {
@@ -868,19 +868,19 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
             if (value < 0 || 255 < value) {
                 return jcmd.setError(STATUS_JSON_255, key);
             }
-            pinMode(pin+A0, OUTPUT);
-            analogWrite(pin+A0, (int16_t) value);
+            fireduino::pinMode(pin+A0, OUTPUT);
+            fireduino::analogWrite(pin+A0, (int16_t) value);
         } else {
             return jcmd.setError(STATUS_JSON_255, key);
         }
     } else {
         if (jobj[key].is<bool>()) { // write
             bool value = jobj[key];
-            pinMode(pin, OUTPUT);
+            fireduino::pinMode(pin, OUTPUT);
             fireduino::digitalWrite(pin, value);
         } else if (jobj[key].is<long>()) { // write
             bool value = (bool) (long)jobj[key];
-            pinMode(pin, OUTPUT);
+            fireduino::pinMode(pin, OUTPUT);
             fireduino::digitalWrite(pin, value);
         } else {
             return jcmd.setError(STATUS_JSON_BOOL, key);

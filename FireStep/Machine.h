@@ -181,7 +181,7 @@ public:
         if (pin == NOPIN) {
             return STATUS_NOPIN;
         }
-        ::pinMode(pin, mode);
+        fireduino::pinMode(pin, mode);
         return STATUS_OK;
     }
     inline void setAdvancing(bool advance) {

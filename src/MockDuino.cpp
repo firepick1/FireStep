@@ -210,14 +210,14 @@ void delayMicroseconds(uint16_t usDelay) {
     arduino.usDelay += usDelay;
 }
 
-void analogWrite(int16_t pin, int16_t value) {
+void mockduino::analogWrite(int16_t pin, int16_t value) {
     ASSERT(0 <= pin && pin < ARDUINO_PINS);
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(pin));
 	ASSERT(0 <= value && value <= 255);
 	arduino.pin[pin] = value;
 }
 
-int16_t analogRead(int16_t pin) {
+int16_t mockduino::analogRead(int16_t pin) {
     ASSERT(0 <= pin && pin < ARDUINO_PINS);
     ASSERTEQUAL(INPUT, arduino.getPinMode(pin));
     ASSERT(arduino.pin[pin] != NOVALUE);
@@ -248,7 +248,7 @@ int16_t mockduino::digitalRead(int16_t pin) {
     return arduino.pin[pin];
 }
 
-void pinMode(int16_t pin, int16_t inout) {
+void mockduino::pinMode(int16_t pin, int16_t inout) {
     ASSERT(0 <= pin && pin < ARDUINO_PINS);
     arduino._pinMode[pin] = inout;
 	if (inout == INPUT_PULLUP) {
