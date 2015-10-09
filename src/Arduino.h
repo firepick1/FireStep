@@ -105,8 +105,6 @@ void delay(int ms);
 
 extern SerialType Serial;
 
-#define ARDUINO_PINS 127
-#define ARDUINO_MEM 1024
 
 #define A0 54
 #define A1 (A0+1)
@@ -124,36 +122,6 @@ extern SerialType Serial;
 #define A13 (A12+1)
 #define A14 (A13+1)
 #define A15 (A14+1)
-
-typedef class MockDuino {
-	friend void delayMicroseconds(uint16_t us);
-	friend void mockduino::digitalWrite(int16_t pin, int16_t value);
-	friend void mockduino::analogWrite(int16_t pin, int16_t value);
-	friend int16_t mockduino::digitalRead(int16_t pin);
-	friend int16_t mockduino::analogRead(int16_t pin);
-	friend void mockduino::pinMode(int16_t pin, int16_t inout);
-	private: 
-		int16_t pin[ARDUINO_PINS];
-        int16_t _pinMode[ARDUINO_PINS];
-		int32_t pinPulses[ARDUINO_PINS];
-        int16_t mem[ARDUINO_MEM];
-		int32_t usDelay;
-    public:
-
-    public:
-        MockDuino();
-		void dump();
-		int16_t& MEM(int addr);
-		void clear();
-		void timer1(int increment=1);
-		void delay500ns();
-		int16_t getPinMode(int16_t pin);
-		int16_t getPin(int16_t pin);
-		void setPin(int16_t pin, int16_t value);
-		void setPinMode(int16_t pin, int16_t value);
-		int32_t pulses(int16_t pin);
-		uint32_t get_usDelay() {return usDelay;}
-} MockDuino;
 
 #define DELAY500NS arduino.delay500ns();
 

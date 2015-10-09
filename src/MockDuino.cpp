@@ -144,18 +144,18 @@ MockDuino::MockDuino() {
 }
 
 int16_t& MockDuino::MEM(int addr) {
-    ASSERT(0 <= addr && addr < ARDUINO_MEM);
+    ASSERT(0 <= addr && addr < MOCKDUINO_MEM);
     return mem[addr];
 }
 
 void MockDuino::clear() {
     int novalue = 0xfe;
     Serial.output();	// discard
-    for (int16_t i = 0; i < ARDUINO_PINS; i++) {
+    for (int16_t i = 0; i < MOCKDUINO_PINS; i++) {
         pin[i] = NOVALUE;
         _pinMode[i] = NOVALUE;
     }
-    for (int16_t i = 0; i < ARDUINO_MEM; i++) {
+    for (int16_t i = 0; i < MOCKDUINO_MEM; i++) {
         mem[i] = NOVALUE;
     }
 	for (int16_t i=0; i<EEPROM_END; i++) {
@@ -170,12 +170,12 @@ void MockDuino::clear() {
 }
 
 int32_t MockDuino::pulses(int16_t pin) {
-    ASSERT(0 <= pin && pin < ARDUINO_PINS);
+    ASSERT(0 <= pin && pin < MOCKDUINO_PINS);
     return pinPulses[pin];
 }
 
 void MockDuino::dump() {
-    for (int i = 0; i < ARDUINO_MEM; i += 16) {
+    for (int i = 0; i < MOCKDUINO_MEM; i += 16) {
         int dead = true;
         for (int j = 0; j < 16; j++) {
             if (mem[i + j] != NOVALUE) {
@@ -211,21 +211,21 @@ void delayMicroseconds(uint16_t usDelay) {
 }
 
 void mockduino::analogWrite(int16_t pin, int16_t value) {
-    ASSERT(0 <= pin && pin < ARDUINO_PINS);
+    ASSERT(0 <= pin && pin < MOCKDUINO_PINS);
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(pin));
 	ASSERT(0 <= value && value <= 255);
 	arduino.pin[pin] = value;
 }
 
 int16_t mockduino::analogRead(int16_t pin) {
-    ASSERT(0 <= pin && pin < ARDUINO_PINS);
+    ASSERT(0 <= pin && pin < MOCKDUINO_PINS);
     ASSERTEQUAL(INPUT, arduino.getPinMode(pin));
     ASSERT(arduino.pin[pin] != NOVALUE);
 	return arduino.pin[pin];
 }
 
 void mockduino::digitalWrite(int16_t pin, int16_t value) {
-    ASSERT(0 <= pin && pin < ARDUINO_PINS);
+    ASSERT(0 <= pin && pin < MOCKDUINO_PINS);
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(pin));
     if (arduino.pin[pin] != value) {
         if (value == 0) {
@@ -236,7 +236,7 @@ void mockduino::digitalWrite(int16_t pin, int16_t value) {
 }
 
 int16_t mockduino::digitalRead(int16_t pin) {
-    ASSERT(0 <= pin && pin < ARDUINO_PINS);
+    ASSERT(0 <= pin && pin < MOCKDUINO_PINS);
 	if (arduino._pinMode[pin] == NOVALUE) {
 		cerr << "digitalRead(" << pin << ") pinMode:NOVALUE" << endl;
 	}
@@ -249,7 +249,7 @@ int16_t mockduino::digitalRead(int16_t pin) {
 }
 
 void mockduino::pinMode(int16_t pin, int16_t inout) {
-    ASSERT(0 <= pin && pin < ARDUINO_PINS);
+    ASSERT(0 <= pin && pin < MOCKDUINO_PINS);
     arduino._pinMode[pin] = inout;
 	if (inout == INPUT_PULLUP) {
 		if (arduino.pin[pin] == NOVALUE) {
@@ -262,7 +262,7 @@ void mockduino::pinMode(int16_t pin, int16_t inout) {
 }
 
 int16_t MockDuino::getPinMode(int16_t pin) {
-    ASSERT(0 <= pin && pin < ARDUINO_PINS);
+    ASSERT(0 <= pin && pin < MOCKDUINO_PINS);
     return arduino._pinMode[pin];
 }
 
@@ -274,7 +274,7 @@ int16_t MockDuino::getPin(int16_t pin) {
 void MockDuino::setPin(int16_t pin, int16_t value) {
     if (pin != NOPIN) {
 		//TESTCOUT2("setPin pin:", pin, " value:", value);
-		ASSERT(0 <= pin && pin < ARDUINO_PINS);
+		ASSERT(0 <= pin && pin < MOCKDUINO_PINS);
         arduino.pin[pin] = value;
     }
 }
