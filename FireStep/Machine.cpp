@@ -117,7 +117,7 @@ Status Axis::enable(bool active) {
         return STATUS_NOPIN;
     }
     //TESTCOUT2("Axis::enable(", active, ") axis:", id);
-    digitalWrite(pinEnable, active ? PIN_ENABLE : PIN_DISABLE);
+    fireduino::digitalWrite(pinEnable, active ? PIN_ENABLE : PIN_DISABLE);
     setAdvancing(true);
     enabled = active;
     return STATUS_OK;
@@ -385,19 +385,19 @@ Status Machine::setPinConfig_EMC02() {
     pinMode(PC1_SERVO2,OUTPUT);
     pinMode(PC1_SERVO3,OUTPUT);
     pinMode(PC1_SERVO4,OUTPUT);
-    digitalWrite(PC1_TOOL1_ENABLE_PIN,HIGH);
-    digitalWrite(PC1_TOOL2_ENABLE_PIN,HIGH);
-    digitalWrite(PC1_TOOL3_ENABLE_PIN,HIGH);
-    digitalWrite(PC1_TOOL4_ENABLE_PIN,HIGH);
-    digitalWrite(PC1_PWR_SUPPLY_PIN,LOW);
-    digitalWrite(PC1_TOOL1_DOUT,LOW);
-    digitalWrite(PC1_TOOL2_DOUT,LOW);
-    digitalWrite(PC1_TOOL3_DOUT,LOW);
-    digitalWrite(PC1_TOOL4_DOUT,LOW);
-    digitalWrite(PC1_SERVO1,LOW);
-    digitalWrite(PC1_SERVO2,LOW);
-    digitalWrite(PC1_SERVO3,LOW);
-    digitalWrite(PC1_SERVO4,LOW);
+    fireduino::digitalWrite(PC1_TOOL1_ENABLE_PIN,HIGH);
+    fireduino::digitalWrite(PC1_TOOL2_ENABLE_PIN,HIGH);
+    fireduino::digitalWrite(PC1_TOOL3_ENABLE_PIN,HIGH);
+    fireduino::digitalWrite(PC1_TOOL4_ENABLE_PIN,HIGH);
+    fireduino::digitalWrite(PC1_PWR_SUPPLY_PIN,LOW);
+    fireduino::digitalWrite(PC1_TOOL1_DOUT,LOW);
+    fireduino::digitalWrite(PC1_TOOL2_DOUT,LOW);
+    fireduino::digitalWrite(PC1_TOOL3_DOUT,LOW);
+    fireduino::digitalWrite(PC1_TOOL4_DOUT,LOW);
+    fireduino::digitalWrite(PC1_SERVO1,LOW);
+    fireduino::digitalWrite(PC1_SERVO2,LOW);
+    fireduino::digitalWrite(PC1_SERVO3,LOW);
+    fireduino::digitalWrite(PC1_SERVO4,LOW);
 
     return status;
 }
@@ -535,7 +535,7 @@ void Machine::setPin(PinType &pinDst, PinType pinSrc, int16_t mode, int16_t valu
     if (pinDst != NOPIN) {
         pinMode(pinDst, mode);
         if (mode == OUTPUT) {
-            digitalWrite(pinDst, value);
+            fireduino::digitalWrite(pinDst, value);
         }
     }
 }
@@ -563,7 +563,7 @@ Status Machine::step(const Quad<StepDV> &pulse) {
                 return STATUS_TRAVEL_MAX;
             }
             a.setAdvancing(true);
-            digitalWrite(a.pinStep, HIGH);
+            fireduino::digitalWrite(a.pinStep, HIGH);
             break;
         case 0:
             break;
@@ -580,7 +580,7 @@ Status Machine::step(const Quad<StepDV> &pulse) {
                 return STATUS_TRAVEL_MIN;
             }
             a.setAdvancing(false);
-            digitalWrite(a.pinStep, HIGH);
+            fireduino::digitalWrite(a.pinStep, HIGH);
             break;
         default:
             return STATUS_STEP_RANGE_ERROR;
@@ -591,7 +591,7 @@ Status Machine::step(const Quad<StepDV> &pulse) {
     for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse trailing edges
         if (pulse.value[i]) {
             Axis &a(*motorAxis[i]);
-            digitalWrite(a.pinStep, LOW);
+            fireduino::digitalWrite(a.pinStep, LOW);
             a.position += pulse.value[i];
             usDelay = maxval(usDelay, a.usDelay);
         }

@@ -187,7 +187,7 @@ public:
     inline void setAdvancing(bool advance) {
         if (advance != advancing) {
             advancing = advance;
-            digitalWrite(pinDir, (advance == dirHIGH) ? HIGH : LOW);
+            fireduino::digitalWrite(pinDir, (advance == dirHIGH) ? HIGH : LOW);
         }
     }
     inline void pulse(bool advance) {

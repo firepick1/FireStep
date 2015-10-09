@@ -1,3 +1,4 @@
+#include "MockDuino.h"
 #include <vector>
 #include <string.h>
 #include <iostream>
@@ -223,7 +224,7 @@ int16_t analogRead(int16_t pin) {
 	return arduino.pin[pin];
 }
 
-void digitalWrite(int16_t pin, int16_t value) {
+void mockduino::digitalWrite(int16_t pin, int16_t value) {
     ASSERT(0 <= pin && pin < ARDUINO_PINS);
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(pin));
     if (arduino.pin[pin] != value) {
@@ -234,7 +235,7 @@ void digitalWrite(int16_t pin, int16_t value) {
     }
 }
 
-int16_t digitalRead(int16_t pin) {
+int16_t mockduino::digitalRead(int16_t pin) {
     ASSERT(0 <= pin && pin < ARDUINO_PINS);
 	if (arduino._pinMode[pin] == NOVALUE) {
 		cerr << "digitalRead(" << pin << ") pinMode:NOVALUE" << endl;

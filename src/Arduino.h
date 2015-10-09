@@ -96,11 +96,14 @@ typedef class SerialType : public Print {
 } SerialType;
 
 
+namespace mockduino {
+	int16_t digitalRead(int16_t dirPin);
+	void digitalWrite(int16_t dirPin, int16_t value);
+}
+
 void analogWrite(int16_t dirPin, int16_t value);
 int16_t analogRead(int16_t dirPin);
-void digitalWrite(int16_t dirPin, int16_t value);
 void delayMicroseconds(uint16_t usDelay);
-int16_t digitalRead(int16_t dirPin);
 void pinMode(int16_t pin, int16_t inout);
 void delay(int ms);
 
@@ -128,9 +131,9 @@ extern SerialType Serial;
 
 typedef class MockDuino {
 	friend void delayMicroseconds(uint16_t us);
-	friend void digitalWrite(int16_t pin, int16_t value);
+	friend void mockduino::digitalWrite(int16_t pin, int16_t value);
 	friend void analogWrite(int16_t pin, int16_t value);
-	friend int16_t digitalRead(int16_t pin);
+	friend int16_t mockduino::digitalRead(int16_t pin);
 	friend int16_t analogRead(int16_t pin);
 	friend void pinMode(int16_t pin, int16_t inout);
 	private: 

@@ -877,11 +877,11 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
         if (jobj[key].is<bool>()) { // write
             bool value = jobj[key];
             pinMode(pin, OUTPUT);
-            digitalWrite(pin, value);
+            fireduino::digitalWrite(pin, value);
         } else if (jobj[key].is<long>()) { // write
             bool value = (bool) (long)jobj[key];
             pinMode(pin, OUTPUT);
-            digitalWrite(pin, value);
+            fireduino::digitalWrite(pin, value);
         } else {
             return jcmd.setError(STATUS_JSON_BOOL, key);
         }

@@ -107,9 +107,9 @@ inline void pulseFast(uint8_t pin) {
 }
 #else
 inline void pulseFast(uint8_t pin) {
-    digitalWrite(pin, HIGH);
+    fireduino::digitalWrite(pin, HIGH);
     // Arduino digital I/O is so slow there is no need for delay
-    digitalWrite(pin, LOW);
+    fireduino::digitalWrite(pin, LOW);
 }
 #endif
 

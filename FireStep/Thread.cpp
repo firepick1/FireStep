@@ -71,7 +71,7 @@ void MonitorThread::setup(int pinLED) {
 
 void MonitorThread::LED(byte value) {
     if (pinLED != NOPIN) {
-        digitalWrite(pinLED, value ? HIGH : LOW);
+        fireduino::digitalWrite(pinLED, value ? HIGH : LOW);
     }
 }
 
