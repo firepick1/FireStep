@@ -29,9 +29,6 @@
 #define STEPPER_PULSE_DELAY DRV8825_PULSE_DELAY
 
 namespace fireduino {
-	inline Ticks ticks() {
-		return 
-	}
 	inline Print& get_Print() {
 		return Serial;
 	}
@@ -129,7 +126,7 @@ namespace fireduino {
 	inline uint16_t get_timer1() {
 		return (* (volatile uint16_t *) &TCNT1);
 	}
-	inline void timer1_enable(bool enable) {
+	inline void enable_timer1(bool enable) {
 		TIMER_ENABLE(enable);
 	}
 	inline void setup_timer1() {
