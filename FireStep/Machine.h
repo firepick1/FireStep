@@ -4,6 +4,7 @@
 #ifdef CMAKE
 #include <cmath>
 #endif
+#include "fireduino.h"
 #include "Stroke.h"
 #include "Display.h"
 #include "DeltaCalculator.h"
@@ -189,7 +190,7 @@ public:
     }
     inline void pulse(bool advance) {
         setAdvancing(advance);
-        pulseFast(pinStep);
+        fireduino::pulseFast(pinStep);
     }
     inline Status readAtMin(bool invertLim) {
         if (pinMin == NOPIN) {
@@ -368,22 +369,22 @@ public:
     inline int8_t pulsePin(int16_t pinStep, int8_t n) {
         switch (n) {
         case 0:
-            pulseFast(pinStep);
-            pulseFast(pinStep);
-            pulseFast(pinStep);
-            pulseFast(pinStep);
+            fireduino::pulseFast(pinStep);
+            fireduino::pulseFast(pinStep);
+            fireduino::pulseFast(pinStep);
+            fireduino::pulseFast(pinStep);
             return 4;
         case 3:
-            pulseFast(pinStep);
-            pulseFast(pinStep);
-            pulseFast(pinStep);
+            fireduino::pulseFast(pinStep);
+            fireduino::pulseFast(pinStep);
+            fireduino::pulseFast(pinStep);
             return 3;
         case 2:
-            pulseFast(pinStep);
-            pulseFast(pinStep);
+            fireduino::pulseFast(pinStep);
+            fireduino::pulseFast(pinStep);
             return 2;
         case 1:
-            pulseFast(pinStep);
+            fireduino::pulseFast(pinStep);
             return 1;
         }
     }

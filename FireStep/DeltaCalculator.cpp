@@ -2,7 +2,7 @@
 #include <cstring>
 #include <cmath>
 #endif
-#include "Arduino.h"
+//#include "Arduino.h"
 #include "Machine.h"
 #include "AnalogRead.h"
 #include "version.h"

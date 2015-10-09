@@ -7,6 +7,56 @@
 #include "../ArduinoJson/include/ArduinoJson/Arduino/Print.hpp"
 #include "fireduino_types.h"
 
+#define ADCH arduino.MEM(0)
+#define ADCSRA arduino.MEM(1)
+#define ADCSRB arduino.MEM(2)
+#define ADMUX arduino.MEM(3)
+#define CLKPR arduino.MEM(4)
+#define DIDR0 arduino.MEM(5)
+#define PRR arduino.MEM(6)
+#define SREGI arduino.MEM(7)
+#define TCCR1A arduino.MEM(8)
+#define TCCR1B arduino.MEM(9)
+#define TCNT1 arduino.MEM(10)
+#define TIMSK1 arduino.MEM(11)
+
+#define ADEN 7
+#define ADSC 6
+#define ADATE 5
+//#define ADFR 5
+#define ADIF 4
+#define ADIE 3
+#define ADPS2 2
+#define ADPS1 1
+#define ADPS0 0
+//MUX bit definitions
+#define REFS1 7
+#define REFS0 6
+#define ADLAR 5
+#define MUX3 3
+#define MUX2 2
+#define MUX1 1
+#define MUX0 0
+#define PRADC 0
+#define TOIE1 0
+#define CS10 0
+#define CS11 1
+#define CS12 2
+
+#define cli() (SREGI=0)
+#define sei() (SREGI=1)
+
+// uint16_t hardware timer
+#define TIMER_SETUP() TCCR1A = 0 /* Timer mode */; TIMSK1 = (0 << TOIE1) /* disable interrupts */
+#define TIMER_VALUE() TCNT1
+#define TIMER_CLEAR()	TCNT1 = 0
+#define TIMER_ENABLE(enable) \
+    if (enable) {\
+        TCCR1B = 1 << CS12 | 0 << CS11 | 1 << CS10; /* Timer prescaler div1024 (15625Hz) */\
+    } else {\
+        TCCR1B = 0;	/* stop clock */\
+    }
+
 namespace mockduino { // fireduino implementation
 	int16_t	digitalRead(int16_t pin);
 	void digitalWrite(int16_t dirPin, int16_t value);
@@ -90,73 +140,85 @@ extern MockDuino arduino;
 //extern MockDuino arduino;
 
 namespace fireduino {
-
-inline Print& get_Print() {
-	return mockduino::get_Print();
-}
-inline int16_t serial_read() {
-	return mockduino::serial_read();
-}
-inline int16_t serial_available() {
-	return mockduino::serial_available();
-}
-inline void serial_begin(int32_t baud) {
-	mockduino::serial_begin(baud);
-}
-inline void serial_print(const char *value) {
-	mockduino::serial_print(value);
-}
-inline void serial_print(const char value) {
-	mockduino::serial_print(value);
-}
-inline void serial_print(int16_t value, int16_t format = DEC) {
-	mockduino::serial_print(value, format);
-}
-inline void pinMode(int16_t pin, int16_t inout) {
-	mockduino::pinMode(pin, inout);
-}
-inline int16_t digitalRead(int16_t pin) {
-	return mockduino::digitalRead(pin);
-}
-inline void digitalWrite(int16_t dirPin, int16_t value) {
-	mockduino::digitalWrite(dirPin, value);
-}
-inline void analogWrite(int16_t dirPin, int16_t value) {
-	mockduino::analogWrite(dirPin, value);
-}
-inline int16_t analogRead(int16_t dirPin) {
-	return mockduino::analogRead(dirPin);
-}
-/**
- /* IMPORTANT!!!
- /* The digitalWrite/digitalRead methods match the Arduino
- /* with one critical difference. They must take at least
- /* 1 microsecond to complete. This constraint ensures that
- /* pulse generation will generate the 2 microsecond pulse
- /* required by DRV8825. When implementing IDuino for fast
- /* CPUs, take care to observe this limitation.
- /*/
-inline void pulseFast(uint8_t pin) {
-	digitalWrite(pin, HIGH);
-	digitalWrite(pin, LOW);
-}
-inline void delay(int ms) {
-	mockduino::delay(ms);
-}
-inline void delayMicroseconds(uint16_t usDelay) {
-	mockduino::delayMicroseconds(usDelay);
-}
-inline uint8_t eeprom_read_byte(uint8_t *addr) {
-	return mockduino::eeprom_read_byte(addr);
-}
-inline void	eeprom_write_byte(uint8_t *addr, uint8_t value) {
-	mockduino::eeprom_write_byte(addr, value);
-}
-
+	inline Print& get_Print() {
+		return mockduino::get_Print();
+	}
+	inline int16_t serial_read() {
+		return mockduino::serial_read();
+	}
+	inline int16_t serial_available() {
+		return mockduino::serial_available();
+	}
+	inline void serial_begin(int32_t baud) {
+		mockduino::serial_begin(baud);
+	}
+	inline void serial_print(const char *value) {
+		mockduino::serial_print(value);
+	}
+	inline void serial_print(const char value) {
+		mockduino::serial_print(value);
+	}
+	inline void serial_print(int16_t value, int16_t format = DEC) {
+		mockduino::serial_print(value, format);
+	}
+	inline void pinMode(int16_t pin, int16_t inout) {
+		mockduino::pinMode(pin, inout);
+	}
+	inline int16_t digitalRead(int16_t pin) {
+		return mockduino::digitalRead(pin);
+	}
+	inline void digitalWrite(int16_t dirPin, int16_t value) {
+		mockduino::digitalWrite(dirPin, value);
+	}
+	inline void analogWrite(int16_t dirPin, int16_t value) {
+		mockduino::analogWrite(dirPin, value);
+	}
+	inline int16_t analogRead(int16_t dirPin) {
+		return mockduino::analogRead(dirPin);
+	}
+	/**
+	 /* IMPORTANT!!!
+	 /* The digitalWrite/digitalRead methods match the Arduino
+	 /* with one critical difference. They must take at least
+	 /* 1 microsecond to complete. This constraint ensures that
+	 /* pulse generation will generate the 2 microsecond pulse
+	 /* required by DRV8825. When implementing IDuino for fast
+	 /* CPUs, take care to observe this limitation.
+	 /*/
+	inline void pulseFast(uint8_t pin) {
+		digitalWrite(pin, HIGH);
+		digitalWrite(pin, LOW);
+	}
+	inline void delay(int ms) {
+		mockduino::delay(ms);
+	}
+	inline void delayMicroseconds(uint16_t usDelay) {
+		mockduino::delayMicroseconds(usDelay);
+	}
+	inline uint8_t eeprom_read_byte(uint8_t *addr) {
+		return mockduino::eeprom_read_byte(addr);
+	}
+	inline void	eeprom_write_byte(uint8_t *addr, uint8_t value) {
+		mockduino::eeprom_write_byte(addr, value);
+	}
+	inline void delay_stepper_pulse() {
+		delayMicroseconds(2);
+	}
+	inline uint16_t get_timer1() {
+		return (* (volatile uint16_t *) &TCNT1);
+	}
+	inline void setup_timer1() {
+		TIMER_SETUP();
+	}
+	inline void clear_timer1() {
+		TIMER_CLEAR();
+	}
+	inline void enable_timer1(bool enable) {
+		TIMER_ENABLE(enable);
+	}
 } // namespace fireduino
 
 //public: // FireStep
-    //Ticks ticks(bool peek=false);
     //virtual void enableTicks(bool enable);
     //virtual bool isTicksEnabled();
 //

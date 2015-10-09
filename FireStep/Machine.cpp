@@ -586,7 +586,7 @@ Status Machine::step(const Quad<StepDV> &pulse) {
             return STATUS_STEP_RANGE_ERROR;
         }
     }
-    PULSE_WIDTH_DELAY();
+    fireduino::delay_stepper_pulse();
 
     for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) { // Pulse trailing edges
         if (pulse.value[i]) {

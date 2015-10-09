@@ -1,8 +1,8 @@
 #ifndef THREAD_H
 #define THREAD_H
 
+#include "fireduino.h"
 #include "MCU.h"
-//#include "Mega2560.h"
 
 namespace firestep {
 
@@ -132,7 +132,7 @@ public:
 public:
     inline Ticks ticks() {
         cli();
-        threadClock.age = age = TIMER_VALUE();
+        threadClock.age = age = fireduino::get_timer1();
         if (age < lastAge) {
             // 1) a generation is 4.194304s
             // 2) generation is incremented when TIMER_VALUE() overflows
@@ -192,11 +192,6 @@ public:
 } ThreadRunner;
 extern ThreadRunner threadRunner;
 
-/**
- * With the standard ATMEGA 16,000,000 Hz system clock and TCNT1 / 1024 prescaler:
- * 1 tick = 1024 clock cycles = 64 microseconds
- * Clock overflows in 2^31 * 0.000064 seconds = ~38.1 hours
- */
 extern Ticks ticks();
 
 } // namespace firestep

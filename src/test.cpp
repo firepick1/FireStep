@@ -17,6 +17,7 @@ byte lastByte;
 using namespace ph5;
 using namespace firestep;
 using namespace ArduinoJson;
+using namespace mockduino;
 
 #define ASSERTQUAD(expected,actual) ASSERTEQUALS( expected.toString().c_str(), actual.toString().c_str() );
 
