@@ -198,7 +198,7 @@ public:
         if (pinMin == NOPIN) {
             return STATUS_NOPIN;
         }
-        bool minHigh = digitalRead(pinMin);
+        bool minHigh = fireduino::digitalRead(pinMin);
         bool atMinNew = (invertLim == !minHigh);
         if (atMinNew != atMin) {
             TESTCOUT2("readAtMin() pinMin:", (int) pinMin, " atMinNew:", atMinNew);
@@ -210,7 +210,7 @@ public:
         if (pinMax == NOPIN) {
             return STATUS_NOPIN;
         }
-        bool maxHigh = digitalRead(pinMax);
+        bool maxHigh = fireduino::digitalRead(pinMax);
         bool atMaxNew = (invertLim == !maxHigh);
         if (atMaxNew != atMax) {
             atMax = atMaxNew;
@@ -362,9 +362,9 @@ public:
     virtual	Status step(const Quad<StepDV> &pulse);
     bool isCorePin(int16_t pin);
     inline bool isAtLimit(PinType pin) {
-        uint8_t highCount = digitalRead(pin) ? 1 : 0;
+        uint8_t highCount = fireduino::digitalRead(pin) ? 1 : 0;
         for (uint8_t i=0; i<debounce; i++) {
-            highCount += digitalRead(pin) ? 1 : 0;
+            highCount += fireduino::digitalRead(pin) ? 1 : 0;
         }
         return (invertLim == !(highCount > debounce/2));
     }

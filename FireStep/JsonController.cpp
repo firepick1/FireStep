@@ -860,7 +860,7 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
             jobj[key] = analogRead(pin+A0);
         } else {
             pinMode(pin, pullUp ? INPUT_PULLUP : INPUT);
-            jobj[key] = (bool) digitalRead(pin);
+            jobj[key] = (bool) fireduino::digitalRead(pin);
         }
     } else if (isAnalog) {
         if (jobj[key].is<long>()) { // write
