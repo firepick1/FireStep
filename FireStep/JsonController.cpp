@@ -1113,15 +1113,15 @@ void JsonController::sendResponse(JsonCommand &jcmd, Status status, bool final) 
         }
     }
     if (machine.jsonPrettyPrint) {
-        jcmd.response().prettyPrintTo(Serial);
+        jcmd.response().prettyPrintTo(fireduino::get_Print());
     } else {
-        jcmd.response().printTo(Serial);
+        jcmd.response().printTo(fireduino::get_Print());
     }
     jcmd.responseClear();
     if (final) {
-        Serial.println(" "); // }-SPACE-LF marks final output before return to STATUS_WAIT_IDLE
+        fireduino::serial_println(" "); // }-SPACE-LF marks final output before return to STATUS_WAIT_IDLE
     } else {
-        Serial.println();
+        fireduino::serial_println();
     }
 }
 
@@ -1171,14 +1171,14 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
         } else if (strcmp_PS(OP_cmt, it->key) == 0) {
             if (OUTPUT_CMT==(machine.outputMode&OUTPUT_CMT)) {
                 const char *s = it->value;
-                Serial.println(s);
+                fireduino::serial_println(s);
             }
             status = STATUS_OK;
         } else if (strncmp("id", it->key, 2) == 0) {
             status = process_id(jcmd, jobj, it->key);
 		} else if (strcmp_PS(OP_msg, it->key) == 0) {
             const char *s = it->value;
-            Serial.println(s);
+            fireduino::serial_println(s);
             status = STATUS_OK;
             TESTCOUT1("msg:", s);
         } else if (strncmp("pgm", it->key, 3) == 0) {

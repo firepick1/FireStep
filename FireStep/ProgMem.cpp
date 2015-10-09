@@ -620,9 +620,9 @@ Status firestep::prog_dump(const char *name) {
         char c = pgm_read_byte_near(src + i);
         ASSERT(c == 0 || ' ' <= c && c <= '~');
         if (c) {
-            Serial.print(c);
+            fireduino::serial_print(c);
         } else {
-            Serial.println();
+            fireduino::serial_println();
             break;
         }
     }

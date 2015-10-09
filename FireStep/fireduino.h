@@ -11,17 +11,26 @@ inline int16_t digitalRead(int16_t pin) {
 #include "MockDuino.h"
 namespace fireduino {
 
+inline Print& get_Print() {
+	return mockduino::get_Print();
+}
 inline uint8_t serial_read() {
+	return mockduino::serial_read();
 }
 inline int16_t serial_available() {
+	return mockduino::serial_available();
 }
 inline void serial_begin(int32_t baud) {
+	mockduino::serial_begin(baud);
 }
 inline void serial_print(const char *value) {
+	mockduino::serial_print(value);
 }
 inline void serial_print(const char value) {
+	mockduino::serial_print(value);
 }
 inline void serial_print(int16_t value, int16_t format = DEC) {
+	mockduino::serial_print(value, format);
 }
 //
 //public: // Pins
@@ -73,12 +82,6 @@ inline void	eeprom_write_byte(uint8_t *addr, uint8_t value) {
     //virtual void enableTicks(bool enable);
     //virtual bool isTicksEnabled();
 //
-//public: // Testing: Serial
-    //std::string serial_output();
-    //void serial_push(std::string value);
-    //void serial_push(const char *value);
-    //void serial_clear();
-//
 //public: // Testing: other
     //void dump();
     //void clear(); // NOT setup()! clears mock eeprom
@@ -96,5 +99,18 @@ inline void	eeprom_write_byte(uint8_t *addr, uint8_t value) {
 } // fireduino
 #endif
 
+namespace fireduino {
+	inline void serial_println() {
+		serial_print('\n');
+	}
+	inline void serial_println(const char value) {
+		serial_print(value);
+		serial_print('\n');
+	}
+	inline void serial_println(const char* value) {
+		serial_print(value);
+		serial_print('\n');
+	}
+}
 
 #endif

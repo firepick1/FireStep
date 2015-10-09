@@ -147,15 +147,15 @@ Status MachineThread::executeEEPROM() {
     status = command.parse(buf, status);
     TESTCOUT2("executeEEPROM status:", (int) status, " buf:", buf);
     if (status < 0) {
-        Serial.print("{\"s\":");
-        Serial.print(status);
-        Serial.println(",\"r\":");
+        fireduino::serial_print("{\"s\":");
+        fireduino::serial_print((int16_t)status);
+        fireduino::serial_println(",\"r\":");
         buf = buildStartupJson();
         for (char *s = buf; *s; s++) {
-            Serial.print(*s);
+            fireduino::serial_print(*s);
         }
-        Serial.println();
-        Serial.println("}");
+        fireduino::serial_println();
+        fireduino::serial_println("}");
     }
 
     return status;
@@ -225,7 +225,7 @@ Status MachineThread::syncConfig() {
     fireduino::eeprom_write_byte(eepAddr, ' '); // disable eeprom
     for (int16_t i=1; i<=len; i++) { // include terminator
         fireduino::eeprom_write_byte(eepAddr+i, buf[i]);
-        //if (Serial.available()) { return; }
+        //if (fireduino::serial_available()) { return; }
     }
     machine.pDisplay->setStatus(ds);
     TESTCOUT3("syncConfig len:", strlen(buf), " buf:", buf, " status:", (int) status);
@@ -244,7 +244,7 @@ Status MachineThread::syncConfig() {
 
 void MachineThread::loop() {
 #ifdef THROTTLE_SPEED
-    if (Serial.available()) {
+    if (fireduino::serial_available()) {
         return;
     }
     pController->speed = ADCH;
@@ -268,7 +268,7 @@ void MachineThread::loop() {
     case STATUS_WAIT_MOVING:
     case STATUS_WAIT_BUSY:
     case STATUS_WAIT_CANCELLED:
-        if (Serial.available()) {
+        if (fireduino::serial_available()) {
             command.clear();
             status = command.parse(NULL, status);
         } else {
@@ -276,7 +276,7 @@ void MachineThread::loop() {
         }
         break;
     case STATUS_WAIT_EOL:
-        if (Serial.available()) {
+        if (fireduino::serial_available()) {
             status = command.parse(NULL, status);
         }
         break;
@@ -285,7 +285,7 @@ void MachineThread::loop() {
     case STATUS_BUSY:
     case STATUS_BUSY_CALIBRATING:
     case STATUS_BUSY_MOVING:
-        if (Serial.available()) {
+        if (fireduino::serial_available()) {
             status = pController->cancel(command, STATUS_SERIAL_CANCEL);
         } else {
             status = process(command);

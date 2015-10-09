@@ -29,9 +29,9 @@
 #define DIE()
 #endif
 
-#define DEBUG_EOL() Serial.println("");
-#define DEBUG_HEX(S,V) Serial.print(" " S ":");Serial.print(V,HEX);
-#define DEBUG_DEC(S,V) Serial.print(" " S ":");Serial.print(V,DEC);
+#define DEBUG_EOL() fireduino::serial_println("");
+#define DEBUG_HEX(S,V) fireduino::serial_print(" " S ":");fireduino::serial_print(V,HEX);
+#define DEBUG_DEC(S,V) fireduino::serial_print(" " S ":");fireduino::serial_print(V,DEC);
 
 #define CLOCK_HZ 16000000L	// cycles per second
 #define TIMER_PRESCALE	1024 /* 1, 8, 64, 256, 1024 */

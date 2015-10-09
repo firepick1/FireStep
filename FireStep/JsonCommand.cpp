@@ -71,7 +71,7 @@ Status JsonCommand::setError(Status status, const char *err) {
 
 Status JsonCommand::parseCore() {
     if (*json == 0) {
-        Serial.println(); // echo EOL
+        fireduino::serial_println(); // echo EOL
         return STATUS_WAIT_IDLE;	// empty command
     }
     JsonObject &jobj = jbRequest.parseObject(json);
@@ -134,12 +134,12 @@ Status JsonCommand::parseInput(const char *jsonIn, Status status) {
         snprintf(buf, len, "%s", jsonIn);
         return parseCore();
     } else if (pJsonFree == json || status == STATUS_WAIT_EOL) {
-        while (Serial.available()) {
+        while (fireduino::serial_available()) {
             if (pJsonFree - json >= MAX_JSON - 1) {
                 parsed = true;
                 return STATUS_JSON_TOO_LONG;
             }
-            char c = Serial.read();
+            char c = fireduino::serial_read();
             if (c == '\n') {
                 return parseCore();
             } else {
@@ -166,8 +166,8 @@ Status JsonCommand::parse(const char *jsonIn, Status statusIn) {
     if (status < 0) {
         char error[100];
         snprintf(error, sizeof(error), "{\"s\":%d}", status);
-        Serial.print(error);
-        Serial.println(" "); // }-SPACE-LF is terminator
+        fireduino::serial_print(error);
+        fireduino::serial_println(" "); // }-SPACE-LF is terminator
     }
     return status;
 }

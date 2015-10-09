@@ -61,41 +61,12 @@ extern "C" {
     extern unsigned long millis();
 }
 
-typedef class SerialType : public Print {
-    private:
-        string serialout;
-		string serialline;
-
-    public:
-		void clear();
-		void push(uint8_t value);
-        void push(int16_t value);
-        void push(int32_t value);
-        void push(float value);
-		void push(string value);
-		void push(const char * value);
-        string output();
-
-    public:
-        int available();
-        void begin(long speed) ;
-        byte read() ;
-		virtual size_t write(uint8_t value);
-        void print(const char value);
-        void print(const char *value);
-        void print(int value, int format = DEC);
-        void println(const char value, int format = DEC) ;
-        void println(const char *value = "") ;
-} SerialType;
-
-
 //void analogWrite(int16_t dirPin, int16_t value);
 //int16_t analogRead(int16_t dirPin);
-void delayMicroseconds(uint16_t usDelay);
+//void delayMicroseconds(uint16_t usDelay);
 //void pinMode(int16_t pin, int16_t inout);
-void delay(int ms);
+//void delay(int ms);
 
-extern SerialType Serial;
 
 
 #define A0 54

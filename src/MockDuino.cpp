@@ -8,29 +8,31 @@
 #include "Arduino.h"
 #include "Thread.h"
 
-SerialType Serial;
+using namespace mockduino;
+MockSerial mockSerial;
+
 MockDuino arduino;
 vector<uint8_t> serialbytes;
 int16_t eeprom_data[EEPROM_END];
 
 
-void SerialType::clear() {
+void MockSerial::clear() {
     serialbytes.clear();
     serialout.clear();
     serialline.clear();
 }
 
-void SerialType::push(uint8_t value) {
+void MockSerial::push(uint8_t value) {
     serialbytes.push_back(value);
 }
 
-void SerialType::push(int16_t value) {
+void MockSerial::push(int16_t value) {
     uint8_t *pvalue = (uint8_t *) &value;
     serialbytes.push_back((uint8_t)((value >> 8) & 0xff));
     serialbytes.push_back((uint8_t)(value & 0xff));
 }
 
-void SerialType::push(int32_t value) {
+void MockSerial::push(int32_t value) {
     uint8_t *pvalue = (uint8_t *) &value;
     serialbytes.push_back((uint8_t)((value >> 24) & 0xff));
     serialbytes.push_back((uint8_t)((value >> 16) & 0xff));
@@ -38,7 +40,7 @@ void SerialType::push(int32_t value) {
     serialbytes.push_back((uint8_t)(value & 0xff));
 }
 
-void SerialType::push(float value) {
+void MockSerial::push(float value) {
     uint8_t *pvalue = (uint8_t *) &value;
     serialbytes.push_back(pvalue[0]);
     serialbytes.push_back(pvalue[1]);
@@ -46,46 +48,46 @@ void SerialType::push(float value) {
     serialbytes.push_back(pvalue[3]);
 }
 
-void SerialType::push(string value) {
+void MockSerial::push(string value) {
     push(value.c_str());
 }
 
-void SerialType::push(const char * value) {
+void MockSerial::push(const char * value) {
     for (const char *s = value; *s; s++) {
         serialbytes.push_back(*s);
     }
 }
 
-string SerialType::output() {
+string MockSerial::output() {
     string result = serialout;
     serialout = "";
     return result;
 }
 
-int SerialType::available() {
+int MockSerial::available() {
     return serialbytes.size();
 }
 
-void SerialType::begin(long speed) {
+void MockSerial::begin(long speed) {
 }
 
-byte SerialType::read() {
+uint8_t MockSerial::read() {
     if (serialbytes.size() < 1) {
         return 0;
     }
-    byte c = serialbytes[0];
+    uint8_t c = serialbytes[0];
     serialbytes.erase(serialbytes.begin());
     return c;
 }
 
-size_t SerialType::write(uint8_t value) {
+size_t MockSerial::write(uint8_t value) {
     serialout.append(1, (char) value);
 	if (value == '\r') {
 		serialline.append(1, '\\');
 		serialline.append(1, 'r');
 		// skip
 	} else if (value == '\n') {
-        cout << "Serial	: \"" << serialline << "\"" << endl;
+        cout << "mockSerial	: \"" << serialline << "\"" << endl;
         serialline = "";
     } else {
         serialline.append(1, (char)value);
@@ -93,7 +95,7 @@ size_t SerialType::write(uint8_t value) {
     return 1;
 }
 
-void SerialType::print(const char value) {
+void MockSerial::print(const char value) {
 	char buf[2];
 	buf[0] = value;
 	buf[1] = 0;
@@ -101,12 +103,12 @@ void SerialType::print(const char value) {
     serialline.append(buf);
 }
 
-void SerialType::print(const char *value) {
+void MockSerial::print(const char *value) {
     serialout.append(value);
     serialline.append(value);
 }
 
-void SerialType::print(int value, int format) {
+void MockSerial::print(int value, int format) {
     stringstream buf;
     switch (format) {
     case HEX:
@@ -123,35 +125,27 @@ void SerialType::print(int value, int format) {
     serialout.append(bufVal);
 }
 
-void SerialType::println(const char value, int format) {
-    print(value, format);
-    write('\n');
-}
-
-void SerialType::println(const char *value) {
-    if (*value) {
-        print(value);
-    }
-    write('\n');
+Print& mockduino::get_Print() {
+	return mockSerial;
 }
 
 uint8_t mockduino::serial_read() {
-	return Serial.read();
+	return mockSerial.read();
 }
 int16_t mockduino::serial_available() {
-	return Serial.available();
+	return mockSerial.available();
 }
 void mockduino::serial_begin(int32_t baud) {
-	Serial.begin(baud);
+	mockSerial.begin(baud);
 }
 void mockduino::serial_print(const char *value) {
-	Serial.print(value);
+	mockSerial.print(value);
 }
 void mockduino::serial_print(const char value) {
-	Serial.print(value);
+	mockSerial.print(value);
 }
 void mockduino::serial_print(int16_t value, int16_t format) {
-	Serial.print(value, format);
+	mockSerial.print(value, format);
 }
 
 ///////////////////// MockDuino ///////////////////
@@ -169,7 +163,7 @@ int16_t& MockDuino::MEM(int addr) {
 
 void MockDuino::clear() {
     int novalue = 0xfe;
-    Serial.output();	// discard
+    mockSerial.output();	// discard
     for (int16_t i = 0; i < MOCKDUINO_PINS; i++) {
         pin[i] = NOVALUE;
         _pinMode[i] = NOVALUE;

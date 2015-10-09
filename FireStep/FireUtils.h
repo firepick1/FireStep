@@ -38,7 +38,7 @@
 #endif
 
 #ifdef ARDUINO
-#define ASSERTFAILBUF(buf) { Serial.println(buf); }
+#define ASSERTFAILBUF(buf) { fireduino::serial_println(buf); }
 #endif
 #ifndef ASSERTFAILBUF
 #include <iostream>

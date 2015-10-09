@@ -1,7 +1,10 @@
 #ifndef MOCKDUINO_H
 #define MOCKDUINO_H
 
+#include <string>
+#include <sstream>
 #include <stdint.h>
+#include "../ArduinoJson/include/ArduinoJson/Arduino/Print.hpp"
 #include "fireduino_types.h"
 
 namespace mockduino { // fireduino implementation
@@ -14,6 +17,7 @@ namespace mockduino { // fireduino implementation
 	void delayMicroseconds(uint16_t usDelay);
 	uint8_t eeprom_read_byte(uint8_t *addr);
 	void eeprom_write_byte(uint8_t *addr, uint8_t value);
+	Print& get_Print();
 	uint8_t serial_read();
 	int16_t serial_available();
 	void serial_begin(int32_t baud);
@@ -21,6 +25,32 @@ namespace mockduino { // fireduino implementation
 	void serial_print(const char value);
 	void serial_print(int16_t value, int16_t format = DEC);
 }
+
+typedef class MockSerial : public Print {
+	private:
+		std::string serialout;
+		std::string serialline;
+
+	public:
+		void clear();
+		void push(uint8_t value);
+		void push(int16_t value);
+		void push(int32_t value);
+		void push(float value);
+		void push(std::string value);
+		void push(const char * value);
+		std::string output();
+
+	public:
+		int available();
+		void begin(long speed) ;
+		uint8_t read() ;
+		virtual size_t write(uint8_t value);
+		void print(const char value);
+		void print(const char *value);
+		void print(int value, int format = DEC);
+} MockSerial;
+extern MockSerial mockSerial;
 
 #define MOCKDUINO_PINS 127
 #define MOCKDUINO_MEM 1024

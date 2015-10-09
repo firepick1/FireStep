@@ -144,7 +144,7 @@ public:
                 // generation overflow every ~58 hours
                 resetGenerations();
                 //const char *msg ="GOVFL";
-                //Serial.println(msg);
+                //fireduino::serial_println(msg);
                 //throw msg;
             }
             sei();

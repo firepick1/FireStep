@@ -78,10 +78,10 @@ void MonitorThread::LED(byte value) {
 void MonitorThread::Error(const char *msg, int value) {
     LED(HIGH);
     for (int i = 0; i < 20; i++) {
-        Serial.print('>');
+        fireduino::serial_print('>');
     }
-    Serial.print(msg);
-    Serial.println(value);
+    fireduino::serial_print(msg);
+    fireduino::serial_println(value);
 }
 
 void MonitorThread::loop() {
@@ -99,13 +99,13 @@ void MonitorThread::loop() {
     if (nTardies > 50) {
         Error("T", nTardies);
         for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-            Serial.print(pThread->id);
-            Serial.print(":");
-            Serial.print(pThread->tardies, DEC);
+            fireduino::serial_print(pThread->id);
+            fireduino::serial_print(":");
+            fireduino::serial_print(pThread->tardies, DEC);
             pThread->tardies = 0;
-            Serial.print(" ");
+            fireduino::serial_print(" ");
         }
-        Serial.println('!');
+        fireduino::serial_println('!');
     } else if (nTardies > 20) {
         LED(HIGH);
         verbose = true;
@@ -121,7 +121,7 @@ void MonitorThread::loop() {
     }
     if (isHigh) {
         if (verbose) {
-            Serial.print(".");
+            fireduino::serial_print(".");
             //DEBUG_DEC("F", Free());
             DEBUG_DEC("S", millis() / 1000);
             DEBUG_DEC("G", threadClock.generation);
@@ -184,10 +184,10 @@ void firestep::ThreadEnable(boolean enable) {
 #ifdef DEBUG_ThreadENABLE
     DEBUG_DEC("C", ticks());
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-        Serial.print(pThread->id);
-        Serial.print(":");
-        Serial.print(pThread->nextLoop.ticks, DEC);
-        Serial.print(" ");
+        fireduino::serial_print(pThread->id);
+        fireduino::serial_print(":");
+        fireduino::serial_print(pThread->nextLoop.ticks, DEC);
+        fireduino::serial_print(" ");
     }
     DEBUG_EOL();
 #endif
