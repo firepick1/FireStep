@@ -1,0 +1,1 @@
+const char GIT_TAG[] PROGMEM = { "GIT_HASH_PLACEHOLDER" };
