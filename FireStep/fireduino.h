@@ -32,8 +32,6 @@ inline void serial_print(const char value) {
 inline void serial_print(int16_t value, int16_t format = DEC) {
 	mockduino::serial_print(value, format);
 }
-//
-//public: // Pins
 inline void pinMode(int16_t pin, int16_t inout) {
 	mockduino::pinMode(pin, inout);
 }
@@ -49,34 +47,31 @@ inline void analogWrite(int16_t dirPin, int16_t value) {
 inline int16_t analogRead(int16_t dirPin) {
 	return mockduino::analogRead(dirPin);
 }
-//
-//public: // Pulse generation
-	///**
-	 //* IMPORTANT!!!
-	 //* The digitalWrite/digitalRead methods match the Arduino
-	 //* with one critical difference. They must take at least
-	 //* 1 microsecond to complete. This constraint ensures that
-	 //* pulse generation will generate the 2 microsecond pulse
-	 //* required by DRV8825. When implementing IDuino for fast
-	 //* CPUs, take care to observe this limitation.
-	 //*/
-    //virtual void pulseFast(uint8_t pin) {
-        //digitalWrite(pin, HIGH);
-        //digitalWrite(pin, LOW);
-    //}
-//
+/**
+ /* IMPORTANT!!!
+ /* The digitalWrite/digitalRead methods match the Arduino
+ /* with one critical difference. They must take at least
+ /* 1 microsecond to complete. This constraint ensures that
+ /* pulse generation will generate the 2 microsecond pulse
+ /* required by DRV8825. When implementing IDuino for fast
+ /* CPUs, take care to observe this limitation.
+ /*/
+inline void pulseFast(uint8_t pin) {
+	digitalWrite(pin, HIGH);
+	digitalWrite(pin, LOW);
+}
 inline void delay(int ms) {
 	mockduino::delay(ms);
 }
-    //virtual void delayMicroseconds(uint16_t usDelay);
+inline void delayMicroseconds(uint16_t usDelay) {
+	mockduino::delayMicroseconds(usDelay);
+}
 inline uint8_t eeprom_read_byte(uint8_t *addr) {
 	return mockduino::eeprom_read_byte(addr);
 }
 inline void	eeprom_write_byte(uint8_t *addr, uint8_t value) {
 	mockduino::eeprom_write_byte(addr, value);
 }
-    //virtual std::string eeprom_read_string(uint8_t *addr);
-//
 //public: // FireStep
     //Ticks ticks(bool peek=false);
     //virtual void enableTicks(bool enable);

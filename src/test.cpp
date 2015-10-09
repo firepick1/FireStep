@@ -2244,7 +2244,7 @@ void test_MTO_FPD_hom() {
         ASSERTEQUAL(abs(FPD_HOME_PULSES), arduino.pulses(PC2_Z_STEP_PIN)-zpulses-machine.axis[2].latchBackoff);
         ASSERTEQUALS(JT("{'s':0,'r':{'hom':{"
                         "'1':"FPD_HOME_PULSES_S",'2':"FPD_HOME_PULSES_S",'3':"FPD_HOME_PULSES_S",'4':0"
-                        "}},'t':0.000} \n"),
+                        "}},'t':0.100} \n"),
                      mockSerial.output().c_str());
         ASSERTQUAD(Quad<StepCoord>(), machine.getMotorPosition());
         XYZ3D xyz = mt.fpdController.getXYZ3D();
@@ -2296,7 +2296,7 @@ void test_MTO_FPD_hom() {
         int32_t zpulses = arduino.pulses(PC2_Z_STEP_PIN);
         mt.loop(); // calibrating: rapid probe to post-home destination
         ASSERTEQUAL(STATUS_OK, mt.status);
-        ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':-5601,'2':-5601,'3':-5601,'4':4}},'t':0.000} \n"),
+        ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':-5601,'2':-5601,'3':-5601,'4':4}},'t':0.100} \n"),
                      mockSerial.output().c_str());
         hp = machine.delta.getHomePulses();
         ASSERTEQUAL(machine.axis[0].home, hp);
@@ -2352,7 +2352,7 @@ void test_MTO_FPD_hom() {
         ASSERTEQUAL(STATUS_BUSY_CALIBRATING, mt.status);
         mt.loop(); // calibrating: rapid probe to post-home destination
         ASSERTEQUAL(STATUS_OK, mt.status);
-        ASSERTEQUALS(JT("{'s':0,'r':{'hom1':"FPD_HOME_PULSES_S"},'t':0.000} \n"),
+        ASSERTEQUALS(JT("{'s':0,'r':{'hom1':"FPD_HOME_PULSES_S"},'t':0.100} \n"),
                      mockSerial.output().c_str());
         hp = machine.delta.getHomePulses();
         ASSERTEQUAL(machine.axis[0].home, hp);
@@ -2430,7 +2430,7 @@ void test_MTO_FPD_hom() {
         ASSERTEQUAL(STATUS_OK, mt.status);
         ASSERTEQUALS(JT("{'s':0,'r':{'hom':{"
                         "'1':"FPD_HOME_PULSES_S",'2':"FPD_HOME_PULSES_S",'3':"FPD_HOME_PULSES_S",'4':0"
-                        "}},'t':0.001} \n"),
+                        "}},'t':0.101} \n"),
                      mockSerial.output().c_str());
         ASSERTEQUAL(3+abs(FPD_HOME_PULSES)+2*LATCH_BACKOFF, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
         ASSERTEQUAL(3+abs(FPD_HOME_PULSES)+2*LATCH_BACKOFF, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
@@ -3866,7 +3866,7 @@ void test_MTO_RAW_hom() {
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_X_DIR_PIN)); // HIGH because we backed off
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_Y_DIR_PIN));
     ASSERTEQUAL(HIGH, arduino.getPin(PC2_Z_DIR_PIN)); // HIGH because we backed off
-    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'x':5,'z':16}},'t':0.000} \n"), mockSerial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'x':5,'z':16}},'t':0.???} \n"), mockSerial.output().c_str());
     ASSERT(machine.axis[0].atMin);
     ASSERT(!machine.axis[1].atMin);
     ASSERT(machine.axis[2].atMin);
@@ -3910,7 +3910,7 @@ void test_MTO_RAW_hom() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(hPulses * 1 + 2*LATCH_BACKOFF, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
     ASSERTQUAD(Quad<StepCoord>(100, 10, 100, 100), mt.machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'homy':10},'t':0.000} \n"), mockSerial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'homy':10},'t':0.100} \n"), mockSerial.output().c_str());
 
     // TEST SHORT FORM
     xpulses = arduino.pulses(PC2_X_STEP_PIN);
@@ -3958,7 +3958,7 @@ void test_MTO_RAW_hom() {
     ASSERTEQUAL(hPulses * 1 + 2*LATCH_BACKOFF, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
     ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-e0pulses);
     ASSERTQUAD(Quad<StepCoord>(5, 100, 100, 20), mt.machine.getMotorPosition());
-    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':5,'2':10,'3':15,'4':20}},'t':0.000} \n"),
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':5,'2':10,'3':15,'4':20}},'t':0.100} \n"),
                  mockSerial.output().c_str());
     mt.loop(); // hit limit switch
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
@@ -4442,7 +4442,7 @@ void test_command_array() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1); // done
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':5,'2':10,'3':15,'4':20}},'t':0.001} \n"), mockSerial.output().c_str());
+    ASSERTEQUALS(JT("{'s':0,'r':{'hom':{'1':5,'2':10,'3':15,'4':20}},'t':0.101} \n"), mockSerial.output().c_str());
     test_ticks(1); // done
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
 
