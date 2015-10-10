@@ -147,6 +147,7 @@ extern const char OP_ho[];
 extern const char OP_hom[];
 extern const char OP_hp[];
 extern const char OP_hz[];
+extern const char OP_hzl[];
 extern const char OP_id[];
 extern const char OP_idl[];
 extern const char OP_io[];

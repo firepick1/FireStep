@@ -121,6 +121,7 @@ const char firestep::OP_ho[] PROGMEM = { "ho" };
 const char firestep::OP_hom[] PROGMEM = { "hom" };
 const char firestep::OP_hp[] PROGMEM = { "hp" };
 const char firestep::OP_hz[] PROGMEM = { "hz" };
+const char firestep::OP_hzl[] PROGMEM = { "hzl" };
 const char firestep::OP_id[] PROGMEM = { "id" };
 const char firestep::OP_idl[] PROGMEM = { "idl" };
 const char firestep::OP_io[] PROGMEM = { "io" };

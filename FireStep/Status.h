@@ -61,6 +61,7 @@ enum Status {
     STATUS_CAL_DEGREES = -149,		// Specify calibration angle from horizontal (down is positive degrees)
     STATUS_CAL_POSITION_0 = -150,	// Arm position cannot be 0 for arm gear ratio calibration
     STATUS_DELTA_HOME = -151,		// Delta axis home coordinates must be identical
+	STATUS_INVALID_Z = -152,		// Invalid z-coordinate requested
 
     // stroke
     STATUS_STROKE_SEGPULSES = -200,	// Stroke has too many pulses per segment [-127,127]

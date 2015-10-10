@@ -772,6 +772,20 @@ Status FPDController::processDimension(JsonCommand& jcmd, JsonObject& jobj, cons
         machine.delta.setMicrosteps(value);
     } else if (strcmp_PS(OP_hz, key) == 0 || strcmp_PS(OP_hz, key+3) == 0) {
 		status = processField<PH5TYPE, PH5TYPE>(jobj, key, machine.homeZ);
+    } else if (strcmp_PS(OP_hzl, key) == 0 || strcmp_PS(OP_hzl, key+3) == 0) {
+		machine.loadDeltaCalculator();
+		PH5TYPE ha = machine.delta.getHomeAngle();
+		PH5TYPE zLimit = machine.delta.calcXYZ(Angle3D(ha,ha,ha)).z;
+		PH5TYPE dz = machine.homeZ - zLimit;
+		status = processField<PH5TYPE, PH5TYPE>(jobj, key, dz);
+		TESTCOUT1("hzl dz:", dz);
+		if (status == STATUS_OK) {
+			if (dz > 0) {
+				return jcmd.setError(STATUS_INVALID_Z, key);
+			}
+			machine.homeZ = zLimit + dz;
+			TESTCOUT2("hzl zLimit:", zLimit, " homeZ:", machine.homeZ);
+		}
     } else if (strcmp_PS(OP_pd, key) == 0 || strcmp_PS(OP_dimpd, key) == 0) {
         status = processProbeData(jcmd, jobj, key);
     } else if (strcmp_PS(OP_re, key) == 0 || strcmp_PS(OP_dimre, key) == 0) {

@@ -5086,6 +5086,19 @@ void test_homz() {
 		ASSERTQUAD(Quad<StepCoord>(-582, -582, -582, 0), machine.getMotorPosition());
     }
 
+    {   
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        string response;
+
+        response = test_cmd(mt, __LINE__, JT("{'dimhzl':-10.5}\n"));
+		ASSERTEQUALS(JT("{'s':0,'r':{'dimhzl':-10.500},'t':0.???} \n"), response.c_str());
+        ASSERTEQUALT(55.392, machine.homeZ, 0.001);
+
+        response = test_cmd(mt, __LINE__, JT("{'hom':''}\n"), 500, -1);
+		ASSERTQUAD(Quad<StepCoord>(-3985, -3985, -3985, 0), machine.getMotorPosition());
+    }
+
     cout << "TEST	: test_homz() OK " << endl;
 }
 

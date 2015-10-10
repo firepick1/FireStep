@@ -3,6 +3,10 @@ FireStep v1: change log
 
 [v2.0](CHANGELOG2)
 
+v1.070
+------
+* NEW: MTO_FPD: "dim" now has an optional attribute "hzl" to set the post-homing Z relative to the limit switch (i.e., <= 0). 
+
 v1.061
 ------
 * NEW: fireduino refactor for MCU independence. No functionality change. This is the bridge release between FireStep 1.x and 2.x
@@ -23,7 +27,7 @@ v1.040
 * NEW: MTO_FPD: {"pgmx":"dim-lc-400"} sets dimensions for Loose Canon FirePick Delta (400 steps/revolution steppers)
 * NEW: MTO_FPD: {"pgmx":"dim-tw-200"} sets dimensions for Tin Whiskers FirePick Delta (200 steps/revolution steppers)
 * NEW: MTO_FPD: {"pgmx":"dim-tw-400"} sets dimensions for Tin Whiskers FirePick Delta (400 steps/revolution steppers)
-* NEW: MTO_FPD: "hom" now has an optional attribute "hz" to set the homing Z, which defaults to 0.
+* NEW: MTO_FPD: "dim" now has an optional attribute "hz" to set the post-homing Z, which defaults to 0.
 
 v1.031
 ------
