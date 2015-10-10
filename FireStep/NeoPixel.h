@@ -1,7 +1,7 @@
 #ifndef NEOPIXEL_H
 #define NEOPIXEL_H
 
-#include <Arduino.h>
+#include "fireduino.h"
 
 #ifdef CMAKE
 #define NEO_GRB 0

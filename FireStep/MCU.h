@@ -4,7 +4,6 @@
 ///////// Microcontroller definitions ///////////
 
 
-#include "Arduino.h"
 #include "fireduino.h"
 #include "pins.h"
 

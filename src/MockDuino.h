@@ -16,6 +16,9 @@
 #define EEPROM_BYTES 512 /* Actual capacity will be less because eeprom buffer is part of MAX_JSON */
 #define EEPROM_END 4096
 
+#define NOVALUE 32767 /* 0x77FF */
+#define NOVALUESTR "32767"
+
 #define ADCH arduino.MEM(0)
 #define ADCSRA arduino.MEM(1)
 #define ADCSRB arduino.MEM(2)
@@ -217,6 +220,10 @@ namespace fireduino {
 	}
 	inline void	eeprom_write_byte(uint8_t *addr, uint8_t value) {
 		mockduino::eeprom_write_byte(addr, value);
+	}
+	inline uint32_t millis() {
+		extern uint16_t get_timer1();
+		return get_timer1()/64;
 	}
 	inline void delay_stepper_pulse() {
 		delayMicroseconds(2);

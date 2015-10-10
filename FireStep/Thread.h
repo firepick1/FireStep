@@ -51,7 +51,7 @@ typedef struct PulseThread : Thread {
     virtual void setup(Ticks period, Ticks pulseWidth);
     virtual void loop();
 
-    boolean isHigh;
+    bool isHigh;
 
 protected:
     Ticks m_LowPeriod;
@@ -73,13 +73,13 @@ private:
     void loop(); /* PRIVATE */
 
 public:
-    boolean verbose;
+    bool verbose;
 public:
     void Error(const char *msg, int value); /* PRIVATE */
 } MonitorThread;
 
 void Error(const char *msg, int value);
-void ThreadEnable(boolean enable);
+void ThreadEnable(bool enable);
 
 extern MonitorThread monitor;
 

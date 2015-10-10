@@ -32,9 +32,9 @@ void NeoPixel::setup(int pin) {
 
 void NeoPixel::show() {
     bool updateDisplay = curLevel != level || curStatus != status;
-    if (fgMillis < millis() && strip.numPixels()) {
+    if (fgMillis < fireduino::millis() && strip.numPixels()) {
         fgIndex = (fgIndex + 1) % strip.numPixels();
-        fgMillis = millis() + 3000/16;
+        fgMillis = fireduino::millis() + 3000/16;
         updateDisplay = true;
     }
     if (!updateDisplay) {

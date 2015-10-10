@@ -25,6 +25,7 @@ namespace fireduino { // abstract API implementable any way you like
 	void digitalWrite(int16_t dirPin, int16_t value);
 	void analogWrite(int16_t dirPin, int16_t value);
 	int16_t analogRead(int16_t dirPin);
+	uint32_t millis();
 	void delay(int ms);
 	void delayMicroseconds(uint16_t usDelay);
 	uint8_t eeprom_read_byte(uint8_t *addr);

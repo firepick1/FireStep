@@ -1,7 +1,6 @@
 #ifdef CMAKE
 #include <cstring>
 #endif
-#include "Arduino.h"
 #include "version.h"
 #include "MachineThread.h"
 

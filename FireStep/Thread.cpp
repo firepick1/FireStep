@@ -173,7 +173,7 @@ void ThreadRunner::resetGenerations() {
     }
 }
 
-void firestep::ThreadEnable(boolean enable) {
+void firestep::ThreadEnable(bool enable) {
 #ifdef DEBUG_ThreadENABLE
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
         fireduino::serial_print(pThread->id);

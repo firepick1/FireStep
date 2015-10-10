@@ -5,12 +5,12 @@
 #include <fstream>
 #include <sstream>
 #include "FireUtils.h"
-#include "Arduino.h"
 #include "Thread.h"
 
+using namespace std;
 using namespace mockduino;
-MockSerial mockSerial;
 
+MockSerial mockSerial;
 MockDuino arduino;
 vector<uint8_t> serialbytes;
 int16_t eeprom_data[EEPROM_END];

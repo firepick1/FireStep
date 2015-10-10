@@ -5,7 +5,6 @@
 #include "FireLog.h"
 #include "FireUtils.h"
 #include "version.h"
-#include "Arduino.h"
 
 #include "MachineThread.h"
 #include "Display.h"

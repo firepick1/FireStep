@@ -22,6 +22,7 @@ echo "CMD	: creating $OUTPUT"
 
 cp -r FireStep/ ziptmp/FireStep
 cp CHANGELOG.md LICENSE README.md ziptmp/FireStep
+cp target/git_tag.h ziptmp/FireStep/FireStep
 
 pushd ziptmp/libraries >& /dev/null
 unzip -q ../ph5*.zip

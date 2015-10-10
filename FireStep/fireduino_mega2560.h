@@ -138,6 +138,9 @@ namespace fireduino {
 	inline void	eeprom_write_byte(uint8_t *addr, uint8_t value) {
 		::eeprom_write_byte(addr, value);
 	}
+	inline uint32_t millis() {
+		return ::millis();
+	}
 	inline void delay_stepper_pulse() {
 		// Mega is so slow that no delay is needed
 	}

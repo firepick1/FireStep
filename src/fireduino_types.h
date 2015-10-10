@@ -3,6 +3,8 @@
 
 // Common includes for non-Arduino implementations
 
+typedef uint8_t byte;
+
 #ifndef Arduino_h
 #define DEC 1
 #define BYTE 0
