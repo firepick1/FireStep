@@ -145,18 +145,15 @@ set(FIRESTEP_INSTALL_INCLUDE_DIR	include CACHE PATH "Installation directory for 
 INSTALL(TARGETS _firestep DESTINATION ${FIRESTEP_INSTALL_LIB_DIR})
 INSTALL(TARGETS firestep DESTINATION ${FIRESTEP_INSTALL_BIN_DIR})
 INSTALL(FILES 
-	FireStep/AnalogRead.h
 	FireStep/DeltaCalculator.h
 	FireStep/Display.h
 	FireStep/FPDController.h
 	FireStep/FireUtils.h
-	FireStep/IDuino.h
 	FireStep/JsonCommand.h
 	FireStep/JsonController.h
 	FireStep/MCU.h
 	FireStep/Machine.h
 	FireStep/MachineThread.h
-	FireStep/Mega2560.h
 	FireStep/NeoPixel.h
 	FireStep/ProcessField.h
 	FireStep/ProgMem.h
@@ -166,6 +163,9 @@ INSTALL(FILES
 	FireStep/Stroke.h
 	FireStep/Thread.h
 	FireStep/build.h
+	FireStep/fireduino.h
+	FireStep/fireduino_mega2560.h
+	FireStep/fireduino_due.h
 	FireStep/pins.h
 	FireStep/version.h
 	src/FireStep.h
