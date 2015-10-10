@@ -137,7 +137,7 @@ typedef class MockDuino {
 		void dump();
 		int16_t& MEM(int addr);
 		void clear();
-		void timer1(int increment=1);
+		void timer64us(int increment=1);
 		void delay500ns();
 		int16_t getPinMode(int16_t pin);
 		int16_t getPin(int16_t pin);
@@ -222,22 +222,22 @@ namespace fireduino {
 		mockduino::eeprom_write_byte(addr, value);
 	}
 	inline uint32_t millis() {
-		extern uint16_t get_timer1();
-		return get_timer1()/64;
+		extern uint32_t get_timer64us();
+		return get_timer64us()/64;
 	}
 	inline void delay_stepper_pulse() {
 		delayMicroseconds(2);
 	}
-	inline uint16_t get_timer1() {
+	inline uint32_t get_timer64us() {
 		return (* (volatile uint16_t *) &TCNT1);
 	}
-	inline void setup_timer1() {
+	inline void setup_timer64us() {
 		TIMER_SETUP();
 	}
-	inline void clear_timer1() {
+	inline void clear_timer64us() {
 		TIMER_CLEAR();
 	}
-	inline void enable_timer1(bool enable) {
+	inline void enable_timer64us(bool enable) {
 		TIMER_ENABLE(enable);
 	}
 	inline int16_t freeRam () {

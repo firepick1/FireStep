@@ -104,7 +104,7 @@ public:
 } testDisplay;
 
 void test_ticks(int nTicks) {
-    arduino.timer1(nTicks-1);
+    arduino.timer64us(nTicks-1);
     ticks();
     threadRunner.outerLoop();
 }
@@ -169,7 +169,7 @@ void test_Thread() {
     ASSERTEQUAL(lastClock+1, ticks());
     uint32_t lastTCNT1 = (uint32_t) (uint16_t) TCNT1;
 
-    arduino.timer1(1);
+    arduino.timer64us(1);
 
     ASSERTEQUAL(lastTCNT1+1L, (uint32_t) (uint16_t) TCNT1);
     ASSERTEQUAL(lastClock+3, ticks());
@@ -1581,7 +1581,7 @@ void test_MTO_FPD_mov() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop();
     //ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    //arduino.timer1(MS_TICKS(1000));
+    //arduino.timer64us(MS_TICKS(1000));
     //mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'movzr':10.000},'t':0.348} \n"),
@@ -1607,7 +1607,7 @@ void test_MTO_FPD_mov() {
     mockSerial.push(JT("{'mov':{'angle':30,'d':10,'zr':-1}} \n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    arduino.timer1(MS_TICKS(1000));
+    arduino.timer64us(MS_TICKS(1000));
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'angle':30,'d':10,'zr':-1.000}},'t':1.199} \n"),
@@ -1635,7 +1635,7 @@ void test_MTO_FPD_mov() {
     mockSerial.push(JT("{'mov':{'x':10,'y':100,'zb':-1},'mpox':'','mpoy':'','mpoz':''} \n"));
     mt.loop();
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
-    arduino.timer1(MS_TICKS(1000));
+    arduino.timer64us(MS_TICKS(1000));
     mt.loop();
     ASSERTEQUAL(STATUS_OK, mt.status);
     xyz = mt.fpdController.getXYZ3D();
@@ -4113,7 +4113,7 @@ void test_ph5() {
 
     MachineThread mt = test_setup();
     Machine &machine = mt.machine;
-    arduino.timer1(1);
+    arduino.timer64us(1);
     StrokeBuilder sb;
     ASSERTQUAD(Quad<StepCoord>(), machine.getMotorPosition());
     Status status = sb.buildLine(machine.stroke, Quad<StepCoord>(6400, 3200, 1600, 0));

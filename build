@@ -41,6 +41,10 @@ if [ ! -e ArduinoJson ]; then
 	popd
 fi
 
+if [ "${FIREDUINO}" == "" ]; then
+	export FIREDUINO=MOCK_MEGA2560
+fi
+
 if [ "${MEMORY_MODEL}" == "" ]; then
 	export MEMORY_MODEL=MEMORY_MODEL_TINY
 fi

@@ -210,7 +210,7 @@ void MockDuino::dump() {
     }
 }
 
-void MockDuino::timer1(int increment) {
+void MockDuino::timer64us(int increment) {
     if (TIMER_ENABLED) {
         TCNT1 += increment;
     }
@@ -297,7 +297,7 @@ void MockDuino::setPinMode(int16_t pin, int16_t value) {
 }
 
 void mockduino::delay(int ms) {
-    arduino.timer1(MS_TICKS(ms));
+    arduino.timer64us(MS_TICKS(ms));
 }
 
 /////////////// avr/eeprom.h /////////////////

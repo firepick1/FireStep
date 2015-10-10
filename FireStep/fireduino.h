@@ -10,7 +10,13 @@
 #define degrees(rad) ((rad)*RAD_TO_DEG)
 #endif
 
-#if defined(FIREDUINO_API) 
+#if defined(MOCK_MEGA2560)
+#include "MockDuino.h"
+#elif defined( __AVR_ATmega2560__)
+#include "fireduino_mega2560.h"
+#elif defined(_SAM3XA_)
+#include "fireduino_due.h"
+#else
 namespace fireduino { // abstract API implementable any way you like
 	//////////////////// ARDUINO SPECIFIC ///////////////////
 	Print& get_Print();
@@ -39,16 +45,12 @@ namespace fireduino { // abstract API implementable any way you like
 	 * this does nothing since digitalWrite() is so slow.
 	 */
 	void delay_stepper_pulse(); 
-	uint16_t get_timer1(); // ticks @ 64 microseconds
-	void setup_timer1();
-	void clear_timer1();
-	void enable_timer1(bool enable);
+	uint32_t get_timer64us(); // ticks @ 64 microseconds
+	void setup_timer64us();
+	void clear_timer64us();
+	void enable_timer64us(bool enable);
 	int16_t freeRam ();
 } // namespace fireduino
-#elif defined( __AVR_ATmega2560__)
-#include "fireduino_mega2560.h"
-#else
-#include "MockDuino.h"
 #endif
 
 namespace fireduino {

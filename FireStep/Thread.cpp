@@ -150,13 +150,13 @@ void ThreadRunner::clear() {
     nHB = 0;
     testTardies = 0;
     fast = 255;
-	fireduino::clear_timer1();
+	fireduino::clear_timer64us();
 }
 
 void ThreadRunner::setup(int pinLED) {
     monitor.setup(pinLED);
 
-	fireduino::setup_timer1();
+	fireduino::setup_timer64us();
     lastAge = 0;
     ThreadEnable(true);
 }
@@ -182,12 +182,12 @@ void firestep::ThreadEnable(bool enable) {
         fireduino::serial_print(" ");
     }
 #endif
-	fireduino::enable_timer1(enable);
+	fireduino::enable_timer64us(enable);
 }
 
 firestep::Ticks firestep::ticks() {
 #if defined(TEST)
-    arduino.timer1(1);
+    arduino.timer64us(1);
 #endif
     Ticks result = threadRunner.ticks();
 

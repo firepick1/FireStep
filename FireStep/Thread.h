@@ -138,7 +138,7 @@ public:
 public:
     inline Ticks ticks() {
         cli();
-        threadClock.age = age = fireduino::get_timer1();
+        threadClock.age = age = fireduino::get_timer64us();
         if (age < lastAge) {
             // 1) a generation is 4.194304s
             // 2) generation is incremented when TIMER_VALUE() overflows
