@@ -8,6 +8,12 @@ namespace firestep {
 
 extern int16_t leastFreeRam;
 
+/**
+ * A Tick is 64 microseconds for all FireStep implementations. This duration 
+ * corresponds to the standard ATMEGA 16,000,000 Hz system clock and TCNT1/1024 prescaler:
+ *   1 Tick = 1024 clock cycles = 64 microseconds
+ * Clock overflows in 2^31 * 0.000064 seconds = ~38.1 hours
+ */
 typedef int32_t Ticks;
 
 typedef union ThreadClock  {

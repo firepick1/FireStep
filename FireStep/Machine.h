@@ -9,7 +9,6 @@
 #include "Display.h"
 #include "DeltaCalculator.h"
 #include "pins.h"
-#include "IDuino.h"
 
 extern void test_Home();
 
@@ -311,7 +310,6 @@ typedef class Machine : public QuadStepper {
 
 private:
     PH5TYPE		homeAngle; // recorded home angle
-    IDuinoPtr	pDuino;
 
 public:
     PinConfig	pinConfig;
@@ -354,7 +352,7 @@ protected:
     StepCoord 	stepHome(StepCoord pulsesPerAxis, int16_t delay);
 
 public:
-    Machine(IDuinoPtr pDuino=NULL);
+    Machine();
     void setup(PinConfig cfg);
     int32_t hash();
     virtual	Status step(const Quad<StepDV> &pulse);

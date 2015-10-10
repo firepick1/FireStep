@@ -1,11 +1,20 @@
 #ifndef MOCKDUINO_H
 #define MOCKDUINO_H
 
-#include <string>
+#include <iostream>
 #include <sstream>
+#include <iomanip>
+//#include <stdint.h>
+//#include "../ArduinoJson/include/ArduinoJson/Arduino/Print.hpp"
+
+#include <string>
+//#include <sstream>
 #include <stdint.h>
 #include "../ArduinoJson/include/ArduinoJson/Arduino/Print.hpp"
 #include "fireduino_types.h"
+
+#define EEPROM_BYTES 512 /* Actual capacity will be less because eeprom buffer is part of MAX_JSON */
+#define EEPROM_END 4096
 
 #define ADCH arduino.MEM(0)
 #define ADCSRA arduino.MEM(1)
@@ -139,6 +148,14 @@ extern MockDuino arduino;
 
 //extern MockDuino arduino;
 
+#define A0 54
+#define A1 (A0+1)
+#define A2 (A1+1)
+#define A3 (A2+1)
+#define A4 (A3+1)
+#define A5 (A4+1)
+#define A6 (A5+1)
+
 namespace fireduino {
 	inline Print& get_Print() {
 		return mockduino::get_Print();
@@ -170,11 +187,11 @@ namespace fireduino {
 	inline void digitalWrite(int16_t dirPin, int16_t value) {
 		mockduino::digitalWrite(dirPin, value);
 	}
-	inline void analogWrite(int16_t dirPin, int16_t value) {
-		mockduino::analogWrite(dirPin, value);
+	inline void analogWrite(int16_t pin, int16_t value) {
+		mockduino::analogWrite(pin, value);
 	}
-	inline int16_t analogRead(int16_t dirPin) {
-		return mockduino::analogRead(dirPin);
+	inline int16_t analogRead(int16_t pin) {
+		return mockduino::analogRead(pin);
 	}
 	/**
 	 /* IMPORTANT!!!
@@ -216,25 +233,11 @@ namespace fireduino {
 	inline void enable_timer1(bool enable) {
 		TIMER_ENABLE(enable);
 	}
+	inline int16_t freeRam () {
+		return 1000;
+	}
 } // namespace fireduino
 
-//public: // FireStep
-    //virtual void enableTicks(bool enable);
-    //virtual bool isTicksEnabled();
-//
-//public: // Testing: other
-    //void dump();
-    //void clear(); // NOT setup()! clears mock eeprom
-    //int16_t& MEM(int addr);
-    //void delay500ns();
-    //void setTicks(Ticks value);
-    //int16_t getPinMode(int16_t pin);
-    //int16_t getPin(int16_t pin);
-    //void setPin(int16_t pin, int16_t value);
-    //void setPinMode(int16_t pin, int16_t value);
-    //int32_t pulses(int16_t pin);
-    //uint32_t get_usDelay() {
-        //return usDelay;
-    //}
+std::string eeprom_read_string(uint8_t *addr);
 
 #endif

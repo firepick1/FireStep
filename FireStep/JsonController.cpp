@@ -1,4 +1,3 @@
-#include "Arduino.h"
 #ifdef CMAKE
 #include <cstring>
 #include <cstdio>
@@ -662,7 +661,7 @@ Status JsonController::processSys(JsonCommand& jcmd, JsonObject& jobj, const cha
     } else if (strcmp_PS(OP_db, key) == 0 || strcmp_PS(OP_sysdb, key) == 0) {
         status = processField<uint8_t, long>(jobj, key, machine.debounce);
     } else if (strcmp_PS(OP_fr, key) == 0 || strcmp_PS(OP_sysfr, key) == 0) {
-        leastFreeRam = minval(leastFreeRam, freeRam());
+        leastFreeRam = minval(leastFreeRam, fireduino::freeRam());
         jobj[key] = leastFreeRam;
     } else if (strcmp_PS(OP_hp, key) == 0 || strcmp_PS(OP_syshp, key) == 0) {
         status = processField<int16_t, long>(jobj, key, machine.fastSearchPulses);
@@ -741,7 +740,7 @@ Status JsonController::processDebug(JsonCommand& jcmd, JsonObject& jobj, const c
             }
         }
     } else if (strcmp_PS(OP_fr, key) == 0 || strcmp_PS(OP_dbgfr, key) == 0) {
-        leastFreeRam = minval(leastFreeRam, freeRam());
+        leastFreeRam = minval(leastFreeRam, fireduino::freeRam());
         jobj[key] = leastFreeRam;
     } else if (strcmp_PS(OP_lp, key) == 0 || strcmp_PS(OP_dbglp, key) == 0) {
         status = processField<int32_t, int32_t>(jobj, key, nLoops);
@@ -856,7 +855,6 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
     bool isAnalog = *key == 'a' || strncmp("ioa",key,3)==0;
     if (s && *s == 0) { // read
         if (isAnalog) {
-            fireduino::pinMode(pin+A0, pullUp ? INPUT_PULLUP : INPUT); // maybe INPUT_PULLUP should be error
             jobj[key] = fireduino::analogRead(pin+A0);
         } else {
             fireduino::pinMode(pin, pullUp ? INPUT_PULLUP : INPUT);
@@ -868,7 +866,6 @@ Status JsonController::processIOPin(JsonCommand& jcmd, JsonObject& jobj, const c
             if (value < 0 || 255 < value) {
                 return jcmd.setError(STATUS_JSON_255, key);
             }
-            fireduino::pinMode(pin+A0, OUTPUT);
             fireduino::analogWrite(pin+A0, (int16_t) value);
         } else {
             return jcmd.setError(STATUS_JSON_255, key);

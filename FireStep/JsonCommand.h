@@ -2,7 +2,6 @@
 #define JSONCOMMAND_H
 
 #include "version.h"
-#include "Arduino.h"
 #include "Thread.h"
 #ifdef TEST
 #include "ArduinoJson.h"

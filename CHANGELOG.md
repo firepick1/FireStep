@@ -1,10 +1,7 @@
-FireStep: change log
-====================
+FireStep v1: change log
+=======================
 
-v2.0 (pending)
-------
-* NEW: IFireStep interface implemented by: FireStepSerial, FireStepDuino
-* NEW: IDuino interface implemented by: Mega2560, MockDuino
+[v2.0](CHANGELOG2)
 
 v1.060
 ------

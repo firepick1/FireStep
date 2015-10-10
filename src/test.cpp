@@ -3520,7 +3520,6 @@ void test_io() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1);
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUAL(OUTPUT, arduino.getPinMode(A6));
     ASSERTEQUALS(JT("{'s':0,'r':{'io':{'a6':123}},'t':0.000} \n"), mockSerial.output().c_str());
     test_ticks(1);
 
@@ -3529,7 +3528,6 @@ void test_io() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     test_ticks(1);
     ASSERTEQUAL(STATUS_OK, mt.status);
-    ASSERTEQUAL(INPUT, arduino.getPinMode(A6));
     ASSERTEQUALS(JT("{'s':0,'r':{'io':{'a6':123}},'t':0.000} \n"), mockSerial.output().c_str());
     test_ticks(1);
 

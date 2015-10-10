@@ -224,15 +224,13 @@ void mockduino::delayMicroseconds(uint16_t usDelay) {
 }
 
 void mockduino::analogWrite(int16_t pin, int16_t value) {
-    ASSERT(0 <= pin && pin < MOCKDUINO_PINS);
-    ASSERTEQUAL(OUTPUT, arduino.getPinMode(pin));
+    ASSERT(A0 <= pin && pin < MOCKDUINO_PINS);
 	ASSERT(0 <= value && value <= 255);
 	arduino.pin[pin] = value;
 }
 
 int16_t mockduino::analogRead(int16_t pin) {
-    ASSERT(0 <= pin && pin < MOCKDUINO_PINS);
-    ASSERTEQUAL(INPUT, arduino.getPinMode(pin));
+    ASSERT(A0 <= pin && pin < MOCKDUINO_PINS);
     ASSERT(arduino.pin[pin] != NOVALUE);
 	return arduino.pin[pin];
 }

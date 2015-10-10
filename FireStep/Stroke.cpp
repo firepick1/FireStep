@@ -311,7 +311,7 @@ Status StrokeBuilder::buildLine(Stroke & stroke, Quad<StepCoord> relPos) {
         }
     }
 
-    leastFreeRam = minval(leastFreeRam, freeRam());
+    leastFreeRam = minval(leastFreeRam, fireduino::freeRam());
 
     //TESTCOUT3(" N:", N, " tS:", tS, " dEndPos:", stroke.dEndPos.toString());
 

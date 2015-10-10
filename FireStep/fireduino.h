@@ -1,8 +1,17 @@
 #ifndef FIREDUINO_H
 #define FIREDUINO_H
 
+#define minval(a,b) ((a)<(b)?(a):(b))
+#define maxval(a,b) ((a)>(b)?(a):(b))
+#define absval(x) ((x)>0?(x):-(x))
+#define roundval(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
+#ifndef radians
+#define radians(deg) ((deg)*DEG_TO_RAD)
+#define degrees(rad) ((rad)*RAD_TO_DEG)
+#endif
+
 #if defined(FIREDUINO_API) 
-namespace fireduino {
+namespace fireduino { // abstract API implementable any way you like
 	//////////////////// ARDUINO SPECIFIC ///////////////////
 	Print& get_Print();
 	int16_t serial_read();
@@ -22,28 +31,19 @@ namespace fireduino {
 	void	eeprom_write_byte(uint8_t *addr, uint8_t value);
 
 	////////////////// FIRESTEP SPECIFIC ///////////////////
-	/**
-	 /* IMPORTANT!!!
-	 /* The digitalWrite/digitalRead methods match the Arduino
-	 /* with one critical difference. They must take at least
-	 /* 1 microsecond to complete. This constraint ensures that
-	 /* pulse generation will generate the 2 microsecond pulse
-	 /* required by DRV8825. When implementing IDuino for fast
-	 /* CPUs, take care to observe this limitation.
-	 /*/
-	void pulseFast(uint8_t pin);
-	void delay_stepper_pulse(); // delay for 2 microsecond rise-to-fall stepper pulse width
-	/**
-	 * With the standard ATMEGA 16,000,000 Hz system clock and TCNT1 / 1024 prescaler:
-	 * 1 tick = 1024 clock cycles = 64 microseconds
-	 * Clock overflows in 2^31 * 0.000064 seconds = ~38.1 hours
+	void pulseFast(uint8_t pin); // >= 2 microsecond rise-to-fall stepper pulse width
+	/*
+	 * The following is called between a digitalWrite(HIGH/LOW) pair
+	 * to ensure a stepper pulse is >= 2 microseconds. On the Arduino,
+	 * this does nothing since digitalWrite() is so slow.
 	 */
-	uint16_t get_timer1();
+	void delay_stepper_pulse(); 
+	uint16_t get_timer1(); // ticks @ 64 microseconds
 	void setup_timer1();
 	void clear_timer1();
 	void enable_timer1(bool enable);
+	int16_t freeRam ();
 } // namespace fireduino
-
 #elif defined( __AVR_ATmega2560__)
 #include "fireduino_mega2560.h"
 #else
