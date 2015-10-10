@@ -3,6 +3,10 @@ FireStep v1: change log
 
 [v2.0](CHANGELOG2)
 
+v1.061
+------
+* NEW: fireduino refactor for MCU independence. No functionality change. This is the bridge release between FireStep 1.x and 2.x
+
 v1.060
 ------
 * NEW: "syspu" sets pullup flags for limit switches and probe
