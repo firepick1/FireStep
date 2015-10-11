@@ -1,8 +1,10 @@
 #ifndef FIREDUINO_DUE_H
 #define FIREDUINO_DUE_H
 
-#include "Arduino.h"
-#include "DueTimer.h"
+#include <Arduino.h>
+#if defined(_SAM3XA_)
+#include <DueTimer.h>
+#endif
 extern uint32_t fireduino_timer;
 extern void fireduino_timer_handler();
 

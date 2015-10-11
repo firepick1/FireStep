@@ -9,7 +9,7 @@ extern "C" {
 //////////// GENERATED FILE (from version.h.in) /////////////////
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 7
+#define VERSION_MINOR 8
 #define VERSION_PATCH 0
 
 //////////// GENERATED FILE (from version.h.in) /////////////////
