@@ -754,6 +754,9 @@ Status JsonController::processDebug(JsonCommand& jcmd, JsonObject& jobj, const c
 
 
 Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, const char* key, const char*addr) {
+	if (EEPROM_BYTES == 0) {
+		return STATUS_NO_EEPROM;
+	}
     Status status = STATUS_OK;
     JsonVariant &jvalue = jobj[key];
     if (addr && *addr == '!') {

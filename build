@@ -24,6 +24,10 @@ do
   esac
 done
 
+if [ ! -e DueTimer ]; then
+	echo "GIT	: git clone https://github.com/firepick1/DueTimer"
+	git clone https://github.com/firepick1/DueTimer
+fi
 if [ ! -e Adafruit_NeoPixel ]; then
 	echo "GIT	: git clone https://github.com/adafruit/Adafruit_NeoPixel"
 	git clone https://github.com/adafruit/Adafruit_NeoPixel	
@@ -74,7 +78,7 @@ if [ "$WINDIR" != "" ]; then
 	echo "SYSTEM	: FireStep Windows support is limited to Arduino IDE"
 	echo "TRY	: Copy ArduinoJson       to <your-Arduino-sketch-folder>/libraries/ArduinoJson"
 	echo "TRY	: Copy Adafruit_NeoPixel to <your-Arduino-sketch-folder>/libraries/Adafruit_NeoPixel"
-	echo "TRY	: Launch Arduino 1.6.3 IDE and open FireStep/FireStep.ino"
+	echo "TRY	: Launch Arduino 1.6.5 IDE and open FireStep/FireStep.ino"
 	echo "STATUS	: build complete"
 	exit 0;
 fi

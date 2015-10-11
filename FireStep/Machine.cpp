@@ -24,6 +24,12 @@ char * firestep::saveConfigValue(const char *key, bool value, char *out) {
     return saveConfigValue(key, value ? "1":"0", out);
 }
 
+char * firestep::saveConfigValue(const char *key, uint8_t value, char *out) {
+    sprintf(out, "\"%s\":%d,", key, value);
+	//TESTCOUT2("saveConfigValue int16 key:", key, " value:", value);
+    return out+strlen(out);
+}
+
 char * firestep::saveConfigValue(const char *key, int16_t value, char *out) {
     sprintf(out, "\"%s\":%d,", key, value);
 	//TESTCOUT2("saveConfigValue int16 key:", key, " value:", value);
@@ -838,8 +844,8 @@ char * Machine::saveSysConfig(char *out, size_t maxLen) {
     *out++ = '{';
     // priority 1
     out = saveConfigValue("ch", hash(), out);
-    out = saveConfigValue("pc", pinConfig, out);
-    out = saveConfigValue("to", topology, out);
+    out = saveConfigValue("pc", (uint8_t) pinConfig, out);
+    out = saveConfigValue("to", (uint8_t) topology, out);
 
     // priority 2
     out = saveConfigValue("ah", autoHome, out);
@@ -850,7 +856,7 @@ char * Machine::saveSysConfig(char *out, size_t maxLen) {
     out = saveConfigValue("jp", jsonPrettyPrint, out);
     out = saveConfigValue("lh", invertLim, out);
     out = saveConfigValue("mv", vMax, out);
-    out = saveConfigValue("om", outputMode, out);
+    out = saveConfigValue("om", (uint8_t) outputMode, out);
     out = saveConfigValue("pb", op.probe.pinProbe, out);
     out = saveConfigValue("pi", pinStatus, out);
     out = saveConfigValue("pu", pullups, out);

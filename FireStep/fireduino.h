@@ -1,6 +1,8 @@
 #ifndef FIREDUINO_H
 #define FIREDUINO_H
 
+#include <Arduino.h>
+
 #define minval(a,b) ((a)<(b)?(a):(b))
 #define maxval(a,b) ((a)>(b)?(a):(b))
 #define absval(x) ((x)>0?(x):-(x))
@@ -9,6 +11,8 @@
 #define radians(deg) ((deg)*DEG_TO_RAD)
 #define degrees(rad) ((rad)*RAD_TO_DEG)
 #endif
+
+extern void fireduino_timer_handler();
 
 #if defined(MOCK_MEGA2560)
 #include "MockDuino.h"

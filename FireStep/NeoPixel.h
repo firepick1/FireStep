@@ -25,7 +25,9 @@ public:
 /////////////////// MOCK END ///////////
 #else
 #include <Adafruit_NeoPixel.h>
+#if defined( __AVR_ATmega2560__)
 #include <avr/power.h>
+#endif
 #endif
 
 #include "Display.h"

@@ -4,6 +4,13 @@ using namespace firestep;
 
 #define MAX_THREADS 32
 
+uint32_t fireduino_timer = 0;
+
+void fireduino_timer_handler() {
+	fireduino_timer++;
+}
+
+
 namespace firestep {
 ThreadClock 	threadClock;
 ThreadRunner 	threadRunner;
@@ -68,7 +75,7 @@ void MonitorThread::setup(int pinLED) {
     blinkLED = true;
 }
 
-void MonitorThread::LED(byte value) {
+void MonitorThread::LED(uint8_t value) {
     if (pinLED != NOPIN) {
         fireduino::digitalWrite(pinLED, value ? HIGH : LOW);
     }

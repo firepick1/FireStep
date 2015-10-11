@@ -20,6 +20,7 @@ TAG=`git log --pretty=format:'%H' -n 1`
 OUTPUT="FireStep-$TAG.zip"
 echo "CMD	: creating $OUTPUT"
 
+cp -r DueTimer/ ziptmp/libraries
 cp -r FireStep/ ziptmp/FireStep
 cp CHANGELOG.md LICENSE README.md ziptmp/FireStep
 cp target/git_tag.h ziptmp/FireStep/FireStep

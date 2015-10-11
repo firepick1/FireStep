@@ -248,8 +248,8 @@ void MachineThread::loop() {
     pController->speed = ADCH;
     if (pController->speed <= 251) {
         ThreadEnable(false);
-        for (byte iPause = pController->speed; iPause <= 247; iPause++) {
-            for (byte iIdle = 0; iIdle < 10; iIdle++) {
+        for (uint8_t iPause = pController->speed; iPause <= 247; iPause++) {
+            for (uint8_t iIdle = 0; iIdle < 10; iIdle++) {
                 DELAY500NS;
                 DELAY500NS;
             }

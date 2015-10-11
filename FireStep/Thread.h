@@ -4,6 +4,9 @@
 #include "fireduino.h"
 #include "MCU.h"
 
+extern uint32_t fireduino_timer;
+extern void fireduino_timer_handler();
+
 namespace firestep {
 
 extern int16_t leastFreeRam;
@@ -41,7 +44,7 @@ public:
     // Threads with 0 nextLoop will always run ASAP.
     ThreadClock nextLoop;
 
-    byte tardies;
+    uint8_t tardies;
     char id;
 }
 Thread, *ThreadPtr;
@@ -63,11 +66,11 @@ typedef class MonitorThread : PulseThread {
     friend class MachineThread;
 
 private:
-    byte	blinkLED;
+    uint8_t	blinkLED;
     int16_t pinLED; /* PRIVATE */
 
 private:
-    void 	LED(byte value);
+    void 	LED(uint8_t value);
     void setup(int pinLED = NOPIN); /* PRIVATE */
     unsigned int Free(); /* PRIVATE */
     void loop(); /* PRIVATE */
@@ -93,9 +96,9 @@ private:
     uint16_t 	generation;
     uint16_t 	lastAge;
     uint16_t 	age;
-    byte		testTardies;
+    uint8_t		testTardies;
     int16_t		nHB;
-    byte		fast;
+    uint8_t		fast;
 public:
     ThreadRunner();
     void resetGenerations();
@@ -122,7 +125,7 @@ public:
         return age;
     }
 public:
-    inline byte get_testTardies() {
+    inline uint8_t get_testTardies() {
         return testTardies;
     }
 public:
@@ -136,8 +139,11 @@ public:
         }
     }
 public:
-    inline Ticks ticks() {
+    inline Ticks ticks() { 
+		// DEPRECATED. TODO: use fireduino::get_timer64us()
+#if defined( __AVR_ATmega2560__)
         cli();
+#endif
         threadClock.age = age = fireduino::get_timer64us();
         if (age < lastAge) {
             // 1) a generation is 4.194304s
@@ -153,14 +159,18 @@ public:
                 //fireduino::serial_println(msg);
                 //throw msg;
             }
+#if defined( __AVR_ATmega2560__)
             sei();
+#endif
             return 0;
         }
         lastAge = age;
-        sei();
+#if defined( __AVR_ATmega2560__)
+            sei();
+#endif
         return threadClock.ticks;
     }
-    inline byte innerLoop() {
+    inline uint8_t innerLoop() {
         if (ticks() == 0) {
             return 0;
         }
