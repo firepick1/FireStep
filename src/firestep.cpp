@@ -72,7 +72,7 @@ int parse_args(int argc, char *argv[], bool &prompt, bool &logging,
             }
             json = argv[iArg];
         } else if (strcmp("-v",argv[iArg])==0 || strcmp("--version", argv[iArg])==0) {
-			cerr << FireStepClient::version(false) << " " << GIT_TAG << endl;
+			cerr << FireStepClient::version(false) << endl;
 			return -EAGAIN;
         } else if (strcmp("-d",argv[iArg])==0 || strcmp("--device", argv[iArg])==0) {
             if (++iArg >= argc) {

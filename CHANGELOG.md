@@ -3,6 +3,11 @@ FireStep v1: change log
 
 [v2.0](CHANGELOG2)
 
+v1.080
+------
+* NEW: firestep client for Raspberry Pi 2 Model B https://github.com/firepick1/FireStep/wiki/Raspberry-Pi-2
+* WIP: fireduino/ArduinoDue (UNTESTED)
+
 v1.070
 ------
 * NEW: MTO_FPD: "dim" now has an optional attribute "hzl" to set the post-homing Z relative to the limit switch (i.e., <= 0). 

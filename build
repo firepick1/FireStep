@@ -39,11 +39,17 @@ if [ ! -e ArduinoJson ]; then
 		echo "ERROR	: git clone failed (RC=$RC)"
 		exit -1
 	fi
-	pushd ArduinoJson
+fi
+pushd ArduinoJson
+GITMASTER=`git rev-parse @`
+GITREMOTE=`git rev-parse origin/master`
+if [ "$GITMASTER" != "$GITREMOTE" ]; then
+	echo "GIT	: git checkout master # `pwd`"
+	git checkout master
 	cmake .
 	make clean all
-	popd
 fi
+popd
 
 if [ "${FIREDUINO}" == "" ]; then
 	export FIREDUINO=MOCK_MEGA2560
@@ -53,20 +59,26 @@ if [ "${MEMORY_MODEL}" == "" ]; then
 	export MEMORY_MODEL=MEMORY_MODEL_TINY
 fi
 echo "DEFINE	: MEMORY_MODEL=${MEMORY_MODEL}"
-if [ ! -e /usr/lib/lib_ph5.so ]; then
-	echo "GIT	: git clone https://github.com/firepick1/ph5.git"
-	git clone https://github.com/firepick1/ph5.git
+if [ ! -e ph5 ]; then
+	echo "GIT	: git clone https://github.com/firepick1/ph5"
+	git clone https://github.com/firepick1/ph5
 	RC=$?; if [ $RC -ne 0 ]; then
 		echo "ERROR	: git clone failed (RC=$RC)"
 		exit -1
 	fi
 fi
-if [ "$1" == "" ]; then
-	pushd ph5
-		git pull
-		./build clean all
-	popd
+pushd ph5
+if [ -e /usr/lib/lib_ph5.so ]; then
+	GITMASTER=`git rev-parse @`
 fi
+GITREMOTE=`git rev-parse origin/master`
+if [ "$GITMASTER" != "$GITREMOTE" ]; then
+	echo "GIT	: git checkout master # `pwd`"
+	git checkout master
+	git pull
+	./build clean all
+fi
+popd
 
 if [ "$DESTDIR" == "" ]; then
 	echo "INSTALL	: using default installation prefix"

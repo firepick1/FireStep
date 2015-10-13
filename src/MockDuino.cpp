@@ -240,9 +240,14 @@ void mockduino::digitalWrite(int16_t pin, int16_t value) {
     ASSERTEQUAL(OUTPUT, arduino.getPinMode(pin));
     if (arduino.pin[pin] != value) {
         if (value == 0) {
+			//TESTCOUT2("digitalWrite LOW pin:", pin, " value:", value);
             arduino.pinPulses[pin]++;
+		} else {
+			//TESTCOUT2("digitalWrite HIGH pin:", pin, " value:", value);
         }
         arduino.pin[pin] = value ? HIGH : LOW;
+	} else {
+		//TESTCOUT2("digitalWrite (ignored) pin:", pin, " value:", value);
     }
 }
 

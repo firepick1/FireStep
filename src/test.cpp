@@ -28,7 +28,7 @@ void replaceChar(string &s, char cmatch, char creplace) {
     }
 }
 
-string test_cmd(MachineThread &mt, int line, const char *cmd, int homeLoops=-1, int probeLoops=-1) {
+string test_cmd(MachineThread &mt, int line, const char *cmd, int homeLoops=-1, int probeLoops=-1, Status status=STATUS_OK) {
     TESTCOUT1("line:", line);
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     ASSERTEQUALS("", mockSerial.output().c_str());
@@ -73,9 +73,11 @@ string test_cmd(MachineThread &mt, int line, const char *cmd, int homeLoops=-1, 
 		}
 	}
     if (mt.status != STATUS_OK) {
-        cerr << mockSerial.output() << endl;
+		string err = mockSerial.output();
+        cerr << err << endl;
+		ASSERTEQUAL(status, mt.status);
+		return err;
     }
-    ASSERTEQUAL(STATUS_OK, mt.status);
     mt.loop();
     ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
     return mockSerial.output();
@@ -5095,11 +5097,61 @@ void test_homz() {
 		ASSERTEQUALS(JT("{'s':0,'r':{'dimhzl':-10.500},'t':0.???} \n"), response.c_str());
         ASSERTEQUALT(55.392, machine.homeZ, 0.001);
 
+        response = test_cmd(mt, __LINE__, JT("{'dimhzl':1}\n"), -1, -1, STATUS_INVALID_Z); 
+		ASSERTEQUALS(JT("{'s':-152,'r':{'dimhzl':1.000},'e':'dimhzl','t':0.???} \n"), response.c_str());
+        ASSERTEQUALT(55.392, machine.homeZ, 0.001);
+		mt.status = STATUS_WAIT_IDLE;
+
         response = test_cmd(mt, __LINE__, JT("{'hom':''}\n"), 500, -1);
 		ASSERTQUAD(Quad<StepCoord>(-3985, -3985, -3985, 0), machine.getMotorPosition());
     }
 
     cout << "TEST	: test_homz() OK " << endl;
+}
+
+void test_map_axis() {
+    cout << "TEST	: test_map_axis() =====" << endl;
+
+    {   
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        string response;
+
+    	int32_t apulses = arduino.pulses(PC2_E0_STEP_PIN);
+    	int32_t bpulses = arduino.pulses(PC2_E1_STEP_PIN);
+        response = test_cmd(mt, __LINE__, JT("{'4ma':4}\n"));
+		ASSERTEQUALS(JT("{'s':0,'r':{'4ma':4},'t':0.???} \n"), response.c_str());
+        response = test_cmd(mt, __LINE__, JT("{'movb':123}\n"));
+		ASSERTEQUALS(JT("{'s':0,'r':{'movb':123.000},'t':0.???} \n"), response.c_str());
+		ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-apulses);
+		ASSERTEQUAL(123, arduino.pulses(PC2_E1_STEP_PIN)-bpulses);
+        response = test_cmd(mt, __LINE__, JT("{'4ma':3}\n"));
+		ASSERTEQUALS(JT("{'s':0,'r':{'4ma':3},'t':0.???} \n"), response.c_str());
+        response = test_cmd(mt, __LINE__, JT("{'mova':456}\n"));
+		ASSERTEQUALS(JT("{'s':0,'r':{'mova':456.000},'t':0.???} \n"), response.c_str());
+		ASSERTEQUAL(456, arduino.pulses(PC2_E0_STEP_PIN)-apulses);
+		ASSERTEQUAL(123, arduino.pulses(PC2_E1_STEP_PIN)-bpulses);
+    }
+	
+	{   
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        string response;
+
+    	int32_t apulses = arduino.pulses(PC2_E0_STEP_PIN);
+    	int32_t bpulses = arduino.pulses(PC2_E1_STEP_PIN);
+        response = test_cmd(mt, __LINE__, JT("[{'4ma':4},{'movb':123},{'4ma':3}]\n"));
+		ASSERTEQUALS(JT("{'s':0,'r':{'4ma':3},'t':0.???} \n"), response.c_str());
+		ASSERTEQUAL(0, arduino.pulses(PC2_E0_STEP_PIN)-apulses);
+		ASSERTEQUAL(123, arduino.pulses(PC2_E1_STEP_PIN)-bpulses);
+        response = test_cmd(mt, __LINE__, JT("{'mova':456}\n"));
+		ASSERTEQUALS(JT("{'s':0,'r':{'mova':456.000},'t':0.???} \n"), response.c_str());
+		ASSERTEQUAL(456, arduino.pulses(PC2_E0_STEP_PIN)-apulses);
+		ASSERTEQUAL(123, arduino.pulses(PC2_E1_STEP_PIN)-bpulses);
+    }
+
+
+    cout << "TEST	: test_map_axis() OK " << endl;
 }
 
 void test_probe_pullup() {
@@ -5383,7 +5435,8 @@ int main(int argc, char *argv[]) {
         //test_mpo();
         //test_Move();
         //test_Armin();
-        test_calho();
+        //test_calho();
+		test_map_axis();
     } else {
         test_id();
         test_Serial();
@@ -5432,8 +5485,9 @@ int main(int argc, char *argv[]) {
         test_Armin();
         test_calho();
         test_calgr();
-		test_homz();
 		test_probe_pullup();
+		test_homz();
+		test_map_axis();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;
