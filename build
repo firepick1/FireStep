@@ -41,11 +41,14 @@ if [ ! -e ArduinoJson ]; then
 	fi
 fi
 pushd ArduinoJson
-GITMASTER=`git rev-parse @`
+if [ -e lib ]; then
+	GITMASTER=`git rev-parse @`
+fi
 GITREMOTE=`git rev-parse origin/master`
 if [ "$GITMASTER" != "$GITREMOTE" ]; then
 	echo "GIT	: git checkout master # `pwd`"
 	git checkout master
+	echo "BUILD	: `pwd`"
 	cmake .
 	make clean all
 fi
