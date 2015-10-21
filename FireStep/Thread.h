@@ -2,8 +2,6 @@
 #define THREAD_H
 
 #include "fireduino.h"
-#include "MCU.h"
-
 extern uint32_t fireduino_timer;
 extern void fireduino_timer_handler();
 

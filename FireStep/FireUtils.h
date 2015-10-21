@@ -2,7 +2,7 @@
 #define FIREUTILS_H
 
 #include "fireduino.h"
-#ifndef ARDUINO
+#ifdef NO_MCU
 #include <cstdio>
 #endif
 
@@ -38,7 +38,7 @@
 		}
 #endif
 
-#ifdef ARDUINO
+#ifdef NO_MCU
 #define ASSERTFAILBUF(buf) { fireduino::serial_println(buf); }
 #endif
 #ifndef ASSERTFAILBUF
