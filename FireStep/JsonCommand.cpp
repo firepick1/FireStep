@@ -139,7 +139,7 @@ Status JsonCommand::parseInput(const char *jsonIn, Status status) {
                 return STATUS_JSON_TOO_LONG;
             }
             char c = fireduino::serial_read();
-            if (c == '\n') {
+            if (c == '\r' || c == '\n') {
                 return parseCore();
             } else {
                 *pJsonFree++ = c;

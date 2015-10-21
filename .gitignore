@@ -17,6 +17,9 @@ Makefile
 core
 CPackConfig.cmake
 CPackSourceConfig.cmake
+.metadata
+Debug/
+*.bak
 
 # Compiled Object files
 *.slo
@@ -46,3 +49,6 @@ CPackSourceConfig.cmake
 *.exe
 *.out
 *.app
+
+*.d
+*.log
