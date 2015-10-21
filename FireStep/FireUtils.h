@@ -38,9 +38,10 @@
 		}
 #endif
 
-#ifdef NO_MCU
+#ifndef NO_MCU
 #define ASSERTFAILBUF(buf) { fireduino::serial_println(buf); }
 #endif
+
 #ifndef ASSERTFAILBUF
 #include <iostream>
 #define ASSERTFAILBUF(buf) { std::cerr << "***ASSERT FAILED*** " << buf << std::endl; }
