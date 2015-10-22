@@ -27,6 +27,14 @@ if [ ! -e ArduinoJson ]; then
     exit -1
 fi
 
+if [ "${FIREDUINO}" == "" ]; then
+	export FIREDUINO=MOCK_MEGA2560
+fi
+
+if [ "${MEMORY_MODEL}" == "" ]; then
+	export MEMORY_MODEL=MEMORY_MODEL_TINY
+fi
+
 if [ -e CMakeFiles ] ; then 
   echo "STATUS	: removing existing makefiles"
   rm -rf core CMakeCache.txt CMakeFiles CMakeFiles.txt target cmake_install.cmake CPackConfig.cmake CPackSourceConfig.cmake

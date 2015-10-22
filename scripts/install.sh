@@ -44,13 +44,6 @@ if [ "$GITMASTER" != "$GITREMOTE" ]; then
 fi
 popd
 
-if [ "${FIREDUINO}" == "" ]; then
-	export FIREDUINO=MOCK_MEGA2560
-fi
-
-if [ "${MEMORY_MODEL}" == "" ]; then
-	export MEMORY_MODEL=MEMORY_MODEL_TINY
-fi
 echo "DEFINE	: MEMORY_MODEL=${MEMORY_MODEL}"
 if [ ! -e ph5 ]; then
 	echo "GIT	: git clone https://github.com/firepick1/ph5"
