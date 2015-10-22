@@ -192,6 +192,7 @@ namespace fireduino {
 	}
 	inline int16_t analogRead(uint8_t ch,  bool arduino10bit = true) {
 		uint16_t adc = 0;
+		if(ch >= sizeof(adcPinMap)) return 0;
 		bool ret = Chip_ADC_ReadValue(LPC_ADC, adcPinMap[ch], &adc);
 		if(!ret) adc = 0;
 

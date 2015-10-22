@@ -21,7 +21,7 @@ using namespace mockduino;
 #define ASSERTQUAD(expected,actual) ASSERTEQUALS( expected.toString().c_str(), actual.toString().c_str() );
 
 void replaceChar(string &s, char cmatch, char creplace) {
-    for (int i = 0; i < s.size(); i++) {
+    for (uint16_t i = 0; i < s.size(); i++) {
         if (s[i] == cmatch) {
             s[i] = creplace;
         }
@@ -85,7 +85,7 @@ string test_cmd(MachineThread &mt, int line, const char *cmd, int homeLoops=-1, 
 
 string jsonTemplate(const char *jsonIn, string replace = "'\"") {
     string ji(jsonIn);
-    for (int i = 0; i < replace.size(); i += 2) {
+    for (uint16_t i = 0; i < replace.size(); i += 2) {
         char cmatch = replace[i];
         char creplace = replace[i + 1];
         replaceChar(ji, cmatch, creplace);
@@ -523,7 +523,7 @@ void testJSON_process(MachineThread& mt, JsonCommand &jcmd, string replace,
                       const char *jsonOut, Status status = STATUS_OK) {
     mockSerial.clear();
     string jo(jsonOut);
-    for (int i = 0; i < replace.size(); i += 2) {
+    for (uint16_t i = 0; i < replace.size(); i += 2) {
         char cmatch = replace[i];
         char creplace = replace[i + 1];
         replaceChar(jo, cmatch, creplace);
@@ -668,7 +668,7 @@ void test_mpo() {
     mt.machine.pDisplay = &testDisplay;
     mt.setup(PC1_EMC02);
 
-    Machine & machine = mt.machine;
+    //Machine & machine = mt.machine;
     testDisplay.clear();
 
     string replace;
@@ -708,7 +708,7 @@ void test_JsonController_tst() {
     int32_t xpulses;
     int32_t ypulses;
     int32_t zpulses;
-    Ticks ticks;
+    //Ticks ticks;
     //uint32_t usDelay;
 
     threadClock.ticks++;
@@ -813,7 +813,7 @@ void test_JsonController() {
     MachineThread mt;
     Machine & machine(mt.machine);
     machine.setPinConfig(PC2_RAMPS_1_4);
-    JsonController &jc(*mt.pController);
+    //JsonController &jc(*mt.pController);
     arduino.setPin(PC2_X_MIN_PIN, false);
     arduino.setPin(PC2_Y_MIN_PIN, false);
     arduino.setPin(PC2_Z_MIN_PIN, false);
@@ -1098,7 +1098,7 @@ void test_Machine_step() {
     ASSERTEQUAL(true, machine.axis[4].isEnabled());
     ASSERTEQUAL(false, machine.axis[5].isEnabled());
 
-    Status status;
+    //Status status;
     machine.axis[3].enable(false);
     ASSERTQUAD(machine.getMotorPosition(), Quad<StepDV>(0, 0, 0, 0));
     ASSERTEQUAL(STATUS_STEP_RANGE_ERROR, machine.step(Quad<StepDV>(4, 3, 2, 1)));
@@ -2015,9 +2015,9 @@ void test_MTO_FPD_dim() {
     MachineThread mt = test_MTO_FPD_setup();
     Machine &machine = mt.machine;
     DeltaCalculator& dc = machine.delta;
-    int32_t xpulses;
-    int32_t ypulses;
-    int32_t zpulses;
+    //int32_t xpulses;
+    //int32_t ypulses;
+    //int32_t zpulses;
 
     // dim get
     machine.setMotorPosition(Quad<StepCoord>(1,2,3,4));
@@ -3082,7 +3082,7 @@ void test_errors() {
     cout << "TEST	: test_errors() =====" << endl;
 
     MachineThread mt = test_setup();
-    Machine &machine = mt.machine;
+    //Machine &machine = mt.machine;
 
     test_error(mt, "{'abc':true}\n", STATUS_UNRECOGNIZED_NAME,
                "{'s':-402,'r':{'abc':true},'e':'abc','t':0.000} \n");
@@ -3097,7 +3097,7 @@ void test_Idle() {
     cout << "TEST	: test_Idle() =====" << endl;
 
     MachineThread mt = test_setup();
-    Machine &machine = mt.machine;
+    //Machine &machine = mt.machine;
     int32_t xenpulses = arduino.pulses(PC2_X_ENABLE_PIN);
 
     test_ticks(1);
@@ -3119,7 +3119,7 @@ void test_PrettyPrint() {
     cout << "TEST	: test_PrettyPrint() =====" << endl;
 
     MachineThread mt = test_setup();
-    Machine &machine = mt.machine;
+    //Machine &machine = mt.machine;
 
     mockSerial.push(JT("{'sysjp':true} \n"));
     threadClock.ticks++;
@@ -3161,7 +3161,7 @@ void test_autoSync() {
     testDisplay.clear();
 
     ASSERTEQUAL(1000, MAX_JSON);
-    uint8_t *eeaddr = 0;
+    //uint8_t *eeaddr = 0;
     ASSERTEQUAL(0, machine.syncHash);
     ASSERT(!machine.autoSync);
     ASSERTEQUAL(STATUS_BUSY_SETUP, mt.status);
@@ -3449,7 +3449,7 @@ void test_io() {
     cout << "TEST	: test_io() =====" << endl;
 
     MachineThread mt = test_setup();
-    Machine &machine = mt.machine;
+    //Machine &machine = mt.machine;
 	string response;
 
     arduino.setPin(22, LOW); // without this input is indeterminate
@@ -3971,7 +3971,7 @@ void test_MachineThread() {
 
     threadRunner.clear();
     MachineThread mt;
-    Machine& machine = mt.machine;
+    //Machine& machine = mt.machine;
     mt.setup(PC2_RAMPS_1_4);
     ASSERTQUAD(Quad<StepCoord>(0, 0, 0, 0), mt.machine.getMotorPosition());
 
@@ -4844,9 +4844,9 @@ void test_id() {
     cout << "TEST	: test_id() =====" << endl;
 
     MachineThread mt = test_MTO_FPD_setup();
-    Machine& machine = mt.machine;
-    DeltaCalculator& dc = machine.delta;
-    StepCoord armPos = 7800;
+    //Machine& machine = mt.machine;
+    //DeltaCalculator& dc = machine.delta;
+    //StepCoord armPos = 7800;
 
     mockSerial.push(JT("{'idapp':''}\n"));
     mt.loop();
@@ -5010,8 +5010,8 @@ void test_pgm() {
     ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
     mt.loop(); // program
     ASSERTEQUAL(STATUS_OK, mt.status);
-    double pi = 3.14159265359;
-    double GT2_pitch_length_offset = 0.75;
+    //double pi = 3.14159265359;
+    //double GT2_pitch_length_offset = 0.75;
     double gearRatioFPD = FPD_GEAR_RATIO;
     printf("%.12lf", gearRatioFPD);
     ASSERTEQUALT(gearRatioFPD, machine.delta.getGearRatio(), 0.000001);
@@ -5114,7 +5114,7 @@ void test_map_axis() {
 
     {   
         MachineThread mt = test_setup_FPD();
-        Machine& machine = mt.machine;
+        //Machine& machine = mt.machine;
         string response;
 
     	int32_t apulses = arduino.pulses(PC2_E0_STEP_PIN);
@@ -5135,7 +5135,7 @@ void test_map_axis() {
 	
 	{   
         MachineThread mt = test_setup_FPD();
-        Machine& machine = mt.machine;
+        //Machine& machine = mt.machine;
         string response;
 
     	int32_t apulses = arduino.pulses(PC2_E0_STEP_PIN);
@@ -5159,7 +5159,7 @@ void test_probe_pullup() {
 
     {   // INPUT default pin value
         MachineThread mt = test_setup_FPD();
-        Machine& machine = mt.machine;
+        //Machine& machine = mt.machine;
         string response;
 
         response = test_cmd(mt, __LINE__, JT("{'prbz':''}\n"), -1, 2);
@@ -5169,7 +5169,7 @@ void test_probe_pullup() {
 
     {   // INPUT initially LOW
         MachineThread mt = test_setup_FPD();
-        Machine& machine = mt.machine;
+        //Machine& machine = mt.machine;
         string response;
 
 		arduino.setPin(PC2_PROBE_PIN, LOW);
@@ -5180,7 +5180,7 @@ void test_probe_pullup() {
 
     {   // INPUT initially HIGH
         MachineThread mt = test_setup_FPD();
-        Machine& machine = mt.machine;
+        //Machine& machine = mt.machine;
         string response;
 
 		arduino.setPin(PC2_PROBE_PIN, HIGH);
