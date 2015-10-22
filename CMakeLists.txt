@@ -151,7 +151,6 @@ INSTALL(FILES
 	FireStep/FireUtils.h
 	FireStep/JsonCommand.h
 	FireStep/JsonController.h
-	FireStep/MCU.h
 	FireStep/Machine.h
 	FireStep/MachineThread.h
 	FireStep/NeoPixel.h
