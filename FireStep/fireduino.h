@@ -16,6 +16,7 @@
 extern void fireduino_timer_handler();
 
 #if defined(MOCK_MEGA2560)
+#define NO_MCU
 #include "MockDuino.h"
 #elif defined( __AVR_ATmega2560__)
 #include "fireduino_mega2560.h"
