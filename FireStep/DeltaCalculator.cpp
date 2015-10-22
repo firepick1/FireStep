@@ -114,7 +114,6 @@ PH5TYPE DeltaCalculator::calcSPEAngle(StepCoord pulses, DeltaAxis axis) {
         PH5TYPE speDegreesPerPulse = (1-spRatio)*dpp;
         PH5TYPE speDegrees = spePulses * speDegreesPerPulse;
         angle = spAngleDigitized - speDegrees;
-        PH5TYPE angleOld = pulses*dpp - spRatio * spePulses * dpp;
         TESTCOUT4("calcSPEAngle(SPE) spAngleDigitized:", spAngleDigitized,
                   " spePulses:", spePulses, " angle:", angle, " speDegrees:", speDegrees);
         //" spePulses:", spePulses, " angle:", angle, " angleOld:", angleOld);
@@ -293,18 +292,18 @@ XYZ3D DeltaCalculator::calcXYZ(Angle3D angles) {
 
 int32_t DeltaCalculator::hash() {
     int32_t result = 0
-                     ^ (*(uint32_t *)(void*)& f)
-                     ^ (*(uint32_t *)(void*)& e)
-                     ^ (*(uint32_t *)(void*)& rf)
-                     ^ (*(uint32_t *)(void*)& re)
+                     ^ (uint32_t)f
+                     ^ (uint32_t)e
+                     ^ (uint32_t)rf
+                     ^ (uint32_t)re
                      ^ ((int32_t)steps360 << 0)
                      ^ ((int32_t)microsteps << 1)
-                     //^ (*(uint32_t *)(void*)& gearRatio)
-                     ^ (*(uint32_t *)(void*)& degreesPerPulse[0])
-                     ^ (*(uint32_t *)(void*)& degreesPerPulse[1])
-                     ^ (*(uint32_t *)(void*)& degreesPerPulse[2])
-                     ^ (*(uint32_t *)(void*)& dz)
-                     ^ (*(uint32_t *)(void*)& homeAngle)
+                     //^ (uint32_t)gearRatio)
+                     ^ (uint32_t)degreesPerPulse[0]
+                     ^ (uint32_t)degreesPerPulse[1]
+                     ^ (uint32_t)degreesPerPulse[2]
+                     ^ (uint32_t)dz
+                     ^ (uint32_t)homeAngle
                      ;
     return result;
 }

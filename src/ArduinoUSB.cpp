@@ -114,7 +114,7 @@ bool ArduinoUSB::isOpen() {
 string ArduinoUSB::readln(int32_t msTimeout) {
     string line;
     bool isEOL = false;
-    int32_t msIdle = millis() + msTimeout;
+    uint32_t msIdle = millis() + msTimeout;
     char buf[10];
     do {
         int res = read(fd, buf, 1);

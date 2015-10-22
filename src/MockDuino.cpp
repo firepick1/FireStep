@@ -27,13 +27,13 @@ void MockSerial::push(uint8_t value) {
 }
 
 void MockSerial::push(int16_t value) {
-    uint8_t *pvalue = (uint8_t *) &value;
+    //uint8_t *pvalue = (uint8_t *) &value;
     serialbytes.push_back((uint8_t)((value >> 8) & 0xff));
     serialbytes.push_back((uint8_t)(value & 0xff));
 }
 
 void MockSerial::push(int32_t value) {
-    uint8_t *pvalue = (uint8_t *) &value;
+    //uint8_t *pvalue = (uint8_t *) &value;
     serialbytes.push_back((uint8_t)((value >> 24) & 0xff));
     serialbytes.push_back((uint8_t)((value >> 16) & 0xff));
     serialbytes.push_back((uint8_t)((value >> 8) & 0xff));
@@ -162,7 +162,7 @@ int16_t& MockDuino::MEM(int addr) {
 }
 
 void MockDuino::clear() {
-    int novalue = 0xfe;
+    //int novalue = 0xfe;
     mockSerial.output();	// discard
     for (int16_t i = 0; i < MOCKDUINO_PINS; i++) {
         pin[i] = NOVALUE;

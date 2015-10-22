@@ -216,11 +216,23 @@ bool ZPlane::initialize(XYZ3D p1, XYZ3D p2, XYZ3D p3) {
 
 ////////////////////// Machine /////////////////////////
 
-Machine::Machine()
-    : autoHome(false),invertLim(false), pDisplay(&nullDisplay), jsonPrettyPrint(false), vMax(12800),
-      tvMax(0.7), fastSearchPulses(FPD_FAST_SEARCH_PULSES),
-      searchDelay(FPD_SEARCH_DELAY), pinStatus(NOPIN), topology(MTO_RAW),
-      outputMode(OUTPUT_ARRAY1), debounce(0), autoSync(false), syncHash(0), homeZ(0), pullups(0)
+Machine::Machine() :
+	autoHome(false),
+	invertLim(false),
+	jsonPrettyPrint(false),
+	autoSync(false),
+	pullups(0),
+	debounce(0),
+	vMax(12800),
+	tvMax(0.7),
+	fastSearchPulses(FPD_FAST_SEARCH_PULSES),
+	searchDelay(FPD_SEARCH_DELAY),
+	pinStatus(NOPIN),
+	topology(MTO_RAW),
+	outputMode(OUTPUT_ARRAY1),
+	homeZ(0),
+	syncHash(0),
+	pDisplay(&nullDisplay)
 {
     pinEnableHigh = false;
     for (QuadIndex i = 0; i < QUAD_ELEMENTS; i++) {
@@ -254,10 +266,8 @@ Machine::Machine()
  */
 void Machine::setHomeAngle(PH5TYPE degrees) {
     if (topology == MTO_FPD) {
-		StepCoord oldHomePulses = delta.getHomePulses();
         delta.setHomeAngle(degrees);
         StepCoord newHomePulses = delta.getHomePulses();
-        StepCoord dHome = newHomePulses - oldHomePulses;
         homeAngle = degrees;
 		TESTCOUT4("newHomePulses:", newHomePulses, 
 			" axis[0]:", axis[0].home,
@@ -269,7 +279,7 @@ void Machine::setHomeAngle(PH5TYPE degrees) {
         axis[0].home = newHomePulses;
         axis[1].home = newHomePulses;
         axis[2].home = newHomePulses;
-        TESTCOUT3("setHomeAngle degrees:", degrees, " newHomePulses:", newHomePulses, " dHome:", dHome);
+        TESTCOUT3("setHomeAngle degrees:", degrees, " newHomePulses:", newHomePulses, " dHome:", newHomePulses - delta.getHomePulses());
     }
 }
 
@@ -308,21 +318,21 @@ int32_t Machine::hash() {
     result = result ^ delta.hash();
 	result = result ^ (pullups);
     result = result ^ (vMax);
-    result = result ^ (*(uint32_t *)(void*)&tvMax);
+    result = result ^ (uint32_t)tvMax;
     result = result ^ (debounce);
     result = result ^ (fastSearchPulses);
     result = result ^ (searchDelay);
     result = result ^ (pinStatus);
     result = result ^ (delta.getSteps360());
-    result = result ^ (*(uint32_t *)(void*)&homeZ);
-    result = result ^ (*(uint32_t *)(void*)&bed.a);
-    result = result ^ (*(uint32_t *)(void*)&bed.b);
-    result = result ^ (*(uint32_t *)(void*)&bed.c);
-    result = result ^ (*(uint32_t *)(void*)&gr1);
-    result = result ^ (*(uint32_t *)(void*)&gr2);
-    result = result ^ (*(uint32_t *)(void*)&gr3);
-    result = result ^ (*(uint32_t *)(void*)&spa);
-    result = result ^ (*(uint32_t *)(void*)&sps);
+    result = result ^ (uint32_t)homeZ;
+    result = result ^ (uint32_t)bed.a;
+    result = result ^ (uint32_t)bed.b;
+    result = result ^ (uint32_t)bed.c;
+    result = result ^ (uint32_t)gr1;
+    result = result ^ (uint32_t)gr2;
+    result = result ^ (uint32_t)gr3;
+    result = result ^ (uint32_t)spa;
+    result = result ^ (uint32_t)sps;
     //^ (eeUser);
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
         result ^= axis[i].hash() << i;
@@ -503,8 +513,6 @@ MotorIndex Machine::motorOfName(const char *name) {
 }
 
 AxisIndex Machine::axisOfName(const char *name) {
-    // Axis reference
-    AxisIndex iAxis;
     if (strcmp_PS(OP_x, name) == 0) {
         return X_AXIS;
     } else if (strcmp_PS(OP_y, name) == 0) {

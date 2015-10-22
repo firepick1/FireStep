@@ -8,8 +8,8 @@ namespace firestep {
 
 typedef class FireStepClient {
 private:
-    bool prompt;
     IFireStep *pFireStep;
+    bool prompt;
 protected:
 	std::string readLine(std::istream &is);
 public:

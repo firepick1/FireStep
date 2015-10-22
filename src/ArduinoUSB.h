@@ -24,10 +24,10 @@ namespace firestep {
 
 typedef class ArduinoUSB {
 private:
-    int fd;
-	int resultCode;
-	std::string sttyArgs;
 	std::string path;
+    int fd;
+	std::string sttyArgs;
+	int resultCode;
     std::ofstream os;
 public:
     ArduinoUSB(const char *path=FIRESTEP_SERIAL_PATH);

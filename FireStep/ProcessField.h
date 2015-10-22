@@ -16,8 +16,7 @@ Status processField(JsonObject& jobj, const char* key, TF& field, bool *pUpdated
         }
     } else {
         TJ tjValue = jobj[key];
-        double value = tjValue;
-        TF tfValue = (TF) value;
+        TF tfValue = (TF) tjValue;
         field = tfValue;
         if (pUpdated) {
             *pUpdated = true;
