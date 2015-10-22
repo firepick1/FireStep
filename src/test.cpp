@@ -5413,6 +5413,19 @@ void test_Armin() {
     cout << "TEST	: test_Armin() OK " << endl;
 }
 
+void test_dpy() {
+    cout << "TEST	: test_dpy() =====" << endl;
+
+    {   
+        MachineThread mt = test_setup_FPD();
+        Machine& machine = mt.machine;
+        string response = test_cmd(mt, __LINE__, JT("{'dpyds':22}\n"), -1, -1, STATUS_WAIT_CAMERA);
+		ASSERTEQUALS(JT("{'s':0,'r':{'dpyds':22},'t':0.???} \n"), response.c_str());
+    }
+
+    cout << "TEST	: test_dpy() OK " << endl;
+}
+
 int main(int argc, char *argv[]) {
     LOGINFO3("INFO	: FireStep test v%d.%d.%d",
              VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -5488,6 +5501,7 @@ int main(int argc, char *argv[]) {
 		test_probe_pullup();
 		test_homz();
 		test_map_axis();
+		test_dpy();
     }
 
     cout << "TEST	: END OF TEST main()" << endl;
