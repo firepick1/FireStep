@@ -3,10 +3,13 @@ FireStep v1: change log
 
 [v2.0](CHANGELOG2)
 
+v1.xxx (IN PROGRESS)
+* WIP: firestep client for Raspberry Pi 2 Model B https://github.com/firepick1/FireStep/wiki/Raspberry-Pi-2
+* WIP: fireduino/ArduinoDue (UNTESTED)
+
 v1.080
 ------
-* NEW: firestep client for Raspberry Pi 2 Model B https://github.com/firepick1/FireStep/wiki/Raspberry-Pi-2
-* WIP: fireduino/ArduinoDue (UNTESTED)
+* NEW: Merged Paul's fireduino Motion Board code 
 
 v1.070
 ------
