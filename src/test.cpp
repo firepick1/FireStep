@@ -285,7 +285,7 @@ void test_Machine() {
     ASSERTEQUALS(JT("{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
     ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
     out = machine.saveSysConfig(buf, sizeof(buf));
-#define HASH1 "1128538036"
+#define HASH1 "1131555806"
     ASSERTEQUALS(JT("{'ch':" HASH1 ",'pc':2,'to':0,'ah':0,'db':0,'hp':3,'jp':0,'lh':0,"
                     "'mv':12800,'om':0,'pb':2,'pi':11,'pu':0,'tv':0.70}"),
                  buf);
@@ -964,6 +964,7 @@ void test_Stroke() {
     // Test goalPos() and traverse()
     for (int t = 0; t < 20; t++) {
         Quad<StepCoord> pos = stroke.goalPos(tStart + t);
+        TESTCOUT1("pos[0]:", pos.value[0]);
     }
     ASSERTQUAD(Quad<StepCoord>(4, 40, -4, -40), stroke.dEndPos);
     ASSERTQUAD(Quad<StepCoord>(4, 40, -4, -40), stroke.goalPos(tStart + 17));
@@ -3189,7 +3190,7 @@ void test_autoSync() {
     int32_t hash3 = machine.hash();
     ASSERT(hash2 != hash3);
     ASSERTEQUAL(false, machine.axis[4].isEnabled());
-#define HASH3 "1131683028"
+#define HASH3 "1128409278"
     snprintf(buf, sizeof(buf), "%ld", (long) hash3);
     ASSERTEQUALS(HASH3, buf);
 
@@ -5418,7 +5419,6 @@ void test_dpy() {
 
     {   
         MachineThread mt = test_setup_FPD();
-        Machine& machine = mt.machine;
         string response = test_cmd(mt, __LINE__, JT("{'dpyds':22}\n"), -1, -1, STATUS_WAIT_CAMERA);
 		ASSERTEQUALS(JT("{'s':0,'r':{'dpyds':22},'t':0.???} \n"), response.c_str());
     }

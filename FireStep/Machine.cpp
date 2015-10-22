@@ -126,18 +126,18 @@ Status Axis::enable(bool active) {
     return STATUS_OK;
 }
 
-#define BIT_HASH ((uint32_t)0x3)
+#define BIT_HASH ((int32_t)0x3)
 int32_t Axis::hash() {
     int32_t result = 0
                      ^ (dirHIGH ? (BIT_HASH << 0) : 0)
                      ^ (enabled ? (BIT_HASH << 1) : 0)
-                     ^ ((uint32_t) home << 0)
-                     ^ ((uint32_t) idleSnooze << 1)
-                     ^ ((uint32_t) microsteps << 2)
-                     ^ ((uint32_t) travelMin << 3)
-                     ^ ((uint32_t) travelMax << 4)
-                     ^ ((uint32_t) usDelay << 5)
-                     ^ ((uint32_t) latchBackoff << 6)
+                     ^ ((int32_t) home << 0)
+                     ^ ((int32_t) idleSnooze << 1)
+                     ^ ((int32_t) microsteps << 2)
+                     ^ ((int32_t) travelMin << 3)
+                     ^ ((int32_t) travelMax << 4)
+                     ^ ((int32_t) usDelay << 5)
+                     ^ ((int32_t) latchBackoff << 6)
                      ;
 
     return result;
@@ -299,6 +299,17 @@ void Machine::setup(PinConfig cfg) {
     }
 }
 
+int32_t hashOf(PH5TYPE &value) {
+    const uint8_t *pRawBytes = (const uint8_t *)(void *) &value;
+
+    int32_t result = 0;
+    for (size_t i=sizeof(PH5TYPE); i-- > 0; ) {
+        result = result << 8;
+        result |= pRawBytes[i];
+    }
+    return result;
+}
+
 int32_t Machine::hash() {
     PH5TYPE gr1 = delta.getGearRatio(DELTA_AXIS_1);
     PH5TYPE gr2 = delta.getGearRatio(DELTA_AXIS_2);
@@ -306,10 +317,10 @@ int32_t Machine::hash() {
     PH5TYPE spa = delta.getSPEAngle();
     PH5TYPE sps = delta.getSPERatio();
     int32_t result = 0;
-    result = result ^ ((uint32_t) outputMode << 8);
-    result = result ^ ((uint32_t) topology << 9);
-    result = result ^ ((uint32_t) pinConfig << 10);
-    result = result ^ ((uint32_t) op.probe.pinProbe << 11);
+    result = result ^ ((int32_t) outputMode << 8);
+    result = result ^ ((int32_t) topology << 9);
+    result = result ^ ((int32_t) pinConfig << 10);
+    result = result ^ ((int32_t) op.probe.pinProbe << 11);
     result = result ^ (invertLim ? (BIT_HASH << 16) : 0);
     result = result ^ (pinEnableHigh ? (BIT_HASH << 17) : 0);
     // result = result  ^ (autoSync ? (BIT_HASH << 18) : 0);
@@ -318,21 +329,21 @@ int32_t Machine::hash() {
     result = result ^ delta.hash();
 	result = result ^ (pullups);
     result = result ^ (vMax);
-    result = result ^ (uint32_t)tvMax;
+    result = result ^ hashOf(tvMax);
     result = result ^ (debounce);
     result = result ^ (fastSearchPulses);
     result = result ^ (searchDelay);
     result = result ^ (pinStatus);
     result = result ^ (delta.getSteps360());
-    result = result ^ (uint32_t)homeZ;
-    result = result ^ (uint32_t)bed.a;
-    result = result ^ (uint32_t)bed.b;
-    result = result ^ (uint32_t)bed.c;
-    result = result ^ (uint32_t)gr1;
-    result = result ^ (uint32_t)gr2;
-    result = result ^ (uint32_t)gr3;
-    result = result ^ (uint32_t)spa;
-    result = result ^ (uint32_t)sps;
+    result = result ^ hashOf(homeZ);
+    result = result ^ hashOf(bed.a);
+    result = result ^ hashOf(bed.b);
+    result = result ^ hashOf(bed.c);
+    result = result ^ hashOf(gr1);
+    result = result ^ hashOf(gr2);
+    result = result ^ hashOf(gr3);
+    result = result ^ hashOf(spa);
+    result = result ^ hashOf(sps);
     //^ (eeUser);
     for (AxisIndex i=0; i<AXIS_COUNT; i++) {
         result ^= axis[i].hash() << i;

@@ -788,10 +788,6 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
         const char *s = jvalue;
         snprintf(buf, sizeof(buf), "%s", s);
     }
-    //TODO: Is this a bug? "warning: the address of 'buf' will always evaluate as 'true'"
-    if (!buf) {
-        return STATUS_JSON_STRING;
-    }
     if (buf[0] == 0) { // query
         uint8_t c = fireduino::eeprom_read_byte((uint8_t*) addrLong);
         if (c && c != 255) {
