@@ -44,7 +44,6 @@ if [ "$GITMASTER" != "$GITREMOTE" ]; then
 fi
 popd
 
-echo "DEFINE	: MEMORY_MODEL=${MEMORY_MODEL}"
 if [ ! -e ph5 ]; then
 	echo "GIT	: git clone https://github.com/firepick1/ph5"
 	git clone https://github.com/firepick1/ph5
@@ -65,12 +64,6 @@ if [ "$GITMASTER" != "$GITREMOTE" ]; then
 	./build clean all
 fi
 popd
-
-if [ "$DESTDIR" == "" ]; then
-	echo "INSTALL	: using default installation prefix"
-	export DESTDIR=/usr/local
-fi
-echo "INSTALL	: ${DESTDIR}"
 
 if [ "$WINDIR" != "" ]; then
 	echo "SYSTEM	: FireStep Windows support is limited to Arduino IDE"

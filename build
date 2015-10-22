@@ -34,6 +34,13 @@ fi
 if [ "${MEMORY_MODEL}" == "" ]; then
 	export MEMORY_MODEL=MEMORY_MODEL_TINY
 fi
+echo "DEFINE	: MEMORY_MODEL=${MEMORY_MODEL}"
+
+if [ "$DESTDIR" == "" ]; then
+	echo "INSTALL	: using default installation prefix"
+	export DESTDIR=/usr/local
+fi
+echo "INSTALL	: ${DESTDIR}"
 
 if [ -e CMakeFiles ] ; then 
   echo "STATUS	: removing existing makefiles"

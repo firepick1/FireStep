@@ -72,9 +72,9 @@ int parse_args(int argc, char *argv[], bool &prompt, bool &logging,
             }
             json = argv[iArg];
         } else if (strcmp("-v",argv[iArg])==0 || strcmp("--version", argv[iArg])==0) {
-			cerr << FireStepClient::version(false);
+			cout << FireStepClient::version(false);
             if (isatty(fileno(stdin))) {
-                cerr << endl;
+                cout << endl;
             }
 			return -EAGAIN;
         } else if (strcmp("-d",argv[iArg])==0 || strcmp("--device", argv[iArg])==0) {
