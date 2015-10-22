@@ -65,18 +65,18 @@ public:
 
 typedef class DeltaCalculator {
 protected:
-    PH5TYPE f;
     PH5TYPE e;
-    PH5TYPE rf;
+    PH5TYPE f;
     PH5TYPE re;
+    PH5TYPE rf;
     PH5TYPE acr; // arm clearance radius at pulley
     int16_t steps360;
     int16_t microsteps;
+    PH5TYPE spAngle;
+    PH5TYPE spRatio;
     PH5TYPE degreesPerPulse[3];
     PH5TYPE dz;
     PH5TYPE homeAngle;
-    PH5TYPE spAngle;
-    PH5TYPE spRatio;
     static PH5TYPE sqrt3;
     static PH5TYPE sin120;
     static PH5TYPE cos120;
@@ -169,7 +169,6 @@ public:
     }
     void setDegreesPerPulse(PH5TYPE value, DeltaAxis axis=DELTA_AXIS_ALL);
     inline PH5TYPE getGearRatio(DeltaAxis axis=DELTA_AXIS_ALL) {
-        PH5TYPE gearRatio = 360/(microsteps*steps360*getDegreesPerPulse(axis));
         if (axis == DELTA_AXIS_ALL) {
             PH5TYPE gearRatio = ( getGearRatio(DELTA_AXIS_1)+
                                   getGearRatio(DELTA_AXIS_2)+

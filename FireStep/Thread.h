@@ -30,7 +30,7 @@ extern ThreadClock threadClock;
 
 typedef struct Thread {
 public:
-    Thread() : tardies(0), id(0), pNext(NULL) {
+    Thread() : pNext(NULL), tardies(0), id(0) {
         nextLoop.ticks = 0;
     }
     virtual void setup();

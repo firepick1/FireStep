@@ -147,25 +147,25 @@ public: // configuration
 public:
     Axis() :
         enabled(false),
-        pinStep(NOPIN),
-        pinDir(NOPIN),
-        pinMin(NOPIN),
-        pinMax(NOPIN),
-        pinEnable(NOPIN),
-        home(0),
         latchBackoff(LATCH_BACKOFF),
+        home(0),
         travelMin(-32000),  // -5 full 400-step revolutiosn @16-microsteps
         travelMax(32000),	// 5 full 400-step revolutions @16-microsteps
-        position(0),
         usDelay(0), // Suggest 80us (12.8kHz) for microsteps 1
         idleSnooze(0), // 0:disabled; 1000:weak, noisy, cooler
         stepAngle(1.8),
         microsteps(MICROSTEPS_DEFAULT),
         dirHIGH(true), // true:advance on HIGH; false:advance on LOW
-        advancing(false),
+        pinStep(NOPIN),
+        pinDir(NOPIN),
+        pinMin(NOPIN),
+        pinMax(NOPIN),
+        pinEnable(NOPIN),
         atMin(false),
         atMax(false),
-        homing(false)
+        advancing(false),
+        homing(false),
+		position(0)
     {};
 
     int32_t hash();
@@ -385,6 +385,9 @@ public:
             fireduino::pulseFast(pinStep);
             return 1;
         }
+
+        //Unhandled
+        return 0;
     }
     inline Status stepFast(Quad<StepDV> &pulse) {
         Quad<StepDV> p(pulse);

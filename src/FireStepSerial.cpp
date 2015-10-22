@@ -38,7 +38,7 @@ int FireStepSerial::executeCore(const std::string &request, std::string &respons
 			response = usb.readln(msResponse);
 		}
 	} else { // JSON response should end with }-SPACE-LF
-		int nRead = 0;
+		uint32_t nRead = 0;
 		for (int i=0; response.find("} \n")==string::npos && (nRead != response.size() || i<retries); i++) {
 			nRead = response.size();
 			LOGDEBUG1("FireStepClient::console() wait %ldms", (long) msResponse);

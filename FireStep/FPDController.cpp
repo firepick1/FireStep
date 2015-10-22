@@ -12,7 +12,7 @@ using namespace firestep;
 //////////////// FPDCalibrateHome ///////////////
 
 FPDCalibrateHome::FPDCalibrateHome(Machine& machine)
-    : machine(machine), mode(CAL_NONE), saveWeight(1) {
+    : machine(machine), saveWeight(1), mode(CAL_NONE) {
 }
 
 #define MAX_GEAR_ZBOWL_ERROR 0.3
@@ -122,13 +122,12 @@ public:
 } FPDMoveTo;
 
 FPDMoveTo::FPDMoveTo(FPDController &controller, Machine& machine)
-    : nLoops(0), nSegs(0), machine(machine), controller(controller), isZBed(false), isRaw(false)
+    : nLoops(0), nSegs(0), isZBed(false), isRaw(false), machine(machine), controller(controller)
 {
     machine.loadDeltaCalculator();
-    StepCoord pulses = machine.delta.getHomePulses();
-    ASSERTEQUAL(machine.axis[0].home, pulses);
-    ASSERTEQUAL(machine.axis[1].home, pulses);
-    ASSERTEQUAL(machine.axis[2].home, pulses);
+    ASSERTEQUAL(machine.axis[0].home, machine.delta.getHomePulses());
+    ASSERTEQUAL(machine.axis[1].home, machine.delta.getHomePulses());
+    ASSERTEQUAL(machine.axis[2].home, machine.delta.getHomePulses());
 
     Quad<StepCoord> curPos = machine.getMotorPosition();
     for (QuadIndex i=0; i<QUAD_ELEMENTS; i++) {

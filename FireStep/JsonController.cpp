@@ -234,7 +234,6 @@ Status JsonController::processMotor(JsonCommand &jcmd, JsonObject& jobj, const c
             }
         }
     } else if (strcmp_PS(OP_ma, key) == 0 || strcmp_PS(OP_ma, key + 1) == 0) {
-        JsonVariant &jv = jobj[key];
         MotorIndex iMotor = group - '1';
         if (iMotor < 0 || MOTOR_COUNT <= iMotor) {
             return STATUS_MOTOR_INDEX;
@@ -569,7 +568,6 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
                     int16_t revs = jarr[i];
                     int16_t revSteps = 360 / a.stepAngle;
                     int16_t revMicrosteps = revSteps * a.microsteps;
-                    int16_t msRev = (a.usDelay * revMicrosteps) / 1000;
                     steps.value[i] = revs * revMicrosteps;
                 }
             }
@@ -603,7 +601,11 @@ Status JsonController::processTest(JsonCommand& jcmd, JsonObject& jobj, const ch
             return jcmd.setError(STATUS_UNRECOGNIZED_NAME, key);
         }
         break;
+
+    default:
+    	break;
     }
+
     return status;
 }
 
@@ -786,6 +788,7 @@ Status JsonController::processEEPROMValue(JsonCommand& jcmd, JsonObject& jobj, c
         const char *s = jvalue;
         snprintf(buf, sizeof(buf), "%s", s);
     }
+    //TODO: Is this a bug? "warning: the address of 'buf' will always evaluate as 'true'"
     if (!buf) {
         return STATUS_JSON_STRING;
     }

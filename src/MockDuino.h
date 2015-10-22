@@ -196,15 +196,15 @@ namespace fireduino {
 	inline int16_t analogRead(int16_t pin) {
 		return mockduino::analogRead(pin);
 	}
-	/**
-	 /* IMPORTANT!!!
-	 /* The digitalWrite/digitalRead methods match the Arduino
-	 /* with one critical difference. They must take at least
-	 /* 1 microsecond to complete. This constraint ensures that
-	 /* pulse generation will generate the 2 microsecond pulse
-	 /* required by DRV8825. When implementing IDuino for fast
-	 /* CPUs, take care to observe this limitation.
-	 /*/
+	/*
+	 * IMPORTANT!!!
+	 * The digitalWrite/digitalRead methods match the Arduino
+	 * with one critical difference. They must take at least
+	 * 1 microsecond to complete. This constraint ensures that
+	 * pulse generation will generate the 2 microsecond pulse
+	 * required by DRV8825. When implementing IDuino for fast
+	 * CPUs, take care to observe this limitation.
+	 */
 	inline void pulseFast(uint8_t pin) {
 		digitalWrite(pin, HIGH);
 		digitalWrite(pin, LOW);

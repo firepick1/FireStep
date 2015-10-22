@@ -18,7 +18,7 @@ void MachineThread::setup(PinConfig pc) {
 }
 
 MachineThread::MachineThread()
-    : rawController(machine), fpdController(machine), status(STATUS_BUSY_SETUP), printBannerOnIdle(true) {
+    : status(STATUS_BUSY_SETUP), rawController(machine), fpdController(machine), printBannerOnIdle(true) {
     setController(rawController);
 }
 
@@ -221,7 +221,7 @@ Status MachineThread::syncConfig() {
     size_t len = strlen(buf);
     uint8_t *eepAddr = 0;
     fireduino::eeprom_write_byte(eepAddr, ' '); // disable eeprom
-    for (int16_t i=1; i<=len; i++) { // include terminator
+    for (uint16_t i=1; i<=len; i++) { // include terminator
         fireduino::eeprom_write_byte(eepAddr+i, buf[i]);
         //if (fireduino::serial_available()) { return; }
     }
