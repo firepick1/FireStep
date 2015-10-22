@@ -145,7 +145,7 @@ int process(bool prompt, string device, bool reset, string json) {
 	pFSC = &fsc;
 
     if (prompt) {
-        cerr << "STATUS	: " << FireStepClient::version() << endl;
+        cerr << "START	: " << FireStepClient::version() << endl;
     }
 
 	if (reset) {

@@ -28,25 +28,19 @@ FireStepClient::FireStepClient(IFireStep *pFireStep, bool prompt)
 
 string FireStepClient::readLine(istream &is) {
 	string line;
-	bool isEOL = false;
-	while (!isEOL) {
-		int c = is.get();
-		if (c == EOF) {
-			break;
-		}
-		switch (c) {
-		case '\r':
-			// ignore CR and expect LF
-			break;
-		case '\n':
-			line += (char)c;
-			isEOL = true;
-			break;
-		default:
-			line += (char)c;
-			break;
-		}
-	}
+    getline(is, line);
+    if ( (is.rdstate() & std::ifstream::failbit ) != 0 ) {
+        throw "console read failed";
+    }
+    if ( (is.rdstate() & std::ifstream::eofbit ) != 0 ) {
+        cerr << "END\t: CTRL=D";
+    } else if (line.compare("quit") == 0) {
+        line = ""; // EOF
+    } else {
+        line.append("\n");
+    }
+    //cerr << line.size() << " bytes read" << endl;
+        
 	return line;
 }
 
@@ -93,6 +87,8 @@ int FireStepClient::console() {
     if (rc != 0) {
         return rc;
     }
+    //cerr << "INFO\t: isatty:" << (isatty(fileno(stdin)) ? "true" : "false") << endl;
+    cerr << "INFO\t: Enter \"quit\" to exit" << endl;
 
     for (;;) {
         if (prompt) {
