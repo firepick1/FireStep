@@ -1,6 +1,10 @@
 # FireStep
 
-FireStep is an Arduino stepper library for FirePick Delta.
+FireStep is an Arduino-compatible stepper driver for DIY factory robots such as:
+
+* FirePick Delta 
+* [FireSlide&trade;](https://github.com/firepick1/FireSlide)
+
 FireStep responds to 
 [JSON requests](https://github.com/firepick1/FireStep/wiki/JSON-Reference)
 written in a flexible
