@@ -3,13 +3,15 @@ FireStep v1: change log
 
 [v2.0](CHANGELOG2)
 
-v1.xxx (IN PROGRESS)
-* WIP: firestep client for Raspberry Pi 2 Model B https://github.com/firepick1/FireStep/wiki/Raspberry-Pi-2
-* WIP: fireduino/ArduinoDue (UNTESTED)
+
+v1.081
+------
+* FIX: gear ratio (dimgr) now presented with 5 digits of precision to match eeprom
 
 v1.080
 ------
 * NEW: Merged Paul's fireduino Motion Board code 
+* NEW: fireduino/ArduinoDue (verified by Benoit)
 
 v1.070
 ------

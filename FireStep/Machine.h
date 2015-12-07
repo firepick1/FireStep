@@ -31,7 +31,7 @@ namespace firestep {
 #define MAX_ATTR_BYTES 30
 
 #define FPD_GEAR_RATIO 9.52374
-#define FPD_GEAR_RATIO_S "9.524"
+#define FPD_GEAR_RATIO_S "9.52374"
 #define LC_GEAR_RATIO	9.58600
 #define LC_GEAR_RATIO_S	"9.58600"
 #define TW_GEAR_RATIO	9.460206
