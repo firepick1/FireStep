@@ -102,6 +102,7 @@ enum OutputMode {
 enum Topology {
     MTO_RAW = 0, // Raw stepper coordinates in microstep pulses
     MTO_FPD = 1, // Rotational delta with FirePick Delta dimensions
+    MTO_XYZ = 2, // Cartesian machine
 };
 
 enum AxisIndexValue {
