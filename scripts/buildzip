@@ -21,6 +21,7 @@ OUTPUT="FireStep-$TAG.zip"
 echo "CMD	: creating $OUTPUT"
 
 cp -r DueTimer/ ziptmp/libraries
+rm -rf ziptmp/libraries/DueTimer/.git
 cp -r FireStep/ ziptmp/FireStep
 cp CHANGELOG.md LICENSE README.md ziptmp/FireStep
 cp target/git_tag.h ziptmp/FireStep/FireStep
