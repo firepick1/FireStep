@@ -7,6 +7,7 @@ FireStep v1: change log
 v1.082
 ------
 * FIX: Arduino IDE 1.6.7
+* NEW: Simplified install by including all MIT libraries in FireStep
 
 v1.081
 ------
