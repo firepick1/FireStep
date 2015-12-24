@@ -4,6 +4,10 @@ FireStep v1: change log
 [v2.0](CHANGELOG2)
 
 
+v1.082
+------
+* FIX: Arduino IDE 1.6.7
+
 v1.081
 ------
 * FIX: gear ratio (dimgr) now presented with 5 digits of precision to match eeprom
