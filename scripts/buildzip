@@ -4,8 +4,8 @@ echo "SCRIPT	: buildzip"
 echo "HELP	: build zip file for Arduino installation"
 
 rm -rf ziptmp
-mkdir -p ziptmp/libraries
-mkdir -p ziptmp/FireStep
+mkdir -p ziptmp/image/libraries
+mkdir -p ziptmp/image/FireStep
 
 pushd ../ph5 >& /dev/null
 scripts/buildzip
@@ -20,20 +20,20 @@ TAG=`git log --pretty=format:'%H' -n 1`
 OUTPUT="FireStep-$TAG.zip"
 echo "CMD	: creating $OUTPUT"
 
-cp -r DueTimer/ ziptmp/libraries
-rm -rf ziptmp/libraries/DueTimer/.git
-cp -r FireStep/ ziptmp/FireStep
-rm -rf ziptmp/FireStep/Arm
-cp CHANGELOG.md LICENSE README.md ziptmp/FireStep
-cp target/git_tag.h ziptmp/FireStep/FireStep
+cp -r DueTimer/ ziptmp/image/libraries
+rm -rf ziptmp/image/libraries/DueTimer/.git
+cp -r FireStep/ ziptmp/image/FireStep
+rm -rf ziptmp/image/FireStep/FireStep/Arm
+cp CHANGELOG.md LICENSE README.md ziptmp/image/FireStep
+cp target/git_tag.h ziptmp/image/FireStep/FireStep
 
-pushd ziptmp/libraries >& /dev/null
-unzip -q ../ph5*.zip
-unzip -q ../ArduinoJson*.zip
+pushd ziptmp/image/libraries >& /dev/null
+unzip -q ../../ph5*.zip
+unzip -q ../../ArduinoJson*.zip
 popd >& /dev/null
 
-pushd ziptmp >& /dev/null
-zip -r -q $OUTPUT \
+pushd ziptmp/image >& /dev/null
+zip -r -q ../$OUTPUT \
 	FireStep \
 	libraries
 popd >& /dev/null
