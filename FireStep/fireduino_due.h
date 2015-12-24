@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #if defined(_SAM3XA_)
-#include <DueTimer.h>
+#include "DueTimer.h"
 #endif
 extern uint32_t fireduino_timer;
 extern void fireduino_timer_handler();

@@ -4,8 +4,7 @@ echo "SCRIPT	: buildzip"
 echo "HELP	: build zip file for Arduino installation"
 
 rm -rf ziptmp
-mkdir -p ziptmp/image/libraries
-mkdir -p ziptmp/image/FireStep
+mkdir -p ziptmp/image/FireStep/FireStep
 
 pushd ../ph5 >& /dev/null
 scripts/buildzip
@@ -20,20 +19,27 @@ TAG=`git log --pretty=format:'%H' -n 1`
 OUTPUT="FireStep-$TAG.zip"
 echo "CMD	: creating $OUTPUT"
 
-cp -r DueTimer/ ziptmp/image/libraries
-rm -rf ziptmp/image/libraries/DueTimer/.git
-cp -r FireStep/ ziptmp/image/FireStep
-rm -rf ziptmp/image/FireStep/FireStep/Arm
-cp CHANGELOG.md LICENSE README.md ziptmp/image/FireStep
-cp target/git_tag.h ziptmp/image/FireStep/FireStep
+cp -r DueTimer/* ziptmp/image/FireStep/FireStep
+rm -rf ziptmp/image/FireStep/FireStep/.git
 
-pushd ziptmp/image/libraries >& /dev/null
-unzip -q ../../ph5*.zip
-unzip -q ../../ArduinoJson*.zip
+pushd ziptmp >& /dev/null
+unzip -q ph5*.zip
+cp -r ph5/* image/FireStep/FireStep
+unzip -q ArduinoJson*.zip
+rm ArduinoJson/library*
+cp -r ArduinoJson/* image/FireStep/FireStep
+rm -rf image/FireStep/FireStep/ArduinoJson.cpp
+rm -rf image/FireStep/FireStep/examples
+rm -rf image/FireStep/FireStep/src/CMakeFiles
+rm -rf image/FireStep/FireStep/library.*
+cp -r ../FireStep/ image/FireStep
+rm -rf image/FireStep/FireStep/Arm
+cp ../CHANGELOG.md ../LICENSE ../README.md image/FireStep
+cp ../target/git_tag.h image/FireStep/FireStep
 popd >& /dev/null
+
 
 pushd ziptmp/image >& /dev/null
 zip -r -q ../$OUTPUT \
-	FireStep \
-	libraries
+	FireStep 
 popd >& /dev/null

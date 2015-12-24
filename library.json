@@ -1,0 +1,17 @@
+{
+  "name": "FireStep",
+  "keywords": "firestep, firepick, firenodejs, pnp, stepper, ph5, rotary delta",
+  "description": "PH5 Smooth Stepper Motion Controller for firenodejs and FirePick Delta",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/firepick1/FireStep.git"
+  },
+  "authors":
+  {
+    "name": "Karl Lew",
+    "url": "http://firepick.org"
+  },
+  "frameworks": "arduino",
+  "platforms": "atmelavr,arm"  
+}
