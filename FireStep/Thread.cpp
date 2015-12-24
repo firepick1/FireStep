@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "Thread.h"
 
 using namespace firestep;

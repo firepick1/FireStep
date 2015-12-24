@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "NeoPixel.h"
 #include "pins.h"
 

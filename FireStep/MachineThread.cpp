@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #ifdef CMAKE
 #include <cstring>
 #endif

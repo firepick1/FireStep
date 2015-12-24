@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "ProgMem.h"
 #include "Machine.h"
 
