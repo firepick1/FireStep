@@ -4,6 +4,10 @@ FireStep v1: change log
 [v2.0](CHANGELOG2)
 
 
+v1.083
+------
+* MERGE: merge changes for DueTimer
+
 v1.082
 ------
 * FIX: Arduino IDE 1.6.7
