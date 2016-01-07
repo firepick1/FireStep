@@ -103,6 +103,7 @@ enum Status {
     STATUS_JSON_255 = -428,			// Expected JSON value between 0 and 255
     STATUS_JSON_DIGIT = -429,		// Expected numeric suffix for attribute
     STATUS_MTO_FIELD = -430,		// JSON field is not allowed in current machine topology
+    STATUS_NO_MOCK = -431,		    // Mock FireStep does not handle this command
 
     // IFireStep
     STATUS_OPEN = -500,				// Expected prior call to IFireStep::open()
