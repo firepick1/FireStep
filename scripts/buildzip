@@ -33,6 +33,7 @@ rm -rf image/FireStep/FireStep/examples
 rm -rf image/FireStep/FireStep/src/CMakeFiles
 rm -rf image/FireStep/FireStep/library.*
 cp -r ../FireStep/ image/FireStep
+mv image/FireStep/FireStep/FireStep.ino.REAL image/FireStep/FireStep/FireStep.ino
 rm -rf image/FireStep/FireStep/Arm
 cp ../CHANGELOG.md ../LICENSE ../README.md image/FireStep
 cp ../target/git_tag.h image/FireStep/FireStep

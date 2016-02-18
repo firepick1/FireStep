@@ -1,45 +1,17 @@
-#include <Arduino.h>
-#if defined(_SAM3XA_)
-#include "DueTimer.h"
-#endif
-#include <Adafruit_NeoPixel.h>
-#include "ArduinoJson.h"
-#include "ph5.h"
-#include "MachineThread.h"
-#include "NeoPixel.h"
+WARNING: YOU ARE TRYING TO USE THE GITHUB FIRESTEP.INO IN YOUR ARDUINO IDE
 
-///////////////////// CHOOSE DEFAULT PIN CONFIGURATION ///////////
-//#define PIN_CONFIG PC2_RAMPS_1_4
-#define PIN_CONFIG PC1_EMC02
+The Arduino IDE file structure requirements are byzantine and quirky.
+As a result, Arduino file structure does not match industry project standards 
+for folder organization of C/C++ code. The GitHub FireStep repository
+is structured for cross-platform compilation and cannot be used directly
+inside the Arduino IDE.
 
-firestep::MachineThread machineThread; // FireStep command interpreter
+To address this, you will need an official FireStep release:
+https://github.com/firepick1/FireStep/releases
 
-/////////// NeoPixel display driver /////////////
-#define NEOPIXEL_LEDS 16
-firestep::NeoPixel neoPixel(NEOPIXEL_LEDS);
+Each release has a downloadable zip file that looks something like this:
+`FireStep-f41d3628f0292d8f4b3994af28c510e9fcb3360c.zip`
 
-#if PIN_CONFIG == PC1_EMC02
-#define LED_PIN PC1_LED_PIN
-#else
-#define LED_PIN PC2_LED_PIN
-#endif
-
-void setup() { // run once, when the sketch starts
-    // Serial I/O has lowest priority, so you may need to
-    // decrease baud rate to fix Serial I/O problems.
-    //Serial.begin(38400); // short USB cables
-    Serial.begin(19200); // long USB cables
-
-    // Bind in NeoPixel display driver
-    machineThread.machine.pDisplay = &neoPixel;
-
-    // Initialize
-    machineThread.setup(PIN_CONFIG);
-
-    firestep::threadRunner.setup(LED_PIN);
-}
-
-void loop() {	// run over and over again
-    firestep::threadRunner.run();
-}
-
+Download the desired FireStep release zip file to your computer and
+follow the FireStep wiki installation instructions:
+https://github.com/firepick1/FireStep/wiki#installation
