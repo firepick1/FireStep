@@ -4,6 +4,10 @@ FireStep v1: change log
 [v2.0](CHANGELOG2)
 
 
+v1.084
+------
+* FIX: Added mock FireStep.ino file to prevent opening GitHub code in Arduino IDE
+
 v1.083
 ------
 * MERGE: merge changes for DueTimer
