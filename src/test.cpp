@@ -52,7 +52,10 @@ string test_cmd(MachineThread &mt, int line, const char *cmd, int homeLoops=-1, 
     do {
         mt.loop();
     } while (mt.status == STATUS_BUSY_PARSED);
-	for (int i=0; i<5000; i++) {
+	for (int i=0; i<10000; i++) {
+        if (i > 5000) {
+            arduino.timer64us(MS_TICKS(1)); // speed things up
+        }
 		if (homeLoops >= 0 && i >= homeLoops) {
 			arduino.setPin(PC2_X_MIN_PIN, HIGH); // trip home switch
 			arduino.setPin(PC2_Y_MIN_PIN, HIGH); // trip home switch
@@ -63,12 +66,13 @@ string test_cmd(MachineThread &mt, int line, const char *cmd, int homeLoops=-1, 
 			arduino.setPin(PC2_PROBE_PIN, HIGH); // no contact probe
 		}
 		if (mt.status == STATUS_BUSY_MOVING) {
-			cerr << "STATUS_BUSY_MOVING" << endl;
+			//cerr << "STATUS_BUSY_MOVING" << endl;
 			mt.loop();
 		} else if (mt.status == STATUS_BUSY_CALIBRATING) {
 			cerr << "STATUS_BUSY_CALIBRATING" << endl;
 			mt.loop();
 		} else {
+            cerr << "test_cmd status:" << (int) mt.status << " i:" << i<< endl;
 			break;
 		}
 	}
@@ -2967,6 +2971,20 @@ void test_pnp() {
                     "'sc':2,'us':1873817,'dp':[1556,7742,-4881]}},'t':1.903} \n"),
                  mockSerial.output().c_str());
     ASSERTQUAD(Quad<StepCoord>(11119, 13701, 7347, 100), machine.getMotorPosition());
+
+    // Gantry move A-axis (Reef's bug)
+    string response = test_cmd(mt, __LINE__, JT("{'mova':8000}\n"));
+    ASSERTEQUALS(JT("{'s':0,'r':{'mova':8000.000},'t':?.???} \n"), response.c_str());
+    ASSERTQUAD(Quad<StepCoord>(11119, 13701, 7347, 8000), machine.getMotorPosition());
+    ASSERTEQUAL(7900, arduino.pulses(PC2_A_STEP_PIN)-apulses);
+
+    machine.setMotorPosition(Quad<StepCoord>(9563, 5959, 12228, 8000));
+    response = test_cmd(mt, __LINE__, JT(json));
+    ASSERTQUAD(Quad<StepCoord>(11119, 13701, 7347, 8000), machine.getMotorPosition());
+    ASSERTEQUAL(7900, arduino.pulses(PC2_A_STEP_PIN)-apulses);
+    ASSERTEQUALS(JT("{'s':0,'r':{'dvs':{'1':1556,'2':7742,'3':-4881,"
+                    "'sc':2,'us':1873817,'dp':[1556,7742,-4881]}},'t':1.???} \n"),
+                 response.c_str());
 
     cout << "TEST	: test_pnp() OK " << endl;
 }

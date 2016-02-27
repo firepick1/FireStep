@@ -35,6 +35,7 @@ void Stroke::clear() {
     tStart = 0;
     dtTotal = 0;
     dPos = dEndPos = Quad<StepCoord>();
+    memset(seg, 0, sizeof(seg));
     vPeak = 0;
 }
 
@@ -122,6 +123,10 @@ Status Stroke::start(Ticks tStart) {
         dEndPos = goalPos(tStart + dtTotal);
     } else {
         Quad<StepCoord> almostEnd = goalPos(tStart + dtTotal - 1);
+        TESTCOUT4("dEndPos: ", dEndPos.value[0],
+            ",", dEndPos.value[1],
+            ",", dEndPos.value[2],
+            ",", dEndPos.value[3]);
         for (QuadIndex i = 0; i < 4; i++) {
             if (STROKE_MAX_END_PULSES < absval(dEndPos.value[i] - almostEnd.value[i])) {
                 TESTCOUT4("Stroke::start() STATUS_STROKE_END_ERROR dEndPos[", (int)i,

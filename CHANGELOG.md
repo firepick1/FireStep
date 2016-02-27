@@ -4,8 +4,11 @@ FireStep v1: change log
 [v2.0](CHANGELOG2)
 
 
-v1.080
+v1.085
 ------
+* NEW: DISPLAY_STATUS_SLEEP is new display status that shows rotating green LED 
+* NEW: Idle lighting is now camera lighting
+* FIX: dvs command did not work after Reef's mova (uninitialized segment array)
 
 v1.084
 ------
