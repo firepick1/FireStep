@@ -2892,6 +2892,7 @@ void test_pnp() {
     int32_t xpulses = arduino.pulses(PC2_X_STEP_PIN);
     int32_t ypulses = arduino.pulses(PC2_Y_STEP_PIN);
     int32_t zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    int32_t apulses = arduino.pulses(PC2_A_STEP_PIN);
     machine.setMotorPosition(Quad<StepCoord>(9563, 5959, 12228, 100));
 
     const char *json =
@@ -2961,6 +2962,7 @@ void test_pnp() {
     ASSERTEQUAL(10584, arduino.pulses(PC2_X_STEP_PIN) - xpulses);
     ASSERTEQUAL(12038, arduino.pulses(PC2_Y_STEP_PIN) - ypulses);
     ASSERTEQUAL(10423, arduino.pulses(PC2_Z_STEP_PIN) - zpulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_A_STEP_PIN)-apulses);
     ASSERTEQUALS(JT("{'s':0,'r':{'dvs':{'1':1556,'2':7742,'3':-4881,"
                     "'sc':2,'us':1873817,'dp':[1556,7742,-4881]}},'t':1.903} \n"),
                  mockSerial.output().c_str());
@@ -5449,7 +5451,7 @@ int main(int argc, char *argv[]) {
         //test_Move();
         //test_Armin();
         //test_calho();
-		test_map_axis();
+		test_pnp();
     } else {
         test_id();
         test_Serial();

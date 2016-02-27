@@ -12,13 +12,14 @@ enum Status {
     STATUS_BUSY_OK = 14,			// sub-command completed successfully
     STATUS_BUSY_EEPROM = 15,		// Startup EEPROM command queued for processing
     STATUS_BUSY_CALIBRATING = 16,	// Processing calibration command
-    STATUS_WAIT_IDLE = 20,			// Awaiting input: inactive
+    STATUS_WAIT_IDLE = 20,			// Awaiting input: inactive with camera lighting
     STATUS_WAIT_EOL = 21,			// Awaiting input: remainder of EOL-terminated command
     STATUS_WAIT_CAMERA = 22,		// Awaiting input: camera ready display
     STATUS_WAIT_OPERATOR = 23,		// Awaiting input: operator attention required
     STATUS_WAIT_MOVING = 24,		// Awaiting input: show motion command display
     STATUS_WAIT_BUSY = 25,    		// Awaiting input: show non-motion command display
     STATUS_WAIT_CANCELLED = 26, 	// Awaiting input: command interrupted by serial input
+    STATUS_WAIT_SLEEP = 27, 	    // Awaiting input: inactive for a long time
     STATUS_EMPTY = -1,				// Uninitialized JsonCommand
 
     // internal error

@@ -5,10 +5,11 @@ namespace firestep {
 
 enum DisplayStatus {
     // Awaiting serial input
-    DISPLAY_WAIT_IDLE = 10, // Awaiting EOL-terminated command
+    DISPLAY_WAIT_IDLE = 10, // Awaiting EOL-terminated command with camera lighting 
     DISPLAY_WAIT_EOL = 11, // Awaiting remainder of EOL-terminated command
     DISPLAY_WAIT_CAMERA = 12, // Display for camera while awaiting further instructions
     DISPLAY_WAIT_IDLE_FPD = 13, // MTO_FPD Awaiting EOL-terminated command
+    DISPLAY_WAIT_SLEEP = 14, // Awaiting EOL-terminated command
 
     // Awaiting user input
     DISPLAY_WAIT_OPERATOR = 20, // Awaiting EOL-terminated command initiated by operator

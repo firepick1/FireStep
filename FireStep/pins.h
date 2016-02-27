@@ -101,7 +101,8 @@ enum PinConfig {
 #define PC2_SERVO4			   11
 
 #define PC2_PROBE_PIN			2
-#define PC2_STATUS_PIN		PC2_SERVO4
+#define PC2_STATUS_PIN		    11 // -/+/S PC2_SERVO4 
+//#define PC2_STATUS_PIN		57 // +/-/S AUX-1 BOTTOM
 
 #define PC2_ANALOG_SPEED_PIN	5 /* ADC5 (A5) */
 
@@ -122,6 +123,12 @@ enum PinConfig {
 #define PC2_Z_ENABLE_PIN       62 //A8
 #define PC2_Z_MIN_PIN          18 //18
 #define PC2_Z_MAX_PIN          NOPIN
+
+#define PC2_A_STEP_PIN         PC2_E0_STEP_PIN
+#define PC2_A_DIR_PIN          PC2_E0_DIR_PIN
+#define PC2_A_ENABLE_PIN       PC2_E0_ENABLE_PIN
+#define PC2_A_MIN_PIN          1 // +/-/S AUX1 (top)
+#define PC2_A_MAX_PIN          NOPIN
 
 #define PC2_E0_STEP_PIN        26 // RepRap
 #define PC2_E0_DIR_PIN         28 // RepRap

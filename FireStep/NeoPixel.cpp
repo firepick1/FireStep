@@ -46,35 +46,33 @@ void NeoPixel::show() {
     int intensity = curLevel;
     curStatus = status;
     switch (curStatus) {
-    case DISPLAY_WAIT_IDLE:
-        bg = strip.Color(0, 0, 0);
-        fg = strip.Color(intensity, intensity, intensity);
-        break;
-    case DISPLAY_WAIT_IDLE_FPD:
+    case DISPLAY_WAIT_SLEEP: // spinning green
         bg = strip.Color(0, 0, 0);
         fg = strip.Color(intensity/8, intensity, intensity/8);
         break;
-    case DISPLAY_EEPROM:
+    case DISPLAY_EEPROM: // spinning yellow on blue
         bg = strip.Color(0, 0, intensity);
         fg = strip.Color(intensity, intensity, 0);
         break;
-    case DISPLAY_WAIT_EOL:
+    case DISPLAY_WAIT_EOL: // spinning white on dim white
         bg = strip.Color(intensity / 2, intensity / 2, intensity / 2);
         fg = strip.Color(intensity, intensity, intensity);
         break;
     default:
-    case DISPLAY_WAIT_ERROR:
+    case DISPLAY_WAIT_ERROR: // spinning red on dim red
         bg = strip.Color(intensity / 2, 0, 0);
         fg = strip.Color(255, 0, 0);
         break;
-    case DISPLAY_WAIT_OPERATOR:
+    case DISPLAY_WAIT_OPERATOR: // spinning white on dim red
         bg = strip.Color(intensity , intensity, intensity );
         fg = strip.Color(255, 0, 0);	// red
         break;
-    case DISPLAY_WAIT_CANCELLED:
+    case DISPLAY_WAIT_CANCELLED: // spinning white on yellow
         bg = strip.Color(intensity , intensity, intensity );
         fg = strip.Color(255, 255, 0);	// yellow
         break;
+    case DISPLAY_WAIT_IDLE_FPD: 
+    case DISPLAY_WAIT_IDLE:
     case DISPLAY_WAIT_CAMERA:
         fg = bg = strip.Color(
                       cameraR ? cameraR : intensity,

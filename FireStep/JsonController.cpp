@@ -1071,6 +1071,7 @@ Status JsonController::processDisplay(JsonCommand& jcmd, JsonObject& jobj, const
         if (isAssignment) {
             switch (machine.pDisplay->status) {
             case DISPLAY_WAIT_IDLE:
+            case DISPLAY_WAIT_IDLE_FPD:
                 status = STATUS_WAIT_IDLE;
                 break;
             case DISPLAY_WAIT_ERROR:
