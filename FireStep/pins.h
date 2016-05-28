@@ -8,6 +8,7 @@ enum PinConfig {
     PC0_NOPIN = 0,
     PC1_EMC02 = 1,
     PC2_RAMPS_1_4 = 2,
+    PC3_FIREMC = 3,
 };
 
 #define MAX_PIN				   69
@@ -153,5 +154,71 @@ enum PinConfig {
 #define PC2_TEMP_1_PIN         15   // A15 
 #define PC2_TEMP_2_PIN         NOPIN
 #define PC2_TEMP_BED_PIN       14   // A14 
+
+///////////////// PC3_FIREMC ////////////////
+// Arduino Due with FireMC shield (Beta)
+////////////////////////////////////////////////
+
+#define PC3_SERVO1			   NOPIN
+#define PC3_SERVO2			   NOPIN
+#define PC3_SERVO3			   NOPIN
+#define PC3_SERVO4			   NOPIN
+
+#define PC3_PROBE_PIN			41
+#define PC3_STATUS_PIN		    13
+
+#define PC3_ANALOG_SPEED_PIN	A7
+
+#define PC3_X_STEP_PIN         26
+#define PC3_X_DIR_PIN          24
+#define PC3_X_ENABLE_PIN       42
+#define PC3_X_MIN_PIN          35
+#define PC3_X_MAX_PIN          NOPIN // or 36
+
+#define PC3_Y_STEP_PIN         3
+#define PC3_Y_DIR_PIN          2
+#define PC3_Y_ENABLE_PIN       15
+#define PC3_Y_MIN_PIN          37
+#define PC3_Y_MAX_PIN          NOPIN // or 38
+
+#define PC3_Z_STEP_PIN         10
+#define PC3_Z_DIR_PIN          11
+#define PC3_Z_ENABLE_PIN       12 
+#define PC3_Z_MIN_PIN          39
+#define PC3_Z_MAX_PIN          NOPIN // or 40
+
+#define PC3_A_STEP_PIN         PC3_E0_STEP_PIN
+#define PC3_A_DIR_PIN          PC3_E0_DIR_PIN
+#define PC3_A_ENABLE_PIN       PC3_E0_ENABLE_PIN
+#define PC3_A_MIN_PIN          1 // +/-/S AUX1 (top)
+#define PC3_A_MAX_PIN          NOPIN
+
+#define PC3_E0_STEP_PIN        A1
+#define PC3_E0_DIR_PIN         A0
+#define PC3_E0_ENABLE_PIN      A2
+
+#define PC3_E1_STEP_PIN        A4
+#define PC3_E1_DIR_PIN         A3
+#define PC3_E1_ENABLE_PIN      A5
+
+#define PC3_E2_STEP_PIN        44
+#define PC3_E2_DIR_PIN         45
+#define PC3_E2_ENABLE_PIN      43
+
+#define PC3_LED_PIN            13
+#define PC3_FAN_PIN            NOPIN
+#define PC3_PS_ON_PIN          NOPIN
+
+//MOSFETS:
+#define PC3_HEATER_0_PIN       NOPIN
+#define PC3_HEATER_1_PIN       NOPIN
+#define PC3_HEATER_2_PIN       NOPIN
+#define PC3_HEATER_BED_PIN     NOPIN
+
+//ANALOG / THERMISTORS:
+#define PC3_TEMP_0_PIN         NOPIN
+#define PC3_TEMP_1_PIN         NOPIN
+#define PC3_TEMP_2_PIN         NOPIN
+#define PC3_TEMP_BED_PIN       NOPIN
 
 #endif

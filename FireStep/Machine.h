@@ -349,6 +349,7 @@ protected:
     Status	 	stepProbe(int16_t delay);
     Status		setPinConfig_EMC02();
     Status 		setPinConfig_RAMPS1_4();
+    Status 		setPinConfig_FireMC();
     void 		backoffHome(int16_t delay);
     StepCoord 	stepHome(StepCoord pulsesPerAxis, int16_t delay);
 

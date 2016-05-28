@@ -452,6 +452,34 @@ Status Machine::setPinConfig_RAMPS1_4() {
     return status;
 }
 
+Status Machine::setPinConfig_FireMC() {
+    Status status = STATUS_OK;
+    pinStatus = PC3_STATUS_PIN;
+    op.probe.pinProbe = PC3_PROBE_PIN;
+    setPin(axis[0].pinStep, PC3_X_STEP_PIN, OUTPUT);
+    setPin(axis[0].pinDir, PC3_X_DIR_PIN, OUTPUT);
+    setPin(axis[0].pinMin, PC3_X_MIN_PIN, pullupMode(PULLUP_LIMIT_MIN));
+    setPin(axis[0].pinEnable, PC3_X_ENABLE_PIN, OUTPUT, HIGH);
+    setPin(axis[1].pinStep, PC3_Y_STEP_PIN, OUTPUT);
+    setPin(axis[1].pinDir, PC3_Y_DIR_PIN, OUTPUT);
+    setPin(axis[1].pinMin, PC3_Y_MIN_PIN, pullupMode(PULLUP_LIMIT_MIN));
+    setPin(axis[1].pinEnable, PC3_Y_ENABLE_PIN, OUTPUT, HIGH);
+    setPin(axis[2].pinStep, PC3_Z_STEP_PIN, OUTPUT);
+    setPin(axis[2].pinDir, PC3_Z_DIR_PIN, OUTPUT);
+    setPin(axis[2].pinMin, PC3_Z_MIN_PIN, pullupMode(PULLUP_LIMIT_MIN));
+    setPin(axis[2].pinEnable, PC3_Z_ENABLE_PIN, OUTPUT, HIGH);
+    setPin(axis[3].pinStep, PC3_E0_STEP_PIN, OUTPUT);
+    setPin(axis[3].pinDir, PC3_E0_DIR_PIN, OUTPUT);
+    setPin(axis[3].pinEnable, PC3_E0_ENABLE_PIN, OUTPUT, HIGH);
+    setPin(axis[4].pinStep, PC3_E1_STEP_PIN, OUTPUT);
+    setPin(axis[4].pinDir, PC3_E1_DIR_PIN, OUTPUT);
+    setPin(axis[4].pinEnable, PC3_E1_ENABLE_PIN, OUTPUT, HIGH);
+    setPin(axis[4].pinStep, PC3_E2_STEP_PIN, OUTPUT);
+    setPin(axis[4].pinDir, PC3_E2_DIR_PIN, OUTPUT);
+    setPin(axis[4].pinEnable, PC3_E2_ENABLE_PIN, OUTPUT, HIGH);
+    return status;
+}
+
 Status Machine::setPinConfig(PinConfig pc) {
     Status status = STATUS_OK;
     bool enabled[AXIS_COUNT];
@@ -476,6 +504,9 @@ Status Machine::setPinConfig(PinConfig pc) {
         break;
     case PC2_RAMPS_1_4:
         status = setPinConfig_RAMPS1_4();
+        break;
+    case PC3_FIREMC:
+        status = setPinConfig_FireMC();
         break;
     }
 
