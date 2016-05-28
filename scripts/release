@@ -1,7 +1,8 @@
 #!/bin/bash
 echo "CMD	: release FireStep"
 rm -rf ~/Arduino/FireStep/
-rm ~/Downloads/*.zip
+rm ~/Downloads/FireStep-*.zip
+rm ~/Downloads/ArduinoJson-*.zip
 scripts/buildzip
 mv -v ziptmp/*.zip ~/Downloads
 pushd ~/Arduino >& /dev/null
