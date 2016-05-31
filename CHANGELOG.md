@@ -4,6 +4,11 @@ FireStep v1: change log
 [v2.0](CHANGELOG2)
 
 
+v1.090
+------
+* NEW: Increased high and low pulse times from 2us to 3us to give DRV8XXX stepper drivers more time 
+* FIX: Fixed low pulse time on Due, which had no delay
+
 v1.085
 ------
 * NEW: DISPLAY_STATUS_SLEEP is new display status that shows rotating green LED 

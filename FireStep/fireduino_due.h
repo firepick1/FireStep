@@ -20,7 +20,7 @@ extern void fireduino_timer_handler();
 // Although the Arduino is capable of generating short pulses, FireStep uses
 // longer pulses to ensure that the stepper driver microstep indexer is triggered
 // properly.
-#define STEPPER_PULSE_DELAY 4
+#define STEPPER_PULSE_DELAY 3
 
 namespace fireduino {
 	inline Print& get_Print() {
@@ -63,6 +63,7 @@ namespace fireduino {
 		digitalWrite(pin, HIGH);
 		delayMicroseconds(STEPPER_PULSE_DELAY); 
 		digitalWrite(pin, LOW);
+		delayMicroseconds(STEPPER_PULSE_DELAY); 
 	}
 	inline void delay(int ms) {
 		::delay(ms);
