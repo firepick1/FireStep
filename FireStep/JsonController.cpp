@@ -314,6 +314,7 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
             jcmd.addQueryAttr(node, OP_lm);
             jcmd.addQueryAttr(node, OP_ln);
             jcmd.addQueryAttr(node, OP_mi);
+            jcmd.addQueryAttr(node, OP_mp);
             jcmd.addQueryAttr(node, OP_pd);
             jcmd.addQueryAttr(node, OP_pe);
             jcmd.addQueryAttr(node, OP_pm);
@@ -366,6 +367,12 @@ Status JsonController::processAxis(JsonCommand &jcmd, JsonObject& jobj, const ch
         status = processField<uint8_t, int32_t>(jobj, key, axis.microsteps);
         if (axis.microsteps < 1) {
             axis.microsteps = 1;
+            return STATUS_JSON_POSITIVE1;
+        }
+    } else if (strcmp_PS(OP_mp, key) == 0 || strcmp_PS(OP_mp, key + 1) == 0) {
+        status = processField<uint8_t, int32_t>(jobj, key, axis.mstepPulses);
+        if (axis.mstepPulses < 1) {
+            axis.mstepPulses = 1;
             return STATUS_JSON_POSITIVE1;
         }
     } else if (strcmp_PS(OP_pd, key) == 0 || strcmp_PS(OP_pd, key + 1) == 0) {

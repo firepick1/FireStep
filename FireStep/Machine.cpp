@@ -153,6 +153,7 @@ char * Axis::saveConfig(char *out, size_t maxLen) {
         out = saveConfigValue("is", idleSnooze, out);
         out = saveConfigValue("lb", latchBackoff, out);
         out = saveConfigValue("mi", microsteps, out);
+        out = saveConfigValue("mp", mstepPulses, out);
         out = saveConfigValue("sa", stepAngle, out, 1);
         out = saveConfigValue("tm", travelMax, out);
         out = saveConfigValue("tn", travelMin, out);

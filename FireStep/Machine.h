@@ -133,6 +133,7 @@ public: // configuration
     DelayMics	idleSnooze; // idle enable-off snooze delay (microseconds)
     float		stepAngle; // 1.8:200 steps/rev; 0.9:400 steps/rev
     uint8_t		microsteps;	// normally 1,2,4,8,16 or 32
+    uint8_t		mstepPulses;	// normally 1,2,4
     bool		dirHIGH; // advance on HIGH
     PinType 	pinStep; // step pin
     PinType 	pinDir;	// step direction pin
@@ -156,6 +157,7 @@ public:
         idleSnooze(0), // 0:disabled; 1000:weak, noisy, cooler
         stepAngle(1.8),
         microsteps(MICROSTEPS_DEFAULT),
+        mstepPulses(1),// microstep scaling (e.g., for screw drives)
         dirHIGH(true), // true:advance on HIGH; false:advance on LOW
         pinStep(NOPIN),
         pinDir(NOPIN),
@@ -400,12 +402,19 @@ public:
             for (uint8_t i = 0; i < QUAD_ELEMENTS; i++) {
                 // emit 0-4 pulse burst per axis
                 int16_t pinStep = motorAxis[i]->pinStep;
+                int8_t mstepPulses = motorAxis[i]->mstepPulses;
                 int8_t pv = p.value[i];
                 if (pv > 0) {
                     p.value[i] -= pulsePin(pinStep, pv & (int8_t) 0x3);
+                    while (mstepPulses-- > 1) {
+                        pulsePin(pinStep, pv & (int8_t) 0x3);
+                    }
                     hasPulses = true;
                 } else if (pv < 0) {
                     p.value[i] += pulsePin(pinStep, -pv & (int8_t) 0x3);
+                    while (mstepPulses-- > 1) {
+                        pulsePin(pinStep, pv & (int8_t) 0x3);
+                    }
                     hasPulses = true;
                 }
             }

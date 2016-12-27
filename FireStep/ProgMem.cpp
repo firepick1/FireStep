@@ -162,6 +162,7 @@ const char firestep::OP_movyr[] PROGMEM = { "movyr" };
 const char firestep::OP_movzb[] PROGMEM = { "movzb" };
 const char firestep::OP_movzm[] PROGMEM = { "movzm" };
 const char firestep::OP_movzr[] PROGMEM = { "movzr" };
+const char firestep::OP_mp[] PROGMEM = { "mp" };
 const char firestep::OP_mrk[] PROGMEM = { "mrk" };
 const char firestep::OP_mrka1[] PROGMEM = { "mrka1" };
 const char firestep::OP_mrka2[] PROGMEM = { "mrka2" };

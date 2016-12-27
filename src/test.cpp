@@ -286,7 +286,7 @@ void test_Machine() {
     // Configuration save
     char buf[255];
     char *out = machine.axis[0].saveConfig(buf, sizeof(buf));
-    ASSERTEQUALS(JT("{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
+    ASSERTEQUALS(JT("{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'mp':1,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}"), buf);
     ASSERTEQUAL((size_t)(void*)out, (size_t)(void*)buf+strlen(buf));
     out = machine.saveSysConfig(buf, sizeof(buf));
 #define HASH1 "1131555806"
@@ -605,15 +605,15 @@ void test_JsonController_axis(MachineThread &mt, char axis) {
 
     testJSON(mt, replace, "{'x':''}",
              "{'s':0,'r':{'x':{'dh':true,'en':false,'ho':0,'is':0,'lb':200,'lm':false,'ln':false,"\
-             "'mi':16,'pd':55,'pe':38,'pm':255,'pn':3,'po':0,'ps':54,"\
+             "'mi':16,'mp':1,'pd':55,'pe':38,'pm':255,'pn':3,'po':0,'ps':54,"\
              "'sa':1.800,'tm':32000,'tn':-32000,'ud':0}},'t':0.000} \n");
     testJSON(mt, replace, "{'y':''}",
              "{'s':0,'r':{'y':{'dh':true,'en':false,'ho':0,'is':0,'lb':200,'lm':false,'ln':false,"\
-             "'mi':16,'pd':61,'pe':56,'pm':255,'pn':14,'po':0,'ps':60,"\
+             "'mi':16,'mp':1,'pd':61,'pe':56,'pm':255,'pn':14,'po':0,'ps':60,"\
              "'sa':1.800,'tm':32000,'tn':-32000,'ud':0}},'t':0.000} \n");
     testJSON(mt, replace, "{'z':''}",
              "{'s':0,'r':{'z':{'dh':true,'en':false,'ho':0,'is':0,'lb':200,'lm':false,'ln':false,"\
-             "'mi':16,'pd':48,'pe':62,'pm':255,'pn':18,'po':0,'ps':46,"\
+             "'mi':16,'mp':1,'pd':48,'pe':62,'pm':255,'pn':18,'po':0,'ps':46,"\
              "'sa':1.800,'tm':32000,'tn':-32000,'ud':0}},'t':0.000} \n");
 }
 
@@ -3219,10 +3219,10 @@ void test_autoSync() {
     ASSERTEQUALS(JT( "["
                      "{'sys':{'ch':" HASH3 ",'pc':2,'to':0,'ah':1,'db':0,'hp':3,'jp':0,"
                      "'lh':0,'mv':12800,'om':3,'pb':2,'pi':11,'pu':0,'tv':0.70}},"
-                     "{'x':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
-                     "{'y':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
-                     "{'z':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
-                     "{'a':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'x':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'mp':1,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'y':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'mp':1,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'z':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'mp':1,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
+                     "{'a':{'dh':1,'en':1,'ho':0,'is':0,'lb':200,'mi':16,'mp':1,'sa':1.8,'tm':32000,'tn':-32000,'ud':0}},"
                      "{'b':{'en':0}},"
                      "{'c':{'en':0}},"
                      "{'hom':''}]"),
@@ -4757,7 +4757,7 @@ void test_axis() {
     ASSERTEQUAL(STATUS_OK, mt.status);
     ASSERTEQUAL(LOW, arduino.getPin(PC2_X_ENABLE_PIN));
     ASSERTEQUALS(JT("{'s':0,'r':{'x':"
-                    "{'dh':true,'en':true,'ho':"FPD_HOME_PULSES_S",'is':0,'lb':200,'lm':false,'ln':false,'mi':16,"
+                    "{'dh':true,'en':true,'ho':"FPD_HOME_PULSES_S",'is':0,'lb':200,'lm':false,'ln':false,'mi':16,'mp':1,"
                     "'pd':55,'pe':38,'pm':255,'pn':3,'po':0,'ps':54,'sa':1.800,'tm':32000,'tn':-32000,'ud':0}"
                     "},'t':0.000} \n"), mockSerial.output().c_str());
     mt.loop();

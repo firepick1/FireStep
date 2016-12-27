@@ -187,6 +187,7 @@ extern const char OP_movyr[];
 extern const char OP_movzb[];
 extern const char OP_movzm[];
 extern const char OP_movzr[];
+extern const char OP_mp[];
 extern const char OP_mrk[];
 extern const char OP_mrka1[];
 extern const char OP_mrka2[];
