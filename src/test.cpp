@@ -1339,6 +1339,170 @@ void test_Move() {
     cout << "TEST	: test_Move() OK " << endl;
 }
 
+int8_t set_mpz(MachineThread &mt) {
+    int8_t mpz = 3;
+#define MPZ "3"
+    mockSerial.push(JT("{'z':{'mp':" MPZ "}} \n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+    ASSERTEQUALS(JT("{'s':0,'r':{'z':{'mp':" MPZ "}},'t':0.000} \n"),
+                 mockSerial.output().c_str());
+    return mpz;
+}
+
+void test_Move_mp() {
+    cout << "TEST	: test_Move_mp() =====" << endl;
+
+    MachineThread mt = test_setup();
+    Machine &machine = mt.machine;
+    int32_t xpulses;
+    int32_t ypulses;
+    int32_t zpulses;
+    int32_t apulses;
+
+    int8_t mpz = set_mpz(mt);
+
+    // mov to (1,10,100)
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+    mockSerial.push(JT("{'mov':{'1':1,'2':10,'3':100}} \n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(mpz * 100, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(10, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(1, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTQUAD(Quad<StepCoord>(1, 10, 100, 0), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':"\
+                    "{'mov':{'1':1.000,'2':10.000,'3':100.000}},"\
+                    "'t':0.148} \n"),
+                 mockSerial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // mov to same position
+    mockSerial.push(JT("{'mov':{'1':1,'2':10,'3':100}} \n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(xpulses + 1, arduino.pulses(PC2_X_STEP_PIN));
+    ASSERTEQUAL(ypulses + 10, arduino.pulses(PC2_Y_STEP_PIN));
+    ASSERTEQUAL(zpulses + mpz * 100, arduino.pulses(PC2_Z_STEP_PIN));
+    ASSERTQUAD(Quad<StepCoord>(1, 10, 100, 0), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':"\
+                    "{'mov':{'1':1.000,'2':10.000,'3':100.000}},"\
+                    "'t':0.000} \n"),
+                 mockSerial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // mov nowhere but return position
+    mockSerial.push(JT("{'mov':''} \n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(xpulses + 1, arduino.pulses(PC2_X_STEP_PIN));
+    ASSERTEQUAL(ypulses + 10, arduino.pulses(PC2_Y_STEP_PIN));
+    ASSERTEQUAL(zpulses + mpz * 100, arduino.pulses(PC2_Z_STEP_PIN));
+    ASSERTQUAD(Quad<StepCoord>(1, 10, 100, 0), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':"\
+                    "{'mov':{'lp':0,'mv':12800,'pp':0.0,'sg':0,'tp':0.000,'ts':0.000,"\
+                    "'1':1.000,'2':10.000,'3':100.000,'4':0.000}},"\
+                    "'t':0.000} \n"),
+                 mockSerial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // mov x
+    mockSerial.push(JT("{'mov':{'x':50,'z':300}} \n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(50, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(10, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(mpz * 300, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTQUAD(Quad<StepCoord>(50, 10, 300, 0), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':"\
+                    "{'mov':{'x':50.000,'z':300.000}},"\
+                    "'t':0.209} \n"),
+                 mockSerial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // mov 10000,5000,9000 @ 16000
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+    mockSerial.push(JT("{'mov':{'x':10000,'y':5000,'z':9000,'mv':16000}} \n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(10000, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(5000, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(mpz*9000, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTQUAD(Quad<StepCoord>(10000,5000,9000,0), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':"\
+                    "{'mov':{'x':10000.000,'y':5000.000,'z':9000.000,'mv':16000}},"\
+                    "'t':1.323} \n"),
+                 mockSerial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // mov short form
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+    mockSerial.push(JT("{'movx':10000,'movy':5000}} \n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(10000, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(5000, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTQUAD(Quad<StepCoord>(10000,5000,0,0), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'movx':10000.000,'movy':5000.000},'t':2.258} \n"),
+                 mockSerial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    // Jason's mov a bug
+    xpulses = arduino.pulses(PC2_X_STEP_PIN);
+    ypulses = arduino.pulses(PC2_Y_STEP_PIN);
+    zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+    apulses = arduino.pulses(PC2_E0_STEP_PIN);
+    machine.setMotorPosition(Quad<StepCoord>());
+    mockSerial.push(JT("{'mov':{'a':-88,'mv':12800}}\n"));
+    mt.loop();
+    ASSERTEQUAL(STATUS_BUSY_PARSED, mt.status);
+    mt.loop();
+    ASSERTEQUAL(STATUS_OK, mt.status);
+    ASSERTEQUAL(0, arduino.pulses(PC2_X_STEP_PIN)-xpulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Y_STEP_PIN)-ypulses);
+    ASSERTEQUAL(0, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+    ASSERTEQUAL(88, arduino.pulses(PC2_E0_STEP_PIN)-apulses);
+    ASSERTQUAD(Quad<StepCoord>(0,0,0,-88), machine.getMotorPosition());
+    ASSERTEQUALS(JT("{'s':0,'r':{'mov':{'a':-88.000,'mv':12800}},'t':0.1??} \n"),
+                 mockSerial.output().c_str());
+    mt.loop();
+    ASSERTEQUAL(STATUS_WAIT_IDLE, mt.status);
+
+    cout << "TEST	: test_Move_mp() OK " << endl;
+}
+
 void test_sys() {
     cout << "TEST	: test_sys() =====" << endl;
 
@@ -2520,6 +2684,20 @@ MachineThread test_setup_FPD() {
     mt.loop(); // STATUS_WAIT_IDLE
     mockSerial.clear();
     ASSERTEQUAL(FPD_HOME_PULSES, machine.axis[0].position);
+    ASSERTEQUAL(machine.axis[0].position, machine.axis[1].position);
+    ASSERTEQUAL(machine.axis[0].position, machine.axis[2].position);
+    return mt;
+}
+
+MachineThread test_setup_RAW() {
+    MachineThread mt = test_setup();
+    Machine &machine = mt.machine;
+    mockSerial.push(JT("{'systo':0} \n"));
+    mt.loop(); // STATUS_BUSY_PARSED
+    mt.loop(); // STATUS_OK
+    mt.loop(); // STATUS_WAIT_IDLE
+    mockSerial.clear();
+    ASSERTEQUAL(0, machine.axis[0].position);
     ASSERTEQUAL(machine.axis[0].position, machine.axis[1].position);
     ASSERTEQUAL(machine.axis[0].position, machine.axis[2].position);
     return mt;
@@ -5130,6 +5308,26 @@ void test_homz() {
     cout << "TEST	: test_homz() OK " << endl;
 }
 
+void test_homz_mp() {
+    cout << "TEST	: test_homz_mp() =====" << endl;
+
+    {   
+        MachineThread mt = test_setup_RAW();
+        Machine& machine = mt.machine;
+        string response;
+
+        int8_t mpz = set_mpz(mt);
+        int32_t zpulses = arduino.pulses(PC2_Z_STEP_PIN);
+        response = test_cmd(mt, __LINE__, JT("{'mov':{'z':10}}\n"), 500, -1);
+        ASSERTEQUAL(mpz*10, arduino.pulses(PC2_Z_STEP_PIN)-zpulses);
+		ASSERTQUAD(Quad<StepCoord>(0,0,10,0), machine.getMotorPosition());
+        response = test_cmd(mt, __LINE__, JT("{'hom':''}\n"), 500, -1);
+		ASSERTQUAD(Quad<StepCoord>(0,0,0,0), machine.getMotorPosition());
+    }
+
+    cout << "TEST	: test_homz() OK " << endl;
+}
+
 void test_map_axis() {
     cout << "TEST	: test_map_axis() =====" << endl;
 
@@ -5469,7 +5667,9 @@ int main(int argc, char *argv[]) {
         //test_Move();
         //test_Armin();
         //test_calho();
-		test_pnp();
+		//test_pnp();
+        //test_Move_mp();
+		test_homz_mp();
     } else {
         test_id();
         test_Serial();
@@ -5487,6 +5687,7 @@ int main(int argc, char *argv[]) {
         test_PrettyPrint();
         test_Idle();
         test_Move();
+        test_Move_mp();
         test_PinConfig();
         test_dvs();
         test_sys();
@@ -5520,6 +5721,7 @@ int main(int argc, char *argv[]) {
         test_calgr();
 		test_probe_pullup();
 		test_homz();
+		test_homz_mp();
 		test_map_axis();
 		test_dpy();
     }
